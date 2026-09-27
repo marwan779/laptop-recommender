@@ -11,7 +11,7 @@
   "end_date": null,
   "total_laptops": 2,
   "total_configurations": 3,
-  "scraped_at": "2026-09-27T17:39:14.764467+00:00",
+  "scraped_at": "2026-09-27T18:03:45.453956+00:00",
   "laptops": [
     {
       "brand": "ASUS",
@@ -27,7 +27,7 @@
       "thumbnail_url": "https://dlcdnwebimgs.asus.com/gain/248eaad4-3977-4389-bc39-4364fc169609/w185",
       "release_date": "2024-01-01",
       "release_year": 2024,
-      "scraped_at": "2026-09-27T17:37:36.675195+00:00",
+      "scraped_at": "2026-09-27T18:02:09.208227+00:00",
       "base_model": "S5452",
       "model_variants": [
         "S5452MA",
@@ -178,7 +178,7 @@
       "thumbnail_url": "https://dlcdnwebimgs.asus.com/gain/db4d139c-69d6-4f57-91cd-46761642e137/w185",
       "release_date": "2023-01-01",
       "release_year": 2023,
-      "scraped_at": "2026-09-27T17:37:36.676132+00:00",
+      "scraped_at": "2026-09-27T18:02:09.209222+00:00",
       "base_model": "S3407",
       "model_variants": [
         "S3407AA",
