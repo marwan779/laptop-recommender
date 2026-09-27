@@ -1,6 +1,6 @@
 from urllib.parse import quote_plus, urljoin
 
-from app.matching.normalizer import ModelNormalizer
+from app.core.normalizer import ModelNormalizer
 from app.schemas.laptop import RetailerProduct
 from app.stores.base import BaseStoreScraper
 

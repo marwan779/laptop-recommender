@@ -1,9 +1,9 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}/services/catalog-service/.venv/Scripts/python.exe",
+    "python.defaultInterpreterPath": "${workspaceFolder}/services/scraper-service/.venv/Scripts/python.exe",
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/services/catalog-service",
         "${workspaceFolder}/services/scraper-service",
         "${workspaceFolder}/services/scraper-service/.venv/Lib/site-packages",
+        "${workspaceFolder}/services/catalog-service",
         "${workspaceFolder}/services/catalog-service/.venv/Lib/site-packages"
     ]
 }

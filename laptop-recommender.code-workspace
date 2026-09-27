@@ -1,0 +1,22 @@
+{
+    "folders": [
+        {
+            "name": "Scraper Service",
+            "path": "services/scraper-service"
+        },
+        {
+            "name": "Catalog Service",
+            "path": "services/catalog-service"
+        },
+        {
+            "name": "Project Root & Docs",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/__pycache__": true,
+            "**/*.pyc": true
+        }
+    }
+}

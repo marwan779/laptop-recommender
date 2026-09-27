@@ -4,7 +4,7 @@ from typing import Sequence
 from urllib.parse import urlparse
 
 from app.engine.base import IScraperEngine
-from app.matching.normalizer import ModelNormalizer
+from app.core.normalizer import ModelNormalizer
 from app.schemas.laptop import ConfigurationItem, RetailerProduct
 
 
