@@ -1,0 +1,147 @@
+{
+  "brand": "ASUS",
+  "official_catalog_url": "https://www.asus.com/eg-en/laptops/all-products/",
+  "scrape_mode": "level2",
+  "start_date": "2026-01-01",
+  "end_date": null,
+  "total_laptops": 1,
+  "total_configurations": 1,
+  "scraped_at": "2026-09-26T18:36:15.885941+00:00",
+  "laptops": [
+    {
+      "brand": "ASUS",
+      "name": "ASUS Chromebook Enterprise CM32 Detachable (CM3206)",
+      "price": null,
+      "price_egp": null,
+      "currency": "EGP",
+      "family": "Chromebook",
+      "model": "CM3206",
+      "product_url": "https://www.asus.com/eg-en/laptops/for-work/chromebook/asus-chromebook-enterprise-cm32-detachable-cm3206/",
+      "specs_url": "https://www.asus.com/eg-en/laptops/for-work/chromebook/asus-chromebook-enterprise-cm32-detachable-cm3206/techspec/",
+      "store_url": null,
+      "thumbnail_url": "https://dlcdnwebimgs.asus.com/gain/32eb9447-995b-4434-b756-38baf0caa2ad/w185",
+      "release_date": null,
+      "release_year": null,
+      "scraped_at": "2026-09-26T18:34:40.701324+00:00",
+      "base_model": "CM3206",
+      "model_variants": [
+        "CM3206"
+      ],
+      "sku_part_number": null,
+      "copyright_year": null,
+      "gallery_images": [],
+      "colors": [
+        "Cloud Titanium"
+      ],
+      "structured_specs": {
+        "processor": "MediaTek™ Kompanio 540 2.0 GHz(1M Cache, up to 2.6GHz, 8 cores)",
+        "operating_system": "ChromeOS (Enterprise upgrade)",
+        "graphics": "ARM Mali-G57 MC2",
+        "display": "Touch screen, 12.1-inch, 1600X2560 16:10, Wide view, Glossy display with Corning Gorilla® Glass, LED Backlit, 600nits, DCI-P3: 98%, (Screen-to-body ratio\\_new)87 %, With stylus support",
+        "memory": "4GB LPDDR5X on board, Memory Max Up to:4GB",
+        "storage": "128G eMMC",
+        "expansion_slots": null,
+        "io_ports": "1x USB 3.2 Gen 2 Type-C support display / power delivery(optional), 1x MIC in",
+        "keyboard_touchpad": "Soft Keyboard, 1.35mm Key-travel, Spill-resistant Keyboard, Touchpad",
+        "camera": "5.0M camera, 5.0M camera",
+        "audio": "Dolby Atmos",
+        "network_communication": "Wi-Fi 6(802.11ax) (Dual band) 2\\*2 + Bluetooth® 5.4 Wireless Card",
+        "battery": "42WHrs, 2S1P, 2-cell Li-ion, Long life rechargeable lithium polymer battery.",
+        "power_supply": "TYPE-C, 45W AC Adapter, Output: 15V DC, 3A, 45W, Input: 100~240V AC 50/60Hz universal",
+        "weight": "Start from:0.61 kg (1.34 lbs)",
+        "dimensions": "27.91 x 19.00 x 2.20 ~ 2.30 cm (10.99\" x 7.48\" x 0.87\" ~ 0.91\")",
+        "color": "Cloud Titanium",
+        "security": "NuvoTitan \n Included in the Box (Optional) \n USI 2.0 ASUS Pen \n Stand Cover",
+        "military_grade": "US MIL-STD 810H military-grade standard",
+        "included_in_box": null,
+        "ecolabels": "REACH \n RoHS \n Energy star 9.0 \n EPEAT Gold \n TCO Certified \n A part\\_PIR recycled aluminum: 30% PIR recycled aluminum \n Adaptor\\_PCR recycled plastic enclosure: 30% PCR recycled plastic enclosure \n Battery\\_PCR recycled plastic enclosure: 30% PCR recycled plastic \n Keyboard\\_PCR recycled plastic cap: 50% PCR recycled plastic cap \n Speaker\\_PCR recycled plastic enclosure: 45% PCR + 5% OBP PCR recycled plastic enclosure \n Total PCR recycled plastic: 05% \n Sustainable Material \n 05%"
+      },
+      "all_specs": {
+        "Model": "ASUS Chromebook Enterprise CM32 Detachable (CM3206)",
+        "Color": "Cloud Titanium",
+        "Operating System": "ChromeOS (Enterprise upgrade)",
+        "Processor": "MediaTek™ Kompanio 540 2.0 GHz(1M Cache, up to 2.6GHz, 8 cores)",
+        "Graphics": "ARM Mali-G57 MC2",
+        "Display": "Touch screen, 12.1-inch, 1600X2560 16:10, Wide view, Glossy display with Corning Gorilla® Glass, LED Backlit, 600nits, DCI-P3: 98%, (Screen-to-body ratio\\_new)87 %, With stylus support",
+        "Memory": "4GB LPDDR5X on board, Memory Max Up to:4GB",
+        "Storage": "128G eMMC",
+        "I/O Ports": "1x USB 3.2 Gen 2 Type-C support display / power delivery(optional), 1x MIC in",
+        "Keyboard & Touchpad": "Soft Keyboard, 1.35mm Key-travel, Spill-resistant Keyboard, Touchpad",
+        "Camera": "5.0M camera, 5.0M camera",
+        "Audio": "Dolby Atmos",
+        "Network and Communication": "Wi-Fi 6(802.11ax) (Dual band) 2\\*2 + Bluetooth® 5.4 Wireless Card",
+        "Battery": "42WHrs, 2S1P, 2-cell Li-ion, Long life rechargeable lithium polymer battery.",
+        "Power Supply": "TYPE-C, 45W AC Adapter, Output: 15V DC, 3A, 45W, Input: 100~240V AC 50/60Hz universal",
+        "Weight": "Start from:0.61 kg (1.34 lbs)",
+        "Dimensions (W x D x H)": "27.91 x 19.00 x 2.20 ~ 2.30 cm (10.99\" x 7.48\" x 0.87\" ~ 0.91\")",
+        "Built-in Apps": "MyASUS",
+        "Military Grade": "US MIL-STD 810H military-grade standard",
+        "Ecolabels & Compliances": "REACH \n RoHS \n Energy star 9.0 \n EPEAT Gold \n TCO Certified \n A part\\_PIR recycled aluminum: 30% PIR recycled aluminum \n Adaptor\\_PCR recycled plastic enclosure: 30% PCR recycled plastic enclosure \n Battery\\_PCR recycled plastic enclosure: 30% PCR recycled plastic \n Keyboard\\_PCR recycled plastic cap: 50% PCR recycled plastic cap \n Speaker\\_PCR recycled plastic enclosure: 45% PCR + 5% OBP PCR recycled plastic enclosure \n Total PCR recycled plastic: 05% \n Sustainable Material \n 05%",
+        "Security": "NuvoTitan \n Included in the Box (Optional) \n USI 2.0 ASUS Pen \n Stand Cover"
+      },
+      "spec_sections": {
+        "Specifications": {
+          "Model": "ASUS Chromebook Enterprise CM32 Detachable (CM3206)",
+          "Color": "Cloud Titanium",
+          "Operating System": "ChromeOS (Enterprise upgrade)",
+          "Processor": "MediaTek™ Kompanio 540 2.0 GHz(1M Cache, up to 2.6GHz, 8 cores)",
+          "Graphics": "ARM Mali-G57 MC2",
+          "Display": "Touch screen, 12.1-inch, 1600X2560 16:10, Wide view, Glossy display with Corning Gorilla® Glass, LED Backlit, 600nits, DCI-P3: 98%, (Screen-to-body ratio\\_new)87 %, With stylus support",
+          "Memory": "4GB LPDDR5X on board, Memory Max Up to:4GB",
+          "Storage": "128G eMMC",
+          "I/O Ports": "1x USB 3.2 Gen 2 Type-C support display / power delivery(optional), 1x MIC in",
+          "Keyboard & Touchpad": "Soft Keyboard, 1.35mm Key-travel, Spill-resistant Keyboard, Touchpad",
+          "Camera": "5.0M camera, 5.0M camera",
+          "Audio": "Dolby Atmos",
+          "Network and Communication": "Wi-Fi 6(802.11ax) (Dual band) 2\\*2 + Bluetooth® 5.4 Wireless Card",
+          "Battery": "42WHrs, 2S1P, 2-cell Li-ion, Long life rechargeable lithium polymer battery.",
+          "Power Supply": "TYPE-C, 45W AC Adapter, Output: 15V DC, 3A, 45W, Input: 100~240V AC 50/60Hz universal",
+          "Weight": "Start from:0.61 kg (1.34 lbs)",
+          "Dimensions (W x D x H)": "27.91 x 19.00 x 2.20 ~ 2.30 cm (10.99\" x 7.48\" x 0.87\" ~ 0.91\")",
+          "Built-in Apps": "MyASUS",
+          "Military Grade": "US MIL-STD 810H military-grade standard",
+          "Ecolabels & Compliances": "REACH \n RoHS \n Energy star 9.0 \n EPEAT Gold \n TCO Certified \n A part\\_PIR recycled aluminum: 30% PIR recycled aluminum \n Adaptor\\_PCR recycled plastic enclosure: 30% PCR recycled plastic enclosure \n Battery\\_PCR recycled plastic enclosure: 30% PCR recycled plastic \n Keyboard\\_PCR recycled plastic cap: 50% PCR recycled plastic cap \n Speaker\\_PCR recycled plastic enclosure: 45% PCR + 5% OBP PCR recycled plastic enclosure \n Total PCR recycled plastic: 05% \n Sustainable Material \n 05%",
+          "Security": "NuvoTitan \n Included in the Box (Optional) \n USI 2.0 ASUS Pen \n Stand Cover"
+        }
+      },
+      "configurations": [
+        {
+          "model": "CM3206",
+          "model_series": "CM3206",
+          "base_model": "CM3206",
+          "mpn": null,
+          "official_specs": {
+            "Model": "ASUS Chromebook Enterprise CM32 Detachable (CM3206)",
+            "Color": "Cloud Titanium",
+            "Operating System": "ChromeOS (Enterprise upgrade)",
+            "Processor": "MediaTek™ Kompanio 540 2.0 GHz(1M Cache, up to 2.6GHz, 8 cores)",
+            "Graphics": "ARM Mali-G57 MC2",
+            "Display": "Touch screen, 12.1-inch, 1600X2560 16:10, Wide view, Glossy display with Corning Gorilla® Glass, LED Backlit, 600nits, DCI-P3: 98%, (Screen-to-body ratio\\_new)87 %, With stylus support",
+            "Memory": "4GB LPDDR5X on board, Memory Max Up to:4GB",
+            "Storage": "128G eMMC",
+            "I/O Ports": "1x USB 3.2 Gen 2 Type-C support display / power delivery(optional), 1x MIC in",
+            "Keyboard & Touchpad": "Soft Keyboard, 1.35mm Key-travel, Spill-resistant Keyboard, Touchpad",
+            "Camera": "5.0M camera, 5.0M camera",
+            "Audio": "Dolby Atmos",
+            "Network and Communication": "Wi-Fi 6(802.11ax) (Dual band) 2\\*2 + Bluetooth® 5.4 Wireless Card",
+            "Battery": "42WHrs, 2S1P, 2-cell Li-ion, Long life rechargeable lithium polymer battery.",
+            "Power Supply": "TYPE-C, 45W AC Adapter, Output: 15V DC, 3A, 45W, Input: 100~240V AC 50/60Hz universal",
+            "Weight": "Start from:0.61 kg (1.34 lbs)",
+            "Dimensions (W x D x H)": "27.91 x 19.00 x 2.20 ~ 2.30 cm (10.99\" x 7.48\" x 0.87\" ~ 0.91\")",
+            "Built-in Apps": "MyASUS",
+            "Military Grade": "US MIL-STD 810H military-grade standard",
+            "Ecolabels & Compliances": "REACH \n RoHS \n Energy star 9.0 \n EPEAT Gold \n TCO Certified \n A part\\_PIR recycled aluminum: 30% PIR recycled aluminum \n Adaptor\\_PCR recycled plastic enclosure: 30% PCR recycled plastic enclosure \n Battery\\_PCR recycled plastic enclosure: 30% PCR recycled plastic \n Keyboard\\_PCR recycled plastic cap: 50% PCR recycled plastic cap \n Speaker\\_PCR recycled plastic enclosure: 45% PCR + 5% OBP PCR recycled plastic enclosure \n Total PCR recycled plastic: 05% \n Sustainable Material \n 05%",
+            "Security": "NuvoTitan \n Included in the Box (Optional) \n USI 2.0 ASUS Pen \n Stand Cover"
+          },
+          "stores": []
+        }
+      ],
+      "raw_markdown": "ASUS Chromebook Enterprise CM32 | Laptop for Work - Tech Specs\n\n[![ROG](https://www.asus.com/media/Odin/images/header/ROG_normal.svg)](https://rog.asus.com/eg-en/)\n\n[![Creators](https://www.asus.com/media/Odin/images/header/ProArt_normal.svg)](https://www.asus.com/ProArt/)\n\n[![AIoT](https://www.asus.com/media/Odin/images/header/IoT_normal.svg)](https://iot.asus.com/)\n\nGaming\n\n[Commercial products](https://www.asus.com/eg-en/Business/)\n\n[Shop](https://www.asus.com/eg-en/store/)\n\nAI\n\nMobile\n\nLaptops\n\nDisplays / Desktops\n\nMotherboards / Components\n\nNetworking / IoT / Servers\n\nAccessories\n\nSupport\n\n[Private Store](https://www.asus.com/eg-en/microsite/asus-private-store/)\n\n[اللغة العربية](https://www.asus.com/eg/)\n\nMy Account\n\nGaming\n\n[Commercial products](https://www.asus.com/eg-en/Business/)\n\n[![ROG](https://www.asus.com/media/Odin/images/header/ROG_hover.svg)](https://rog.asus.com/eg-en/)\n\n[![Creators](https://www.asus.com/media/Odin/images/header/ProArt_hover.svg)](https://www.asus.com/ProArt/)\n\n[![AIoT](https://www.asus.com/media/Odin/images/header/IoT_hover.svg)](https://iot.asus.com/)\n\nSupport\n\n[Private Store](https://www.asus.com/eg-en/microsite/asus-private-store/)\n\n[اللغة العربية](https://www.asus.com/eg/)\n\nASUS Chromebook Enterprise CM32 Detachable (CM3206)\n===================================================\n\n* [Overview](https://www.asus.com/eg-en/laptops/for-work/chromebook/asus-chromebook-enterprise-cm32-detachable-cm3206/)\n* [Tech Specs](https://www.asus.com/eg-en/laptops/for-work/chromebook/asus-chromebook-enterprise-cm32-detachable-cm3206/techspec/)\n* [Support](https://www.asus.com/eg-en/laptops/for-work/chromebook/asus-chromebook-enterprise-cm32-detachable-cm3206/helpdesk_knowledge/)\n\nASUS Chromebook Enterprise CM32 Detachable (CM3206)\n\nViewing 1 - 1 of 1\n\n![](https://dlcdnwebimgs.asus.com/gain/32eb9447-995b-4434-b756-38baf0caa2ad//w48)\n\nASUS Chromebook Enterprise CM32 Detachable (CM3206)\n\n![](https://dlcdnwebimgs.asus.com/gain/32eb9447-995b-4434-b756-38baf0caa2ad//w184)\n\nModel\n\nASUS Chromebook Enterprise CM32 Detachable (CM3206)\n\nColor\n\nCloud Titanium\n\nOperating System\n\nChromeOS (Enterprise upgrade)\n\nProcessor\n\nMediaTek™ Kompanio 540 2.0 GHz(1M Cache, up to 2.6GHz, 8 cores)\n\nGraphics\n\nARM Mali-G57 MC2\n\nDisplay\n\nTouch screen, 12.1-inch, 1600X2560 16:10, Wide view, Glossy display with Corning Gorilla® Glass, LED Backlit, 600nits, DCI-P3: 98%, (Screen-to-body ratio\\_new)87 %, With stylus support\n\nMemory\n\n4GB LPDDR5X on board, Memory Max Up to:4GB\n\nStorage\n\n128G eMMC\n\nI/O Ports\n\n1x USB 3.2 Gen 2 Type-C support display / power delivery(optional), 1x MIC in\n\nKeyboard & Touchpad\n\nSoft Keyboard, 1.35mm Key-travel, Spill-resistant Keyboard, Touchpad\n\nCamera\n\n5.0M camera, 5.0M camera\n\nAudio\n\nDolby Atmos\n\nNetwork and Communication\n\nWi-Fi 6(802.11ax) (Dual band) 2\\*2 + Bluetooth® 5.4 Wireless Card\n\nBattery\n\n42WHrs, 2S1P, 2-cell Li-ion, Long life rechargeable lithium polymer battery.\n\nPower Supply\n\nTYPE-C, 45W AC Adapter, Output: 15V DC, 3A, 45W, Input: 100~240V AC 50/60Hz universal\n\nWeight\n\nStart from:0.61 kg (1.34 lbs)\n\nDimensions (W x D x H)\n\n27.91 x 19.00 x 2.20 ~ 2.30 cm (10.99\" x 7.48\" x 0.87\" ~ 0.91\")\n\nBuilt-in Apps\n\nMyASUS\n\nMilitary Grade\n\nUS MIL-STD 810H military-grade standard\n\nEcolabels & Compliances\n\nREACH  \nRoHS  \nEnergy star 9.0  \nEPEAT Gold  \nTCO Certified  \nA part\\_PIR recycled aluminum: 30% PIR recycled aluminum  \nAdaptor\\_PCR recycled plastic enclosure: 30% PCR recycled plastic enclosure  \nBattery\\_PCR recycled plastic enclosure: 30% PCR recycled plastic  \nKeyboard\\_PCR recycled plastic cap: 50% PCR recycled plastic cap  \nSpeaker\\_PCR recycled plastic enclosure: 45% PCR + 5% OBP PCR recycled plastic enclosure  \nTotal PCR recycled plastic: 05%\n\nSustainable Material\n\n05%\n\nSecurity\n\nNuvoTitan\n\nIncluded in the Box (Optional)\n\nUSI 2.0 ASUS Pen  \nStand Cover\n\n* Products certified by the Federal Communications Commission and Industry Canada will be distributed in the United States and Canada. Please visit the ASUS USA and ASUS Canada websites for information about locally available products.\n* All specifications are subject to change without notice. Please check with your supplier for exact offers. Products may not be available in all markets.\n* Specifications and features vary by model, and all images are illustrative. Please refer to specification pages for full details.\n* PCB color and bundled software versions are subject to change without notice.\n* Brand and product names mentioned are trademarks of their respective companies.\n* The terms HDMI, HDMI High-Definition Multimedia Interface, HDMI Trade dress and the HDMI Logos are trademarks or registered trademarks of HDMI Licensing Administrator, Inc.\n\nLaptops\n\nFor Work\n\n[ASUS Chromebook Enterprise CM32 Detachable (CM3206)](https://www.asus.com/eg-en/laptops/for-work/chromebook/asus-chromebook-enterprise-cm32-detachable-cm3206/)\n\nShop and Learn\n\nMobile\n\nLaptops\n:   [For Home](https://www.asus.com/eg-en/laptops/for-home/all-series/)\n:   [For Work](https://www.asus.com/eg-en/laptops/for-work/all-series/)\n:   [For Students](https://www.asus.com/eg-en/laptops/for-students/all-series/)\n:   [For Gaming](https://www.asus.com/eg-en/laptops/for-gaming/all-series/)\n:   [Technology / Innovations](https://www.asus.com/eg-en/laptops/technology-innovations/all-series/)\n\nDisplays / Desktops\n:   [Monitors](https://www.asus.com/eg-en/displays-desktops/monitors/all-series/)\n:   [All-in-One PCs](https://www.asus.com/eg-en/displays-desktops/all-in-one-pcs/all-series/)\n:   [Tower PCs](https://www.asus.com/eg-en/displays-desktops/tower-pcs/all-series/)\n:   [Gaming Tower PCs](https://www.asus.com/eg-en/displays-desktops/gaming-tower-pcs/all-series/)\n:   [NUCs](https://www.asus.com/eg-en/displays-desktops/nucs/all-series/)\n:   [Mini PCs](https://www.asus.com/eg-en/displays-desktops/mini-pcs/all-series/)\n:   [Workstations](https://www.asus.com/eg-en/displays-desktops/workstations/all-series/)\n:   [Warranty](https://www.asus.com/eg-en/displays-desktops/warranty/all-series/)\n:   [Glasses](https://www.asus.com/eg-en/displays-desktops/glasses/all-series/)\n\nMotherboards / Components\n:   [Motherboards](https://www.asus.com/eg-en/motherboards-components/motherboards/all-series/)\n:   [Graphics Cards](https://www.asus.com/eg-en/motherboards-components/graphics-cards/all-series/)\n:   [External Graphics Docks](https://www.asus.com/eg-en/motherboards-components/external-graphics-docks/all-series/)\n:   [Power Supply Units](https://www.asus.com/eg-en/motherboards-components/power-supply-units/all-series/)\n:   [Sound Cards](https://www.asus.com/eg-en/motherboards-components/sound-cards/all-series/)\n:   [Optical Drives](https://www.asus.com/eg-en/motherboards-components/optical-drives/all-series/)\n:   [Data Storage](https://www.asus.com/eg-en/motherboards-components/data-storage/all-series/)\n:   [AI Accelerator](https://www.asus.com/eg-en/motherboards-components/ai-accelerator/all-series/)\n\nNetworking / IoT / Servers\n:   [WiFi 6](https://www.asus.com/eg-en/networking-iot-servers/wifi-6/all-series/)\n:   [WiFi Routers](https://www.asus.com/eg-en/networking-iot-servers/wifi-routers/all-series/)\n:   [Whole Home Mesh WiFi System](https://www.asus.com/eg-en/networking-iot-servers/whole-home-mesh-systems/all-series/)\n:   [Network Switches](https://www.asus.com/eg-en/networking-iot-servers/wired-solutions/all-series/)\n:   [Servers](https://www.asus.com/eg-en/networking-iot-servers/servers/all-series/)\n:   [Desktop AI supercomputer](https://www.asus.com/eg-en/networking-iot-servers/desktop-ai-supercomputer/all-series/)\n\nAccessories\n:   [Keyboards](https://www.asus.com/eg-en/accessories/keyboards/all-series/)\n:   [Mice and Mouse Pads](https://www.asus.com/eg-en/accessories/mice-and-mouse-pads/all-series/)\n:   [Headsets and Audio](https://www.asus.com/eg-en/accessories/headsets-and-audio/all-series/)\n:   [Streaming Kit](https://www.asus.com/eg-en/accessories/streaming-kits/all-series/)\n:   [Apparels, Bags and Gears](https://www.asus.com/eg-en/accessories/apparel-bags-and-gear/all-series/)\n:   [Adapters and Chargers](https://www.asus.com/eg-en/accessories/adapters-and-chargers/all-series/)\n:   [Power Banks](https://www.asus.com/eg-en/accessories/power-banks/all-series/)\n\nLearn More\n\n* [Asus Design Center](https://asusdesign.com/)\n* [ASUSPRO](https://www.asus.com/microsite/commercial/asuspro/)\n* [Automotive Solutions](https://www.unimax.com.tw/)\n* [ASUS Blog](https://www.asus.com/eg-en/blog/)\n\nSupport\n\n* [Check Repair Status](https://www.asus.com/support/repair-status-inquiry/?cname=egypt/)\n* [Find Service Locations](https://www.asus.com/support/service-center/egypt/)\n* [Product Registration](https://account.asus.com/)\n* [Email Us](https://www.asus.com/support/product/contactus/services/questionform/?lang=en-eg/)\n* [Contact via chat](https://icr-emea.asus.com/webchat/icr.html?roottreeid=emea.acae.en-ae&treeid=emea.acae.en-ae&tenantid=en-ae&language=en-eg/)\n* [Call Us](https://www.asus.com/eg/support/callus/)\n* [Security Advisory](https://www.asus.com/eg-en/content/asus-product-security-advisory/)\n* [ASUS Support Videos](https://www.youtube.com/channel/ucq3kt5ti7wn2gzzyoyffsaa/)\n* [Where To Buy](https://www.asus.com/eg-en/About_ASUS/wtb/)\n* [MyASUS](https://www.asus.com/eg/support/myasus-deeplink/)\n\nAbout Us\n\n* [About ASUS](https://www.asus.com/about-asus/)\n* [News](https://www.asus.com/eg-en/news/)\n* [Awards](https://www.asus.com/eg-en/content/about_asus_awards/)\n* [Investor Relations](https://www.asus.com/pages/investor/)\n* [About CSR for global](https://csr.asus.com/english/)\n* [Press Room](https://press.asus.com/)\n* [ASUSTOR Inc.](https://www.asustor.com/en-gb/)\n* [ASUS Cloud Corporation](https://www.asuswebstorage.com/navigate/a/#/index/)\n* [UniMax Electronics Inc.](https://www.unimax.com.tw/)\n* [Find Jobs](https://recruit.asus.com/?Lang=en&Country=EG&City=)\n* [Careers](https://careers.asus.com/)\n\nSupport payment type\n\n1. ![Visa](https://dlcdnwebimgs.asus.com/gain/c7f8a621-b81a-444b-b5b2-dde88c52a06d)\n2. ![Master](https://dlcdnwebimgs.asus.com/gain/57e3ea40-8aa3-4d90-adab-55f6ec92cf7b)\n\nGet the latest deals and more\n\nSign up\n\nEgypt / English\n\n©ASUSTeK Computer Inc. All rights reserved.[Terms of Use Notice](https://www.asus.com/eg-en/terms_of_use_notice_privacy_policy/official-site/)[Privacy Policy](https://www.asus.com/eg-en/terms_of_use_notice_privacy_policy/privacy_policy/)",
+      "extra_metadata": {
+        "model_variants": [
+          "CM3206"
+        ]
+      }
+    }
+  ]
+}
