@@ -6,20 +6,18 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from rich.tree import Tree
-
 from app.core.constants import BRAND_CATALOGS
 from app.engine.scrapling_engine import ScraplingEngine
 from app.scrapers.asus import AsusBrandScraper
-from app.services.store_aggregator import StoreAggregatorService
-from app.stores.registry import STORE_REGISTRY
+
+SUPPORTED_STORES = ["compumarts", "sigma", "twob"]
 
 console = Console()
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Terminal CLI for Laptop Scraper Service (Multi-Store & Official Catalogs)"
+        description="Terminal CLI for Laptop Scraper Service (Pure Ingestion for Brands & Retail Stores)"
     )
     parser.add_argument(
         "--brand",
@@ -31,21 +29,21 @@ def main():
     parser.add_argument(
         "--mode",
         type=str,
-        default="stores",
-        choices=["stores", "brand-only"],
-        help="Execution mode: 'stores' (Brand Level 1 -> Egyptian Stores Deep Search) or 'brand-only' (Brand official site Level 1/2) (default: stores)",
+        default="brand-only",
+        choices=["brand", "brand-only", "store", "stores"],
+        help="Execution mode: 'brand-only'/'brand' (Official Brand Catalog Level 1/2) or 'store'/'stores' (Direct Retailer Store Scraping) (default: brand-only)",
     )
     parser.add_argument(
         "--stores",
         type=str,
         default="all",
-        help=f"Comma-separated store keys to search ({','.join(STORE_REGISTRY.keys())}) or 'all' (default: all)",
+        help=f"Comma-separated store keys to scrape ({','.join(SUPPORTED_STORES)}) or 'all' (default: all)",
     )
     parser.add_argument(
         "--limit",
         type=int,
         default=None,
-        help="Optional maximum number of laptops to search/scrape (default: unlimited in brand-only mode, 3 in stores mode)",
+        help="Optional maximum number of laptops to search/scrape (default: unlimited)",
     )
     parser.add_argument(
         "--level",
@@ -75,12 +73,12 @@ def main():
 
     args = parser.parse_args()
 
-    limit_display = str(args.limit) if args.limit is not None else ("3 (Default)" if args.mode == "stores" else "Unlimited")
+    limit_display = str(args.limit) if args.limit is not None else "Unlimited"
 
     console.print(
         Panel.fit(
-            f"[bold cyan]Laptop Recommender - Multi-Store Scraper Service CLI[/bold cyan]\n"
-            f"[yellow]Brand:[/yellow] {args.brand.upper()} | "
+            f"[bold cyan]Laptop Recommender - Autonomous Scraper Service CLI[/bold cyan]\n"
+            f"[yellow]Target:[/yellow] {args.brand.upper() if args.mode in ('brand', 'brand-only') else args.stores.upper()} | "
             f"[yellow]Mode:[/yellow] {args.mode.upper()} | "
             f"[yellow]Until Model:[/yellow] {args.until_model or 'None (Full Catalog)'} | "
             f"[yellow]Max Pages:[/yellow] {args.max_pages} | "
@@ -91,98 +89,82 @@ def main():
 
     engine = ScraplingEngine()
 
-    if args.brand == "asus":
-        scraper = AsusBrandScraper(engine=engine)
-    else:
-        console.print(f"[red]Scraper for brand '{args.brand}' is not implemented yet. Starting with ASUS first![/red]")
-        sys.exit(1)
+    # =========================================================================
+    # Mode 1: Direct Retailer Store Scraping (Compumarts, Sigma, 2B, etc.)
+    # (Pure Ingestion into Standalone JSON - Matching Deferred to catalog-service)
+    # =========================================================================
+    if args.mode in ("store", "stores"):
+        from app.schemas.laptop import StoreCatalogResult
+        from app.stores.registry import STORE_REGISTRY, get_store_scraper
 
-    # =========================================================================
-    # Mode 1: Multi-Store Deep Search (Brand L1 -> Compumarts, Sigma, 2B, etc.)
-    # =========================================================================
-    if args.mode == "stores":
-        console.print(f"\n[bold green]Running Multi-Store Search Flow...[/bold green]")
+        console.print(f"\n[bold green]Running Direct Retailer Store Scraping...[/bold green]")
         store_keys = (
-            None
+            list(STORE_REGISTRY.keys())
             if args.stores.lower() == "all"
             else [s.strip().lower() for s in args.stores.split(",") if s.strip()]
         )
 
-        aggregator = StoreAggregatorService(engine=engine)
-        store_limit = args.limit if args.limit is not None else 3
-        catalog_result = aggregator.aggregate_brand_laptops(
-            brand_scraper=scraper,
-            laptop_limit=store_limit,
-            store_keys=store_keys,
-            offers_per_store=2,
-        )
+        for s_key in store_keys:
+            store_scraper = get_store_scraper(s_key, engine)
+            console.print(f"\n[cyan]Scraping retailer:[/cyan] [bold white]{store_scraper.store_name}[/bold white] ({store_scraper.base_url})")
 
-        # Render Rich nested Tree: Brand -> ModelFamily -> ConfigurationItem -> RetailOffer
-        root_tree = Tree(
-            f"[bold cyan]BRAND: {catalog_result.brand}[/bold cyan] "
-            f"([dim]{catalog_result.official_catalog_url}[/dim])"
-        )
+            search_limit = args.limit or 20
+            raw_products = store_scraper.search_candidates(query="laptop", limit=search_limit)
 
-        for family in catalog_result.model_families:
-            family_node = root_tree.add(
-                f"[bold white]{family.name}[/bold white] | "
-                f"Family: [cyan]{family.family or 'N/A'}[/cyan] | "
-                f"Base Model: [bold magenta]{family.base_model or 'N/A'}[/bold magenta] | "
-                f"Configurations: [green]{len(family.configurations)}[/green]"
+            store_catalog = StoreCatalogResult(
+                store_name=store_scraper.store_name,
+                store_key=store_scraper.store_key,
+                store_domain=store_scraper.base_domain,
+                total_products=len(raw_products),
+                products=raw_products,
             )
-            family_node.add(f"[dim blue]{family.product_url}[/dim blue]")
 
-            for config in family.configurations:
-                mpn_str = f" [dim](MPN: {config.mpn})[/dim]" if config.mpn else ""
-                specs_count = len(config.official_specs)
-                config_node = family_node.add(
-                    f"⚙️  [bold yellow]{config.model}[/bold yellow]{mpn_str} | "
-                    f"Series: [magenta]{config.model_series or 'N/A'}[/magenta] | "
-                    f"Specs: [green]{specs_count}[/green] | "
-                    f"Offers: [green]{len(config.stores)}[/green]"
+            table = Table(title=f"Store: {store_catalog.store_name} ({store_catalog.total_products} Laptops Scraped)")
+            table.add_column("No.", style="dim", width=4)
+            table.add_column("Product Title", style="bold")
+            table.add_column("Price (EGP)", style="green")
+            table.add_column("Stock", style="magenta")
+            table.add_column("Product URL", style="blue")
+
+            for idx, p in enumerate(store_catalog.products, 1):
+                stock_str = "[green]In Stock[/green]" if p.in_stock else "[red]Out of Stock[/red]"
+                table.add_row(
+                    str(idx),
+                    p.title[:65] + ("..." if len(p.title) > 65 else ""),
+                    p.price_str or str(p.price_egp or "N/A"),
+                    stock_str,
+                    p.product_url,
                 )
+            console.print(table)
 
-                if config.stores:
-                    for offer in config.stores:
-                        stock_badge = "[green][In Stock][/green]" if offer.in_stock else "[red][Out of Stock][/red]"
-                        price_badge = f"[bold green]{offer.price_str or 'Price N/A'}[/bold green]"
-                        match_badge = f"[{offer.match_status.value} via {offer.match_method.value} ({offer.match_confidence:.0%})]"
-                        offer_node = config_node.add(
-                            f"🛒 [bold cyan]{offer.store_name}[/bold cyan]: {offer.title}\n"
-                            f"   Price: {price_badge} | Stock: {stock_badge} | [dim]{match_badge}[/dim]"
-                        )
-                        offer_node.add(f"[blue]{offer.product_url}[/blue]")
-                        if offer.retailer_mpn:
-                            offer_node.add(f"[dim]Store MPN/SKU: {offer.retailer_mpn}[/dim]")
-                else:
-                    config_node.add("[dim yellow]No verified retail offers found for this configuration[/dim yellow]")
-
-        console.print("\n", root_tree)
+            dest_file = args.save_json or f"store_{s_key}.json"
+            with open(dest_file, "w", encoding="utf-8") as f:
+                json.dump(store_catalog.model_dump(), f, indent=2, ensure_ascii=False)
+            console.print(f"[green][+] Saved {store_catalog.total_products} raw store products to {dest_file}[/green]")
 
         console.print(
             Panel.fit(
-                f"[bold green]Multi-Store Aggregation Complete![/bold green]\n"
-                f"Model Families: [bold]{catalog_result.total_families}[/bold]\n"
-                f"Official Configurations: [bold]{catalog_result.total_configurations}[/bold]\n"
-                f"Total Retail Offers Found in Stores: [bold]{catalog_result.total_store_offers}[/bold]",
+                f"[bold green]Store Scraping Ingestion Complete![/bold green]\n"
+                f"Stores Scraped: [bold]{', '.join(store_keys)}[/bold]\n"
+                f"Note: Matching and entity resolution are handled downstream by catalog-service.",
                 border_style="green",
             )
         )
-
-        if args.save_json:
-            with open(args.save_json, "w", encoding="utf-8") as f:
-                json.dump(catalog_result.model_dump(), f, indent=2, ensure_ascii=False)
-            console.print(f"[green]Saved nested catalog to {args.save_json}[/green]")
+        return
 
     # =========================================================================
     # Mode 2: Brand-Only Official Catalog Scraping (Level 1 / Level 2)
     # =========================================================================
-    elif args.mode == "brand-only":
-        from app.services.asus_scraper_service import AsusScraperService
+    elif args.mode in ("brand", "brand-only"):
+        if args.brand == "asus":
+            from app.services.asus_scraper_service import AsusScraperService
+            brand_service = AsusScraperService(engine=engine)
+        else:
+            console.print(f"[red]Brand service for '{args.brand}' is in progress. Using ASUS reference.[/red]")
+            sys.exit(1)
 
-        asus_service = AsusScraperService(engine=engine)
         mode_str = f"level{args.level}"
-        catalog_result = asus_service.scrape(
+        catalog_result = brand_service.scrape(
             mode=mode_str,
             until_model=args.until_model,
             max_pages=args.max_pages,
@@ -235,7 +217,7 @@ def main():
         pointers_str = ", ".join(catalog_result.latest_pointers) if catalog_result.latest_pointers else "None"
         console.print(
             Panel.fit(
-                f"[bold green]ASUS Brand Scraping Complete![/bold green]\n"
+                f"[bold green]{catalog_result.brand.upper()} Brand Scraping Complete![/bold green]\n"
                 f"Mode: [bold]{catalog_result.scrape_mode.upper()}[/bold]\n"
                 f"Until Model: [bold]{catalog_result.until_model or 'None (Full Catalog)'}[/bold]\n"
                 f"Latest Pointers (Top 3): [bold]{pointers_str}[/bold]\n"
@@ -248,5 +230,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 

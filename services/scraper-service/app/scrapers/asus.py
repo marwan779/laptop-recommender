@@ -4,7 +4,7 @@ from typing import Any
 from urllib.parse import urljoin, urlparse
 
 from app.engine.base import IScraperEngine, ScrapedDocument
-from app.matching.normalizer import ModelNormalizer
+from app.core.normalizer import ModelNormalizer
 from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary
 from app.scrapers.base import BaseBrandScraper
 

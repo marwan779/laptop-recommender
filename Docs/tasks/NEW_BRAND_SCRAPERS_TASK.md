@@ -271,4 +271,5 @@ Your implementation will be accepted when all of the following commands execute 
 4. **Code Quality**:
    * Windows cp1252-safe: Use ASCII console indicators (`[+]`, `[-]`, `[!]`).
    * No hardcoded credentials or unhandled HTTP exceptions.
-   * Passes `pytest tests/test_matching.py`.
+   * Clean imports and valid CLI execution (`python -m app.cli --help`).
+

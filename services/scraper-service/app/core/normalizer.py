@@ -2,7 +2,7 @@ import re
 
 
 class ModelNormalizer:
-    """Normalizes and extracts ASUS model tokens, SKUs, and MPNs.
+    """Normalizes and extracts laptop model tokens, SKUs, and MPNs.
 
     Handles tokens like:
       - Full SKU: 'S3407CA-LY065W', 'S3407AA-SF117W', 'H7606WW-SE926W', 'FA507NVR-LP007W'
@@ -10,19 +10,19 @@ class ModelNormalizer:
       - Base model: 'S3407', 'S5452', 'H7607', 'H7606', 'FA507', 'UX3405'
     """
 
-    # Matches full ASUS configuration SKU: 1-4 letters, 3-5 digits, 1-4 letters, hyphen, 4-8 chars
+    # Matches full configuration SKU: 1-4 letters, 3-5 digits, 1-4 letters, hyphen, 4-8 chars
     FULL_SKU_REGEX = re.compile(
         r"\b([A-Za-z]{1,4}\d{3,5}[A-Za-z0-9]{1,4}-[A-Za-z0-9]{4,8})\b",
         re.IGNORECASE,
     )
 
-    # Matches ASUS sub-model series: 1-4 letters, 3-5 digits, 1-4 letters (no hyphen)
+    # Matches sub-model series: 1-4 letters, 3-5 digits, 1-4 letters (no hyphen)
     SUB_MODEL_REGEX = re.compile(
         r"\b([A-Za-z]{1,4}\d{3,5}[A-Za-z]{1,4})\b",
         re.IGNORECASE,
     )
 
-    # Matches ASUS base chassis model: 1-4 letters, 3-5 digits
+    # Matches base chassis model: 1-4 letters, 3-5 digits
     BASE_MODEL_REGEX = re.compile(
         r"\b([A-Za-z]{1,4}\d{3,5})\b",
         re.IGNORECASE,
@@ -34,11 +34,36 @@ class ModelNormalizer:
         re.IGNORECASE,
     )
 
-    # Matches ASUS Manufacturer Part Numbers (e.g. 90NB16J1-M00410, 90NB1991-M00F40)
+    # Matches Manufacturer Part Numbers (e.g. 90NB16J1-M00410, 90NB1991-M00F40)
     MPN_REGEX = re.compile(
         r"\b(90[A-Za-z0-9]{6,8}-[A-Za-z0-9]{4,8})\b",
         re.IGNORECASE,
     )
+
+    # Eastern Arabic numerals mapping to Western Arabic numerals
+    ARABIC_NUMERALS_MAP = str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789")
+
+    @classmethod
+    def normalize_arabic_numerals(cls, text: str | None) -> str:
+        """Convert Eastern Arabic numerals (٠-٩) to standard ASCII digits (0-9)."""
+        if not text:
+            return ""
+        return text.translate(cls.ARABIC_NUMERALS_MAP)
+
+    @classmethod
+    def clean_noisy_title(cls, title: str | None) -> str:
+        """Strip common marketing buzzwords and clean up whitespace."""
+        if not title:
+            return ""
+        clean = cls.normalize_arabic_numerals(title)
+        # Strip marketing noise
+        noise_patterns = [
+            r"\b(brand\s*new|special\s*offer|best\s*seller|hot\s*deal)\b",
+            r"(ضمان\s*محلي|توصيل\s*مجاني|عرض\s*خاص|أفضل\s*سعر|جديد)",
+        ]
+        for pattern in noise_patterns:
+            clean = re.sub(pattern, " ", clean, flags=re.IGNORECASE)
+        return re.sub(r"\s+", " ", clean).strip()
 
     @classmethod
     def normalize_token(cls, token: str | None) -> str:
@@ -142,3 +167,4 @@ class ModelNormalizer:
                 result["base_model"] = token
 
         return result
+

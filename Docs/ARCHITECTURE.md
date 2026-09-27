@@ -1,16 +1,16 @@
 # System Architecture & Technical Specifications
 
-This document defines the high-level architecture, design decisions, data models, and operational patterns of the **Laptop Recommender System**.
+This document defines the high-level architecture, design decisions, data models, and operational patterns of the **Laptop Recommender System** for the Egyptian market.
 
 ---
 
 ## 1. High-Level System Architecture
 
-The system decouples **data ingestion (scraping)** from **catalog management and recommendation**:
+The system enforces a strict decoupling between **data ingestion (`scraper-service`)** and **relational catalog management & recommendation (`catalog-service`)**:
 
 ```mermaid
 flowchart TD
-    subgraph Manufacturer Catalogs ["Official Brand Portals (Egypt)"]
+    subgraph Manufacturer Portals ["Official Brand Portals (Egypt)"]
         ASUS["ASUS Egypt Store"]
         LENOVO["Lenovo Egypt"]
         HP["HP Egypt"]
@@ -25,108 +25,126 @@ flowchart TD
         TWOB["2B Egypt"]
     end
 
-    subgraph ScraperService ["scraper-service (Ingestion Engine)"]
+    subgraph ScraperService ["scraper-service (Pure Ingestion Engine)"]
         ENG["ScraplingEngine (Stealth Chrome / Anti-Bot)"]
-        L1["Level 1: Fast Catalog Discovery"]
-        L2["Level 2: Deep Spec & SKU Crawl"]
-        WM["Watermark Pointer Engine (until_model)"]
-        MATCH["CommonMatchingEngine (MPN / SKU Matching)"]
+        L1["Level 1: Fast Catalog Discovery (Cards)"]
+        L2["Level 2: Deep Spec & SKU Crawl (/techspec/)"]
+        WM["Watermark Cursor Engine (until_model)"]
+        STORE_ENG["Store Crawlers (Compumarts, Sigma, 2B)"]
     end
 
-    subgraph StorageArtifacts ["Decoupled JSON Artifacts"]
-        JSON_BRAND["brand_catalog_{brand}.json"]
-        JSON_STORE["store_catalog_{store}.json"]
+    subgraph StorageArtifacts ["Standalone JSON Ingestion Artifacts"]
+        JSON_BRAND["brand_{brand}.json (Official Specs & SKUs)"]
+        JSON_STORE["store_{store}.json (Raw Store Inventory & Prices)"]
     end
 
-    subgraph CatalogService ["catalog-service (Business Layer)"]
-        CRON["Scheduled Ingestion Worker"]
-        DB[(PostgreSQL / Alembic)]
-        REC["Laptop Recommendation API"]
+    subgraph CatalogService ["catalog-service (Core Business Layer)"]
+        RAW_INGEST["Raw Payload Ingestion Pipeline"]
+        RAW_DB[("RawLaptopRecord (JSONB Audit Log)")]
+        SPEC_EVID[("SpecificationEvidence (Field-Level Provenance)")]
+        ENTITY_RES["Entity Resolution & Matching Engine"]
+        CANONICAL_DB[("Canonical Models (Brand, Family, Model, Configuration)")]
+        ALIAS_DB[("LaptopConfigurationAlias (Store SKU Bindings)")]
+        REC_API["Recommendation & Filtering API (FastAPI)"]
     end
 
-    ManufacturerCatalogs --> ENG
+    ManufacturerPortals --> ENG
     ENG --> L1
     L1 --> WM
     WM --> L2
     L2 --> JSON_BRAND
 
     RetailerStores --> ENG
-    ENG --> MATCH
-    MATCH --> JSON_STORE
+    ENG --> STORE_ENG
+    STORE_ENG --> JSON_STORE
 
-    JSON_BRAND --> CRON
-    JSON_STORE --> CRON
-    CRON --> DB
-    DB --> REC
+    JSON_BRAND --> RAW_INGEST
+    JSON_STORE --> RAW_INGEST
+    RAW_INGEST --> RAW_DB
+    RAW_DB --> SPEC_EVID
+    RAW_DB --> ENTITY_RES
+    SPEC_EVID --> ENTITY_RES
+    ENTITY_RES --> CANONICAL_DB
+    ENTITY_RES --> ALIAS_DB
+    CANONICAL_DB --> REC_API
+    ALIAS_DB --> REC_API
 ```
 
 ---
 
-## 2. Architectural Principles
+## 2. Decoupled Ingestion vs Catalog Matching Philosophy
 
-### A. Independent Decoupled Microservices
-* **The Scraper Service does not connect directly to the database**.
-* Each scraping execution is idempotent and outputs structured standalone JSON documents.
-* This guarantees that if a retailer alters its HTML or anti-bot challenge, it does not corrupt the central database or crash the recommendation API.
-* The downstream `catalog-service` reads these JSON outputs, verifies differences, and syncs updates.
-
-### B. Two-Level Ingestion Model
-* **Level 1 (Listing Overview)**:
-  * Reads the brand catalog page sorted by **Newest**.
-  * Extracts card metadata: title, family line, base model code, product overview URL, official price, and thumbnail.
-  * Evaluates the **Watermark Pointer (`until_model`)**. If the card matches the pointer, Level 1 halts immediately.
-* **Level 2 (Deep Specifications Crawl)**:
-  * Traverses each Level 1 summary to its dedicated `/techspec/` page.
-  * Converts HTML specifications to clean Markdown via `markdownify`.
-  * Extracts distinct physical configurations, sub-model codes (e.g. `S5452MA`), and manufacturer part numbers (MPNs).
-  * Extracts hardware specs: CPU, GPU, Display, RAM, Storage, I/O Ports, Battery, Weight, and Colors.
+### Why Remove Matching from the Scraper?
+1. **Separation of Concerns**: Scraping is inherently I/O-bound, network-dependent, and anti-bot-sensitive. Coupling entity matching with crawling makes scraping brittle, slow, and hard to test.
+2. **Stateless vs Stateful**: The scraper service is completely stateless and produces clean, isolated JSON artifacts. The matching engine requires database state (canonical models, aliases, historical SKU records, existing hardware specs).
+3. **Idempotence & Re-Processing**: By storing raw payloads in `RawLaptopRecord` (PostgreSQL `JSONB`), we can refine, re-run, or backfill matching algorithms without re-scraping the web or triggering anti-bot rate limits.
+4. **Auditability**: `SpecificationEvidence` records every extracted field with source URLs, collection timestamps, and confidence scores, providing complete data provenance.
 
 ---
 
 ## 3. The 4-Tier Product Hierarchy
 
-A critical design rule of this system is that **distinct hardware configurations must never be merged under a loose parent model**. 
+A critical design rule of this system is that **distinct hardware configurations must never be merged under a loose parent model**.
 
 The logical hierarchy is strictly structured as follows:
 
 ```
 Brand (e.g., ASUS)
   ↓
-Model Family (e.g., ASUS Vivobook S14 (S3407))
+LaptopFamily (e.g., Vivobook, ROG Strix, Zenbook)
   ↓
-Exact Configuration / SKU (e.g., S3407AA-SF117W vs S3407CA-LY065W)
+LaptopModel (e.g., ASUS Vivobook S14 (S5452))
   ↓
-Retail Offer (Compumarts / Sigma / 2B)
+LaptopConfiguration (e.g., S5452MA-QD045W)
+  ├── Canonical Components (CPU, GPU, Display, RAM, Storage, Battery, Ports)
+  └── Retail Offers via LaptopConfigurationAlias (Compumarts, Sigma, 2B)
 ```
 
-### Hierarchy Concrete Example:
+### Concrete Hierarchy Example:
 ```text
 ASUS
-└── Vivobook S14 (S3407)
-    ├── S3407AA-SF117W [Intel Core Ultra 7 155H | 16GB RAM | 512GB SSD]
-    │   ├── Compumarts Offer: 48,999 EGP (In Stock)
-    │   └── Sigma Offer: 49,500 EGP (In Stock)
-    └── S3407CA-LY065W [Intel Core Ultra 5 125H | 8GB RAM | 512GB SSD]
-        └── 2B Egypt Offer: 42,999 EGP (Out of Stock)
+└── Vivobook
+    └── ASUS Vivobook S14 (S5452)
+        ├── S5452MA-QD045W [Core Ultra 7 258V | 32GB RAM | 1TB SSD | 14" 3K OLED]
+        │   ├── Compumarts Offer: 54,999 EGP (In Stock)
+        │   └── Sigma Offer: 55,500 EGP (In Stock)
+        └── S5452MA-QD044W [Core Ultra 5 226V | 16GB RAM | 512GB SSD | 14" 3K OLED]
+            └── 2B Egypt Offer: 47,999 EGP (In Stock)
 ```
 
 > [!IMPORTANT]
-> An offer for `S3407CA-LY065W` must **never** be attached to `S3407AA-SF117W`. If an exact SKU match is impossible, offers fall back to `BASE_MODEL_SPECS` matching only if specifications (CPU, RAM, Display) match with high confidence ($\ge 85\%$).
+> Retailer offers are linked to canonical `LaptopConfiguration` records via `LaptopConfigurationAlias`. An offer for `S5452MA-QD044W` (Core Ultra 5 / 16GB) must **never** be attached to `S5452MA-QD045W` (Core Ultra 7 / 32GB).
 
 ---
 
-## 4. Watermark-Based Incremental Ingestion Pattern
+## 4. Brand Scraping: Two-Level Ingestion Model
 
-Instead of guessing laptop release dates through fragile HTML publication meta tags or heuristic CPU generation tables, the system uses a **Watermark Cursor Pattern** (also known as the `since_id` pattern):
+Brand manufacturer scrapers implement a two-level extraction workflow:
+
+* **Level 1 (Listing Overview)**:
+  * Reads the official Egypt brand catalog sorted by **Newest** (e.g. `https://www.asus.com/eg-en/store/laptops/`).
+  * Extracts card metadata: title, family line, base model code, product overview URL, official price, and thumbnail.
+  * Evaluates the **Watermark Pointer (`until_model`)**. If the card matches the pointer, Level 1 halts immediately.
+* **Level 2 (Deep Specifications Crawl)**:
+  * Traverses each Level 1 summary to its dedicated `/techspec/` page.
+  * Converts HTML specifications to clean Markdown via `markdownify`.
+  * Extracts distinct physical configurations, sub-model codes (e.g. `S5452MA`), and manufacturer part numbers (MPNs).
+  * Extracts deep hardware specs: CPU, GPU, Display, RAM, Storage, I/O Ports, Battery, Weight, and physical colors.
+
+---
+
+## 5. Watermark-Based Incremental Ingestion Pattern
+
+Instead of guessing laptop release dates through fragile HTML publication meta tags or heuristic CPU generation tables, the system uses a **Reverse Watermark Cursor Pattern** (also known as the `since_id` pattern):
 
 ```mermaid
 sequenceDiagram
-    participant Cron as catalog-service Cron
+    participant Cron as catalog-service Cron / CLI
     participant Scraper as scraper-service
     participant ASUS as Official ASUS Portal
 
-    Note over Cron: 1. Reads last known pointers from DB<br/>["S5452", "H7607", "CM3206"]
-    Cron->>Scraper: Execute Level 1 with until_model=["S5452", "H7607"]
+    Note over Cron: 1. Reads last known pointers from DB<br/>["S5452", "S3407", "H7607"]
+    Cron->>Scraper: Execute Level 1 with until_model="S5452"
     Scraper->>ASUS: GET /eg-en/store/laptops/ (Sort: Newest)
     ASUS-->>Scraper: HTML Cards (Page 1)
     
@@ -141,12 +159,12 @@ sequenceDiagram
 
     Scraper->>ASUS: Deep Crawl Level 2 ONLY for New Laptops
     Scraper-->>Cron: Return JSON with new latest_pointers
-    Note over Cron: 2. Updates DB and saves new latest_pointers
+    Note over Cron: 2. Ingests new records and updates DB latest_pointers
 ```
 
 ### Pointer Matching Mechanics
 The `matches_pointer()` function checks whether the watermark matches:
-1. **Model Code** (e.g. `S5452` or `H7607`)
+1. **Model Code** (e.g. `S5452` or `S3407`)
 2. **Full Name** (e.g. `ASUS Vivobook S14 (S5452)`)
 3. **URL Slug** (e.g. `asus-vivobook-s14-s5452`)
 
@@ -155,7 +173,7 @@ If ASUS unlists or modifies the title of the watermark laptop, the `max_pages` p
 
 ---
 
-## 5. Engine Abstraction Layer (`app/engine`)
+## 6. Engine Abstraction Layer (`app/engine`)
 
 ```
 IScraperEngine (Abstract Interface)
@@ -173,3 +191,4 @@ ScraplingEngine (Concrete Scrapling + Stealth Chrome)
   * `.get_meta(name_or_prop)`: HTML `<meta>` tag extractor.
   * `.get_json_ld()`: Schema.org JSON-LD extractor.
   * `.raw`: Access to underlying parser (`css()`, `xpath()`).
+
