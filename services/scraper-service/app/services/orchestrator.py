@@ -1,0 +1,222 @@
+"""Scrape Orchestrator — the unified abstraction layer.
+
+This module is the **single entry-point** for every scraping operation.
+It replaces the branching logic that used to live in the CLI and provides
+a programmatic API that can be called by:
+
+  * The CLI  (``python -m app.cli``)
+  * A FastAPI controller endpoint
+  * The catalog-service cron job (via HTTP or direct import)
+
+Usage::
+
+    from app.schemas.orchestrator import ScrapeRequest
+    from app.services.orchestrator import ScrapeOrchestrator
+
+    request = ScrapeRequest(
+        target_type="store",
+        targets=["compumarts", "sigma"],
+        level=2,
+        output_dir="./output",
+    )
+    response = ScrapeOrchestrator().execute(request)
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Type
+
+from app.engine.base import IScraperEngine
+from app.engine.scrapling_engine import ScraplingEngine
+from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult, utcnow_str
+from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
+from app.services.asus_scraper_service import AsusScraperService
+from app.services.hp_scraper_service import HpScraperService
+from app.services.lenovo_scraper_service import LenovoScraperService
+from app.stores.registry import STORE_REGISTRY, get_store_scraper
+
+
+# ---------------------------------------------------------------------------
+# Brand Service Registry
+# ---------------------------------------------------------------------------
+# Maps brand keys (matching ``BRAND_CATALOGS`` in constants.py) to their
+# corresponding service classes.  Adding a new brand is a one-liner here.
+
+BRAND_SERVICE_REGISTRY: dict[str, Type] = {
+    "asus": AsusScraperService,
+    "hp": HpScraperService,
+    "lenovo": LenovoScraperService,
+}
+
+
+class ScrapeOrchestrator:
+    """Facade that turns a single ``ScrapeRequest`` into a ``ScrapeResponse``.
+
+    It delegates to the existing brand services and store scrapers without
+    modifying their internal logic — it only *accumulates* their calls.
+    """
+
+    def __init__(self, engine: IScraperEngine | None = None) -> None:
+        self.engine = engine or ScraplingEngine()
+
+    # ── public API ──────────────────────────────────────────────────────
+
+    def execute(self, request: ScrapeRequest) -> ScrapeResponse:
+        """Run the requested scraping operations and return an aggregate result."""
+        started_at = utcnow_str()
+        results: list[ScrapeTargetResult] = []
+
+        target_keys = self._resolve_targets(request)
+
+        for key in target_keys:
+            if request.target_type == "brand":
+                result = self._scrape_brand(key, request)
+            else:
+                result = self._scrape_store(key, request)
+            results.append(result)
+
+        total_items = sum(r.items_scraped for r in results)
+
+        return ScrapeResponse(
+            results=results,
+            total_targets=len(results),
+            total_items_scraped=total_items,
+            started_at=started_at,
+            finished_at=utcnow_str(),
+        )
+
+    # ── private helpers ─────────────────────────────────────────────────
+
+    def _resolve_targets(self, request: ScrapeRequest) -> list[str]:
+        """Expand ``"all"`` into the concrete list of registered keys."""
+        if request.targets == "all":
+            if request.target_type == "brand":
+                return list(BRAND_SERVICE_REGISTRY.keys())
+            return list(STORE_REGISTRY.keys())
+
+        return [t.strip().lower() for t in request.targets if t.strip()]
+
+    # ── brand dispatch ──────────────────────────────────────────────────
+
+    def _scrape_brand(self, key: str, req: ScrapeRequest) -> ScrapeTargetResult:
+        service_cls = BRAND_SERVICE_REGISTRY.get(key)
+        if service_cls is None:
+            return ScrapeTargetResult(
+                target_type="brand",
+                target_key=key,
+                target_name=key,
+                level=req.level,
+                items_scraped=0,
+                error=f"Unknown brand '{key}'. Available: {list(BRAND_SERVICE_REGISTRY.keys())}",
+            )
+
+        service = service_cls(engine=self.engine)
+        output_file = self._output_path(req, f"brand_{key}.json")
+
+        try:
+            catalog: BrandCatalogResult = service.scrape(
+                mode=f"level{req.level}",
+                until_model=req.until_model,
+                max_pages=req.max_pages,
+                limit=req.limit,
+                output_file=output_file,
+            )
+        except Exception as exc:
+            return ScrapeTargetResult(
+                target_type="brand",
+                target_key=key,
+                target_name=key,
+                level=req.level,
+                items_scraped=0,
+                error=str(exc),
+            )
+
+        return ScrapeTargetResult(
+            target_type="brand",
+            target_key=key,
+            target_name=catalog.brand,
+            level=req.level,
+            items_scraped=catalog.total_laptops,
+            output_file=str(output_file) if output_file else None,
+            brand_result=catalog,
+        )
+
+    # ── store dispatch ──────────────────────────────────────────────────
+
+    def _scrape_store(self, key: str, req: ScrapeRequest) -> ScrapeTargetResult:
+        try:
+            store_scraper = get_store_scraper(key, self.engine)
+        except ValueError as exc:
+            return ScrapeTargetResult(
+                target_type="store",
+                target_key=key,
+                target_name=key,
+                level=req.level,
+                items_scraped=0,
+                error=str(exc),
+            )
+
+        output_file = self._output_path(req, f"store_{key}.json")
+
+        try:
+            products = store_scraper.scrape_catalog(
+                level=req.level,
+                until_model=req.until_model,
+                max_pages=req.max_pages,
+                limit=req.limit,
+            )
+        except Exception as exc:
+            return ScrapeTargetResult(
+                target_type="store",
+                target_key=key,
+                target_name=store_scraper.store_name,
+                level=req.level,
+                items_scraped=0,
+                error=str(exc),
+            )
+
+        store_catalog = StoreCatalogResult(
+            store_name=store_scraper.store_name,
+            store_key=store_scraper.store_key,
+            store_domain=store_scraper.base_domain,
+            scrape_mode=f"level{req.level}",
+            until_model=(
+                req.until_model
+                if isinstance(req.until_model, str)
+                else (", ".join(req.until_model) if req.until_model else None)
+            ),
+            total_products=len(products),
+            products=products,
+        )
+
+        if output_file:
+            self._save_json(store_catalog, output_file)
+
+        return ScrapeTargetResult(
+            target_type="store",
+            target_key=key,
+            target_name=store_scraper.store_name,
+            level=req.level,
+            items_scraped=len(products),
+            output_file=str(output_file) if output_file else None,
+            store_result=store_catalog,
+        )
+
+    # ── I/O utilities ───────────────────────────────────────────────────
+
+    @staticmethod
+    def _output_path(req: ScrapeRequest, filename: str) -> Path | None:
+        if not req.output_dir:
+            return None
+        out_dir = Path(req.output_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        return out_dir / filename
+
+    @staticmethod
+    def _save_json(data: StoreCatalogResult, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data.model_dump(), f, indent=2, ensure_ascii=False)
+        print(f"[Orchestrator] Saved store results to {path.resolve()}")
