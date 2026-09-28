@@ -199,7 +199,7 @@ class HpBrandScraper(BaseBrandScraper):
         self,
         limit: int | None = None,
         until_model: str | list[str] | None = None,
-        max_pages: int = 5,
+        max_pages: int | None = None,
     ) -> list[LaptopSummary]:
         """Level 1: Crawl the HP Middle East catalog search endpoint and extract summaries.
 
@@ -209,9 +209,10 @@ class HpBrandScraper(BaseBrandScraper):
         page = 0
         watermark_hit = False
 
-        print(f"[HP Scraper] Starting Level 1 catalog crawl (max_pages={max_pages}, limit={limit or 'All'})")
+        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
+        print(f"[HP Scraper] Starting Level 1 catalog crawl (max_pages={max_pages_display}, limit={limit or 'All'})")
 
-        while page < max_pages and not watermark_hit:
+        while (max_pages is None or page < max_pages) and not watermark_hit:
             start = page * self.PAGE_SIZE
             end = start + self.PAGE_SIZE - 1
             url = self.SEARCH_API_TEMPLATE.format(start=start, end=end)

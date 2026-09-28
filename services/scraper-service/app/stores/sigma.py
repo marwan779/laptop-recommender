@@ -1,4 +1,5 @@
 import html
+import itertools
 import json
 import re
 from urllib.parse import quote_plus, urlencode, urljoin
@@ -153,7 +154,7 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
         self,
         level: int = 2,
         until_model: str | list[str] | None = None,
-        max_pages: int = 20,
+        max_pages: int | None = None,
         limit: int | None = None,
     ) -> list[RetailerProduct]:
         """Scrape the canonical in-stock laptops collection sorted by newest first.
@@ -173,9 +174,10 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
             else (until_model or "None (Full Catalog)")
         )
 
+        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
         print(
             f"[{self.store_name}] Starting Level {level} catalog crawl "
-            f"(newest first, in-stock only, until_model='{watermark_display}', max_pages={max_pages}, limit={limit or 'All'})"
+            f"(newest first, in-stock only, until_model='{watermark_display}', max_pages={max_pages_display}, limit={limit or 'All'})"
         )
 
         filters_dict = {
@@ -183,7 +185,9 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
             "is_stock": 1,
         }
 
-        for page in range(1, max_pages + 1):
+        for page in itertools.count(1):
+            if max_pages is not None and page > max_pages:
+                break
             if watermark_hit:
                 break
 

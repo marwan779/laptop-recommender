@@ -26,7 +26,7 @@ class BaseBrandScraper(ABC):
         self,
         limit: int | None = None,
         until_model: str | list[str] | None = None,
-        max_pages: int = 5,
+        max_pages: int | None = None,
     ) -> list[LaptopSummary]:
         pass
 

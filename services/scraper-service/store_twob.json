@@ -5,7 +5,7 @@
   "scrape_mode": "level2",
   "until_model": null,
   "total_products": 2,
-  "scraped_at": "2026-09-28T14:22:25.512447+00:00",
+  "scraped_at": "2026-09-28T14:23:21.974593+00:00",
   "products": [
     {
       "store_name": "2B",
@@ -46,7 +46,7 @@
         "Operating System": "Windows 11"
       },
       "raw_description": "HP HyperX Omen 16-ap1001ne Laptop AMD Ryzen™ 7-8745HX 16GB 512GB SSD NVIDIA® GeForce RTX™ 5060 8GB 16\" 2.5K 240Hz Win11 Shadow Black",
-      "scraped_at": "2026-09-28T14:22:22.866516+00:00"
+      "scraped_at": "2026-09-28T14:23:21.486888+00:00"
     },
     {
       "store_name": "2B",
@@ -87,7 +87,7 @@
         "Operating System": "Windows 11"
       },
       "raw_description": "HP HyperX Omen 16-ap1004ne Laptop AMD Ryzen™ 9-8945HX 16GB 1TB SSD NVIDIA® GeForce RTX™ 5060 8GB 16\" 2.5K 240Hz Win11 Shadow Black",
-      "scraped_at": "2026-09-28T14:22:25.511761+00:00"
+      "scraped_at": "2026-09-28T14:23:21.974461+00:00"
     }
   ]
 }

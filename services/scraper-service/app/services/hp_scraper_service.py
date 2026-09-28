@@ -30,7 +30,7 @@ class HpScraperService:
         self,
         mode: str = "level2",
         until_model: str | list[str] | None = None,
-        max_pages: int = 5,
+        max_pages: int | None = None,
         limit: int | None = None,
         output_file: str | Path | None = None,
     ) -> HpBrandCatalogResult:
@@ -40,7 +40,7 @@ class HpScraperService:
             mode: "level1" (fast catalog summaries) or "level2" (deep hardware specs).
             until_model: Watermark pointer: stop scraping when reaching this laptop model,
                          name, or URL slug (or list of previous pointers).
-            max_pages: Maximum catalog pages to scan as a safety ceiling (default: 5).
+            max_pages: Optional maximum catalog pages to scan as a safety ceiling (default: None - all pages).
             limit: Optional cap on laptops processed.
             output_file: Optional path to save the standalone JSON output.
 

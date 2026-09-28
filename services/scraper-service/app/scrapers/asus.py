@@ -1,3 +1,4 @@
+import itertools
 import re
 from datetime import date, datetime
 from typing import Any
@@ -300,7 +301,7 @@ class AsusBrandScraper(BaseBrandScraper):
         self,
         limit: int | None = None,
         until_model: str | list[str] | None = None,
-        max_pages: int = 5,
+        max_pages: int | None = None,
     ) -> list[LaptopSummary]:
         """Level 1: Fetch listing cards from ASUS catalog with watermark-based incremental stopping."""
         pointers: list[str] = []
@@ -342,16 +343,19 @@ class AsusBrandScraper(BaseBrandScraper):
         }
 
         watermark_msg = f" (Watermark: {', '.join(pointers)})" if pointers else " (Full catalog)"
-        print(f"[ASUS Scraper] Starting Level 1 catalog scan{watermark_msg} up to {max_pages} page(s)...")
+        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
+        print(f"[ASUS Scraper] Starting Level 1 catalog scan{watermark_msg} up to {max_pages_display} page(s)...")
 
-        for page_idx in range(1, max_pages + 1):
+        for page_idx in itertools.count(1):
+            if max_pages is not None and page_idx > max_pages:
+                break
             if reached_watermark:
                 break
             if limit and len(summaries) >= limit:
                 break
 
             target_url = self.catalog_url if page_idx == 1 else f"{self.catalog_url}?page={page_idx}"
-            print(f"[ASUS Scraper] Fetching catalog page {page_idx}/{max_pages}: {target_url}...")
+            print(f"[ASUS Scraper] Fetching catalog page {page_idx} (max: {max_pages_display}): {target_url}...")
 
             doc = self.engine.fetch(target_url, stealth=True, network_idle=True, disable_resources=True)
             raw_page = doc.raw

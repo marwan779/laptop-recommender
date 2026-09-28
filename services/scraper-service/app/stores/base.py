@@ -87,7 +87,7 @@ class BaseStoreScraper(ABC):
         self,
         level: int = 2,
         until_model: str | list[str] | None = None,
-        max_pages: int = 5,
+        max_pages: int | None = None,
         limit: int | None = None,
     ) -> list[RetailerProduct]:
         """Scrape store catalog with Level 1 (fast summaries) or Level 2 (deep specs) and watermark stopping."""

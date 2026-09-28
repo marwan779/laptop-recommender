@@ -67,3 +67,29 @@ def test_hp_watermark_matching():
     assert scraper._matches_watermark("Victus Gaming Laptop 15-fa2005ne (B85M8EA)", "15-fa2005ne") is True
     assert scraper._matches_watermark("Victus Gaming Laptop 15-fa2005ne (B85M8EA)", "B85M8EA") is True
     assert scraper._matches_watermark("OMEN MAX Gaming Laptop 16", "Victus") is False
+
+
+def test_hp_get_laptop_summaries_unlimited(monkeypatch):
+    scraper = HpBrandScraper()
+    mock_html = """
+    <html>
+      <body>
+        <api-products data-is-last="true"></api-products>
+        <script type="text/product-tile">
+          <hppc-product-tile data-product-id="hp-1" data-sku="SKU1">
+            <a href="/products/laptops/omen-16.html" data-gtm-value="HP OMEN Gaming Laptop 16"></a>
+          </hppc-product-tile>
+        </script>
+      </body>
+    </html>
+    """
+    class MockResponse:
+        status_code = 200
+        text = mock_html
+
+    monkeypatch.setattr(scraper._session, "get", lambda url, **kwargs: MockResponse())
+    # Calling with max_pages=None (unlimited) must stop naturally at is_last
+    summaries = scraper.get_laptop_summaries(max_pages=None)
+    assert len(summaries) == 1
+    assert summaries[0].name == "HP OMEN Gaming Laptop 16"
+    assert summaries[0].family == "OMEN"

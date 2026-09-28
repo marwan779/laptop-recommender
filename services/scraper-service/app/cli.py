@@ -98,13 +98,14 @@ def main():
     parser.add_argument(
         "--max-pages",
         type=int,
-        default=20,
-        help="Maximum number of catalog pages to scan as a safety limit (default: 20)",
+        default=None,
+        help="Optional maximum number of catalog pages to scan as a safety limit (default: None - all pages)",
     )
 
     args = parser.parse_args()
 
     limit_display = str(args.limit) if args.limit is not None else "Unlimited"
+    max_pages_display = str(args.max_pages) if args.max_pages is not None else "Unlimited (All Pages)"
 
     console.print(
         Panel.fit(
@@ -112,7 +113,7 @@ def main():
             f"[yellow]Target:[/yellow] {args.brand.upper() if args.mode in ('brand', 'brand-only') else args.stores.upper()} | "
             f"[yellow]Mode:[/yellow] {args.mode.upper()} | "
             f"[yellow]Until Model:[/yellow] {args.until_model or 'None (Full Catalog)'} | "
-            f"[yellow]Max Pages:[/yellow] {args.max_pages} | "
+            f"[yellow]Max Pages:[/yellow] {max_pages_display} | "
             f"[yellow]Limit:[/yellow] {limit_display}",
             border_style="cyan",
         )

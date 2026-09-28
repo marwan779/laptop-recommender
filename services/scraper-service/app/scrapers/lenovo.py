@@ -1,4 +1,5 @@
 import html
+import itertools
 import json
 import re
 import urllib.parse
@@ -184,7 +185,7 @@ class LenovoBrandScraper(BaseBrandScraper):
         self,
         limit: int | None = None,
         until_model: str | list[str] | None = None,
-        max_pages: int = 5,
+        max_pages: int | None = None,
     ) -> list[LaptopSummary]:
         """Level 1: Fetch listing cards from Lenovo Egypt catalog via OpenAPI with watermark stopping."""
         pointers: list[str] = []
@@ -218,7 +219,8 @@ class LenovoBrandScraper(BaseBrandScraper):
         reached_watermark = False
 
         watermark_msg = f" (Watermark: {', '.join(pointers)})" if pointers else " (Full catalog)"
-        print(f"[Lenovo Scraper] Starting Level 1 catalog scan{watermark_msg} up to {max_pages} page(s)...")
+        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
+        print(f"[Lenovo Scraper] Starting Level 1 catalog scan{watermark_msg} up to {max_pages_display} page(s)...")
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -226,13 +228,15 @@ class LenovoBrandScraper(BaseBrandScraper):
             "Accept": "application/json, text/javascript, */*; q=0.01",
         }
 
-        for page_idx in range(1, max_pages + 1):
+        for page_idx in itertools.count(1):
+            if max_pages is not None and page_idx > max_pages:
+                break
             if reached_watermark:
                 break
             if limit and len(summaries) >= limit:
                 break
 
-            print(f"[Lenovo Scraper] Fetching catalog page {page_idx} (sorted by newest)...")
+            print(f"[Lenovo Scraper] Fetching catalog page {page_idx} (max: {max_pages_display}, sorted by newest)...")
 
             params_dict = {
                 "pageFilterId": self.PAGE_FILTER_ID,

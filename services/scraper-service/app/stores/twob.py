@@ -1,4 +1,5 @@
 import html
+import itertools
 import re
 from urllib.parse import quote_plus, urljoin, urlparse
 
@@ -85,7 +86,7 @@ class TwoBStoreScraper(BaseStoreScraper):
         self,
         level: int = 2,
         until_model: str | list[str] | None = None,
-        max_pages: int = 20,
+        max_pages: int | None = None,
         limit: int | None = None,
     ) -> list[RetailerProduct]:
         """Scrape the canonical in-stock laptops collection sorted by newest first.
@@ -106,13 +107,16 @@ class TwoBStoreScraper(BaseStoreScraper):
             else (until_model or "None (Full Catalog)")
         )
 
+        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
         print(
             f"[{self.store_name}] Starting Level {level} catalog crawl "
-            f"(newest first by entity_id, until_model='{watermark_display}', max_pages={max_pages}, limit={limit or 'All'})"
+            f"(newest first by entity_id, until_model='{watermark_display}', max_pages={max_pages_display}, limit={limit or 'All'})"
         )
 
         # Phase 1: Ingest cards across pages
-        for page in range(1, max_pages + 1):
+        for page in itertools.count(1):
+            if max_pages is not None and page > max_pages:
+                break
             url = self.CATALOG_PAGE_TEMPLATE.format(page=page)
             print(f"[{self.store_name}] Fetching page {page}: {url}...")
             html_content = self._fetch_html(url)
