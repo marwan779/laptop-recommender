@@ -5,7 +5,10 @@
 * **Task Title**: Build Brand Scrapers for DELL, Acer, and GigaByte (Egypt Official Portals)
 * **Assigned To**: Full-Stack / Scraping Engineer
 * **Target Services**: `services/scraper-service/app/scrapers/`, `services/scraper-service/app/services/`
-* **Reference Implementation**: See [`app/scrapers/asus.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/scrapers/asus.py) and [`app/services/asus_scraper_service.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/services/asus_scraper_service.py)
+* **Reference Implementations**:
+  * [`app/scrapers/asus.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/scrapers/asus.py)
+  * [`app/services/asus_scraper_service.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/services/asus_scraper_service.py)
+  * [`app/services/orchestrator.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/services/orchestrator.py)
 
 ---
 
@@ -16,10 +19,10 @@ You must implement official brand catalog scrapers and services for **DELL**, **
 You **MUST follow the exact same architectural pattern, data structures, and lifecycle** established in the ASUS reference implementation:
 1. **Inherit from `BaseBrandScraper`** ([`app/scrapers/base.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/scrapers/base.py)).
 2. Support **Level 1** (listing card summaries sorted by Newest) and **Level 2** (deep hardware specs crawled from official spec sheets).
-3. Support the **Watermark Cursor (`until_model`)** and **Pagination Cap (`max_pages`)** pattern for fast incremental cron runs.
+3. Support the **Watermark Cursor (`until_model`)** and **Pagination Cap (`max_pages: int | None = None`)** pattern for fast incremental cron runs or unconstrained initial population.
 4. Convert HTML spec sheets to Markdown via `doc.markdown()` for robust section and table parsing.
-5. Create a dedicated standalone service orchestrator (`<Brand>ScraperService`) that saves independent JSON files and records the `latest_pointers` (top 3 newest laptops).
-6. Register the brands in the CLI (`app/cli.py`) under `--brand {asus,dell,acer,gigabyte}`.
+5. Create a dedicated standalone service orchestrator (`<Brand>ScraperService`) that outputs the unified `BrandCatalogResult` and records `latest_pointers` (top 3 newest laptops) for subsequent watermark runs.
+6. Register the new brand services in `BRAND_SERVICE_REGISTRY` in [`app/services/orchestrator.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/services/orchestrator.py).
 
 ---
 
@@ -36,9 +39,10 @@ You **MUST follow the exact same architectural pattern, data structures, and lif
 * `services/scraper-service/app/services/gigabyte_scraper_service.py`
 
 ### 3. Existing Files to Update:
-* `services/scraper-service/app/schemas/laptop.py`: Add `DellBrandCatalogResult`, `AcerBrandCatalogResult`, and `GigabyteBrandCatalogResult`.
+* `services/scraper-service/app/schemas/laptop.py`: Alias `DellBrandCatalogResult`, `AcerBrandCatalogResult`, and `GigabyteBrandCatalogResult` to the unified `BrandCatalogResult`.
 * `services/scraper-service/app/core/constants.py`: Verify and adjust `BRAND_CATALOGS` URLs.
-* `services/scraper-service/app/cli.py`: Wire up the new services under `--brand dell`, `--brand acer`, and `--brand gigabyte`.
+* `services/scraper-service/app/services/orchestrator.py`: Register in `BRAND_SERVICE_REGISTRY`.
+* `services/scraper-service/app/services/__init__.py`: Export the new brand services.
 
 ---
 
@@ -59,8 +63,10 @@ You **MUST follow the exact same architectural pattern, data structures, and lif
 Create `app/scrapers/<brand>.py` inheriting from `BaseBrandScraper`:
 
 ```python
-from urllib.parse import urljoin, urlparse
+import itertools
+import json
 import re
+from urllib.parse import urljoin, urlparse
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary
 from app.scrapers.base import BaseBrandScraper
@@ -97,9 +103,22 @@ class DellBrandScraper(BaseBrandScraper):
 ```
 
 #### Level 1: `get_laptop_summaries()` Requirements
-1. **Watermark Pointer Matching (`matches_pointer`)**:
+1. **Unconstrained & Safe Pagination (`max_pages: int | None = None`)**:
+   * Loop through pages using `itertools.count(1)`:
+     ```python
+     for page_idx in itertools.count(1):
+         if max_pages is not None and page_idx > max_pages:
+             break
+         if reached_watermark:
+             break
+         if limit and len(summaries) >= limit:
+             break
+     ```
+   * *Critical note for Single-Page Applications (SPAs)*: If the site renders client-side via JavaScript (like ASUS Vue.js) and ignores `?page={N}` query strings, discover and call the backend catalog API directly (e.g., ASUS Odin API, Lenovo DLP API).
+   * Terminate naturally when a page returns 0 new products.
+
+2. **Watermark Pointer Matching (`matches_pointer`)**:
    * Accepts `until_model: str | list[str] | None = None`.
-   * Normalizes pointers to lowercase strings.
    * Matches against:
      * Model Code (e.g. `9340` or `PH16-72`)
      * Full Name (e.g. `Dell XPS 13 (9340)`)
@@ -111,10 +130,6 @@ class DellBrandScraper(BaseBrandScraper):
          reached_watermark = True
          break
      ```
-2. **Pagination Safety Ceiling (`max_pages`)**:
-   * Loop through pages: `for page_idx in range(1, max_pages + 1):`
-   * Construct pagination URL (e.g. `f"{self.catalog_url}?page={page_idx}"`).
-   * If `cards_added_this_page == 0` or `reached_watermark`, stop paginating.
 
 #### Level 2: `get_laptop_detail()` Requirements
 1. **Crawl Tech Specs Page**:
@@ -134,7 +149,7 @@ class DellBrandScraper(BaseBrandScraper):
 
 ### Step 2: Implement the Brand Service Orchestrator
 
-Create `app/services/<brand>_scraper_service.py`:
+Create `app/services/<brand>_scraper_service.py` returning the unified `BrandCatalogResult`:
 
 ```python
 import json
@@ -142,7 +157,7 @@ from pathlib import Path
 from typing import Any
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
-from app.schemas.laptop import DellBrandCatalogResult, LaptopDetail, LaptopSummary
+from app.schemas.laptop import BrandCatalogResult, LaptopDetail, LaptopSummary
 from app.scrapers.dell import DellBrandScraper
 
 class DellScraperService:
@@ -154,10 +169,10 @@ class DellScraperService:
         self,
         mode: str = "level2",
         until_model: str | list[str] | None = None,
-        max_pages: int = 5,
+        max_pages: int | None = None,
         limit: int | None = None,
         output_file: str | Path | None = None,
-    ) -> DellBrandCatalogResult:
+    ) -> BrandCatalogResult:
         # 1. Level 1: Fetch listing cards with watermark stopping
         summaries = self.scraper.get_laptop_summaries(
             limit=None if mode == "level2" else limit,
@@ -167,7 +182,7 @@ class DellScraperService:
         latest_pointers = [s.name for s in summaries[:3]]
 
         if mode == "level1":
-            catalog_result = DellBrandCatalogResult(
+            catalog_result = BrandCatalogResult(
                 brand=self.scraper.brand_name,
                 official_catalog_url=self.scraper.catalog_url,
                 scrape_mode="level1",
@@ -193,7 +208,7 @@ class DellScraperService:
             latest_pointers = [d.name for d in detailed_laptops[:3]]
 
         total_configs = sum(len(d.configurations) for d in detailed_laptops)
-        catalog_result = DellBrandCatalogResult(
+        catalog_result = BrandCatalogResult(
             brand=self.scraper.brand_name,
             official_catalog_url=self.scraper.catalog_url,
             scrape_mode="level2",
@@ -205,40 +220,47 @@ class DellScraperService:
         )
         self._save_if_requested(catalog_result, output_file)
         return catalog_result
+
+    def _save_if_requested(self, catalog: BrandCatalogResult, output_file: str | Path | None) -> None:
+        if not output_file:
+            return
+        path = Path(output_file)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
 ```
 
 ---
 
-### Step 3: Add Schema & Update CLI
+### Step 3: Register in Centralized Registry
 
 1. In [`app/schemas/laptop.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/schemas/laptop.py):
+   Alias the brand results to `BrandCatalogResult`:
    ```python
-   class DellBrandCatalogResult(BaseModel):
-       brand: str = "Dell"
-       official_catalog_url: str = "https://www.dell.com/en-eg/shop/dell-laptops/sc/laptops"
-       scrape_mode: str = "level2"
-       until_model: str | None = None
-       latest_pointers: list[str] = Field(default_factory=list)
-       total_laptops: int = 0
-       total_configurations: int = 0
-       scraped_at: str = Field(default_factory=utcnow_str)
-       laptops: list[LaptopDetail | LaptopSummary] = Field(default_factory=list)
+   DellBrandCatalogResult = BrandCatalogResult
+   AcerBrandCatalogResult = BrandCatalogResult
+   GigabyteBrandCatalogResult = BrandCatalogResult
    ```
-   *(Repeat for `AcerBrandCatalogResult` and `GigabyteBrandCatalogResult`)*.
 
-2. In [`app/cli.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/cli.py):
-   * Add the brand dispatching logic in `Mode 2: brand-only`:
-     ```python
-     if args.brand == "dell":
-         from app.services.dell_scraper_service import DellScraperService
-         service = DellScraperService(engine=engine)
-     elif args.brand == "acer":
-         from app.services.acer_scraper_service import AcerScraperService
-         service = AcerScraperService(engine=engine)
-     elif args.brand == "gigabyte":
-         from app.services.gigabyte_scraper_service import GigabyteScraperService
-         service = GigabyteScraperService(engine=engine)
-     ```
+2. In [`app/services/orchestrator.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/services/orchestrator.py):
+   Register the new services in `BRAND_SERVICE_REGISTRY`:
+   ```python
+   from app.services.dell_scraper_service import DellScraperService
+   from app.services.acer_scraper_service import AcerScraperService
+   from app.services.gigabyte_scraper_service import GigabyteScraperService
+
+   BRAND_SERVICE_REGISTRY: dict[str, Type] = {
+       "asus": AsusScraperService,
+       "hp": HpScraperService,
+       "lenovo": LenovoScraperService,
+       "dell": DellScraperService,
+       "acer": AcerScraperService,
+       "gigabyte": GigabyteScraperService,
+   }
+   ```
+
+3. In [`app/services/__init__.py`](file:///d:/Development/Side%20Projects/laptop-recommender/services/scraper-service/app/services/__init__.py):
+   Export `DellScraperService`, `AcerScraperService`, and `GigabyteScraperService`.
 
 ---
 
@@ -258,7 +280,7 @@ Your implementation will be accepted when all of the following commands execute 
    ```powershell
    python -m app.cli --brand dell --mode brand-only --level 2 --limit 2 --save-json dell_test.json
    ```
-   * Must produce a valid JSON file containing structured hardware specs (processor, RAM, storage, display, ports).
+   * Must produce a valid JSON file containing structured hardware specs (processor, RAM, storage, display, ports) and populated `latest_pointers`.
 
 3. **Incremental Watermark Test**:
    ```powershell
@@ -268,8 +290,12 @@ Your implementation will be accepted when all of the following commands execute 
    ```
    * Must halt immediately upon encountering the watermark model without downloading older laptops.
 
-4. **Code Quality**:
-   * Windows cp1252-safe: Use ASCII console indicators (`[+]`, `[-]`, `[!]`).
-   * No hardcoded credentials or unhandled HTTP exceptions.
-   * Clean imports and valid CLI execution (`python -m app.cli --help`).
+4. **Unconstrained Full Catalog Crawl**:
+   ```powershell
+   python -m app.cli --brand dell --mode brand-only --level 1
+   ```
+   * Must scan across all pages until completion when `--limit` and `--max-pages` are omitted.
 
+5. **Code Quality**:
+   * Windows cp1252-safe: Use ASCII console indicators (`[+]`, `[-]`, `[!]`).
+   * Clean imports and valid CLI execution (`python -m app.cli --help`).
