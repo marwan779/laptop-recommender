@@ -98,8 +98,8 @@ def main():
     parser.add_argument(
         "--max-pages",
         type=int,
-        default=5,
-        help="Maximum number of catalog pages to scan as a safety limit (default: 5)",
+        default=20,
+        help="Maximum number of catalog pages to scan as a safety limit (default: 20)",
     )
 
     args = parser.parse_args()

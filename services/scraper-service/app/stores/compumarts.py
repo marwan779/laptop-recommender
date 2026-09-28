@@ -96,7 +96,7 @@ class CompumartsStoreScraper(BaseStoreScraper):
         self,
         level: int = 2,
         until_model: str | list[str] | None = None,
-        max_pages: int = 5,
+        max_pages: int = 20,
         limit: int | None = None,
     ) -> list[RetailerProduct]:
         """Scrape the canonical in-stock laptops collection sorted by newest first.
