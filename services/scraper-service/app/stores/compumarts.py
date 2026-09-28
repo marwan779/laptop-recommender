@@ -243,8 +243,7 @@ class CompumartsStoreScraper(BaseStoreScraper):
             return None
 
         # Filter out non-laptop accessories
-        title_lower = title.lower()
-        if any(acc in title_lower for acc in self.NON_LAPTOP_KEYWORDS):
+        if self._is_standalone_accessory(title):
             return None
 
         # Extract price

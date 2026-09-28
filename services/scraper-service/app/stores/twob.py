@@ -67,7 +67,7 @@ class TwoBStoreScraper(BaseStoreScraper):
                 continue
 
             # Avoid accessories
-            if any(acc in title.lower() for acc in ["backpack", "sleeve", "bag", "adapter", "charger", "cable", "mouse", "cover"]):
+            if self._is_standalone_accessory(title):
                 continue
 
             # Price

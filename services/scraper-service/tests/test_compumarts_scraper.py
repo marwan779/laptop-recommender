@@ -26,7 +26,11 @@ def test_compumarts_parse_price():
 def test_compumarts_non_laptop_filtering():
     scraper = CompumartsStoreScraper()
     for kw in ["Lenovo Legion Backpack 16", "HP 65W AC Adapter Charger", "Redragon Gaming Mouse"]:
-        assert any(acc in kw.lower() for acc in scraper.NON_LAPTOP_KEYWORDS)
+        assert scraper._is_standalone_accessory(kw) is True
+
+    # A laptop with keyboard details or bundle keywords must NOT be filtered
+    laptop_title = "Lenovo Legion Pro 5 - Intel Core i7-14700HX - 16GB DDR5 - RTX 4060 - Keyboard English"
+    assert scraper._is_standalone_accessory(laptop_title) is False
 
 
 def test_compumarts_mock_pdp_specs(monkeypatch):
