@@ -143,7 +143,7 @@ class HpScraperService:
             until_model=watermark_display if watermark_display != "None (Full Catalog)" else None,
             latest_pointers=latest_pointers,
             start_date=start_date_str,
-            end_date=end_date_str,
+            # end_date=end_date_str,
             total_laptops=len(detailed_laptops),
             total_configurations=total_configs,
             laptops=detailed_laptops,
