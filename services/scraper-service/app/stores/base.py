@@ -40,6 +40,21 @@ class BaseStoreScraper(ABC):
                 return True
         return False
 
+    @staticmethod
+    def _matches_watermark(identifier: str | None, until_model: str | list[str] | None) -> bool:
+        """Check if any target watermark matches the product identifier."""
+        if not until_model or not identifier:
+            return False
+        targets = [until_model] if isinstance(until_model, str) else list(until_model)
+        ident_clean = re.sub(r"[^a-zA-Z0-9]", "", identifier).lower()
+        for target in targets:
+            if not target:
+                continue
+            t_clean = re.sub(r"[^a-zA-Z0-9]", "", str(target)).lower()
+            if t_clean and (t_clean in ident_clean or ident_clean in t_clean):
+                return True
+        return False
+
     @property
     @abstractmethod
     def store_name(self) -> str:

@@ -17,7 +17,7 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-SUPPORTED_STORES = ["compumarts", "sigma", "twob"]
+SUPPORTED_STORES = ["compumarts", "elbadr", "sigma", "twob"]
 
 console = Console(highlight=False)
 

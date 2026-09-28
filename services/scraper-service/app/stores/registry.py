@@ -3,12 +3,14 @@ from typing import Type
 from app.engine.base import IScraperEngine
 from app.stores.base import BaseStoreScraper
 from app.stores.compumarts import CompumartsStoreScraper
+from app.stores.elbadr import ElBadrStoreScraper
 from app.stores.sigma import SigmaComputerStoreScraper
 from app.stores.twob import TwoBStoreScraper
 
 # Extensible registry of Egyptian retail stores
 STORE_REGISTRY: dict[str, Type[BaseStoreScraper]] = {
     "compumarts": CompumartsStoreScraper,
+    "elbadr": ElBadrStoreScraper,
     "sigma": SigmaComputerStoreScraper,
     "twob": TwoBStoreScraper,
 }
