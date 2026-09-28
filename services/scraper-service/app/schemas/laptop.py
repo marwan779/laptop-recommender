@@ -93,6 +93,21 @@ class LenovoBrandCatalogResult(BaseModel):
     laptops: list[LaptopDetail | LaptopSummary] = Field(default_factory=list)
 
 
+class HpBrandCatalogResult(BaseModel):
+    """Top-level output schema for HP brand scraping, stored as a standalone JSON."""
+    brand: str = "HP"
+    official_catalog_url: str = "https://www.hp.com/emea_middle_east-en/products/laptops/view-all-laptops-and-2-in-1s.html?is_channeladvisor=yes"
+    scrape_mode: str = "level2"  # "level1" or "level2"
+    until_model: str | None = None
+    latest_pointers: list[str] = Field(default_factory=list)
+    start_date: str | None = None
+    end_date: str | None = None
+    total_laptops: int = 0
+    total_configurations: int = 0
+    scraped_at: str = Field(default_factory=utcnow_str)
+    laptops: list[LaptopDetail | LaptopSummary] = Field(default_factory=list)
+
+
 
 # =============================================================================
 # Retailer Normalized Products & Matches (Multi-Store Layer)

@@ -24,8 +24,8 @@ BRAND_CATALOGS: dict[str, BrandConfig] = {
     "hp": {
         "name": "HP",
         "slug": "hp",
-        "catalog_url": "https://www.hp.com/eg-en/shop/laptops.html",
-        "region": "eg-en",
+        "catalog_url": "https://www.hp.com/emea_middle_east-en/products/laptops/view-all-laptops-and-2-in-1s.html?is_channeladvisor=yes",
+        "region": "emea_middle_east-en",
     },
     "dell": {
         "name": "Dell",

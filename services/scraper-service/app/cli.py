@@ -193,8 +193,11 @@ def main():
         elif args.brand == "lenovo":
             from app.services.lenovo_scraper_service import LenovoScraperService
             brand_service = LenovoScraperService(engine=engine)
+        elif args.brand == "hp":
+            from app.services.hp_scraper_service import HpScraperService
+            brand_service = HpScraperService(engine=engine)
         else:
-            console.print(f"[red]Brand service for '{args.brand}' is in progress. Supported brands: asus, lenovo.[/red]")
+            console.print(f"[red]Brand service for '{args.brand}' is in progress. Supported brands: asus, lenovo, hp.[/red]")
             sys.exit(1)
 
 
@@ -220,9 +223,9 @@ def main():
             for idx, s in enumerate(catalog_result.laptops, 1):
                 table.add_row(
                     str(idx),
-                    s.name,
-                    s.family or "N/A",
-                    s.model or "N/A",
+                    safe_terminal_text(s.name),
+                    safe_terminal_text(s.family or "N/A"),
+                    safe_terminal_text(s.model or "N/A"),
                     str(s.release_year or "N/A"),
                     s.price or "N/A",
                     s.product_url,

@@ -1,0 +1,354 @@
+{
+  "brand": "HP",
+  "official_catalog_url": "https://www.hp.com/emea_middle_east-en/products/laptops/view-all-laptops-and-2-in-1s.html?is_channeladvisor=yes",
+  "scrape_mode": "level2",
+  "until_model": "A37K2ET",
+  "latest_pointers": [
+    "HP EliteBook X Flip G1i 14 inch Notebook Next Gen AI PC (BA0C9ET)",
+    "HP EliteBook 8 G1i 14 inch Notebook AI PC (C15A6ET)"
+  ],
+  "start_date": "2025-06-01",
+  "end_date": "2025-06-01",
+  "total_laptops": 2,
+  "total_configurations": 2,
+  "scraped_at": "2026-09-28T09:23:07.195005+00:00",
+  "laptops": [
+    {
+      "brand": "HP",
+      "name": "HP EliteBook X Flip G1i 14 inch Notebook Next Gen AI PC (BA0C9ET)",
+      "price": null,
+      "price_egp": null,
+      "currency": "USD",
+      "family": "EliteBook",
+      "model": "HP EliteBook X Flip G1i 14 inch Notebook Next Gen AI PC (BA0C9ET)",
+      "product_url": "https://www.hp.com/emea_middle_east-en/products/laptops/product-details/2103222760",
+      "specs_url": "https://www.hp.com/emea_middle_east-en/products/laptops/product-details/product-specifications/2103222760",
+      "store_url": "https://www.hp.com/emea_middle_east-en/products/laptops/product-details/2103222760",
+      "thumbnail_url": "https://hp.widen.net/content/penh2a7xjp/png/penh2a7xjp.png?w=320&h=240&dpi=72&color=ffffff00",
+      "release_date": "2025-06-01T00:00:00",
+      "release_year": 2025,
+      "scraped_at": "2026-09-28T09:23:06.531485+00:00",
+      "base_model": "HP EliteBook X Flip G1i 14 inch Notebook Next Gen AI PC (BA0C9ET)",
+      "model_variants": [],
+      "sku_part_number": "BA0C9ET",
+      "copyright_year": 2025,
+      "gallery_images": [
+        "https://hp.widen.net/content/penh2a7xjp/png/penh2a7xjp.png?w=800&h=600&dpi=72&color=ffffff00",
+        "https://hp.widen.net/content/qplkolvfbp/png/qplkolvfbp.png?w=800&h=600&dpi=72&color=ffffff00",
+        "https://hp.widen.net/content/y86tinfztl/png/y86tinfztl.png?w=800&h=600&dpi=72&color=ffffff00",
+        "https://hp.widen.net/content/rabbga7tzi/png/rabbga7tzi.png?w=800&h=600&dpi=72&color=ffffff00",
+        "https://hp.widen.net/content/gep4vsoszu/png/gep4vsoszu.png?w=800&h=600&dpi=72&color=ffffff00"
+      ],
+      "colors": [],
+      "structured_specs": {
+        "processor": "Intel® Core™ Ultra 7 258V (up to 4.8 GHz with Intel® Turbo Boost Technology, 12 MB L3 cache, 8 cores, 8 threads)",
+        "gpu": "Integrated, Intel® Arc™ Graphics",
+        "ram": "32 GB LPDDR5x 8533",
+        "storage": "1 TB SSD",
+        "display_size": "14\"",
+        "resolution": "WUXGA (1920x1200)",
+        "refresh_rate": null,
+        "panel_type": "IPS",
+        "brightness": "400 nits",
+        "weight": "Starting at 1.4 kg (Weight will vary by configuration. Does not include power adapter.)",
+        "dimensions": "31.39 x 21.99 x 1.05 cm (front); 31.39 x 21.99 x 1.47 cm (rear) (Front height measurement is near the front edge where the chassis bottom cover taper begins. Back height measurement is near the back edge where the chassis bottom cover taper ends.)",
+        "battery": "HP Long Life 3-cell, 56 Wh Li-ion polymer",
+        "ports": "2 Thunderbolt™ 4 with USB Type-C® 40Gbps signaling rate (USB Power Delivery, DisplayPort™ 2.1, HP Sleep and Charge); 1 USB Type-C® 10Gbps signaling rate (USB Power Delivery, DisplayPort™ 1.4); 1 HDMI 2.1; 1 stereo headphone/microphone combo jack; 1 USB Type-A 5Gbps signaling rate (powered)",
+        "os": "Windows 11 Pro",
+        "wireless": "Intel® Wi-Fi 7 BE201 (2x2) and Bluetooth® 5.4 wireless card",
+        "camera": "5 MP IR AI camera",
+        "audio": "Audio by Poly Studio, quad stereo speakers with discrete amplifiers, integrated dual array microphones",
+        "colors": null
+      },
+      "all_specs": {
+        "Overview Specs": "HP EliteBook X Flip G1i 14 inch Notebook Next Gen AI PC, 14\", Touch screen, Windows 11 Pro, Intel® Core™ Ultra 7, 32GB RAM, 1TB SSD, WUXGA, Atmospheric blue, Copilot+ PC",
+        "Operating system": "Windows 11 Pro",
+        "Processor": "Intel® Core™ Ultra 7 258V (up to 4.8 GHz with Intel® Turbo Boost Technology, 12 MB L3 cache, 8 cores, 8 threads)",
+        "Memory size": "32 GB LPDDR5x 8533",
+        "Storage capacity": "1 TB SSD",
+        "Processor family": "Intel® Core™ Ultra 7 processor",
+        "Graphics": "Integrated, Intel® Arc™ Graphics",
+        "Memory": "32 GB LPDDR5x-8533 MT/s (onboard)",
+        "Internal Storage": "1 TB PCIe® NVMe™ SSD",
+        "Display": "35.6 cm (14\") diagonal, WUXGA (1920 x 1200), touch, IPS, anti-glare, 400 nits, low power, 100% sRGB",
+        "Touchscreen": "Yes",
+        "Color gamut": "100% sRGB",
+        "Brightness": "400 nits",
+        "Dimensions (W x D x H)": "31.39 x 21.99 x 1.05 cm (front); 31.39 x 21.99 x 1.47 cm (rear) (Front height measurement is near the front edge where the chassis bottom cover taper begins. Back height measurement is near the back edge where the chassis bottom cover taper ends.)",
+        "Weight": "Starting at 1.4 kg (Weight will vary by configuration. Does not include power adapter.)",
+        "Battery type": "HP Long Life 3-cell, 56 Wh Li-ion polymer",
+        "Battery life": "(Battery is internal and not replaceable by customer. Serviceable by warranty. Fast charging 50% in 30 minutes.)",
+        "Wireless": "Intel® Wi-Fi 7 BE201 (2x2) and Bluetooth® 5.4 wireless card",
+        "Keyboard": "HP Premium Keyboard – spill-resistant, atmospheric blue, backlit keyboard",
+        "Camera": "5 MP IR AI camera",
+        "Audio": "Audio by Poly Studio, quad stereo speakers with discrete amplifiers, integrated dual array microphones",
+        "Pointing device": "Clickpad with multi-touch gesture support",
+        "Ports": "2 Thunderbolt™ 4 with USB Type-C® 40Gbps signaling rate (USB Power Delivery, DisplayPort™ 2.1, HP Sleep and Charge); 1 USB Type-C® 10Gbps signaling rate (USB Power Delivery, DisplayPort™ 1.4); 1 HDMI 2.1; 1 stereo headphone/microphone combo jack; 1 USB Type-A 5Gbps signaling rate (powered)",
+        "Power": "65 W USB Type-C® adapter",
+        "Input devices": "Gyroscope; Thermal sensor; Hall effect sensor; Color sensor with Ambient light sensing; Inertial Measurement Unit sensor",
+        "Ecolabels": "TCO Certified",
+        "Sustainability specifications": "At least 65% recycled metal; HP paper-based packaging is from recycled or certified sources; At least 40% post-consumer recycled plastic; At least 30% ocean-bound plastic; At least 50% ocean-bound plastic in fan enclosure; Low halogen; Bulk packaging available",
+        "Manufacturer Warranty": "1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply."
+      },
+      "spec_sections": {
+        "Processor & Chipset": {
+          "Processor": "Intel® Core™ Ultra 7 258V (up to 4.8 GHz with Intel® Turbo Boost Technology, 12 MB L3 cache, 8 cores, 8 threads)",
+          "Processor family": "Intel® Core™ Ultra 7 processor"
+        },
+        "Graphics & Display": {
+          "Graphics": "Integrated, Intel® Arc™ Graphics",
+          "Display": "35.6 cm (14\") diagonal, WUXGA (1920 x 1200), touch, IPS, anti-glare, 400 nits, low power, 100% sRGB",
+          "Touchscreen": "Yes",
+          "Color gamut": "100% sRGB",
+          "Brightness": "400 nits"
+        },
+        "Memory & Storage": {
+          "Memory size": "32 GB LPDDR5x 8533",
+          "Storage capacity": "1 TB SSD",
+          "Memory": "32 GB LPDDR5x-8533 MT/s (onboard)",
+          "Internal Storage": "1 TB PCIe® NVMe™ SSD"
+        },
+        "Design & Dimensions": {
+          "Dimensions (W x D x H)": "31.39 x 21.99 x 1.05 cm (front); 31.39 x 21.99 x 1.47 cm (rear) (Front height measurement is near the front edge where the chassis bottom cover taper begins. Back height measurement is near the back edge where the chassis bottom cover taper ends.)",
+          "Weight": "Starting at 1.4 kg (Weight will vary by configuration. Does not include power adapter.)",
+          "Sustainability specifications": "At least 65% recycled metal; HP paper-based packaging is from recycled or certified sources; At least 40% post-consumer recycled plastic; At least 30% ocean-bound plastic; At least 50% ocean-bound plastic in fan enclosure; Low halogen; Bulk packaging available"
+        },
+        "Battery & Power": {
+          "Battery type": "HP Long Life 3-cell, 56 Wh Li-ion polymer"
+        },
+        "Connectivity & Ports": {
+          "Wireless": "Intel® Wi-Fi 7 BE201 (2x2) and Bluetooth® 5.4 wireless card",
+          "Ports": "2 Thunderbolt™ 4 with USB Type-C® 40Gbps signaling rate (USB Power Delivery, DisplayPort™ 2.1, HP Sleep and Charge); 1 USB Type-C® 10Gbps signaling rate (USB Power Delivery, DisplayPort™ 1.4); 1 HDMI 2.1; 1 stereo headphone/microphone combo jack; 1 USB Type-A 5Gbps signaling rate (powered)"
+        },
+        "Peripherals & Media": {
+          "Keyboard": "HP Premium Keyboard – spill-resistant, atmospheric blue, backlit keyboard",
+          "Camera": "5 MP IR AI camera",
+          "Audio": "Audio by Poly Studio, quad stereo speakers with discrete amplifiers, integrated dual array microphones",
+          "Pointing device": "Clickpad with multi-touch gesture support",
+          "Input devices": "Gyroscope; Thermal sensor; Hall effect sensor; Color sensor with Ambient light sensing; Inertial Measurement Unit sensor"
+        },
+        "Security & Software": {
+          "Manufacturer Warranty": "1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply."
+        }
+      },
+      "configurations": [
+        {
+          "model": "HP EliteBook X Flip G1i 14 inch Notebook Next Gen AI PC (BA0C9ET)",
+          "model_series": "EliteBook",
+          "base_model": "HP EliteBook X Flip G1i 14 inch Notebook Next Gen AI PC (BA0C9ET)",
+          "mpn": "BA0C9ET",
+          "official_specs": {
+            "Overview Specs": "HP EliteBook X Flip G1i 14 inch Notebook Next Gen AI PC, 14\", Touch screen, Windows 11 Pro, Intel® Core™ Ultra 7, 32GB RAM, 1TB SSD, WUXGA, Atmospheric blue, Copilot+ PC",
+            "Operating system": "Windows 11 Pro",
+            "Processor": "Intel® Core™ Ultra 7 258V (up to 4.8 GHz with Intel® Turbo Boost Technology, 12 MB L3 cache, 8 cores, 8 threads)",
+            "Memory size": "32 GB LPDDR5x 8533",
+            "Storage capacity": "1 TB SSD",
+            "Processor family": "Intel® Core™ Ultra 7 processor",
+            "Graphics": "Integrated, Intel® Arc™ Graphics",
+            "Memory": "32 GB LPDDR5x-8533 MT/s (onboard)",
+            "Internal Storage": "1 TB PCIe® NVMe™ SSD",
+            "Display": "35.6 cm (14\") diagonal, WUXGA (1920 x 1200), touch, IPS, anti-glare, 400 nits, low power, 100% sRGB",
+            "Touchscreen": "Yes",
+            "Color gamut": "100% sRGB",
+            "Brightness": "400 nits",
+            "Dimensions (W x D x H)": "31.39 x 21.99 x 1.05 cm (front); 31.39 x 21.99 x 1.47 cm (rear) (Front height measurement is near the front edge where the chassis bottom cover taper begins. Back height measurement is near the back edge where the chassis bottom cover taper ends.)",
+            "Weight": "Starting at 1.4 kg (Weight will vary by configuration. Does not include power adapter.)",
+            "Battery type": "HP Long Life 3-cell, 56 Wh Li-ion polymer",
+            "Battery life": "(Battery is internal and not replaceable by customer. Serviceable by warranty. Fast charging 50% in 30 minutes.)",
+            "Wireless": "Intel® Wi-Fi 7 BE201 (2x2) and Bluetooth® 5.4 wireless card",
+            "Keyboard": "HP Premium Keyboard – spill-resistant, atmospheric blue, backlit keyboard",
+            "Camera": "5 MP IR AI camera",
+            "Audio": "Audio by Poly Studio, quad stereo speakers with discrete amplifiers, integrated dual array microphones",
+            "Pointing device": "Clickpad with multi-touch gesture support",
+            "Ports": "2 Thunderbolt™ 4 with USB Type-C® 40Gbps signaling rate (USB Power Delivery, DisplayPort™ 2.1, HP Sleep and Charge); 1 USB Type-C® 10Gbps signaling rate (USB Power Delivery, DisplayPort™ 1.4); 1 HDMI 2.1; 1 stereo headphone/microphone combo jack; 1 USB Type-A 5Gbps signaling rate (powered)",
+            "Power": "65 W USB Type-C® adapter",
+            "Input devices": "Gyroscope; Thermal sensor; Hall effect sensor; Color sensor with Ambient light sensing; Inertial Measurement Unit sensor",
+            "Ecolabels": "TCO Certified",
+            "Sustainability specifications": "At least 65% recycled metal; HP paper-based packaging is from recycled or certified sources; At least 40% post-consumer recycled plastic; At least 30% ocean-bound plastic; At least 50% ocean-bound plastic in fan enclosure; Low halogen; Bulk packaging available",
+            "Manufacturer Warranty": "1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply."
+          },
+          "stores": []
+        }
+      ],
+      "raw_markdown": "Discover what you can do with AI applications <span class=\"c-footnote-container\"> <hppc-footnote class=\"footnote sup\" data-title=\"Intel® Turbo Boost performance varies depending on hardware, software and overall system configuration. See www.intel.com/technology/turboboost for more information.\"> <sup><span class=\"footnote__number\">*</span></sup> </hppc-footnote></span>, advanced collaboration features, four versatile use modes, and optimized battery life on the HP EliteBook X Flip G1i Next Gen AI PC.",
+      "extra_metadata": {
+        "tagline": "Discover what you can do with AI applications <span class=\"c-footnote-container\"> <hppc-footnote class=\"footnote sup\" data-title=\"Intel® Turbo Boost performance varies depending on hardware, software and overall system configuration. See www.intel.com/technology/turboboost for more information.\"> <sup><span class=\"footnote__number\">*</span></sup> </hppc-footnote></span>, advanced collaboration features, four versatile use modes, and optimized battery life on the HP EliteBook X Flip G1i Next Gen AI PC.",
+        "specs_table_rows_count": 28
+      }
+    },
+    {
+      "brand": "HP",
+      "name": "HP EliteBook 8 G1i 14 inch Notebook AI PC (C15A6ET)",
+      "price": null,
+      "price_egp": null,
+      "currency": "USD",
+      "family": "EliteBook",
+      "model": "HP EliteBook 8 G1i 14 inch Notebook AI PC (C15A6ET)",
+      "product_url": "https://www.hp.com/emea_middle_east-en/products/laptops/product-details/2103222746",
+      "specs_url": "https://www.hp.com/emea_middle_east-en/products/laptops/product-details/product-specifications/2103222746",
+      "store_url": "https://www.hp.com/emea_middle_east-en/products/laptops/product-details/2103222746",
+      "thumbnail_url": "https://hp.widen.net/content/hi0d3wztw4/png/hi0d3wztw4.png?w=320&h=240&dpi=72&color=ffffff00",
+      "release_date": "2025-06-01T00:00:00",
+      "release_year": 2025,
+      "scraped_at": "2026-09-28T09:23:07.194780+00:00",
+      "base_model": "HP EliteBook 8 G1i 14 inch Notebook AI PC (C15A6ET)",
+      "model_variants": [],
+      "sku_part_number": "C15A6ET",
+      "copyright_year": 2025,
+      "gallery_images": [
+        "https://hp.widen.net/content/hi0d3wztw4/png/hi0d3wztw4.png?w=800&h=600&dpi=72&color=ffffff00",
+        "https://hp.widen.net/content/uspplwmod7/png/uspplwmod7.png?w=800&h=600&dpi=72&color=ffffff00",
+        "https://hp.widen.net/content/1rsrljs0re/png/1rsrljs0re.png?w=800&h=600&dpi=72&color=ffffff00",
+        "https://hp.widen.net/content/ictwo1pr4n/png/ictwo1pr4n.png?w=800&h=600&dpi=72&color=ffffff00",
+        "https://hp.widen.net/content/9erscgiyz8/png/9erscgiyz8.png?w=800&h=600&dpi=72&color=ffffff00"
+      ],
+      "colors": [
+        "Glacier silver aluminium"
+      ],
+      "structured_specs": {
+        "processor": "Intel® Core™ Ultra 7 255U (up to 5.2 GHz with Intel® Turbo Boost Technology, 12 MB L3 cache, 12 cores, 14 threads)",
+        "gpu": "Integrated, Intel® Graphics",
+        "ram": "16 GB DDR5 5600 SODIMM",
+        "storage": "512 GB SSD",
+        "display_size": "14\"",
+        "resolution": "WUXGA (1920x1200)",
+        "refresh_rate": null,
+        "panel_type": "IPS",
+        "brightness": "400 nits",
+        "weight": "Starting at 1.39 kg (Weight will vary by configuration. Does not include power adapter.)",
+        "dimensions": "31.56 x 22.2 x 1.17 cm (front); 31.56 x 22.2 x 1.24 cm (rear) (Front height measurement is near the front edge where the chassis bottom cover taper begins. Back height measurement is near the back edge where the chassis bottom cover taper ends.)",
+        "battery": "HP Long Life 3-cell, 62 Wh Li-ion polymer",
+        "ports": "2 Thunderbolt™ 4 with USB Type-C® 40Gbps signaling rate (USB Power Delivery, DisplayPort™ 2.1, HP Sleep and Charge); 1 USB Type-C® 10Gbps signaling rate (USB Power Delivery, DisplayPort™ 1.4, HP Sleep and Charge); 1 HDMI 2.1; 1 stereo headphone/microphone combo jack; 1 USB Type-A 5Gbps signaling rate (powered)",
+        "os": "Windows 11 Pro",
+        "wireless": "Intel® Wi-Fi 7 BE201 (2x2) and Bluetooth® 5.4 wireless card, non-vPro®",
+        "camera": "5 MP IR AI camera",
+        "audio": "Audio by Poly Studio, dual stereo speakers with discrete amplifiers, integrated dual array microphones",
+        "colors": "Glacier silver aluminium"
+      },
+      "all_specs": {
+        "Overview Specs": "HP EliteBook 8 G1i 14 inch Notebook AI PC, 14\", Windows 11 Pro, Intel® Core™ Ultra 7, 16GB RAM, 512GB SSD, WUXGA, Glacier silver, AI PC",
+        "Operating system": "Windows 11 Pro",
+        "Processor": "Intel® Core™ Ultra 7 255U (up to 5.2 GHz with Intel® Turbo Boost Technology, 12 MB L3 cache, 12 cores, 14 threads)",
+        "Memory size": "16 GB DDR5 5600 SODIMM",
+        "Storage capacity": "512 GB SSD",
+        "Processor family": "Intel® Core™ Ultra 7 processor",
+        "Graphics": "Integrated, Intel® Graphics",
+        "Memory": "16 GB DDR5-5600 MT/s (1 x 16 GB)",
+        "Memory Slots": "2 SODIMM",
+        "Internal Storage": "512 GB PCIe® NVMe™ SSD",
+        "Display": "35.6 cm (14\") diagonal, WUXGA (1920 x 1200), IPS, anti-glare, 400 nits, 62.5% sRGB",
+        "Touchscreen": "No",
+        "Color gamut": "62.5% sRGB",
+        "Brightness": "400 nits",
+        "Dimensions (W x D x H)": "31.56 x 22.2 x 1.17 cm (front); 31.56 x 22.2 x 1.24 cm (rear) (Front height measurement is near the front edge where the chassis bottom cover taper begins. Back height measurement is near the back edge where the chassis bottom cover taper ends.)",
+        "Weight": "Starting at 1.39 kg (Weight will vary by configuration. Does not include power adapter.)",
+        "Battery type": "HP Long Life 3-cell, 62 Wh Li-ion polymer",
+        "Battery life": "(Battery is internal and not replaceable by customer. Serviceable by warranty. Fast charging 50% in 30 minutes.)",
+        "Wireless": "Intel® Wi-Fi 7 BE201 (2x2) and Bluetooth® 5.4 wireless card, non-vPro®",
+        "Product color": "Glacier silver aluminium",
+        "Keyboard": "HP Premium Keyboard – spill-resistant, backlit keyboard",
+        "Camera": "5 MP IR AI camera",
+        "Audio": "Audio by Poly Studio, dual stereo speakers with discrete amplifiers, integrated dual array microphones",
+        "Pointing device": "Clickpad with multi-touch gesture support",
+        "Memory card device": "1 Smartcard reader",
+        "Ports": "2 Thunderbolt™ 4 with USB Type-C® 40Gbps signaling rate (USB Power Delivery, DisplayPort™ 2.1, HP Sleep and Charge); 1 USB Type-C® 10Gbps signaling rate (USB Power Delivery, DisplayPort™ 1.4, HP Sleep and Charge); 1 HDMI 2.1; 1 stereo headphone/microphone combo jack; 1 USB Type-A 5Gbps signaling rate (powered)",
+        "Power": "HP 65 W USB Type-C® slim adapter",
+        "Fingerprint reader": "Fingerprint reader",
+        "Input devices": "HP Sure Platform; Thermal sensor; HP Tamper Lock; Hall effect sensor; Color sensor with Ambient light sensing",
+        "Sustainability specifications": "At least 80% recycled metal; Product Carbon Footprint; HP paper-based packaging is from recycled or certified sources; At least 50% post-consumer recycled plastic; Low halogen; Bulk packaging available",
+        "Manufacturer Warranty": "1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply."
+      },
+      "spec_sections": {
+        "Processor & Chipset": {
+          "Processor": "Intel® Core™ Ultra 7 255U (up to 5.2 GHz with Intel® Turbo Boost Technology, 12 MB L3 cache, 12 cores, 14 threads)",
+          "Processor family": "Intel® Core™ Ultra 7 processor"
+        },
+        "Graphics & Display": {
+          "Graphics": "Integrated, Intel® Graphics",
+          "Display": "35.6 cm (14\") diagonal, WUXGA (1920 x 1200), IPS, anti-glare, 400 nits, 62.5% sRGB",
+          "Touchscreen": "No",
+          "Color gamut": "62.5% sRGB",
+          "Brightness": "400 nits"
+        },
+        "Memory & Storage": {
+          "Memory size": "16 GB DDR5 5600 SODIMM",
+          "Storage capacity": "512 GB SSD",
+          "Memory": "16 GB DDR5-5600 MT/s (1 x 16 GB)",
+          "Memory Slots": "2 SODIMM",
+          "Internal Storage": "512 GB PCIe® NVMe™ SSD",
+          "Memory card device": "1 Smartcard reader"
+        },
+        "Design & Dimensions": {
+          "Dimensions (W x D x H)": "31.56 x 22.2 x 1.17 cm (front); 31.56 x 22.2 x 1.24 cm (rear) (Front height measurement is near the front edge where the chassis bottom cover taper begins. Back height measurement is near the back edge where the chassis bottom cover taper ends.)",
+          "Weight": "Starting at 1.39 kg (Weight will vary by configuration. Does not include power adapter.)",
+          "Product color": "Glacier silver aluminium",
+          "Sustainability specifications": "At least 80% recycled metal; Product Carbon Footprint; HP paper-based packaging is from recycled or certified sources; At least 50% post-consumer recycled plastic; Low halogen; Bulk packaging available"
+        },
+        "Battery & Power": {
+          "Battery type": "HP Long Life 3-cell, 62 Wh Li-ion polymer"
+        },
+        "Connectivity & Ports": {
+          "Wireless": "Intel® Wi-Fi 7 BE201 (2x2) and Bluetooth® 5.4 wireless card, non-vPro®",
+          "Ports": "2 Thunderbolt™ 4 with USB Type-C® 40Gbps signaling rate (USB Power Delivery, DisplayPort™ 2.1, HP Sleep and Charge); 1 USB Type-C® 10Gbps signaling rate (USB Power Delivery, DisplayPort™ 1.4, HP Sleep and Charge); 1 HDMI 2.1; 1 stereo headphone/microphone combo jack; 1 USB Type-A 5Gbps signaling rate (powered)"
+        },
+        "Peripherals & Media": {
+          "Keyboard": "HP Premium Keyboard – spill-resistant, backlit keyboard",
+          "Camera": "5 MP IR AI camera",
+          "Audio": "Audio by Poly Studio, dual stereo speakers with discrete amplifiers, integrated dual array microphones",
+          "Pointing device": "Clickpad with multi-touch gesture support",
+          "Input devices": "HP Sure Platform; Thermal sensor; HP Tamper Lock; Hall effect sensor; Color sensor with Ambient light sensing"
+        },
+        "Security & Software": {
+          "Manufacturer Warranty": "1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply."
+        }
+      },
+      "configurations": [
+        {
+          "model": "HP EliteBook 8 G1i 14 inch Notebook AI PC (C15A6ET)",
+          "model_series": "EliteBook",
+          "base_model": "HP EliteBook 8 G1i 14 inch Notebook AI PC (C15A6ET)",
+          "mpn": "C15A6ET",
+          "official_specs": {
+            "Overview Specs": "HP EliteBook 8 G1i 14 inch Notebook AI PC, 14\", Windows 11 Pro, Intel® Core™ Ultra 7, 16GB RAM, 512GB SSD, WUXGA, Glacier silver, AI PC",
+            "Operating system": "Windows 11 Pro",
+            "Processor": "Intel® Core™ Ultra 7 255U (up to 5.2 GHz with Intel® Turbo Boost Technology, 12 MB L3 cache, 12 cores, 14 threads)",
+            "Memory size": "16 GB DDR5 5600 SODIMM",
+            "Storage capacity": "512 GB SSD",
+            "Processor family": "Intel® Core™ Ultra 7 processor",
+            "Graphics": "Integrated, Intel® Graphics",
+            "Memory": "16 GB DDR5-5600 MT/s (1 x 16 GB)",
+            "Memory Slots": "2 SODIMM",
+            "Internal Storage": "512 GB PCIe® NVMe™ SSD",
+            "Display": "35.6 cm (14\") diagonal, WUXGA (1920 x 1200), IPS, anti-glare, 400 nits, 62.5% sRGB",
+            "Touchscreen": "No",
+            "Color gamut": "62.5% sRGB",
+            "Brightness": "400 nits",
+            "Dimensions (W x D x H)": "31.56 x 22.2 x 1.17 cm (front); 31.56 x 22.2 x 1.24 cm (rear) (Front height measurement is near the front edge where the chassis bottom cover taper begins. Back height measurement is near the back edge where the chassis bottom cover taper ends.)",
+            "Weight": "Starting at 1.39 kg (Weight will vary by configuration. Does not include power adapter.)",
+            "Battery type": "HP Long Life 3-cell, 62 Wh Li-ion polymer",
+            "Battery life": "(Battery is internal and not replaceable by customer. Serviceable by warranty. Fast charging 50% in 30 minutes.)",
+            "Wireless": "Intel® Wi-Fi 7 BE201 (2x2) and Bluetooth® 5.4 wireless card, non-vPro®",
+            "Product color": "Glacier silver aluminium",
+            "Keyboard": "HP Premium Keyboard – spill-resistant, backlit keyboard",
+            "Camera": "5 MP IR AI camera",
+            "Audio": "Audio by Poly Studio, dual stereo speakers with discrete amplifiers, integrated dual array microphones",
+            "Pointing device": "Clickpad with multi-touch gesture support",
+            "Memory card device": "1 Smartcard reader",
+            "Ports": "2 Thunderbolt™ 4 with USB Type-C® 40Gbps signaling rate (USB Power Delivery, DisplayPort™ 2.1, HP Sleep and Charge); 1 USB Type-C® 10Gbps signaling rate (USB Power Delivery, DisplayPort™ 1.4, HP Sleep and Charge); 1 HDMI 2.1; 1 stereo headphone/microphone combo jack; 1 USB Type-A 5Gbps signaling rate (powered)",
+            "Power": "HP 65 W USB Type-C® slim adapter",
+            "Fingerprint reader": "Fingerprint reader",
+            "Input devices": "HP Sure Platform; Thermal sensor; HP Tamper Lock; Hall effect sensor; Color sensor with Ambient light sensing",
+            "Sustainability specifications": "At least 80% recycled metal; Product Carbon Footprint; HP paper-based packaging is from recycled or certified sources; At least 50% post-consumer recycled plastic; Low halogen; Bulk packaging available",
+            "Manufacturer Warranty": "1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply."
+          },
+          "stores": []
+        }
+      ],
+      "raw_markdown": "Designed for worldwide teams, the HP EliteBook 8 G1i 14 inch AI PC provides the power, security, and collaboration tools needed for success.",
+      "extra_metadata": {
+        "tagline": "Designed for worldwide teams, the HP EliteBook 8 G1i 14 inch AI PC provides the power, security, and collaboration tools needed for success.",
+        "specs_table_rows_count": 31
+      }
+    }
+  ]
+}
