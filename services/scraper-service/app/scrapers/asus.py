@@ -1,5 +1,7 @@
 import itertools
+import json
 import re
+import urllib.request
 from datetime import date, datetime
 from typing import Any
 from urllib.parse import urljoin, urlparse
@@ -260,6 +262,14 @@ def extract_colors(color_spec_text: str | None) -> list[str]:
 class AsusBrandScraper(BaseBrandScraper):
     """Brand scraper for ASUS Egypt laptop catalog supporting Level 1 and Level 2 modes."""
 
+    ODIN_API_URL = (
+        "https://odinapi.asus.com/recent-data/apiv2/ShopAPI/ShopFilterResult"
+        "?CategoryName=&PageIndex={page}&PageSize={page_size}"
+        "&PriceMax=&PriceMin=&ProductLevel1Code=laptops&ProductLevel2Code=&SeriesName="
+        "&Sort=Newsest&Spec=&SubSeriesName=&SubSpec=&SystemCode=asus&WebsiteCode=eg-en&siteID=www&sitelang="
+    )
+    ODIN_PAGE_SIZE = 12
+
     @property
     def brand_name(self) -> str:
         return "ASUS"
@@ -346,6 +356,16 @@ class AsusBrandScraper(BaseBrandScraper):
         max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
         print(f"[ASUS Scraper] Starting Level 1 catalog scan{watermark_msg} up to {max_pages_display} page(s)...")
 
+        # 1. Primary: Crawl ASUS catalog via Official Odin Shop API for true multi-page support
+        odin_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Origin": "https://www.asus.com",
+            "Referer": "https://www.asus.com/eg-en/store/laptops/",
+        }
+
+        odin_success = False
+
         for page_idx in itertools.count(1):
             if max_pages is not None and page_idx > max_pages:
                 break
@@ -354,168 +374,227 @@ class AsusBrandScraper(BaseBrandScraper):
             if limit and len(summaries) >= limit:
                 break
 
-            target_url = self.catalog_url if page_idx == 1 else f"{self.catalog_url}?page={page_idx}"
-            print(f"[ASUS Scraper] Fetching catalog page {page_idx} (max: {max_pages_display}): {target_url}...")
+            api_url = self.ODIN_API_URL.format(page=page_idx, page_size=self.ODIN_PAGE_SIZE)
+            print(f"[ASUS Scraper] Fetching catalog page {page_idx} (max: {max_pages_display}, API): {api_url}...")
 
-            doc = self.engine.fetch(target_url, stealth=True, network_idle=True, disable_resources=True)
-            raw_page = doc.raw
-
-            product_cards = []
-            if hasattr(raw_page, "css"):
-                product_cards = raw_page.css(
-                    "div[class*=\"productCardContainer\"], div[class*=\"store_content_product\"], "
-                    "div[class*=\"ProductCard\"], div[class*=\"productCard\"], "
-                    "div[class*=\"ProductItem\"], div[class*=\"productItem\"], "
-                    "div[class*=\"ProductTile\"], article"
-                )
-
-            cards_added_this_page = 0
-
-            if product_cards:
-                for card in product_cards:
-                    link_el = card.css("a[href*=\"/laptops/\"]")
-                    if not link_el:
-                        continue
-                    href = link_el[0].attrib.get("href", "")
-                    full_url = urljoin(self.catalog_url, href)
-
-                    clean_path = urlparse(full_url).path.strip("/").split("/")
-                    if not clean_path or clean_path[-1] in excluded_slugs or "compare" in full_url:
-                        continue
-
-                    if full_url in seen_urls:
-                        continue
-
-                    name = ""
-                    for heading in card.css("h1, h2, h3, h4, h5, [class*='title'], [class*='Title'], [class*='heading'], [class*='Heading'], [class*='Name']"):
-                        h_text = heading.text.strip()
-                        if h_text and len(h_text) > 3 and "filter" not in h_text.lower():
-                            name = h_text
-                            break
-
-                    if not name and hasattr(link_el[0], "text"):
-                        name = link_el[0].text.strip()
-
-                    if not name or len(name) < 3:
-                        name = clean_path[-1].replace("-", " ").title()
-
-                    family = self._determine_family(name, full_url)
-                    model = self._extract_model_code(name, full_url)
-
-                    # Check Watermark Pointer
-                    if pointers and matches_pointer(name, model, full_url):
-                        print(f"  [+] Reached Watermark pointer matching '{name}' ({model or full_url})! Halting Level 1 scan.")
-                        reached_watermark = True
-                        break
-
-                    price = None
-                    for el in card.css("[class*='price'], [class*='Price'], div, span"):
-                        txt = el.text.strip()
-                        if "EGP" in txt:
-                            price = txt
-                            break
-                    if not price:
-                        price_el = card.css("[class*=\"price\"], [class*=\"Price\"]")
-                        if price_el:
-                            price = price_el[0].text.strip()
-
-                    price_num = parse_price_egp(price)
-
-                    img_url = None
-                    img_el = card.css("img[src]")
-                    if img_el:
-                        img_url = urljoin(self.catalog_url, img_el[0].attrib.get("src", ""))
-
-                    store_url = None
-                    for a in card.css("a[href*='store.asus.com']"):
-                        s_href = a.attrib.get("href")
-                        if s_href:
-                            store_url = s_href
-                            break
-
-                    specs_url = full_url.rstrip("/") + "/techspec/"
-
-                    prelim_year = None
-                    if model:
-                        for pattern, yr in AsusDateExtractor.MODEL_YEAR_MAP:
-                            if pattern.search(model):
-                                prelim_year = yr
-                                break
-
-                    seen_urls.add(full_url)
-                    cards_added_this_page += 1
-                    summaries.append(
-                        LaptopSummary(
-                            brand=self.brand_name,
-                            name=name,
-                            price=price,
-                            price_egp=price_num,
-                            currency="EGP",
-                            family=family,
-                            model=model,
-                            product_url=full_url,
-                            specs_url=specs_url,
-                            store_url=store_url,
-                            thumbnail_url=img_url,
-                            release_year=prelim_year,
-                        )
-                    )
-                    if limit and len(summaries) >= limit:
-                        break
-
-            # Fallback if no cards found via CSS classes on page 1
-            if not product_cards and page_idx == 1:
-                all_links = []
-                if hasattr(raw_page, "css"):
-                    all_links = raw_page.css("a")
-                for link in all_links:
-                    href = getattr(link, "attrib", {}).get("href", "")
-                    if "/laptops/" in href and not any(f"/{exc}/" in href or href.endswith(f"/{exc}/") or href.endswith(f"/{exc}") for exc in excluded_slugs):
-                        full_url = urljoin(self.catalog_url, href)
-                        clean_path = urlparse(full_url).path.strip("/").split("/")
-                        if len(clean_path) >= 4 and full_url not in seen_urls and "compare" not in full_url:
-                            raw_text = getattr(link, "text", "").strip()
-                            name = raw_text if len(raw_text) > 4 else clean_path[-1].replace("-", " ").title()
-                            family = self._determine_family(name, full_url)
-                            model = self._extract_model_code(name, full_url)
-
-                            if pointers and matches_pointer(name, model, full_url):
-                                print(f"  [+] Reached Watermark pointer matching '{name}'! Halting Level 1 scan.")
-                                reached_watermark = True
-                                break
-
-                            seen_urls.add(full_url)
-                            cards_added_this_page += 1
-                            specs_url = full_url.rstrip("/") + "/techspec/"
-
-                            prelim_year = None
-                            if model:
-                                for pattern, yr in AsusDateExtractor.MODEL_YEAR_MAP:
-                                    if pattern.search(model):
-                                        prelim_year = yr
-                                        break
-
-                            summaries.append(
-                                LaptopSummary(
-                                    brand=self.brand_name,
-                                    name=name,
-                                    price=None,
-                                    price_egp=None,
-                                    currency="EGP",
-                                    family=family,
-                                    model=model,
-                                    product_url=full_url,
-                                    specs_url=specs_url,
-                                    release_year=prelim_year,
-                                )
-                            )
-                            if limit and len(summaries) >= limit:
-                                break
-
-            # If no new cards were discovered on this page, stop paginating
-            if cards_added_this_page == 0:
-                print(f"[ASUS Scraper] No additional laptop cards found on page {page_idx}. Ending catalog pagination.")
+            try:
+                req = urllib.request.Request(api_url, headers=odin_headers)
+                with urllib.request.urlopen(req, timeout=15) as r:
+                    data = json.loads(r.read().decode("utf-8"))
+                    products = data.get("Result", {}).get("ProductList", [])
+            except Exception as e:
+                print(f"[ASUS Scraper] Odin API request failed on page {page_idx}: {e}")
                 break
+
+            if not products:
+                print(f"[ASUS Scraper] No more products returned from Odin API on page {page_idx}. Ending pagination.")
+                odin_success = True
+                break
+
+            odin_success = True
+            for p in products:
+                raw_name = p.get("Name") or ""
+                clean_name = re.sub(r"<[^>]+>", "", raw_name).strip()
+                prod_url = p.get("ProductURL") or p.get("ProductCardURL") or ""
+                if not prod_url or not clean_name:
+                    continue
+
+                full_url = urljoin(self.catalog_url, prod_url)
+                clean_path = urlparse(full_url).path.strip("/").split("/")
+                if not clean_path or clean_path[-1] in excluded_slugs or "compare" in full_url:
+                    continue
+
+                if full_url in seen_urls:
+                    continue
+
+                family = self._determine_family(clean_name, full_url)
+                model = self._extract_model_code(clean_name, full_url)
+
+                # Check Watermark Pointer
+                if pointers and matches_pointer(clean_name, model, full_url):
+                    print(f"  [+] Reached Watermark pointer matching '{clean_name}' ({model or full_url})! Halting Level 1 scan.")
+                    reached_watermark = True
+                    break
+
+                price_raw = p.get("SortPrice") or p.get("Price")
+                price_num = None
+                try:
+                    if price_raw:
+                        price_num = float(str(price_raw).replace(",", ""))
+                except ValueError:
+                    pass
+                price_str = f"{price_num:,.0f} EGP" if price_num else None
+
+                # Extract thumbnail
+                img_url = None
+                img_list = p.get("ImageList") or []
+                if img_list and isinstance(img_list, list):
+                    first_img = img_list[0]
+                    urls = first_img.get("ImageURL") or []
+                    if urls and isinstance(urls, list) and urls[0]:
+                        img_url = urls[0]
+
+                # Online date and year
+                online_dt = p.get("ProductOnlineDt")
+                rel_year = None
+                rel_date = None
+                if online_dt and "-" in online_dt:
+                    rel_date = online_dt.split(" ")[0]
+                    try:
+                        rel_year = int(rel_date.split("-")[0])
+                    except ValueError:
+                        pass
+
+                if not rel_year and model:
+                    for pattern, yr in AsusDateExtractor.MODEL_YEAR_MAP:
+                        if pattern.search(model):
+                            rel_year = yr
+                            break
+
+                specs_url = full_url.rstrip("/") + "/techspec/"
+
+                seen_urls.add(full_url)
+                summaries.append(
+                    LaptopSummary(
+                        brand=self.brand_name,
+                        name=clean_name,
+                        price=price_str,
+                        price_egp=price_num,
+                        currency="EGP",
+                        family=family,
+                        model=model,
+                        product_url=full_url,
+                        specs_url=specs_url,
+                        store_url=prod_url,
+                        thumbnail_url=img_url,
+                        release_date=rel_date,
+                        release_year=rel_year,
+                    )
+                )
+                if limit and len(summaries) >= limit:
+                    break
+
+        # 2. Fallback: If Odin API was completely unavailable, fallback to HTML DOM scraper
+        if not odin_success and not summaries:
+            print("[ASUS Scraper] Falling back to HTML DOM scraper...")
+            for page_idx in itertools.count(1):
+                if max_pages is not None and page_idx > max_pages:
+                    break
+                if reached_watermark:
+                    break
+                if limit and len(summaries) >= limit:
+                    break
+
+                target_url = self.catalog_url if page_idx == 1 else f"{self.catalog_url}?page={page_idx}"
+                print(f"[ASUS Scraper] Fetching catalog page {page_idx} (max: {max_pages_display}, HTML): {target_url}...")
+
+                doc = self.engine.fetch(target_url, stealth=True, network_idle=True, disable_resources=True)
+                raw_page = doc.raw
+
+                product_cards = []
+                if hasattr(raw_page, "css"):
+                    product_cards = raw_page.css(
+                        "div[class*=\"productCardContainer\"], div[class*=\"store_content_product\"], "
+                        "div[class*=\"ProductCard\"], div[class*=\"productCard\"], "
+                        "div[class*=\"ProductItem\"], div[class*=\"productItem\"], "
+                        "div[class*=\"ProductTile\"], article"
+                    )
+
+                cards_added_this_page = 0
+
+                if product_cards:
+                    for card in product_cards:
+                        link_el = card.css("a[href*=\"/laptops/\"]")
+                        if not link_el:
+                            continue
+                        href = link_el[0].attrib.get("href", "")
+                        full_url = urljoin(self.catalog_url, href)
+
+                        clean_path = urlparse(full_url).path.strip("/").split("/")
+                        if not clean_path or clean_path[-1] in excluded_slugs or "compare" in full_url:
+                            continue
+
+                        if full_url in seen_urls:
+                            continue
+
+                        name = ""
+                        for heading in card.css("h1, h2, h3, h4, h5, [class*='title'], [class*='Title'], [class*='heading'], [class*='Heading'], [class*='Name']"):
+                            h_text = heading.text.strip()
+                            if h_text and len(h_text) > 3 and "filter" not in h_text.lower():
+                                name = h_text
+                                break
+
+                        if not name and hasattr(link_el[0], "text"):
+                            name = link_el[0].text.strip()
+
+                        if not name or len(name) < 3:
+                            name = clean_path[-1].replace("-", " ").title()
+
+                        family = self._determine_family(name, full_url)
+                        model = self._extract_model_code(name, full_url)
+
+                        if pointers and matches_pointer(name, model, full_url):
+                            print(f"  [+] Reached Watermark pointer matching '{name}' ({model or full_url})! Halting Level 1 scan.")
+                            reached_watermark = True
+                            break
+
+                        price = None
+                        for el in card.css("[class*='price'], [class*='Price'], div, span"):
+                            txt = el.text.strip()
+                            if "EGP" in txt:
+                                price = txt
+                                break
+                        if not price:
+                            price_el = card.css("[class*=\"price\"], [class*=\"Price\"]")
+                            if price_el:
+                                price = price_el[0].text.strip()
+
+                        price_num = parse_price_egp(price)
+
+                        img_url = None
+                        img_el = card.css("img[src]")
+                        if img_el:
+                            img_url = urljoin(self.catalog_url, img_el[0].attrib.get("src", ""))
+
+                        store_url = None
+                        for a in card.css("a[href*='store.asus.com']"):
+                            s_href = a.attrib.get("href")
+                            if s_href:
+                                store_url = s_href
+                                break
+
+                        specs_url = full_url.rstrip("/") + "/techspec/"
+
+                        prelim_year = None
+                        if model:
+                            for pattern, yr in AsusDateExtractor.MODEL_YEAR_MAP:
+                                if pattern.search(model):
+                                    prelim_year = yr
+                                    break
+
+                        seen_urls.add(full_url)
+                        cards_added_this_page += 1
+                        summaries.append(
+                            LaptopSummary(
+                                brand=self.brand_name,
+                                name=name,
+                                price=price,
+                                price_egp=price_num,
+                                currency="EGP",
+                                family=family,
+                                model=model,
+                                product_url=full_url,
+                                specs_url=specs_url,
+                                store_url=store_url,
+                                thumbnail_url=img_url,
+                                release_year=prelim_year,
+                            )
+                        )
+                        if limit and len(summaries) >= limit:
+                            break
+
+                if cards_added_this_page == 0:
+                    break
 
         print(f"[ASUS Scraper] Level 1 complete: Found {len(summaries)} laptop(s).")
         return summaries
