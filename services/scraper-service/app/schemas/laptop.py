@@ -135,6 +135,18 @@ class RetailerProduct(BaseModel):
     scraped_at: str = Field(default_factory=utcnow_str)
 
 
+class StoreCatalogResult(BaseModel):
+    """Top-level output schema for a retailer store crawl."""
+    store_name: str
+    store_key: str
+    store_domain: str
+    scrape_mode: str = "level2"
+    until_model: str | None = None
+    total_products: int = 0
+    scraped_at: str = Field(default_factory=utcnow_str)
+    products: list[RetailerProduct] = Field(default_factory=list)
+
+
 class RetailOffer(BaseModel):
     """Retailer offer verified and attached to an exact official configuration."""
     store_name: str

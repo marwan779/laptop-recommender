@@ -32,10 +32,25 @@ class BaseStoreScraper(ABC):
         """Base website URL (e.g., 'https://www.compumarts.com')."""
         pass
 
+    @property
+    def base_domain(self) -> str:
+        """Domain of the store website without www (e.g., 'compumarts.com')."""
+        return urlparse(self.base_url).netloc.replace("www.", "")
+
     @abstractmethod
     def search_candidates(self, query: str, limit: int = 5) -> list[RetailerProduct]:
         """Execute a store-specific search query and return raw candidate RetailerProducts."""
         pass
+
+    def scrape_catalog(
+        self,
+        level: int = 2,
+        until_model: str | list[str] | None = None,
+        max_pages: int = 5,
+        limit: int | None = None,
+    ) -> list[RetailerProduct]:
+        """Scrape store catalog with Level 1 (fast summaries) or Level 2 (deep specs) and watermark stopping."""
+        return self.search_candidates(query="laptop", limit=limit or 20)
 
     def collect_store_candidates(
         self,

@@ -81,7 +81,7 @@ def main():
         type=int,
         default=1,
         choices=[1, 2],
-        help="Brand extraction level when in 'brand-only' mode: 1 (Summary) or 2 (Deep Crawl specs) (default: 1)",
+        help="Extraction level: 1 (Summary/Cards) or 2 (Deep Crawl specs & PDP) (default: 1)",
     )
     parser.add_argument(
         "--save-json",
@@ -139,13 +139,19 @@ def main():
             store_scraper = get_store_scraper(s_key, engine)
             console.print(f"\n[cyan]Scraping retailer:[/cyan] [bold white]{store_scraper.store_name}[/bold white] ({store_scraper.base_url})")
 
-            search_limit = args.limit or 20
-            raw_products = store_scraper.search_candidates(query="laptop", limit=search_limit)
+            raw_products = store_scraper.scrape_catalog(
+                level=args.level,
+                until_model=args.until_model,
+                max_pages=args.max_pages,
+                limit=args.limit,
+            )
 
             store_catalog = StoreCatalogResult(
                 store_name=store_scraper.store_name,
                 store_key=store_scraper.store_key,
                 store_domain=store_scraper.base_domain,
+                scrape_mode=f"level{args.level}",
+                until_model=args.until_model,
                 total_products=len(raw_products),
                 products=raw_products,
             )
@@ -153,6 +159,8 @@ def main():
             table = Table(title=f"Store: {store_catalog.store_name} ({store_catalog.total_products} Laptops Scraped)")
             table.add_column("No.", style="dim", width=4)
             table.add_column("Product Title", style="bold")
+            table.add_column("MPN / SKU", style="cyan")
+            table.add_column("Specs", style="yellow")
             table.add_column("Price (EGP)", style="green")
             table.add_column("Stock", style="magenta")
             table.add_column("Product URL", style="blue")
@@ -161,8 +169,10 @@ def main():
                 stock_str = "[green]In Stock[/green]" if p.in_stock else "[red]Out of Stock[/red]"
                 table.add_row(
                     str(idx),
-                    p.title[:65] + ("..." if len(p.title) > 65 else ""),
-                    p.price_str or str(p.price_egp or "N/A"),
+                    safe_terminal_text(p.title[:50] + ("..." if len(p.title) > 50 else "")),
+                    safe_terminal_text(p.retailer_sku or p.mpn or "N/A"),
+                    f"{len(p.specs)} fields",
+                    safe_terminal_text(p.price_str or str(p.price_egp or "N/A")),
                     stock_str,
                     p.product_url,
                 )
