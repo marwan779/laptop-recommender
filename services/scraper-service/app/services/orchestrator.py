@@ -177,6 +177,8 @@ class ScrapeOrchestrator:
                 error=str(exc),
             )
 
+        latest_pointers = [p.title for p in products[:3]]
+
         store_catalog = StoreCatalogResult(
             store_name=store_scraper.store_name,
             store_key=store_scraper.store_key,
@@ -187,6 +189,7 @@ class ScrapeOrchestrator:
                 if isinstance(req.until_model, str)
                 else (", ".join(req.until_model) if req.until_model else None)
             ),
+            latest_pointers=latest_pointers,
             total_products=len(products),
             products=products,
         )

@@ -205,6 +205,9 @@ def _display_store_result(target_result, args) -> None:
         )
     console.print(table)
 
+    pointers_str = ", ".join(catalog.latest_pointers) if catalog.latest_pointers else "None"
+    console.print(f"[cyan]Latest Pointers (Top 3):[/cyan] [bold yellow]{pointers_str}[/bold yellow]")
+
     dest_file = args.save_json or f"store_{target_result.target_key}.json"
     with open(dest_file, "w", encoding="utf-8") as f:
         json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)

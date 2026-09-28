@@ -118,6 +118,7 @@ class StoreCatalogResult(BaseModel):
     store_domain: str
     scrape_mode: str = "level2"
     until_model: str | None = None
+    latest_pointers: list[str] = Field(default_factory=list)
     total_products: int = 0
     scraped_at: str = Field(default_factory=utcnow_str)
     products: list[RetailerProduct] = Field(default_factory=list)

@@ -131,7 +131,9 @@ class HpScraperService:
             if parse_date_param(item.release_date) is not None
         ]
         start_date_str = min(valid_dates).date().isoformat() if valid_dates else None
-        end_date_str = max(valid_dates).date().isoformat() if valid_dates else None
+        if detailed_laptops:
+            latest_pointers = [d.name for d in detailed_laptops[:3]]
+
         total_configs = sum(len(d.configurations) for d in detailed_laptops)
 
         catalog_result = HpBrandCatalogResult(
