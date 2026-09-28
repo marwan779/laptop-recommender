@@ -18,7 +18,10 @@ class TwoBStoreScraper(BaseStoreScraper):
       - CMS / Platform: Magento 2.
       - Category URL: /en/computers/laptops.html.
       - Pagination: Supports `?p={page}&product_list_limit=45` (default max 45 per page, ~87 laptops total).
-      - Sorting: Default order presents newest models first (watermark friendly).
+      - Sorting: Default order is Magento 2 'position' (curated by store admin / 'Most Selling').
+        Note: The catalog is NOT strictly chronological by creation date; newer items (e.g. high entity IDs)
+        can appear anywhere in the 87 items. Because the full catalog is small (~87 laptops, 2 pages),
+        Level 1 scraping should ideally scan all pages rather than relying on early watermark stopping.
       - Level 1: Fast catalog card summary without secondary HTTP requests. Includes accurate
         in-stock / out-of-stock detection directly from catalog card action buttons (.out-of-stock-btn).
       - Level 2: Deep specifications extraction from PDP (#product-attribute-specs-table),
