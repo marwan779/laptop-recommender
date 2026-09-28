@@ -1,15 +1,51 @@
-from urllib.parse import quote_plus, urljoin
+import html
+import json
+import re
+from urllib.parse import quote_plus, urlencode, urljoin
 
-from app.matching.normalizer import ModelNormalizer
+from bs4 import BeautifulSoup
+from curl_cffi import requests as cffi_requests
+
+from app.core.normalizer import ModelNormalizer
+from app.engine.base import IScraperEngine
 from app.schemas.laptop import RetailerProduct
 from app.stores.base import BaseStoreScraper
 
 
 class SigmaComputerStoreScraper(BaseStoreScraper):
-    """Store scraper for Sigma Computer Egypt (https://www.sigma-computer.com/en).
+    """Store scraper for Sigma Computer Egypt (https://www.sigma-computer.com).
 
-    Customized for OpenCart catalog search structure.
+    Supports:
+      1. Next.js App Router RSC (React Server Components) payload decoding.
+      2. Level 1: Fast catalog crawl extracting up to 50 products per page directly
+         from the decoded RSC stream without secondary PDP requests.
+      3. Level 2: Deep crawl visiting each laptop's PDP to extract the complete
+         structured specifications array (CPU, GPU, RAM, Storage, Screen, etc.).
+      4. Watermark stopping via `until_model` for incremental scraping (newest added first).
+      5. Targeted keyword/model search via /search?q={query}.
     """
+
+    LAPTOPS_CATEGORY_ID = "9f5039de-5c80-46f3-9fe4-6e8f94189b8c"
+    SEARCH_BASE_URL = "https://www.sigma-computer.com/en/search"
+    ITEM_BASE_URL = "https://www.sigma-computer.com/en/item"
+
+    NON_LAPTOP_KEYWORDS = [
+        "backpack", "sleeve", "bag", "adapter", "charger", "cable",
+        "mouse", "headset", "earphones", "keyboard", "cooling pad",
+        "flash drive", "power bank", "docking",
+    ]
+
+    def __init__(self, engine: IScraperEngine | None = None):
+        super().__init__(engine=engine or None)
+        self._session = cffi_requests.Session()
+        self._headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        }
 
     @property
     def store_name(self) -> str:
@@ -21,153 +57,438 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
 
     @property
     def base_url(self) -> str:
-        return "https://www.sigma-computer.com/en"
+        return "https://www.sigma-computer.com"
 
-    def search_candidates(self, query: str, limit: int = 5) -> list[RetailerProduct]:
-        search_url = f"{self.base_url}/search?search={quote_plus(query)}"
+    @property
+    def base_domain(self) -> str:
+        return "sigma-computer.com"
 
-        doc = self.engine.fetch(search_url, stealth=True, network_idle=True)
-        raw_page = doc.raw
+    def _fetch_html(self, url: str) -> str:
+        """Fetch raw HTML using Scrapling engine or fallback curl_cffi session."""
+        if self.engine:
+            try:
+                doc = self.engine.fetch(url, stealth=False)
+                if doc and doc.html and len(doc.html) > 500:
+                    return doc.html
+            except Exception:
+                pass
+        try:
+            r = self._session.get(url, headers=self._headers, impersonate="chrome120", timeout=25.0)
+            return r.text if r.status_code == 200 else ""
+        except Exception as e:
+            print(f"[{self.store_name}] Failed to fetch {url}: {e}")
+            return ""
 
-        candidates: list[RetailerProduct] = []
-        if not hasattr(raw_page, "css"):
-            return candidates
+    def _decode_rsc_payload(self, html_text: str) -> str:
+        """Decode Next.js App Router React Server Components (RSC) streamed chunks."""
+        matches = re.findall(r'self\.__next_f\.push\((\[1,\s*".*?"\])\)', html_text)
+        chunks: list[str] = []
+        for m in matches:
+            try:
+                parsed = json.loads(m)
+                if isinstance(parsed, list) and len(parsed) >= 2 and isinstance(parsed[1], str):
+                    chunks.append(parsed[1])
+            except Exception:
+                pass
+        return "".join(chunks)
 
-        cards = raw_page.css(
-            "div.product-layout, div.product-thumb, div[class*=\"product-grid\"], "
-            "div[class*=\"product-item\"], div.item"
+    def _extract_products_from_rsc(self, rsc_text: str) -> list[dict]:
+        """Extract the JSON products array from the decoded RSC payload."""
+        idx = rsc_text.find('"products":[')
+        if idx == -1:
+            return []
+        start = idx + len('"products":')
+        bracket_count = 0
+        end = -1
+        for i in range(start, len(rsc_text)):
+            if rsc_text[i] == "[":
+                bracket_count += 1
+            elif rsc_text[i] == "]":
+                bracket_count -= 1
+                if bracket_count == 0:
+                    end = i + 1
+                    break
+        if end == -1:
+            return []
+        try:
+            return json.loads(rsc_text[start:end])
+        except Exception:
+            return []
+
+    def _matches_watermark(self, identifier: str | None, until_model: str | list[str] | None) -> bool:
+        """Check if any target watermark matches the product identifier."""
+        if not until_model or not identifier:
+            return False
+        targets = [until_model] if isinstance(until_model, str) else list(until_model)
+        ident_clean = re.sub(r"[^a-zA-Z0-9]", "", identifier).lower()
+        for target in targets:
+            if not target:
+                continue
+            t_clean = re.sub(r"[^a-zA-Z0-9]", "", str(target)).lower()
+            if t_clean and (t_clean in ident_clean or ident_clean in t_clean):
+                return True
+        return False
+
+    @classmethod
+    def _is_standalone_accessory(cls, title: str) -> bool:
+        """Check if an item is purely an accessory and not a laptop or laptop bundle."""
+        t = title.lower()
+        # If it has core laptop hardware specs, it is definitely a computer/laptop (or bundle)
+        has_cpu = bool(re.search(r"\b(i[3579]|ryzen|core\s*ultra|intel|amd|celeron|athlon)\b", t))
+        has_specs = bool(re.search(r"\b(\d+\s*gb|ssd|nvme|fhd|ips|oled|wuxga|ddr\d?|rtx|gtx|radeon|geforce)\b", t))
+        if has_cpu and has_specs:
+            return False
+
+        # If it contains accessory keywords without core laptop hardware, it is an accessory
+        for acc in cls.NON_LAPTOP_KEYWORDS:
+            if acc in t:
+                # Special case: 'keyboard' in a laptop title usually refers to the built-in keyboard layout
+                if acc == "keyboard":
+                    if any(layout in t for layout in ["keyboard english", "keyboard arabic", "backlit", "rgb", "layout"]):
+                        continue
+                return True
+        return False
+
+    def scrape_catalog(
+        self,
+        level: int = 2,
+        until_model: str | list[str] | None = None,
+        max_pages: int = 5,
+        limit: int | None = None,
+    ) -> list[RetailerProduct]:
+        """Scrape the canonical in-stock laptops collection sorted by newest first.
+
+        Supports:
+          - level=1: Fast catalog card summaries directly from RSC payload (no PDP requests).
+          - level=2: Deep specifications extraction visiting each product's PDP.
+          - until_model: Watermark pointer stopping condition.
+        """
+        products: list[RetailerProduct] = []
+        seen_slugs: set[str] = set()
+        watermark_hit = False
+
+        watermark_display = (
+            ", ".join(until_model)
+            if isinstance(until_model, (list, tuple, set))
+            else (until_model or "None (Full Catalog)")
         )
 
-        seen_urls: set[str] = set()
+        print(
+            f"[{self.store_name}] Starting Level {level} catalog crawl "
+            f"(newest first, in-stock only, until_model='{watermark_display}', max_pages={max_pages}, limit={limit or 'All'})"
+        )
 
-        for card in cards:
-            link_el = card.css("h4 a, a[href*=\"/item\"], a[href*=\"/product\"]")
-            if not link_el:
-                link_el = card.css("a[href]")
-                if not link_el:
+        filters_dict = {
+            "category_id": [self.LAPTOPS_CATEGORY_ID],
+            "is_stock": 1,
+        }
+
+        for page in range(1, max_pages + 1):
+            if watermark_hit:
+                break
+
+            params = {
+                "filters": json.dumps(filters_dict),
+                "sortBy": "created_at",
+                "sortDir": "desc",
+                "page": page,
+                "pageSize": 50,
+            }
+            page_url = f"{self.SEARCH_BASE_URL}?{urlencode(params)}"
+            print(f"[{self.store_name}] Fetching page {page}: {page_url}...")
+            html_text = self._fetch_html(page_url)
+            if not html_text:
+                print(f"[{self.store_name}] Empty response for page {page}. Stopping.")
+                break
+
+            rsc_text = self._decode_rsc_payload(html_text)
+            raw_products = self._extract_products_from_rsc(rsc_text)
+
+            if not raw_products:
+                # Fallback: attempt HTML DOM card parsing
+                raw_products = self._extract_products_from_html(html_text)
+
+            if not raw_products:
+                print(f"[{self.store_name}] No products found on page {page}. Finished catalog crawl.")
+                break
+
+            print(f"[{self.store_name}] Page {page}: Found {len(raw_products)} products.")
+
+            for raw in raw_products:
+                slug = raw.get("slug")
+                if not slug or slug in seen_slugs:
                     continue
 
-            href = link_el[0].attrib.get("href", "")
-            if not href or href == "#":
+                name = raw.get("name") or raw.get("title") or ""
+                sku = raw.get("sku") or ""
+
+                # Non-laptop accessory check
+                if self._is_standalone_accessory(name):
+                    continue
+
+                # Watermark pre-check before making any PDP request
+                if until_model and any(self._matches_watermark(ident, until_model) for ident in [name, sku, slug]):
+                    print(f"[{self.store_name}] Watermark matched '{until_model}' at '{name}'. Halting crawl.")
+                    watermark_hit = True
+                    break
+
+                product = self._parse_product(raw, level=level)
+                if product:
+                    # Also check product SKU / MPN for watermark
+                    if until_model and any(
+                        self._matches_watermark(ident, until_model)
+                        for ident in [product.title, product.retailer_sku, product.mpn]
+                    ):
+                        print(f"[{self.store_name}] Watermark matched '{until_model}' at '{product.title}'. Halting crawl.")
+                        watermark_hit = True
+                        break
+
+                    seen_slugs.add(slug)
+                    products.append(product)
+                    specs_info = f"Specs: {len(product.specs)}" if level == 2 else "Level 1 Summary"
+                    print(
+                        f"  [{len(products)}] {product.title[:55]}... | "
+                        f"{product.price_str or 'N/A'} | SKU/MPN: {product.retailer_sku or product.mpn or 'N/A'} | "
+                        f"{specs_info}"
+                    )
+
+                if limit and len(products) >= limit:
+                    break
+
+            if watermark_hit or (limit and len(products) >= limit):
+                break
+
+        print(f"[{self.store_name}] Crawl complete. Ingested {len(products)} products (Level {level}).")
+        return products
+
+    def search_candidates(self, query: str, limit: int = 5) -> list[RetailerProduct]:
+        """Search store candidates.
+
+        If query is generic (e.g. 'laptop', 'laptops', ''), uses the canonical
+        newest in-stock collection with Level 2 extraction. Otherwise, queries /search?q={query}.
+        """
+        query_clean = query.strip().lower()
+        if query_clean in ("laptop", "laptops", "", "all"):
+            return self.scrape_catalog(level=2, limit=limit)
+
+        params = {
+            "q": query,
+            "filters": json.dumps({"category_id": [self.LAPTOPS_CATEGORY_ID]}),
+            "sortBy": "created_at",
+            "sortDir": "desc",
+        }
+        search_url = f"{self.SEARCH_BASE_URL}?{urlencode(params)}"
+        print(f"[{self.store_name}] Searching query '{query}': {search_url}")
+        html_text = self._fetch_html(search_url)
+        if not html_text:
+            return []
+
+        rsc_text = self._decode_rsc_payload(html_text)
+        raw_products = self._extract_products_from_rsc(rsc_text)
+        if not raw_products:
+            raw_products = self._extract_products_from_html(html_text)
+
+        candidates: list[RetailerProduct] = []
+        seen_slugs: set[str] = set()
+
+        for raw in raw_products:
+            slug = raw.get("slug")
+            if not slug or slug in seen_slugs:
                 continue
 
-            full_url = urljoin(self.base_url, href)
-            if full_url in seen_urls:
-                continue
-
-            # Title
-            title = ""
-            title_el = card.css("h4 a, .caption h4, [class*=\"title\"]")
-            if title_el:
-                title = title_el[0].text.strip()
-            if not title and hasattr(link_el[0], "text"):
-                title = link_el[0].text.strip()
-
-            if not title or len(title) < 5:
-                continue
-
-            # Avoid accessories
-            if any(acc in title.lower() for acc in ["backpack", "sleeve", "bag", "adapter", "charger", "cable", "mouse", "headset"]):
-                continue
-
-            # Price
-            price_text = None
-            price_el = card.css("span.price-new, p.price, .price, [class*=\"price\"]")
-            if price_el:
-                price_text = price_el[0].text.strip()
-                lines = price_text.splitlines()
-                if lines:
-                    price_text = lines[0].strip()
-
-            price_val, price_str = self.parse_egp_price(price_text)
-
-            # Stock check
-            card_text_lower = card.text.lower()
-            in_stock = True
-            if "out of stock" in card_text_lower or "غير متوفر" in card_text_lower:
-                in_stock = False
-
-            # Thumbnail
-            img_url = None
-            img_el = card.css("img[src]")
-            if img_el:
-                img_url = urljoin(self.base_url, img_el[0].attrib.get("src", ""))
-
-            seen_urls.add(full_url)
-
-            # Deep spec extraction from product page
-            specs, raw_desc, page_price_val, page_price_str = self._extract_product_specs(full_url)
-            final_price_val = price_val if price_val is not None else page_price_val
-            final_price_str = price_str if price_str is not None else page_price_str
-
-            # Parse model tokens from title and specs
-            combined_text = f"{title} {' '.join(specs.values())}"
-            tokens = ModelNormalizer.extract_model_tokens(combined_text)
-
-            # Extract retailer product ID if in query params (e.g. ?id=123)
-            pid = None
-            if "id=" in full_url:
-                pid = full_url.split("id=")[-1].split("&")[0]
-
-            candidates.append(
-                RetailerProduct(
-                    store_name=self.store_name,
-                    store_key=self.store_key,
-                    store_domain="sigma-computer.com",
-                    title=title,
-                    product_url=full_url,
-                    retailer_product_id=pid,
-                    mpn=tokens.get("mpn"),
-                    model_code=tokens.get("full_sku"),
-                    sub_model=tokens.get("sub_model"),
-                    base_model=tokens.get("base_model"),
-                    price_egp=final_price_val,
-                    price_str=final_price_str,
-                    in_stock=in_stock,
-                    thumbnail_url=img_url,
-                    specs=specs,
-                    raw_description=raw_desc,
-                )
-            )
+            product = self._parse_product(raw, level=2)
+            if product:
+                seen_slugs.add(slug)
+                candidates.append(product)
 
             if len(candidates) >= limit:
                 break
 
         return candidates
 
-    def _extract_product_specs(
-        self, product_url: str
-    ) -> tuple[dict[str, str], str | None, float | None, str | None]:
-        """Fetch Sigma Computer product page to extract specs table."""
-        try:
-            doc = self.engine.fetch(product_url, stealth=False)
-            raw = doc.raw
-            specs: dict[str, str] = {}
-            raw_desc = None
-            page_price_val = None
-            page_price_str = None
+    def _parse_product(self, raw: dict, level: int = 2) -> RetailerProduct | None:
+        """Parse raw product dictionary (from RSC or HTML fallback) into RetailerProduct."""
+        slug = raw.get("slug")
+        if not slug:
+            return None
 
-            if hasattr(raw, "css"):
-                # Price fallback
-                price_el = raw.css("span.price-new, h2.price, .product-price")
-                if price_el:
-                    page_price_val, page_price_str = self.parse_egp_price(price_el[0].text.strip())
+        title = raw.get("name") or raw.get("title") or ""
+        if not title or len(title) < 5:
+            return None
 
-                # OpenCart specification table
-                table_rows = raw.css("div#tab-specification tr, table.table-bordered tr, table tr")
-                for row in table_rows:
-                    cells = row.css("td, th")
+        product_url = f"{self.ITEM_BASE_URL}?id={slug}"
+
+        # Price parsing
+        price_val: float | None = None
+        price_str: str | None = None
+        price_data = raw.get("price")
+        if isinstance(price_data, dict):
+            current_p = price_data.get("current") or price_data.get("base")
+            if current_p is not None:
+                price_val, price_str = self.parse_egp_price(str(current_p))
+        elif isinstance(price_data, (int, float, str)):
+            price_val, price_str = self.parse_egp_price(str(price_data))
+        if price_val is None and raw.get("price_str"):
+            price_val, price_str = self.parse_egp_price(raw.get("price_str"))
+
+        # In-stock
+        in_stock = raw.get("is_stock")
+        if in_stock is None:
+            in_stock = True
+
+        # Thumbnail
+        thumbnail_url = None
+        thumb_data = raw.get("thumbnail")
+        if isinstance(thumb_data, dict):
+            thumbnail_url = thumb_data.get("url")
+        elif isinstance(thumb_data, str):
+            thumbnail_url = thumb_data
+
+        # Manufacturer SKU / MPN
+        raw_sku = raw.get("sku") or None
+
+        # Level 1 vs Level 2 specs
+        specs: dict[str, str] = {}
+        raw_desc: str | None = None
+
+        if level == 2:
+            pdp_specs, pdp_desc = self._extract_product_specs(product_url)
+            specs = pdp_specs
+            raw_desc = pdp_desc
+
+        # Model normalizer token extraction
+        combined_text = f"{title} {raw_sku or ''} {' '.join(specs.values())}"
+        tokens = ModelNormalizer.extract_model_tokens(combined_text)
+
+        mpn = raw_sku or tokens.get("mpn")
+        model_code = tokens.get("full_sku") or tokens.get("base_model")
+
+        return RetailerProduct(
+            store_name=self.store_name,
+            store_key=self.store_key,
+            store_domain=self.base_domain,
+            title=title,
+            product_url=product_url,
+            retailer_product_id=slug,
+            retailer_sku=raw_sku or slug,
+            mpn=mpn,
+            model_code=model_code,
+            sub_model=tokens.get("sub_model"),
+            base_model=tokens.get("base_model"),
+            price_egp=price_val,
+            price_str=price_str,
+            in_stock=in_stock,
+            thumbnail_url=thumbnail_url,
+            specs=specs,
+            raw_description=raw_desc,
+        )
+
+    def _extract_product_specs(self, product_url: str) -> tuple[dict[str, str], str | None]:
+        """Fetch Sigma Computer PDP to extract structured specifications array and description."""
+        specs: dict[str, str] = {}
+        raw_desc: str | None = None
+
+        html_text = self._fetch_html(product_url)
+        if not html_text:
+            return specs, raw_desc
+
+        # 1. Primary: Decode Next.js RSC payload
+        rsc_text = self._decode_rsc_payload(html_text)
+        if rsc_text:
+            spec_start = rsc_text.find('"specifications":[')
+            if spec_start != -1:
+                start = spec_start + len('"specifications":')
+                bracket_count = 0
+                end = -1
+                for i in range(start, len(rsc_text)):
+                    if rsc_text[i] == "[":
+                        bracket_count += 1
+                    elif rsc_text[i] == "]":
+                        bracket_count -= 1
+                        if bracket_count == 0:
+                            end = i + 1
+                            break
+                if end != -1:
+                    try:
+                        raw_specs = json.loads(rsc_text[start:end])
+                        for item in raw_specs:
+                            k = item.get("name", "").strip()
+                            v = item.get("value", "").strip()
+                            if k and v:
+                                specs[k] = v
+                    except Exception:
+                        pass
+
+            desc_match = re.search(r'"description":\s*("(?:\\.|[^"\\])*")', rsc_text)
+            if desc_match:
+                try:
+                    d = json.loads(desc_match.group(1))
+                    if d and d.strip() and d.strip().lower() != "page not found":
+                        raw_desc = d.strip()
+                except Exception:
+                    pass
+
+        # 2. Resilient Fallback: HTML table parsing
+        if not specs:
+            soup = BeautifulSoup(html_text, "html.parser")
+            for tbl in soup.find_all("table"):
+                for row in tbl.find_all("tr"):
+                    cells = row.find_all(["td", "th"])
                     if len(cells) >= 2:
-                        k = cells[0].text.strip()
-                        v = cells[1].text.strip()
+                        k = cells[0].get_text(strip=True)
+                        v = cells[1].get_text(strip=True)
                         if k and v and len(k) < 60:
                             specs[k] = v
 
-                desc_el = raw.css("div#tab-description, div[class*=\"description\"]")
-                if desc_el:
-                    raw_desc = desc_el[0].text.strip()[:1000]
+        return specs, raw_desc
 
-            return specs, raw_desc, page_price_val, page_price_str
-        except Exception as e:
-            print(f"[{self.store_name}] Failed to extract product details from {product_url}: {e}")
-            return {}, None, None, None
+    def _extract_products_from_html(self, html_text: str) -> list[dict]:
+        """Resilient DOM fallback for catalog cards if RSC extraction fails."""
+        soup = BeautifulSoup(html_text, "html.parser")
+        products: list[dict] = []
+        links = soup.find_all("a", href=lambda h: h and "/en/item?id=" in h)
+        seen = set()
+
+        for a in links:
+            href = a.get("href", "")
+            slug = href.split("id=")[-1].split("&")[0]
+            if not slug or slug in seen:
+                continue
+
+            card = a.parent
+            for _ in range(4):
+                if card and any("rounded" in c for c in card.get("class", [])):
+                    break
+                if card:
+                    card = card.parent
+
+            title = a.get_text(strip=True)
+            if not title and card:
+                title_elem = card.find(["h2", "h3", "h4", "p"])
+                if title_elem:
+                    title = title_elem.get_text(strip=True)
+
+            price_str = None
+            if card:
+                price_elem = card.find(string=re.compile(r"EGP|\d+,\d+", re.I))
+                if price_elem:
+                    price_str = str(price_elem).strip()
+
+            img_url = None
+            if card:
+                img_elem = card.find("img")
+                if img_elem:
+                    img_url = img_elem.get("src")
+
+            if title and len(title) >= 5:
+                seen.add(slug)
+                products.append({
+                    "slug": slug,
+                    "name": title,
+                    "sku": None,
+                    "price_str": price_str,
+                    "thumbnail": img_url,
+                    "is_stock": True,
+                })
+
+        return products
