@@ -17,5 +17,6 @@ venv/
 htmlcov/
 
 # Editor & OS files
+.vscode/
 .DS_Store
 Thumbs.db
