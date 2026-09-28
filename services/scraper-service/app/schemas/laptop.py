@@ -78,6 +78,22 @@ class AsusBrandCatalogResult(BaseModel):
     laptops: list[LaptopDetail | LaptopSummary] = Field(default_factory=list)
 
 
+class LenovoBrandCatalogResult(BaseModel):
+    """Top-level output schema for Lenovo brand scraping, stored as a standalone JSON."""
+    brand: str = "Lenovo"
+    official_catalog_url: str = "https://www.lenovo.com/eg/en/laptops/subseries-results/"
+    scrape_mode: str = "level2"  # "level1" or "level2"
+    until_model: str | None = None
+    latest_pointers: list[str] = Field(default_factory=list)
+    start_date: str | None = None
+    end_date: str | None = None
+    total_laptops: int = 0
+    total_configurations: int = 0
+    scraped_at: str = Field(default_factory=utcnow_str)
+    laptops: list[LaptopDetail | LaptopSummary] = Field(default_factory=list)
+
+
+
 # =============================================================================
 # Retailer Normalized Products & Matches (Multi-Store Layer)
 # =============================================================================

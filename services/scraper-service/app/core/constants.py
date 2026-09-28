@@ -18,7 +18,7 @@ BRAND_CATALOGS: dict[str, BrandConfig] = {
     "lenovo": {
         "name": "Lenovo",
         "slug": "lenovo",
-        "catalog_url": "https://www.lenovo.com/eg/en/d/laptops/",
+        "catalog_url": "https://www.lenovo.com/eg/en/laptops/subseries-results/",
         "region": "eg-en",
     },
     "hp": {

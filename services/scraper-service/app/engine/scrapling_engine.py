@@ -43,22 +43,35 @@ class ScraplingEngine(IScraperEngine):
                 kwargs["disable_resources"] = True
 
             page = StealthyFetcher.fetch(url, **kwargs)
+            html_val = getattr(page, "html_content", None)
+            if not html_val and hasattr(page, "body") and isinstance(page.body, (bytes, bytearray)):
+                html_val = page.body.decode("utf-8", errors="ignore")
+            if not html_val:
+                html_val = str(getattr(page, "text", "")) or str(page)
+
             return ScrapedDocument(
                 url=url,
                 status_code=getattr(page, "status", 200),
-                html=getattr(page, "html", "") or str(page),
+                html=html_val,
                 raw=page,
                 captured_xhr=getattr(page, "captured_xhr", []),
             )
         else:
             with FetcherSession(impersonate=self.default_impersonate) as session:
                 page = session.get(url, stealthy_headers=True, timeout=timeout / 1000)
+                html_val = getattr(page, "html_content", None)
+                if not html_val and hasattr(page, "body") and isinstance(page.body, (bytes, bytearray)):
+                    html_val = page.body.decode("utf-8", errors="ignore")
+                if not html_val:
+                    html_val = str(getattr(page, "text", "")) or str(page)
+
                 return ScrapedDocument(
                     url=url,
                     status_code=getattr(page, "status", 200),
-                    html=getattr(page, "html", "") or str(page),
+                    html=html_val,
                     raw=page,
                 )
+
 
     def fetch_json(self, url: str) -> dict[str, Any]:
         """Fetches a JSON endpoint using browser impersonation."""

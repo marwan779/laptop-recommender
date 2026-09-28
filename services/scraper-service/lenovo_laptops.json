@@ -1,0 +1,322 @@
+{
+  "brand": "Lenovo",
+  "official_catalog_url": "https://www.lenovo.com/eg/en/laptops/subseries-results/",
+  "scrape_mode": "level2",
+  "until_model": null,
+  "latest_pointers": [
+    "Lenovo Yoga Pro 7i Gen 11 Aura Edition 15 inch Intel",
+    "Lenovo LOQ Essential 15IRH11"
+  ],
+  "start_date": null,
+  "end_date": null,
+  "total_laptops": 2,
+  "total_configurations": 3,
+  "scraped_at": "2026-09-27T18:44:49.048403+00:00",
+  "laptops": [
+    {
+      "brand": "Lenovo",
+      "name": "Lenovo Yoga Pro 7i Gen 11 Aura Edition 15 inch Intel",
+      "price": null,
+      "price_egp": null,
+      "currency": "EGP",
+      "family": "Yoga",
+      "model": "LEN101Y0068",
+      "product_url": "https://www.lenovo.com/eg/en/p/laptops/yoga/yoga-pro-series/lenovo-yoga-pro-7i-gen-11-aura-edition-15-inch-intel/len101y0068",
+      "specs_url": "https://www.lenovo.com/eg/en/p/laptops/yoga/yoga-pro-series/lenovo-yoga-pro-7i-gen-11-aura-edition-15-inch-intel/len101y0068",
+      "store_url": null,
+      "thumbnail_url": null,
+      "release_date": "2023-04-01",
+      "release_year": 2023,
+      "scraped_at": "2026-09-27T18:44:44.511908+00:00",
+      "base_model": "Yoga Pro 7i",
+      "model_variants": [
+        "LEN101Y0068"
+      ],
+      "sku_part_number": "LEN101Y0068",
+      "copyright_year": null,
+      "gallery_images": [
+        "https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-hero.png",
+        "https://p2-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-1.png",
+        "https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-2.png",
+        "https://p1-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-3.png",
+        "https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-4.png",
+        "https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-5.png",
+        "https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-6.png",
+        "https://p3-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-7.png",
+        "https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-8.png",
+        "https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-9.png"
+      ],
+      "colors": [
+        "Luna Grey"
+      ],
+      "structured_specs": {
+        "processor": "Up to Intel® Core™ Ultra 9",
+        "operating_system": "Up to Windows 11 Pro",
+        "graphics": "• NVIDIA® GeForce RTX™ 5070 Laptop GPU \n • NVIDIA® GeForce RTX™ 5050 Laptop GPU \n • NVIDIA® GeForce RTX™ 5060 Laptop GPU",
+        "display": "15.3'' 2.5K (2560 x 1600), 165Hz variable refresh rate, 16:10 aspect ratio, PureSight Pro, OLED, 1100 nits peak brightness, 100% sRGB, 100% P3, 100% Adobe RGB, Dolby Vision®, VESA Certified Display HDR™ True Black 1000, Pantone validated, Pantone SkinTone validated, TÜV Low Blue Light Certification, Eyesafe® Certification, TÜV Flicker-Free certification, Glass, Touch optional",
+        "memory": "Up to 64GB LPDDR5X dual channel, 8533",
+        "storage": "Up to 2TB PCIe Gen 4 M.2",
+        "battery": "• 84WHr / 92.5Whr \n • Rapid Charge Express:15 minutes @3 Hours \n When the computer is under heavy load, the battery level may temporarily decrease even when the AC adapter is connected. This is a normal phenomenon.",
+        "audio": "• 4 stereo speakers \n • 2 x 2W (woofers), 2 x 2W (tweeters) \n • Dolby Atmos® \n • Smart Amplifier (AMP)",
+        "camera": "• 5MP Webcam \n • IR camera",
+        "io_ports": "Left: \n • 2 x USB-C® (Thunderbolt™ 4, USB 40Gbps) \n • HDMI 2.1 (supports resolution up to 10K@30Hz) \n • SD card reader (UHS-II) \n Right: \n • USB-A (USB 10Gbps) \n • USB-A (USB 10Gbps), Always On \n • Audio combo jack \n USB port transfer speeds are approximate and depend on many factors, such as processing capability of host/peripheral devices, file attributes, system configuration and operating environments; actual speeds will vary and may be less than expected.",
+        "network_communication": "• WiFi 7 \n • Bluetooth® 5.4 \n WiFi 7 requires Windows 11 OS, as well as a separate WiFi 7 router and / or other networking devices to meet full WiFi 7 requirements. It’s backwards compatible with prior WiFi standards & available only in countries where WiFi 7 is supported.",
+        "dimensions": "As thin as 16.7mm x 347mm x 242mm / As thin as 0.66” x 13.66” x 9.53”",
+        "weight": "Starting at 1.65kg / 3.64lbs",
+        "keyboard_touchpad": null,
+        "color": "Luna Grey",
+        "security": null,
+        "included_in_box": "• Yoga Pro 7i Aura Edition (15″ Intel) \n • 140Whr AC Adapter \n • Internal Battery \n • Quick Start Guide",
+        "power_supply": null
+      },
+      "all_specs": {
+        "Processor": "Up to Intel® Core™ Ultra 9",
+        "Operating System": "Up to Windows 11 Pro",
+        "Graphics": "• NVIDIA® GeForce RTX™ 5070 Laptop GPU \n • NVIDIA® GeForce RTX™ 5050 Laptop GPU \n • NVIDIA® GeForce RTX™ 5060 Laptop GPU",
+        "Memory": "Up to 64GB LPDDR5X dual channel, 8533",
+        "Storage": "Up to 2TB PCIe Gen 4 M.2",
+        "Battery": "• 84WHr / 92.5Whr \n • Rapid Charge Express:15 minutes @3 Hours \n When the computer is under heavy load, the battery level may temporarily decrease even when the AC adapter is connected. This is a normal phenomenon.",
+        "Audio": "• 4 stereo speakers \n • 2 x 2W (woofers), 2 x 2W (tweeters) \n • Dolby Atmos® \n • Smart Amplifier (AMP)",
+        "Camera": "• 5MP Webcam \n • IR camera",
+        "Ports/Slots": "Left: \n • 2 x USB-C® (Thunderbolt™ 4, USB 40Gbps) \n • HDMI 2.1 (supports resolution up to 10K@30Hz) \n • SD card reader (UHS-II) \n Right: \n • USB-A (USB 10Gbps) \n • USB-A (USB 10Gbps), Always On \n • Audio combo jack \n USB port transfer speeds are approximate and depend on many factors, such as processing capability of host/peripheral devices, file attributes, system configuration and operating environments; actual speeds will vary and may be less than expected.",
+        "Wireless": "• WiFi 7 \n • Bluetooth® 5.4 \n WiFi 7 requires Windows 11 OS, as well as a separate WiFi 7 router and / or other networking devices to meet full WiFi 7 requirements. It’s backwards compatible with prior WiFi standards & available only in countries where WiFi 7 is supported.",
+        "Display": "15.3'' 2.5K (2560 x 1600), 165Hz variable refresh rate, 16:10 aspect ratio, PureSight Pro, OLED, 1100 nits peak brightness, 100% sRGB, 100% P3, 100% Adobe RGB, Dolby Vision®, VESA Certified Display HDR™ True Black 1000, Pantone validated, Pantone SkinTone validated, TÜV Low Blue Light Certification, Eyesafe® Certification, TÜV Flicker-Free certification, Glass, Touch optional",
+        "Dimensions (H x W x D)": "As thin as 16.7mm x 347mm x 242mm / As thin as 0.66” x 13.66” x 9.53”",
+        "Weight": "Starting at 1.65kg / 3.64lbs",
+        "Pen": "Yoga Pen Gen 2 Supported",
+        "Color": "Luna Grey",
+        "Certifications / Registries": "• Carbon Neutral Certified \n • EPEAT® Gold where applicable* \n • ENERGY STAR® \n • FSC-certified packaging \n • MIL-STD-810H passed",
+        "Preloaded  Software": "• Adobe Creative Cloud Pro 2-month trial \n • Dolby® Access (Dolby Vision® and Atmos®) \n • McAfee+ Premium Trial \n • Microsoft 365 Trial \n • Lenovo Now \n • Lenovo Utility \n • Lenovo Vantage",
+        "What’s in the Box": "• Yoga Pro 7i Aura Edition (15″ Intel) \n • 140Whr AC Adapter \n • Internal Battery \n • Quick Start Guide"
+      },
+      "spec_sections": {
+        "Performance": {
+          "Processor": "Up to Intel® Core™ Ultra 9",
+          "Operating System": "Up to Windows 11 Pro",
+          "Graphics": "• NVIDIA® GeForce RTX™ 5070 Laptop GPU \n • NVIDIA® GeForce RTX™ 5050 Laptop GPU \n • NVIDIA® GeForce RTX™ 5060 Laptop GPU",
+          "Memory": "Up to 64GB LPDDR5X dual channel, 8533",
+          "Storage": "Up to 2TB PCIe Gen 4 M.2",
+          "Battery": "• 84WHr / 92.5Whr \n • Rapid Charge Express:15 minutes @3 Hours \n When the computer is under heavy load, the battery level may temporarily decrease even when the AC adapter is connected. This is a normal phenomenon.",
+          "Audio": "• 4 stereo speakers \n • 2 x 2W (woofers), 2 x 2W (tweeters) \n • Dolby Atmos® \n • Smart Amplifier (AMP)",
+          "Camera": "• 5MP Webcam \n • IR camera"
+        },
+        "Connectivity": {
+          "Ports/Slots": "Left: \n • 2 x USB-C® (Thunderbolt™ 4, USB 40Gbps) \n • HDMI 2.1 (supports resolution up to 10K@30Hz) \n • SD card reader (UHS-II) \n Right: \n • USB-A (USB 10Gbps) \n • USB-A (USB 10Gbps), Always On \n • Audio combo jack \n USB port transfer speeds are approximate and depend on many factors, such as processing capability of host/peripheral devices, file attributes, system configuration and operating environments; actual speeds will vary and may be less than expected.",
+          "Wireless": "• WiFi 7 \n • Bluetooth® 5.4 \n WiFi 7 requires Windows 11 OS, as well as a separate WiFi 7 router and / or other networking devices to meet full WiFi 7 requirements. It’s backwards compatible with prior WiFi standards & available only in countries where WiFi 7 is supported."
+        },
+        "Design": {
+          "Display": "15.3'' 2.5K (2560 x 1600), 165Hz variable refresh rate, 16:10 aspect ratio, PureSight Pro, OLED, 1100 nits peak brightness, 100% sRGB, 100% P3, 100% Adobe RGB, Dolby Vision®, VESA Certified Display HDR™ True Black 1000, Pantone validated, Pantone SkinTone validated, TÜV Low Blue Light Certification, Eyesafe® Certification, TÜV Flicker-Free certification, Glass, Touch optional",
+          "Dimensions (H x W x D)": "As thin as 16.7mm x 347mm x 242mm / As thin as 0.66” x 13.66” x 9.53”",
+          "Weight": "Starting at 1.65kg / 3.64lbs",
+          "Pen": "Yoga Pen Gen 2 Supported",
+          "Color": "Luna Grey"
+        },
+        "Sustainability": {
+          "Certifications / Registries": "• Carbon Neutral Certified \n • EPEAT® Gold where applicable* \n • ENERGY STAR® \n • FSC-certified packaging \n • MIL-STD-810H passed"
+        },
+        "Other information": {
+          "Preloaded  Software": "• Adobe Creative Cloud Pro 2-month trial \n • Dolby® Access (Dolby Vision® and Atmos®) \n • McAfee+ Premium Trial \n • Microsoft 365 Trial \n • Lenovo Now \n • Lenovo Utility \n • Lenovo Vantage",
+          "What’s in the Box": "• Yoga Pro 7i Aura Edition (15″ Intel) \n • 140Whr AC Adapter \n • Internal Battery \n • Quick Start Guide"
+        }
+      },
+      "configurations": [
+        {
+          "model": "LEN101Y0068",
+          "model_series": "LEN101Y0068",
+          "base_model": "Yoga Pro 7i",
+          "mpn": "LEN101Y0068",
+          "official_specs": {
+            "Processor": "Up to Intel® Core™ Ultra 9",
+            "Operating System": "Up to Windows 11 Pro",
+            "Graphics": "• NVIDIA® GeForce RTX™ 5070 Laptop GPU \n • NVIDIA® GeForce RTX™ 5050 Laptop GPU \n • NVIDIA® GeForce RTX™ 5060 Laptop GPU",
+            "Memory": "Up to 64GB LPDDR5X dual channel, 8533",
+            "Storage": "Up to 2TB PCIe Gen 4 M.2",
+            "Battery": "• 84WHr / 92.5Whr \n • Rapid Charge Express:15 minutes @3 Hours \n When the computer is under heavy load, the battery level may temporarily decrease even when the AC adapter is connected. This is a normal phenomenon.",
+            "Audio": "• 4 stereo speakers \n • 2 x 2W (woofers), 2 x 2W (tweeters) \n • Dolby Atmos® \n • Smart Amplifier (AMP)",
+            "Camera": "• 5MP Webcam \n • IR camera",
+            "Ports/Slots": "Left: \n • 2 x USB-C® (Thunderbolt™ 4, USB 40Gbps) \n • HDMI 2.1 (supports resolution up to 10K@30Hz) \n • SD card reader (UHS-II) \n Right: \n • USB-A (USB 10Gbps) \n • USB-A (USB 10Gbps), Always On \n • Audio combo jack \n USB port transfer speeds are approximate and depend on many factors, such as processing capability of host/peripheral devices, file attributes, system configuration and operating environments; actual speeds will vary and may be less than expected.",
+            "Wireless": "• WiFi 7 \n • Bluetooth® 5.4 \n WiFi 7 requires Windows 11 OS, as well as a separate WiFi 7 router and / or other networking devices to meet full WiFi 7 requirements. It’s backwards compatible with prior WiFi standards & available only in countries where WiFi 7 is supported.",
+            "Display": "15.3'' 2.5K (2560 x 1600), 165Hz variable refresh rate, 16:10 aspect ratio, PureSight Pro, OLED, 1100 nits peak brightness, 100% sRGB, 100% P3, 100% Adobe RGB, Dolby Vision®, VESA Certified Display HDR™ True Black 1000, Pantone validated, Pantone SkinTone validated, TÜV Low Blue Light Certification, Eyesafe® Certification, TÜV Flicker-Free certification, Glass, Touch optional",
+            "Dimensions (H x W x D)": "As thin as 16.7mm x 347mm x 242mm / As thin as 0.66” x 13.66” x 9.53”",
+            "Weight": "Starting at 1.65kg / 3.64lbs",
+            "Pen": "Yoga Pen Gen 2 Supported",
+            "Color": "Luna Grey",
+            "Certifications / Registries": "• Carbon Neutral Certified \n • EPEAT® Gold where applicable* \n • ENERGY STAR® \n • FSC-certified packaging \n • MIL-STD-810H passed",
+            "Preloaded  Software": "• Adobe Creative Cloud Pro 2-month trial \n • Dolby® Access (Dolby Vision® and Atmos®) \n • McAfee+ Premium Trial \n • Microsoft 365 Trial \n • Lenovo Now \n • Lenovo Utility \n • Lenovo Vantage",
+            "What’s in the Box": "• Yoga Pro 7i Aura Edition (15″ Intel) \n • 140Whr AC Adapter \n • Internal Battery \n • Quick Start Guide"
+          },
+          "stores": []
+        }
+      ],
+      "raw_markdown": "indirect-subseries-pdp-default-halo | Lenovo Egypt\n\n☰\n\n\n[![Lenovo Logo](https://p4-ofp.static.pub/fes/cms/2022/11/14/h82es5y402b4rh1089sf86ay7n9sdl721044.png)](https://www.lenovo.com/eg/en/?Redirect=False)skip to main content\n\n* [Artificial Intelligence](https://www.lenovo.com/eg/en/services/ai-services/)\n* [Products](https://www.lenovo.com/eg/en/pc/)\n* [Business Solutions](https://www.lenovo.com/eg/en/solutions/)\n* [Support](https://support.lenovo.com/)\n* [About Lenovo](https://www.lenovo.com/eg/en/about/)\n\n* [Hybrid AI Solutions](https://www.lenovo.com/eg/en/servers-storage/lenovo-ai-infrastructure/)\n* [AI Servers & Storage](https://www.lenovo.com/eg/en/servers-storage/solutions/enterprise-ai/)\n* [AI Laptops & Workstations](https://www.lenovo.com/eg/en/ai-pcs/)\n* [AI Services](https://www.lenovo.com/eg/en/services/ai-services/)\n\n1. [Home](/eg/en)\n2. *>*[Laptops](/eg/en/laptops/)\n3. *>*[Yoga](/eg/en/c/laptops/yoga/)\n4. *>*[Yoga Pro](/eg/en/c/laptops/yoga/yoga-pro-series/)\n5. *>*Lenovo Yoga Pro 7i Gen 11 Aura Edition 15 inch Intel\n\n[![Adobe membership badge](https://p1-ofp.static.pub/ShareResource/ww/img/partner-logos/adobe-cc-membership-badge-125x60.png)](https://www.lenovo.com/eg/en/adobe-membership/)\n\n[![Lenovo-intel-core-series-3-ultra-9-badge](https://p1-ofp.static.pub/ShareResource/ww/img/processor-logos/lenovo-intel-core-series-3-ultra-9-badge.png)](https://www.lenovo.com/eg/en/intel/)\n\n![Front right angle view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel).](//p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-hero.png?width=584&height=584)\n\nLenovo Yoga Pro 7i Gen 11 Aura Edition 15 inch Intel\n\n* ![Front right angle view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel).](https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-hero.png?width=584&height=584)\n\n![Top view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel), closed, with a Copilot+ logo beneath it.](https://p1-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-10.png?width=58&height=58)\n\n![Bottom view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel) laptop. ](https://p3-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-11.png?width=58&height=58)\n\n![Front view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel) with a pen above the touchpad and a Copilot+ logo beneath it.](https://p2-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-12.png?width=58&height=58)\n\n![Meet the computer you can talk to. Next-level you. Now with AI.](https://p2-ofp.static.pub/ShareResource/optimized/shared/gallery/consumer-copilot-en-us.jpg?width=58&height=58)\n\n![Front right angle view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel).](https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-hero.png?width=58&height=58)\n\n![Front left angle view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel) laptop.](https://p2-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-1.png?width=58&height=58)\n\n![Back left view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel) with an optional pen next to it. ](https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-2.png?width=58&height=58)\n\n![Front view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel) laptop. ](https://p1-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-3.png?width=58&height=58)\n\n![Back right angle view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel) with a pen next to it and a Copilot+ logo beneath it.](https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-4.png?width=58&height=58)\n\n![Right profile view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel) laptop. ](https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-5.png?width=58&height=58)\n\n![Left profile view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel) laptop.  ](https://p4-ofp.static.pub/ShareResource/optimized/pdp/yoga/yoga-pro-series/len101y0068/lenovo-yoga-pro-7i-gen-11-aura-edition-15-intel-gallery-6.png?width=58&height=58)\n\n![Left angle view of the Lenovo Yoga Pro 7i Gen 11 Aura Edition (15” Intel) opened up. ](https://p3-ofp.static.pub/ShareResource/optimized/pd",
+      "extra_metadata": {
+        "product_number": "LEN101Y0068",
+        "tables_count": 5
+      }
+    },
+    {
+      "brand": "Lenovo",
+      "name": "Lenovo LOQ Essential 15IRH11",
+      "price": null,
+      "price_egp": null,
+      "currency": "EGP",
+      "family": "LOQ",
+      "model": "15IRH11",
+      "product_url": "https://www.lenovo.com/eg/en/p/laptops/loq-laptops/lenovo-loq-essential-15irh11/len101q0019",
+      "specs_url": "https://www.lenovo.com/eg/en/p/laptops/loq-laptops/lenovo-loq-essential-15irh11/len101q0019",
+      "store_url": null,
+      "thumbnail_url": null,
+      "release_date": "2024-01-01",
+      "release_year": 2024,
+      "scraped_at": "2026-09-27T18:44:49.047859+00:00",
+      "base_model": "LOQ Essential 15IRH11",
+      "model_variants": [
+        "LEN101Q0019",
+        "15IRH11"
+      ],
+      "sku_part_number": "LEN101Q0019",
+      "copyright_year": null,
+      "gallery_images": [
+        "https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/hero-laptop-front-facing.png",
+        "https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-1-laptop-front-semi-closed.png",
+        "https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-2-laptop-front-facing.png",
+        "https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-3-laptop-thin.png",
+        "https://p2-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-4-laptop-side-profile.png",
+        "https://p2-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-5-laptop-cover-closed.png",
+        "https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-6-laptop-back-side.png",
+        "https://p1-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-7-laptop-back-cover.png",
+        "https://p4-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-8-laptop-rear.png",
+        "https://p4-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-9-laptop-open-back.png"
+      ],
+      "colors": [
+        "Luna Grey",
+        "Eclipse Black"
+      ],
+      "structured_specs": {
+        "processor": "• Intel® Core™ 7 230H \n • Intel® Core™ 5 205H",
+        "operating_system": "• Windows 11 Pro \n • Windows 11 Home \n • No OS",
+        "graphics": "• NVIDIA® GeForce RTX™ 3050 Laptop GPU (6GB GDDR6, 75W incl. 15W Boost) \n • NVIDIA® GeForce RTX™ 3050 Laptop GPU (4GB GDDR6, 75W incl. 15W Boost)",
+        "display": "15.3” WUXGA (1920 x 1200) IPS LCD (16:10 aspect ratio, 165Hz refresh, 100% sRGB, 300 nits, 3ms OD)",
+        "memory": "• 32GB (2 x 16GB) 5200 MT/s \n • 32GB (2 x 16GB) 4800 MT/s \n • 16GB (1 x 16GB) 5200 MT/s \n • 16GB (1 x 16GB) 4800 MT/s \n • 8GB (1 x 8GB) 5200 MT/s \n • 8GB (1 x 8GB) 4800 MT/s",
+        "storage": "• 1TB M.2 2242 PCIe SSD (Gen 4) \n • 512GB M.2 2242 PCIe SSD (Gen 4)",
+        "battery": "60Whr Rapid Charge Pro",
+        "audio": "• 2 X 2W Speaker System \n • Nahimic® Audio",
+        "camera": "• Built-in 720p (HD) Webcam \n • E-Shutter",
+        "io_ports": "Left: \n • USB-A (USB 5Gbps) \n • Headphone / mic combo \n • USB-C® (USB 480Mbps) \n Right: \n • E-Shutter Button \n • USB-A (USB 5Gbps) \n Rear: \n • USB-A (USB 10Gbps) \n • Ethernet (RJ45) \n • Power-in \n • HDMI® 2.1 \n USB port transfer speeds are approximate and depend on many factors, such as processing capability of host/peripheral devices, file attributes, system configuration and operating environments; actual speeds will vary and may be less than expected.",
+        "network_communication": "• WiFi 6 2x2AX \n • Bluetooth® 5.3",
+        "dimensions": "20.9–23.25mm x 344.9mm x 254.83mm / 0.82”–0.92” x 13.58” x 10.03”",
+        "weight": "Starting at 2.1kg / 4.6lbs",
+        "keyboard_touchpad": "• 1.6mm / 0.3mm Dish \n • Black \n • Single-BL Purple \n • TrueStrike GKB",
+        "color": "• Luna Grey \n • Eclipse Black",
+        "security": null,
+        "included_in_box": "• Lenovo LOQ Essential 15IRH11 laptop \n • Power Adapter \n • Quick-Start Guide",
+        "power_supply": null
+      },
+      "all_specs": {
+        "Processor": "• Intel® Core™ 7 230H \n • Intel® Core™ 5 205H",
+        "Operating System": "• Windows 11 Pro \n • Windows 11 Home \n • No OS",
+        "Graphics": "• NVIDIA® GeForce RTX™ 3050 Laptop GPU (6GB GDDR6, 75W incl. 15W Boost) \n • NVIDIA® GeForce RTX™ 3050 Laptop GPU (4GB GDDR6, 75W incl. 15W Boost)",
+        "Memory": "• 32GB (2 x 16GB) 5200 MT/s \n • 32GB (2 x 16GB) 4800 MT/s \n • 16GB (1 x 16GB) 5200 MT/s \n • 16GB (1 x 16GB) 4800 MT/s \n • 8GB (1 x 8GB) 5200 MT/s \n • 8GB (1 x 8GB) 4800 MT/s",
+        "Storage": "• 1TB M.2 2242 PCIe SSD (Gen 4) \n • 512GB M.2 2242 PCIe SSD (Gen 4)",
+        "Battery": "60Whr Rapid Charge Pro",
+        "Audio": "• 2 X 2W Speaker System \n • Nahimic® Audio",
+        "Camera": "• Built-in 720p (HD) Webcam \n • E-Shutter",
+        "Ports/Slots": "Left: \n • USB-A (USB 5Gbps) \n • Headphone / mic combo \n • USB-C® (USB 480Mbps) \n Right: \n • E-Shutter Button \n • USB-A (USB 5Gbps) \n Rear: \n • USB-A (USB 10Gbps) \n • Ethernet (RJ45) \n • Power-in \n • HDMI® 2.1 \n USB port transfer speeds are approximate and depend on many factors, such as processing capability of host/peripheral devices, file attributes, system configuration and operating environments; actual speeds will vary and may be less than expected.",
+        "Wireless": "• WiFi 6 2x2AX \n • Bluetooth® 5.3",
+        "Display": "15.3” WUXGA (1920 x 1200) IPS LCD (16:10 aspect ratio, 165Hz refresh, 100% sRGB, 300 nits, 3ms OD)",
+        "Dimensions (H x W x D)": "20.9–23.25mm x 344.9mm x 254.83mm / 0.82”–0.92” x 13.58” x 10.03”",
+        "Weight": "Starting at 2.1kg / 4.6lbs",
+        "Keyboard": "• 1.6mm / 0.3mm Dish \n • Black \n • Single-BL Purple \n • TrueStrike GKB",
+        "Color": "• Luna Grey \n • Eclipse Black",
+        "Preloaded Software": "• Legion Space \n • McAfee Anti-Virus (trial) \n • Microsoft Office (trial) \n • Xbox Game Pass (trial)",
+        "What’s in the Box": "• Lenovo LOQ Essential 15IRH11 laptop \n • Power Adapter \n • Quick-Start Guide"
+      },
+      "spec_sections": {
+        "Performance": {
+          "Processor": "• Intel® Core™ 7 230H \n • Intel® Core™ 5 205H",
+          "Operating System": "• Windows 11 Pro \n • Windows 11 Home \n • No OS",
+          "Graphics": "• NVIDIA® GeForce RTX™ 3050 Laptop GPU (6GB GDDR6, 75W incl. 15W Boost) \n • NVIDIA® GeForce RTX™ 3050 Laptop GPU (4GB GDDR6, 75W incl. 15W Boost)",
+          "Memory": "• 32GB (2 x 16GB) 5200 MT/s \n • 32GB (2 x 16GB) 4800 MT/s \n • 16GB (1 x 16GB) 5200 MT/s \n • 16GB (1 x 16GB) 4800 MT/s \n • 8GB (1 x 8GB) 5200 MT/s \n • 8GB (1 x 8GB) 4800 MT/s",
+          "Storage": "• 1TB M.2 2242 PCIe SSD (Gen 4) \n • 512GB M.2 2242 PCIe SSD (Gen 4)",
+          "Battery": "60Whr Rapid Charge Pro",
+          "Audio": "• 2 X 2W Speaker System \n • Nahimic® Audio",
+          "Camera": "• Built-in 720p (HD) Webcam \n • E-Shutter"
+        },
+        "Connectivity": {
+          "Ports/Slots": "Left: \n • USB-A (USB 5Gbps) \n • Headphone / mic combo \n • USB-C® (USB 480Mbps) \n Right: \n • E-Shutter Button \n • USB-A (USB 5Gbps) \n Rear: \n • USB-A (USB 10Gbps) \n • Ethernet (RJ45) \n • Power-in \n • HDMI® 2.1 \n USB port transfer speeds are approximate and depend on many factors, such as processing capability of host/peripheral devices, file attributes, system configuration and operating environments; actual speeds will vary and may be less than expected.",
+          "Wireless": "• WiFi 6 2x2AX \n • Bluetooth® 5.3"
+        },
+        "Design": {
+          "Display": "15.3” WUXGA (1920 x 1200) IPS LCD (16:10 aspect ratio, 165Hz refresh, 100% sRGB, 300 nits, 3ms OD)",
+          "Dimensions (H x W x D)": "20.9–23.25mm x 344.9mm x 254.83mm / 0.82”–0.92” x 13.58” x 10.03”",
+          "Weight": "Starting at 2.1kg / 4.6lbs",
+          "Keyboard": "• 1.6mm / 0.3mm Dish \n • Black \n • Single-BL Purple \n • TrueStrike GKB",
+          "Color": "• Luna Grey \n • Eclipse Black"
+        },
+        "Other information": {
+          "Preloaded Software": "• Legion Space \n • McAfee Anti-Virus (trial) \n • Microsoft Office (trial) \n • Xbox Game Pass (trial)",
+          "What’s in the Box": "• Lenovo LOQ Essential 15IRH11 laptop \n • Power Adapter \n • Quick-Start Guide"
+        }
+      },
+      "configurations": [
+        {
+          "model": "LEN101Q0019",
+          "model_series": "15IRH11",
+          "base_model": "LOQ Essential 15IRH11",
+          "mpn": "LEN101Q0019",
+          "official_specs": {
+            "Processor": "• Intel® Core™ 7 230H \n • Intel® Core™ 5 205H",
+            "Operating System": "• Windows 11 Pro \n • Windows 11 Home \n • No OS",
+            "Graphics": "• NVIDIA® GeForce RTX™ 3050 Laptop GPU (6GB GDDR6, 75W incl. 15W Boost) \n • NVIDIA® GeForce RTX™ 3050 Laptop GPU (4GB GDDR6, 75W incl. 15W Boost)",
+            "Memory": "• 32GB (2 x 16GB) 5200 MT/s \n • 32GB (2 x 16GB) 4800 MT/s \n • 16GB (1 x 16GB) 5200 MT/s \n • 16GB (1 x 16GB) 4800 MT/s \n • 8GB (1 x 8GB) 5200 MT/s \n • 8GB (1 x 8GB) 4800 MT/s",
+            "Storage": "• 1TB M.2 2242 PCIe SSD (Gen 4) \n • 512GB M.2 2242 PCIe SSD (Gen 4)",
+            "Battery": "60Whr Rapid Charge Pro",
+            "Audio": "• 2 X 2W Speaker System \n • Nahimic® Audio",
+            "Camera": "• Built-in 720p (HD) Webcam \n • E-Shutter",
+            "Ports/Slots": "Left: \n • USB-A (USB 5Gbps) \n • Headphone / mic combo \n • USB-C® (USB 480Mbps) \n Right: \n • E-Shutter Button \n • USB-A (USB 5Gbps) \n Rear: \n • USB-A (USB 10Gbps) \n • Ethernet (RJ45) \n • Power-in \n • HDMI® 2.1 \n USB port transfer speeds are approximate and depend on many factors, such as processing capability of host/peripheral devices, file attributes, system configuration and operating environments; actual speeds will vary and may be less than expected.",
+            "Wireless": "• WiFi 6 2x2AX \n • Bluetooth® 5.3",
+            "Display": "15.3” WUXGA (1920 x 1200) IPS LCD (16:10 aspect ratio, 165Hz refresh, 100% sRGB, 300 nits, 3ms OD)",
+            "Dimensions (H x W x D)": "20.9–23.25mm x 344.9mm x 254.83mm / 0.82”–0.92” x 13.58” x 10.03”",
+            "Weight": "Starting at 2.1kg / 4.6lbs",
+            "Keyboard": "• 1.6mm / 0.3mm Dish \n • Black \n • Single-BL Purple \n • TrueStrike GKB",
+            "Color": "• Luna Grey \n • Eclipse Black",
+            "Preloaded Software": "• Legion Space \n • McAfee Anti-Virus (trial) \n • Microsoft Office (trial) \n • Xbox Game Pass (trial)",
+            "What’s in the Box": "• Lenovo LOQ Essential 15IRH11 laptop \n • Power Adapter \n • Quick-Start Guide"
+          },
+          "stores": []
+        },
+        {
+          "model": "15IRH11",
+          "model_series": "15IRH11",
+          "base_model": "LOQ Essential 15IRH11",
+          "mpn": "LEN101Q0019",
+          "official_specs": {
+            "Processor": "• Intel® Core™ 7 230H \n • Intel® Core™ 5 205H",
+            "Operating System": "• Windows 11 Pro \n • Windows 11 Home \n • No OS",
+            "Graphics": "• NVIDIA® GeForce RTX™ 3050 Laptop GPU (6GB GDDR6, 75W incl. 15W Boost) \n • NVIDIA® GeForce RTX™ 3050 Laptop GPU (4GB GDDR6, 75W incl. 15W Boost)",
+            "Memory": "• 32GB (2 x 16GB) 5200 MT/s \n • 32GB (2 x 16GB) 4800 MT/s \n • 16GB (1 x 16GB) 5200 MT/s \n • 16GB (1 x 16GB) 4800 MT/s \n • 8GB (1 x 8GB) 5200 MT/s \n • 8GB (1 x 8GB) 4800 MT/s",
+            "Storage": "• 1TB M.2 2242 PCIe SSD (Gen 4) \n • 512GB M.2 2242 PCIe SSD (Gen 4)",
+            "Battery": "60Whr Rapid Charge Pro",
+            "Audio": "• 2 X 2W Speaker System \n • Nahimic® Audio",
+            "Camera": "• Built-in 720p (HD) Webcam \n • E-Shutter",
+            "Ports/Slots": "Left: \n • USB-A (USB 5Gbps) \n • Headphone / mic combo \n • USB-C® (USB 480Mbps) \n Right: \n • E-Shutter Button \n • USB-A (USB 5Gbps) \n Rear: \n • USB-A (USB 10Gbps) \n • Ethernet (RJ45) \n • Power-in \n • HDMI® 2.1 \n USB port transfer speeds are approximate and depend on many factors, such as processing capability of host/peripheral devices, file attributes, system configuration and operating environments; actual speeds will vary and may be less than expected.",
+            "Wireless": "• WiFi 6 2x2AX \n • Bluetooth® 5.3",
+            "Display": "15.3” WUXGA (1920 x 1200) IPS LCD (16:10 aspect ratio, 165Hz refresh, 100% sRGB, 300 nits, 3ms OD)",
+            "Dimensions (H x W x D)": "20.9–23.25mm x 344.9mm x 254.83mm / 0.82”–0.92” x 13.58” x 10.03”",
+            "Weight": "Starting at 2.1kg / 4.6lbs",
+            "Keyboard": "• 1.6mm / 0.3mm Dish \n • Black \n • Single-BL Purple \n • TrueStrike GKB",
+            "Color": "• Luna Grey \n • Eclipse Black",
+            "Preloaded Software": "• Legion Space \n • McAfee Anti-Virus (trial) \n • Microsoft Office (trial) \n • Xbox Game Pass (trial)",
+            "What’s in the Box": "• Lenovo LOQ Essential 15IRH11 laptop \n • Power Adapter \n • Quick-Start Guide"
+          },
+          "stores": []
+        }
+      ],
+      "raw_markdown": "Lenovo LOQ Essential 15IRH11 | Entry-level gaming laptop for students | Lenovo Egypt\n\n☰\n\n\n[![Lenovo Logo](https://p4-ofp.static.pub/fes/cms/2022/11/14/h82es5y402b4rh1089sf86ay7n9sdl721044.png)](https://www.lenovo.com/eg/en/?Redirect=False)skip to main content\n\n* [Artificial Intelligence](https://www.lenovo.com/eg/en/services/ai-services/)\n* [Products](https://www.lenovo.com/eg/en/pc/)\n* [Business Solutions](https://www.lenovo.com/eg/en/solutions/)\n* [Support](https://support.lenovo.com/)\n* [About Lenovo](https://www.lenovo.com/eg/en/about/)\n\n* [Hybrid AI Solutions](https://www.lenovo.com/eg/en/servers-storage/lenovo-ai-infrastructure/)\n* [AI Servers & Storage](https://www.lenovo.com/eg/en/servers-storage/solutions/enterprise-ai/)\n* [AI Laptops & Workstations](https://www.lenovo.com/eg/en/ai-pcs/)\n* [AI Services](https://www.lenovo.com/eg/en/services/ai-services/)\n\n1. [Home](/eg/en)\n2. *>*[Laptops](/eg/en/laptops/)\n3. *>*[Lenovo LOQ Laptops](/eg/en/c/laptops/loq-laptops/)\n4. *>*Lenovo LOQ Essential 15IRH11\n\n![Front view of a laptop with colorful fantasy scene on display, Lenovo LOQ Essential 15IRH11. ](//p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/hero-laptop-front-facing.png?width=584&height=584)\n\nBuilt by Masters. Born to Begin\n\nLenovo LOQ Essential 15IRH11\n\n* ![Front view of a laptop with colorful fantasy scene on display, Lenovo LOQ Essential 15IRH11. ](https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/hero-laptop-front-facing.png?width=584&height=584)\n\n![Front view, with a fantasy sequence on the display and purple key lighting, of an Eclipse Black Lenovo LOQ Essential 15IRH11 laptop.](https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-14-laptop-front-facing.png?width=58&height=58)\n\n![Top view, showing purple backlit keybord, of an Eclipse Black Lenovo LOQ Essential 15IRH11 laptop.](https://p4-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-15-laptop-keyboard.png?width=58&height=58)\n\n![Top view of a closed Eclipse Black Lenovo LOQ Essential 15IRH11 laptop.](https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-16-laptop-cover.png?width=58&height=58)\n\n![Windows is fast, powerful & more secure than ever. Meet the computer you can talk to. ](https://p1-ofp.static.pub/ShareResource/optimized/shared/gallery/consumer-windows-11-en-us.jpg?width=58&height=58)\n\n![Front view of a laptop with colorful fantasy scene on display, Lenovo LOQ Essential 15IRH11. ](https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/hero-laptop-front-facing.png?width=58&height=58)\n\n![Semi-closed laptop with a vibrant purple-lit keyboard and cosmic artwork on screen, Lenovo LOQ Essential 15IRH11. ](https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-1-laptop-front-semi-closed.png?width=58&height=58)\n\n![Front-facing view of a laptop with purple-lit keyboard and colorful cosmic artwork on display, Lenovo LOQ Essential 15IRH11. ](https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-2-laptop-front-facing.png?width=58&height=58)\n\n![Side view of a thin laptop, screen displaying vibrant cosmic art, Lenovo LOQ Essential 15IRH11. ](https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-3-laptop-thin.png?width=58&height=58)\n\n![Side profile of an ultra-thin laptop highlighting its sleek design, Lenovo LOQ Essential 15IRH11. ](https://p2-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-4-laptop-side-profile.png?width=58&height=58)\n\n![Closed laptop cover with LOQ logo embossed on it, Lenovo LOQ Essential 15IRH11. ](https://p2-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-5-laptop-cover-closed.png?width=58&height=58)\n\n![Backside of a closed laptop, showcasing cooling vents and LOQ logo, Lenovo LOQ Essential 15IRH11. ](https://p3-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-6-laptop-back-side.png?width=58&height=58)\n\n![Back cover view of a closed laptop with venting system design, Lenovo LOQ Essential 15IRH11. ](https://p1-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-7-laptop-back-cover.png?width=58&height=58)\n\n![Partial view of a laptop with logo and purple backlit keyboard visible, Lenovo LOQ Essential 15IRH11. ](https://p4-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-8-laptop-rear.png?width=58&height=58)\n\n![Underneath perspective showing laptop’s cooling vents and logo, Lenovo LOQ Essential 15IRH11. ](https://p4-ofp.static.pub/ShareResource/optimized/pdp/loq/loq-15-series/LEN101Q0019/gallery-9-laptop-open-back.png?width=58&height=58)\n\n![Side profile of a thin laptop showing ports, Lenovo LOQ Essential 15IRH11. ](https://p2-ofp.static.pub/ShareResource/optimiz",
+      "extra_metadata": {
+        "product_number": "LEN101Q0019",
+        "tables_count": 4
+      }
+    }
+  ]
+}

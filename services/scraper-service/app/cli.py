@@ -10,9 +10,40 @@ from app.core.constants import BRAND_CATALOGS
 from app.engine.scrapling_engine import ScraplingEngine
 from app.scrapers.asus import AsusBrandScraper
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 SUPPORTED_STORES = ["compumarts", "sigma", "twob"]
 
-console = Console()
+console = Console(highlight=False)
+
+
+def safe_terminal_text(text: str) -> str:
+    """Sanitize strings for ASCII/Windows terminal output."""
+    if not text:
+        return ""
+    # Replace common problematic characters
+    replacements = {
+        "\u2033": '"',
+        "\u2032": "'",
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u2018": "'",
+        "\u2019": "'",
+        "\u2022": "*",
+        "\xae": "(R)",
+        "\u2122": "(TM)",
+        "\u2013": "-",
+        "\u2014": "-",
+    }
+    for orig, repl in replacements.items():
+        text = text.replace(orig, repl)
+    return text
+
 
 
 def main():
@@ -159,9 +190,13 @@ def main():
         if args.brand == "asus":
             from app.services.asus_scraper_service import AsusScraperService
             brand_service = AsusScraperService(engine=engine)
+        elif args.brand == "lenovo":
+            from app.services.lenovo_scraper_service import LenovoScraperService
+            brand_service = LenovoScraperService(engine=engine)
         else:
-            console.print(f"[red]Brand service for '{args.brand}' is in progress. Using ASUS reference.[/red]")
+            console.print(f"[red]Brand service for '{args.brand}' is in progress. Supported brands: asus, lenovo.[/red]")
             sys.exit(1)
+
 
         mode_str = f"level{args.level}"
         catalog_result = brand_service.scrape(
@@ -197,8 +232,8 @@ def main():
         elif args.level == 2:
             for detail in catalog_result.laptops:
                 console.print(f"\n[bold blue]{'='*80}[/bold blue]")
-                console.print(f"[bold white on blue] LAPTOP: {detail.name} ({detail.family or 'Unknown'}) [/bold white on blue]")
-                console.print(f"[cyan]Model / Variants:[/cyan] [bold magenta]{detail.model}[/bold magenta] ({len(detail.model_variants)} variants)")
+                console.print(f"[bold white on blue] LAPTOP: {safe_terminal_text(detail.name)} ({detail.family or 'Unknown'}) [/bold white on blue]")
+                console.print(f"[cyan]Model / Variants:[/cyan] [bold magenta]{safe_terminal_text(detail.model or '')}[/bold magenta] ({len(detail.model_variants)} variants)")
                 console.print(f"[cyan]Est. Release Date / Year:[/cyan] [bold yellow]{detail.release_date or detail.release_year or 'N/A'}[/bold yellow]")
                 console.print(f"[cyan]Price (EGP):[/cyan] [bold green]{detail.price or 'N/A'}[/bold green]")
                 console.print(f"[cyan]Configurations Identified:[/cyan] [bold cyan]{len(detail.configurations)}[/bold cyan]")
@@ -211,8 +246,9 @@ def main():
 
                     for k, v in detail.structured_specs.items():
                         if v:
-                            spec_table.add_row(k.replace('_', ' ').title(), v[:120] + ("..." if len(v) > 120 else ""))
+                            spec_table.add_row(k.replace('_', ' ').title(), safe_terminal_text(v[:120]) + ("..." if len(v) > 120 else ""))
                     console.print(spec_table)
+
 
         pointers_str = ", ".join(catalog_result.latest_pointers) if catalog_result.latest_pointers else "None"
         console.print(
