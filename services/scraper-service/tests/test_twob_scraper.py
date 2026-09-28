@@ -100,33 +100,35 @@ def test_twob_mock_pdp_specs(monkeypatch):
 
 def test_twob_catalog_watermark_stop(monkeypatch):
     scraper = TwoBStoreScraper()
+    # Notice: In HTML, the older item (id 100) appears first, and newest (id 300) appears last.
+    # Our scraper must sort by entity_id descending so 300 is first, 200 triggers watermark, and 100 is omitted.
     mock_catalog_html = """
     <html>
       <body>
         <div class="products wrapper grid products-grid">
           <ol class="products list items product-items">
             <li class="item product product-item">
-              <div class="product-item-info" data-product-id="101">
-                <a class="product-item-link" href="https://2b.com.eg/en/laptop-newest.html">
+              <div class="product-item-info" data-product-id="100">
+                <a class="product-item-link" href="https://2b.com.eg/en/laptop-older.html">
                   Apple MacBook Neo - A18 Pro - 8GB - 512GB SSD
                 </a>
-                <span class="price">EGP 80,849</span>
+                <span class="price">EGP 53,699</span>
               </div>
             </li>
             <li class="item product product-item">
-              <div class="product-item-info" data-product-id="102">
+              <div class="product-item-info" data-product-id="200">
                 <a class="product-item-link" href="https://2b.com.eg/en/laptop-watermark.html">
                   HP OmniBook 5 Flip 14-km0007ne Laptop Watermark Stop
                 </a>
-                <span class="price">EGP 83,499</span>
+                <span class="price">EGP 60,999</span>
               </div>
             </li>
             <li class="item product product-item">
-              <div class="product-item-info" data-product-id="103">
-                <a class="product-item-link" href="https://2b.com.eg/en/laptop-older.html">
-                  ASUS Vivobook 15 M1502NAQ Older
+              <div class="product-item-info" data-product-id="300">
+                <a class="product-item-link" href="https://2b.com.eg/en/laptop-newest.html">
+                  HP HyperX Omen 16-ap1001ne Newest Laptop
                 </a>
-                <span class="price">EGP 41,999</span>
+                <span class="price">EGP 74,999</span>
               </div>
             </li>
           </ol>
@@ -136,11 +138,12 @@ def test_twob_catalog_watermark_stop(monkeypatch):
     """
     monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_catalog_html)
 
-    # Crawl with watermark stopping at 14-km0007ne
+    # Crawl with watermark stopping at 14-km0007ne (ID 200)
     products = scraper.scrape_catalog(level=1, until_model="14-km0007ne", max_pages=1)
     assert len(products) == 1
-    assert "Apple MacBook Neo" in products[0].title
-    assert products[0].price_egp == 80849.0
+    assert "HP HyperX Omen 16-ap1001ne" in products[0].title
+    assert products[0].retailer_product_id == "300"
+    assert products[0].price_egp == 74999.0
     assert products[0].product_url == "https://2b.com.eg/en/laptop-newest.html"
 
 
