@@ -5,6 +5,7 @@ from app.stores.base import BaseStoreScraper
 from app.stores.compumarts import CompumartsStoreScraper
 from app.stores.elbadr import ElBadrStoreScraper
 from app.stores.sigma import SigmaComputerStoreScraper
+from app.stores.tradeline import TradelineStoreScraper
 from app.stores.twob import TwoBStoreScraper
 
 # Extensible registry of Egyptian retail stores
@@ -13,6 +14,7 @@ STORE_REGISTRY: dict[str, Type[BaseStoreScraper]] = {
     "elbadr": ElBadrStoreScraper,
     "sigma": SigmaComputerStoreScraper,
     "twob": TwoBStoreScraper,
+    "tradeline": TradelineStoreScraper,
 }
 
 
