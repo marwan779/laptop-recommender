@@ -353,7 +353,7 @@ class AsusBrandScraper(BaseBrandScraper):
         }
 
         watermark_msg = f" (Watermark: {', '.join(pointers)})" if pointers else " (Full catalog)"
-        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
+        max_pages_display = str(max_pages) if max_pages else "Unlimited (All Pages)"
         print(f"[ASUS Scraper] Starting Level 1 catalog scan{watermark_msg} up to {max_pages_display} page(s)...")
 
         # 1. Primary: Crawl ASUS catalog via Official Odin Shop API for true multi-page support
@@ -367,7 +367,7 @@ class AsusBrandScraper(BaseBrandScraper):
         odin_success = False
 
         for page_idx in itertools.count(1):
-            if max_pages is not None and page_idx > max_pages:
+            if max_pages and page_idx > max_pages:
                 break
             if reached_watermark:
                 break
@@ -478,7 +478,7 @@ class AsusBrandScraper(BaseBrandScraper):
         if not odin_success and not summaries:
             print("[ASUS Scraper] Falling back to HTML DOM scraper...")
             for page_idx in itertools.count(1):
-                if max_pages is not None and page_idx > max_pages:
+                if max_pages and page_idx > max_pages:
                     break
                 if reached_watermark:
                     break

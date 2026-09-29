@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any, Literal
 import uuid
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult, utcnow_str
 
@@ -31,9 +31,9 @@ class ScrapeRequest(BaseModel):
                      encounters a matching model it stops immediately.
                      ``None`` means scrape the entire catalog.
         max_pages:   Optional pagination safety ceiling.
-                     ``None`` means scrape all pages until exhaustion.
+                     ``None`` or <= 0 means scrape all pages until exhaustion.
         limit:       Optional maximum number of items to collect per target.
-                     ``None`` means unlimited.
+                     ``None`` or <= 0 means unlimited.
         output_dir:  Optional directory path.  When set the orchestrator
                      saves one JSON file **per target** inside this directory
                      (e.g. ``output_dir/brand_asus.json``,
@@ -42,20 +42,117 @@ class ScrapeRequest(BaseModel):
                      finishes (defaults to True for API triggers).
     """
 
-    target_type: Literal["brand", "store", "both"]
-    targets: list[str] | Literal["all"] = "all"
+    target_type: Literal["brand", "store", "both"] = Field(
+        default="brand",
+        description="Target category: 'brand', 'store', or 'both'",
+        examples=["brand"],
+    )
+    targets: list[str] | Literal["all"] = Field(
+        default="all",
+        description="List of target keys (e.g. ['gigabyte', 'asus']) or 'all'",
+        examples=["all"],
+    )
 
-    # Scraping parameters — all optional for full-catalog ingestion
-    level: int = 1
-    until_model: str | list[str] | None = None
-    max_pages: int | None = None
-    limit: int | None = None
+    # Scraping parameters
+    level: int = Field(
+        default=1,
+        ge=1,
+        le=2,
+        description="Extraction level: 1 (Summary cards) or 2 (Deep PDP specs)",
+        examples=[1],
+    )
+    until_model: str | list[str] | None = Field(
+        default=None,
+        description="Watermark model name or code to stop scraping at (leave null for full catalog)",
+        examples=[None],
+    )
+    max_pages: int | None = Field(
+        default=None,
+        description="Maximum catalog pages to scan (leave null or <=0 for all pages)",
+        examples=[None],
+    )
+    limit: int | None = Field(
+        default=None,
+        description="Maximum laptops to collect (leave null or <=0 for unlimited)",
+        examples=[None],
+    )
 
     # Output
-    output_dir: str | None = None
+    output_dir: str | None = Field(
+        default=None,
+        description="Directory to save JSON output files (leave null for in-memory only)",
+        examples=["scraping-results"],
+    )
 
-    # Email notifications (default True when triggered via endpoint / DTO)
-    send_email: bool = True
+    # Email notifications
+    send_email: bool = Field(
+        default=True,
+        description="Send email status notification after each scraper completes",
+        examples=[True],
+    )
+
+    @field_validator("targets", mode="before")
+    @classmethod
+    def normalize_targets(cls, v: Any) -> list[str] | Literal["all"]:
+        """Filter out Swagger dummy placeholder 'string' and normalize to clean list or 'all'."""
+        if v is None:
+            return "all"
+        if isinstance(v, str):
+            cleaned = v.strip().lower()
+            if not cleaned or cleaned in ("all", "string"):
+                return "all"
+            return [cleaned]
+        if isinstance(v, list):
+            cleaned_list = [
+                s.strip().lower() for s in v
+                if isinstance(s, str) and s.strip() and s.strip().lower() not in ("string", "none", "null")
+            ]
+            return cleaned_list if cleaned_list else "all"
+        return v
+
+    @field_validator("max_pages", "limit", mode="before")
+    @classmethod
+    def normalize_positive_ints(cls, v: Any) -> int | None:
+        """Convert 0 or negative integers (common Swagger defaults) to None (unlimited)."""
+        if v is None:
+            return None
+        try:
+            val = int(v)
+            return val if val > 0 else None
+        except (ValueError, TypeError):
+            return None
+
+    @field_validator("until_model", mode="before")
+    @classmethod
+    def normalize_until_model(cls, v: Any) -> str | list[str] | None:
+        """Filter out Swagger default placeholder 'string' or empty strings."""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            cleaned = v.strip()
+            if not cleaned or cleaned.lower() in ("string", "none", "null"):
+                return None
+            return cleaned
+        if isinstance(v, list):
+            cleaned_list = [
+                s.strip() for s in v
+                if isinstance(s, str) and s.strip() and s.strip().lower() not in ("string", "none", "null")
+            ]
+            return cleaned_list or None
+        return v
+
+    @field_validator("output_dir", mode="before")
+    @classmethod
+    def normalize_output_dir(cls, v: Any) -> str | None:
+        """Filter out Swagger default placeholder 'string' or empty strings."""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            cleaned = v.strip()
+            if not cleaned or cleaned.lower() in ("string", "none", "null"):
+                return None
+            return cleaned
+        return v
 
 
 # ─── Per-target result ──────────────────────────────────────────────────────

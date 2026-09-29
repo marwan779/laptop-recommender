@@ -109,14 +109,14 @@ class ElBadrStoreScraper(BaseStoreScraper):
             else (until_model or "None (Full Catalog)")
         )
 
-        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
+        max_pages_display = str(max_pages) if max_pages else "Unlimited (All Pages)"
         print(
             f"[{self.store_name}] Starting Level {level} catalog crawl "
             f"(newest first, until_model='{watermark_display}', max_pages={max_pages_display}, limit={limit or 'All'})"
         )
 
         for page in itertools.count(1):
-            if max_pages is not None and page > max_pages:
+            if max_pages and page > max_pages:
                 break
             if watermark_hit:
                 break

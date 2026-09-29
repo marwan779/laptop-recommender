@@ -173,14 +173,14 @@ class GigabyteBrandScraper(BaseBrandScraper):
             if isinstance(until_model, (list, tuple, set))
             else (until_model or "None (Full Catalog)")
         )
-        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
+        max_pages_display = str(max_pages) if max_pages else "Unlimited (All Pages)"
         print(
             f"[{self.brand_name}] Starting Level 1 catalog scan "
             f"(newest first, until_model='{watermark_display}', max_pages={max_pages_display}, limit={limit or 'All'})"
         )
 
         for page_idx in itertools.count(1):
-            if max_pages is not None and page_idx > max_pages:
+            if max_pages and page_idx > max_pages:
                 break
             if watermark_hit:
                 break

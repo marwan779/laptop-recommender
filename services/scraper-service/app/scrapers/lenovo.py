@@ -219,7 +219,7 @@ class LenovoBrandScraper(BaseBrandScraper):
         reached_watermark = False
 
         watermark_msg = f" (Watermark: {', '.join(pointers)})" if pointers else " (Full catalog)"
-        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited (All Pages)"
+        max_pages_display = str(max_pages) if max_pages else "Unlimited (All Pages)"
         print(f"[Lenovo Scraper] Starting Level 1 catalog scan{watermark_msg} up to {max_pages_display} page(s)...")
 
         headers = {
@@ -229,7 +229,7 @@ class LenovoBrandScraper(BaseBrandScraper):
         }
 
         for page_idx in itertools.count(1):
-            if max_pages is not None and page_idx > max_pages:
+            if max_pages and page_idx > max_pages:
                 break
             if reached_watermark:
                 break
