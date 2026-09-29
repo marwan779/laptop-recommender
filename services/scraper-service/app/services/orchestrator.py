@@ -18,6 +18,7 @@ Usage::
         targets=["compumarts", "sigma"],
         level=2,
         output_dir="./output",
+        send_email=True,
     )
     response = ScrapeOrchestrator().execute(request)
 """
@@ -26,13 +27,16 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import time
 from typing import Type
 
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
+from app.schemas.email import ScraperFinishedReport
 from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult, utcnow_str
 from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
 from app.services.asus_scraper_service import AsusScraperService
+from app.services.email_service import EmailService
 from app.services.gigabyte_scraper_service import GigabyteScraperService
 from app.services.hp_scraper_service import HpScraperService
 from app.services.lenovo_scraper_service import LenovoScraperService
@@ -60,8 +64,15 @@ class ScrapeOrchestrator:
     modifying their internal logic — it only *accumulates* their calls.
     """
 
-    def __init__(self, engine: IScraperEngine | None = None) -> None:
+    def __init__(
+        self,
+        engine: IScraperEngine | None = None,
+        email_service: EmailService | None = None,
+        send_email: bool = False,
+    ) -> None:
         self.engine = engine or ScraplingEngine()
+        self.email_service = email_service or EmailService()
+        self.send_email = send_email
 
     # ── public API ──────────────────────────────────────────────────────
 
@@ -70,14 +81,34 @@ class ScrapeOrchestrator:
         started_at = utcnow_str()
         results: list[ScrapeTargetResult] = []
 
+        should_send_email = request.send_email or self.send_email
         target_keys = self._resolve_targets(request)
 
         for key in target_keys:
+            start_time = time.perf_counter()
             if request.target_type == "brand":
                 result = self._scrape_brand(key, request)
             else:
                 result = self._scrape_store(key, request)
+            elapsed_time = time.perf_counter() - start_time
             results.append(result)
+
+            # Fire non-blocking background email report after each single scraper completes (if enabled)
+            if should_send_email:
+                try:
+                    watermark = (
+                        request.until_model
+                        if isinstance(request.until_model, str)
+                        else (", ".join(request.until_model) if request.until_model else None)
+                    )
+                    report = ScraperFinishedReport.from_target_result(
+                        result,
+                        duration_seconds=elapsed_time,
+                        until_model=watermark,
+                    )
+                    self.email_service.send_scraper_finished_background(report)
+                except Exception as exc:
+                    print(f"[Orchestrator] Warning: Failed to dispatch background email report for {key}: {exc}")
 
         total_items = sum(r.items_scraped for r in results)
 

@@ -107,6 +107,12 @@ def main():
         default=None,
         help="Optional maximum number of catalog pages to scan as a safety limit (default: None - all pages)",
     )
+    parser.add_argument(
+        "--send-email",
+        action="store_true",
+        default=False,
+        help="Send email status notification after each scraper completes (default: False)",
+    )
 
     args = parser.parse_args()
 
@@ -120,7 +126,8 @@ def main():
             f"[yellow]Mode:[/yellow] {args.mode.upper()} | "
             f"[yellow]Until Model:[/yellow] {args.until_model or 'None (Full Catalog)'} | "
             f"[yellow]Max Pages:[/yellow] {max_pages_display} | "
-            f"[yellow]Limit:[/yellow] {limit_display}",
+            f"[yellow]Limit:[/yellow] {limit_display} | "
+            f"[yellow]Send Email:[/yellow] {args.send_email}",
             border_style="cyan",
         )
     )
@@ -136,6 +143,7 @@ def main():
             until_model=args.until_model,
             max_pages=args.max_pages,
             limit=args.limit,
+            send_email=args.send_email,
         )
     else:
         brand_val = args.brand.strip().lower()
@@ -147,6 +155,7 @@ def main():
             until_model=args.until_model,
             max_pages=args.max_pages,
             limit=args.limit,
+            send_email=args.send_email,
         )
 
     # ── Execute via orchestrator ─────────────────────────────────────────

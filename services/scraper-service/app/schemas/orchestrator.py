@@ -51,6 +51,9 @@ class ScrapeRequest(BaseModel):
     # Output
     output_dir: str | None = None
 
+    # Email notifications (default False for local CLI/testing, set True when called via endpoint)
+    send_email: bool = False
+
 
 # ─── Per-target result ──────────────────────────────────────────────────────
 
