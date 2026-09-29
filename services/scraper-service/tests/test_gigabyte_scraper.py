@@ -149,7 +149,7 @@ def test_gigabyte_level1_parse_mock():
     assert s1.model == "GL6J"
     assert s1.family == "GIGABYTE EAGLE"
     assert s1.product_url == "https://www.gigabyte.com/Laptop/GIGABYTE-EAGLE-GL6J"
-    assert s1.specs_url == "https://www.gigabyte.com/Laptop/GIGABYTE-EAGLE-GL6J/sp#sp"
+    assert s1.specs_url == "https://www.gigabyte.com/Laptop/GIGABYTE-EAGLE-GL6J/sp"
 
     s2 = summaries[1]
     assert s2.name == "AORUS 16X (2024)"
@@ -185,7 +185,7 @@ def test_gigabyte_level2_specs_mock():
         family="AORUS",
         model="16X",
         product_url="https://www.gigabyte.com/Laptop/AORUS-16X--2024",
-        specs_url="https://www.gigabyte.com/Laptop/AORUS-16X--2024/sp#sp",
+        specs_url="https://www.gigabyte.com/Laptop/AORUS-16X--2024/sp",
     )
 
     detail = scraper.get_laptop_detail(summary)

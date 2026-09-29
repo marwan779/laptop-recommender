@@ -118,12 +118,13 @@ class GigabyteBrandScraper(BaseBrandScraper):
 
         return None
 
-    def _fetch_html(self, url: str, timeout: int = 15, retries: int = 3) -> str | None:
+    def _fetch_html(self, url: str, timeout: int = 35, retries: int = 3) -> str | None:
         """Fetch HTML content with curl_cffi Chrome impersonation (HTTP/1.1) and connection retry."""
+        clean_url = url.split("#")[0]
         for attempt in range(1, retries + 1):
             try:
                 resp = self._session.get(
-                    url,
+                    clean_url,
                     headers=self._headers,
                     impersonate="chrome120",
                     http_version=CurlHttpVersion.V1_1,
@@ -139,7 +140,7 @@ class GigabyteBrandScraper(BaseBrandScraper):
                 self._session = cffi_requests.Session()
                 time.sleep(0.5)
                 if attempt == retries:
-                    print(f"[{self.brand_name}] Failed to fetch {url} after {retries} attempts: {e}")
+                    print(f"[{self.brand_name}] Failed to fetch {clean_url} after {retries} attempts: {e}")
                 continue
         return None
 
@@ -250,7 +251,7 @@ class GigabyteBrandScraper(BaseBrandScraper):
                 tags_text = " ".join(t.get_text(strip=True) for t in tag_elems)
 
                 release_year, release_date = GigabyteDateExtractor.extract_year_and_date(name, tags_text)
-                specs_url = f"{full_url.rstrip('/')}/sp#sp"
+                specs_url = f"{full_url.rstrip('/')}/sp"
 
                 seen_urls.add(full_url)
                 cards_added += 1
@@ -283,8 +284,8 @@ class GigabyteBrandScraper(BaseBrandScraper):
         return summaries
 
     def get_laptop_detail(self, summary: LaptopSummary) -> LaptopDetail | None:
-        """Level 2: Fetch and parse full hardware specs from {product_url}/sp#sp."""
-        target_url = summary.specs_url or f"{summary.product_url.rstrip('/')}/sp#sp"
+        """Level 2: Fetch and parse full hardware specs from {product_url}/sp."""
+        target_url = (summary.specs_url or f"{summary.product_url.rstrip('/')}/sp").split("#")[0]
         print(f"[{self.brand_name}] Level 2 Crawl: Fetching specs for '{summary.name}' from {target_url}...")
 
         html = self._fetch_html(target_url)

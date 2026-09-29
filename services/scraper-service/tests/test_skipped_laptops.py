@@ -124,6 +124,22 @@ def test_lenovo_records_skipped_on_no_hardware_specs():
     assert "No hardware specs found" in scraper.skipped_laptops[0].reason
 
 
+def test_hp_records_skipped_on_no_specs():
+    scraper = HpBrandScraper()
+    scraper._fetch_page = MagicMock(return_value="<html><body><div>Empty PDP</div></body></html>")
+    scraper._fetch_specs_page = MagicMock(return_value="<html><body><div>Empty specs</div></body></html>")
+
+    summary = LaptopSummary(
+        brand="HP",
+        name="HP Unreleased Laptop",
+        product_url="https://www.hp.com/products/laptops/unreleased.html",
+    )
+    detail = scraper.get_laptop_detail(summary)
+    assert detail is None
+    assert len(scraper.skipped_laptops) == 1
+    assert "Could not fetch specs" in scraper.skipped_laptops[0].reason
+
+
 def test_compumarts_records_skipped_accessory():
     scraper = CompumartsStoreScraper()
     # Card with accessory title

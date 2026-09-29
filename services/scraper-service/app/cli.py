@@ -1,5 +1,6 @@
 import argparse
 import json
+from pathlib import Path
 import sys
 
 from rich.console import Console
@@ -46,7 +47,7 @@ def safe_terminal_text(text: str) -> str:
     return text
 
 
-SUPPORTED_BRANDS = list(BRAND_CATALOGS.keys())
+SUPPORTED_BRANDS = list(BRAND_SERVICE_REGISTRY.keys())
 SUPPORTED_STORES = list(STORE_REGISTRY.keys())
 
 
@@ -56,10 +57,11 @@ def main():
     )
     parser.add_argument(
         "--brand",
+        "--brands",
+        dest="brand",
         type=str,
         default="asus",
-        choices=SUPPORTED_BRANDS,
-        help="Laptop brand to scrape (default: asus)",
+        help=f"Laptop brand(s) to scrape ({','.join(SUPPORTED_BRANDS)}) or 'all' (default: asus)",
     )
     parser.add_argument(
         "--mode",
@@ -136,9 +138,11 @@ def main():
             limit=args.limit,
         )
     else:
+        brand_val = args.brand.strip().lower()
+        targets = "all" if brand_val == "all" else [b.strip().lower() for b in brand_val.split(",") if b.strip()]
         request = ScrapeRequest(
             target_type="brand",
-            targets=[args.brand],
+            targets=targets,
             level=args.level,
             until_model=args.until_model,
             max_pages=args.max_pages,
@@ -153,6 +157,7 @@ def main():
 
     # ── Display results ──────────────────────────────────────────────────
 
+    args._total_results = len(response.results)
     for target_result in response.results:
         if target_result.error:
             console.print(f"[red][!] Error scraping {target_result.target_key}: {target_result.error}[/red]")
@@ -171,7 +176,18 @@ def main():
             Panel.fit(
                 f"[bold green]Store Scraping Ingestion Complete![/bold green]\n"
                 f"Stores Scraped: [bold]{', '.join(store_keys)}[/bold]\n"
+                f"Total Products: [bold]{response.total_items_scraped}[/bold]\n"
                 f"Note: Matching and entity resolution are handled downstream by catalog-service.",
+                border_style="green",
+            )
+        )
+    else:
+        brand_keys = [r.target_key for r in response.results]
+        console.print(
+            Panel.fit(
+                f"[bold green]Brand Scraping Ingestion Complete![/bold green]\n"
+                f"Brands Scraped: [bold]{', '.join(brand_keys)}[/bold]\n"
+                f"Total Laptops Scraped: [bold]{response.total_items_scraped}[/bold]",
                 border_style="green",
             )
         )
@@ -210,7 +226,14 @@ def _display_store_result(target_result, args) -> None:
     if catalog.total_skipped > 0:
         console.print(f"[yellow]Total Skipped Products (Filtered/Error):[/yellow] [bold red]{catalog.total_skipped}[/bold red]")
 
-    dest_file = args.save_json or f"store_{target_result.target_key}.json"
+    if args.save_json and getattr(args, "_total_results", 1) == 1:
+        dest_file = args.save_json
+    elif args.save_json:
+        p = Path(args.save_json)
+        dest_file = str(p.with_name(f"{p.stem}_{target_result.target_key}{p.suffix}"))
+    else:
+        dest_file = f"store_{target_result.target_key}.json"
+
     with open(dest_file, "w", encoding="utf-8") as f:
         json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
     console.print(f"[green][+] Saved {catalog.total_products} raw store products to {dest_file}[/green]")
@@ -288,7 +311,14 @@ def _display_brand_result(target_result, args) -> None:
             skip_table.add_row(str(idx), safe_terminal_text(s.name), safe_terminal_text(s.reason), s.url or "N/A")
         console.print(skip_table)
 
-    dest_file = args.save_json or f"brand_{target_result.target_key}.json"
+    if args.save_json and getattr(args, "_total_results", 1) == 1:
+        dest_file = args.save_json
+    elif args.save_json:
+        p = Path(args.save_json)
+        dest_file = str(p.with_name(f"{p.stem}_{target_result.target_key}{p.suffix}"))
+    else:
+        dest_file = f"brand_{target_result.target_key}.json"
+
     with open(dest_file, "w", encoding="utf-8") as f:
         json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
     console.print(f"[green][+] Saved results to {dest_file}[/green]")
