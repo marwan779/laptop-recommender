@@ -7,8 +7,11 @@ from app.scrapers.gigabyte import GigabyteBrandScraper
 from app.scrapers.asus import AsusBrandScraper
 from app.scrapers.lenovo import LenovoBrandScraper
 from app.scrapers.hp import HpBrandScraper
+from app.stores.amazon import AmazonStoreScraper
+from app.stores.btech import BTechStoreScraper
 from app.stores.compumarts import CompumartsStoreScraper
 from app.stores.elbadr import ElBadrStoreScraper
+from app.stores.noon import NoonStoreScraper
 from app.stores.sigma import SigmaComputerStoreScraper
 from app.stores.twob import TwoBStoreScraper
 from app.stores.tradeline import TradelineStoreScraper
@@ -219,4 +222,104 @@ def test_tradeline_records_skipped_accessory():
     skipped_names = [s.name for s in scraper.skipped_laptops]
     assert "Apple Magic Mouse - White" in skipped_names
     assert any("Filtered out non-laptop accessory" in s.reason for s in scraper.skipped_laptops)
+
+
+def test_amazon_records_skipped_accessory():
+    scraper = AmazonStoreScraper()
+    mock_html = """
+    <html>
+      <body>
+        <div class="s-main-slot">
+          <div class="s-result-item" data-asin="B0DACC111">
+            <h2><a href="/dp/B0DACC111"><span>Dell EcoLoop Pro Laptop Backpack 15 inch</span></a></h2>
+            <div class="a-price"><span class="a-offscreen">EGP 1,800.00</span></div>
+          </div>
+          <div class="s-result-item" data-asin="B0DLAP222">
+            <h2><a href="/dp/B0DLAP222"><span>Dell Inspiron 3520 Laptop Intel Core i5 8GB 512GB SSD 15.6 FHD</span></a></h2>
+            <div class="a-price"><span class="a-offscreen">EGP 22,500.00</span></div>
+          </div>
+        </div>
+      </body>
+    </html>
+    """
+    scraper._fetch_html = MagicMock(return_value=mock_html)
+
+    products = scraper.scrape_catalog(level=1, max_pages=1)
+    assert len(products) == 1
+    assert len(scraper.skipped_laptops) == 1
+    assert "Dell EcoLoop Pro Laptop Backpack" in scraper.skipped_laptops[0].name
+    assert "Filtered out non-laptop accessory" in scraper.skipped_laptops[0].reason
+
+
+def test_noon_records_skipped_accessory():
+    scraper = NoonStoreScraper()
+    import json
+    next_data_json = {
+        "props": {
+            "pageProps": {
+                "catalog": {
+                    "hits": [
+                        {
+                            "name": "Noon East Laptop Sleeve Bag 15.6 Inch",
+                            "sku": "N50000000A",
+                            "price": 399.00,
+                            "url": "/egypt-en/laptop-sleeve/N50000000A/p/",
+                        },
+                        {
+                            "name": "Lenovo V15 G3 IAP Laptop Intel Core i5 8GB 512GB SSD",
+                            "sku": "N53381483A",
+                            "price": 21999.00,
+                            "url": "/egypt-en/lenovo-v15-g3/N53381483A/p/",
+                        },
+                    ]
+                }
+            }
+        }
+    }
+    mock_html = f'<html><body><script id="__NEXT_DATA__" type="application/json">{json.dumps(next_data_json)}</script></body></html>'
+    scraper._fetch_html = MagicMock(return_value=mock_html)
+
+    products = scraper.scrape_catalog(level=1, max_pages=1)
+    assert len(products) == 1
+    assert len(scraper.skipped_laptops) == 1
+    assert "Noon East Laptop Sleeve" in scraper.skipped_laptops[0].name
+    assert "Filtered out non-laptop accessory" in scraper.skipped_laptops[0].reason
+
+
+def test_btech_records_skipped_accessory():
+    scraper = BTechStoreScraper()
+    mock_html = """
+    <html>
+      <body>
+        <div class="products wrapper grid products-grid">
+          <ol class="products list items product-items">
+            <li class="item product product-item">
+              <div class="product-item-info" data-product-id="7001">
+                <a class="product-item-link" href="https://btech.com/en/hp-65w-smart-ac-adapter.html">
+                  HP 65W Smart AC Adapter Charger
+                </a>
+                <span class="price">EGP 1,200</span>
+              </div>
+            </li>
+            <li class="item product product-item">
+              <div class="product-item-info" data-product-id="7002">
+                <a class="product-item-link" href="https://btech.com/en/hp-pavilion-14.html">
+                  HP Pavilion x360 Convertible 14-ek1009ne Laptop Intel Core i5 8GB 512GB
+                </a>
+                <span class="price">EGP 36,999</span>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </body>
+    </html>
+    """
+    scraper._fetch_html = MagicMock(return_value=mock_html)
+
+    products = scraper.scrape_catalog(level=1, max_pages=1)
+    assert len(products) == 1
+    assert len(scraper.skipped_laptops) == 1
+    assert "HP 65W Smart AC Adapter Charger" in scraper.skipped_laptops[0].name
+    assert "Filtered out non-laptop accessory" in scraper.skipped_laptops[0].reason
+
 
