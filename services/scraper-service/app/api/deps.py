@@ -31,3 +31,11 @@ def get_orchestrator() -> ScrapeOrchestrator:
         email_service=get_email_service(),
         send_email=False,  # Rely on ScrapeRequest.send_email
     )
+
+
+def get_storage() -> "IObjectStorageService":
+    """Provider for object storage service (AWS S3 / S3-compatible)."""
+    from app.storage.factory import get_storage_service
+
+    return get_storage_service()
+
