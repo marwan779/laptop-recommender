@@ -31,7 +31,7 @@ class TradelineStoreScraper(BaseStoreScraper):
     """
 
     BASE_URL = "https://tradelinestores.com"
-    COLLECTIONS = ["macbook-air", "macbook-pro"]
+    COLLECTIONS = ["macbook-air", "macbook-pro", "macbook-neo"]
     COLLECTION_JSON_TEMPLATE = (
         "https://tradelinestores.com/collections/{collection}/products.json"
         "?sort_by=created-descending&page={page}&limit=250"
