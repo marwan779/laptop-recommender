@@ -1,0 +1,66 @@
+{
+  "store_name": "Noon",
+  "store_key": "noon",
+  "store_domain": "noon.com",
+  "scrape_mode": "level1",
+  "until_model": null,
+  "latest_pointers": [
+    "HP Smart Tank 581 Wireless All In One Printer, Print, Scan, Copy, Print up to 6000 black or 6000 color pages - Grey [4A8D4A] Grey/Black",
+    "BenQ 24 inch 100Hz Gaming Computer Monitor FHD 1920x1080p | IPS | Eye-Care Tech | Low Blue Light | Anti-Glare | Adaptive Brightness | Built-in Speakers | DisplayPort | HDMI x 2 I Black/Noir"
+  ],
+  "total_products": 2,
+  "total_skipped": 1,
+  "scraped_at": "2026-09-29T18:47:28.638569+00:00",
+  "products": [
+    {
+      "store_name": "Noon",
+      "store_key": "noon",
+      "store_domain": "noon.com",
+      "title": "HP Smart Tank 581 Wireless All In One Printer, Print, Scan, Copy, Print up to 6000 black or 6000 color pages - Grey [4A8D4A] Grey/Black",
+      "product_url": "https://www.noon.com/egypt-en/smart-tank-581-wireless-all-in-one-printer-print-scan-copy-print-up-to-6000-black-or-6000-color-pages-grey-4a8d4a-grey-black/N53399135A/p/?o=c953df8cc743417c",
+      "retailer_product_id": "N53399135A",
+      "retailer_sku": "N53399135A",
+      "mpn": null,
+      "model_code": null,
+      "sub_model": null,
+      "base_model": null,
+      "price_egp": null,
+      "price_str": null,
+      "in_stock": true,
+      "thumbnail_url": "https://f.nooncdn.com/s/app/com/noon/images/media-placeholder.svg",
+      "specs": {},
+      "raw_description": null,
+      "scraped_at": "2026-09-29T18:47:28.637932+00:00"
+    },
+    {
+      "store_name": "Noon",
+      "store_key": "noon",
+      "store_domain": "noon.com",
+      "title": "BenQ 24 inch 100Hz Gaming Computer Monitor FHD 1920x1080p | IPS | Eye-Care Tech | Low Blue Light | Anti-Glare | Adaptive Brightness | Built-in Speakers | DisplayPort | HDMI x 2 I Black/Noir",
+      "product_url": "https://www.noon.com/egypt-en/24-inch-100hz-gaming-computer-monitor-fhd-1920x1080p-ips-eye-care-tech-low-blue-light-anti-glare-adaptive-brightness-built-in-speakers-displayport-hdmi-x-2-i-black-noir/N70095666V/p/?o=c2abf7e468c6866c",
+      "retailer_product_id": "N70095666V",
+      "retailer_sku": "N70095666V",
+      "mpn": null,
+      "model_code": null,
+      "sub_model": null,
+      "base_model": null,
+      "price_egp": null,
+      "price_str": null,
+      "in_stock": true,
+      "thumbnail_url": "https://f.nooncdn.com/s/app/com/noon/images/media-placeholder.svg",
+      "specs": {},
+      "raw_description": null,
+      "scraped_at": "2026-09-29T18:47:28.638081+00:00"
+    }
+  ],
+  "skipped_laptops": [
+    {
+      "name": "HP Wireless Computer Mouse W10 Rechargeable Slim Silent Multicolour",
+      "url": "https://www.noon.com/egypt-en/wireless-computer-mouse-w10-rechargeable-slim-silent-multicolour/N70006744V/p/?o=edd99c15bd834edc",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-09-29T18:47:28.637731+00:00"
+    }
+  ]
+}

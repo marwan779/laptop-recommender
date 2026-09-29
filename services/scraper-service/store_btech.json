@@ -1,0 +1,13 @@
+{
+  "store_name": "B.TECH",
+  "store_key": "btech",
+  "store_domain": "btech.com",
+  "scrape_mode": "level1",
+  "until_model": null,
+  "latest_pointers": [],
+  "total_products": 0,
+  "total_skipped": 0,
+  "scraped_at": "2026-09-29T18:47:29.153281+00:00",
+  "products": [],
+  "skipped_laptops": []
+}
