@@ -42,7 +42,7 @@ BRAND_CATALOGS: dict[str, BrandConfig] = {
     "gigabyte": {
         "name": "GigaByte",
         "slug": "gigabyte",
-        "catalog_url": "https://www.gigabyte.com/eg/Laptop",
+        "catalog_url": "https://www.gigabyte.com/Laptop/All-Series",
         "region": "eg",
     },
 }

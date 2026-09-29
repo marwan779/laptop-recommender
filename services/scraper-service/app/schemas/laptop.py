@@ -82,6 +82,7 @@ class BrandCatalogResult(BaseModel):
 AsusBrandCatalogResult = BrandCatalogResult
 LenovoBrandCatalogResult = BrandCatalogResult
 HpBrandCatalogResult = BrandCatalogResult
+GigabyteBrandCatalogResult = BrandCatalogResult
 
 
 

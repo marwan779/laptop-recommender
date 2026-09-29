@@ -33,6 +33,7 @@ from app.engine.scrapling_engine import ScraplingEngine
 from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult, utcnow_str
 from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
 from app.services.asus_scraper_service import AsusScraperService
+from app.services.gigabyte_scraper_service import GigabyteScraperService
 from app.services.hp_scraper_service import HpScraperService
 from app.services.lenovo_scraper_service import LenovoScraperService
 from app.stores.registry import STORE_REGISTRY, get_store_scraper
@@ -48,6 +49,7 @@ BRAND_SERVICE_REGISTRY: dict[str, Type] = {
     "asus": AsusScraperService,
     "hp": HpScraperService,
     "lenovo": LenovoScraperService,
+    "gigabyte": GigabyteScraperService,
 }
 
 
