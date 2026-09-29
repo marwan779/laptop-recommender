@@ -295,11 +295,10 @@ def test_email_service_smtp_failure_is_fail_safe():
 # 5. Orchestrator Integration Tests (Default False Param)
 # ---------------------------------------------------------------------------
 
-def test_orchestrator_default_does_not_send_email():
-    """When send_email is False (default), orchestrator does NOT dispatch emails."""
+def test_orchestrator_does_not_send_email_when_send_email_false():
+    """When send_email is False (e.g. CLI local testing), orchestrator does NOT dispatch emails."""
     mock_email_service = MagicMock(spec=EmailService)
-    # Default orchestrator has send_email=False
-    orchestrator = ScrapeOrchestrator(email_service=mock_email_service)
+    orchestrator = ScrapeOrchestrator(email_service=mock_email_service, send_email=False)
     assert orchestrator.send_email is False
 
     mock_catalog = BrandCatalogResult(
@@ -328,7 +327,7 @@ def test_orchestrator_default_does_not_send_email():
             target_type="brand",
             targets=["asus"],
             level=1,
-            # send_email is False by default
+            send_email=False,
         )
         assert request.send_email is False
 

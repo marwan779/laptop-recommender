@@ -7,6 +7,7 @@ catalog-service cron job) and the ScrapeOrchestrator.
 from __future__ import annotations
 
 from typing import Any, Literal
+import uuid
 
 from pydantic import BaseModel, Field
 
@@ -19,9 +20,9 @@ class ScrapeRequest(BaseModel):
     """Describes *what* to scrape and *how*.
 
     Attributes:
-        target_type: ``"brand"`` to scrape official brand portals (ASUS, HP, …)
-                     or ``"store"`` to scrape Egyptian retail stores
-                     (Compumarts, Sigma, 2B, …).
+        target_type: ``"brand"`` to scrape official brand portals (ASUS, HP, …),
+                     ``"store"`` to scrape Egyptian retail stores (Compumarts, Sigma, 2B, …),
+                     or ``"both"`` to scrape both brands and stores.
         targets:     A list of specific keys (e.g. ``["asus", "hp"]`` or
                      ``["compumarts", "sigma"]``) or the literal ``"all"``
                      to scrape every registered target of that type.
@@ -37,9 +38,11 @@ class ScrapeRequest(BaseModel):
                      saves one JSON file **per target** inside this directory
                      (e.g. ``output_dir/brand_asus.json``,
                      ``output_dir/store_compumarts.json``).
+        send_email:  Whether to dispatch an email report after each scraper
+                     finishes (defaults to True for API triggers).
     """
 
-    target_type: Literal["brand", "store"]
+    target_type: Literal["brand", "store", "both"]
     targets: list[str] | Literal["all"] = "all"
 
     # Scraping parameters — all optional for full-catalog ingestion
@@ -51,8 +54,8 @@ class ScrapeRequest(BaseModel):
     # Output
     output_dir: str | None = None
 
-    # Email notifications (default False for local CLI/testing, set True when called via endpoint)
-    send_email: bool = False
+    # Email notifications (default True when triggered via endpoint / DTO)
+    send_email: bool = True
 
 
 # ─── Per-target result ──────────────────────────────────────────────────────
@@ -83,3 +86,15 @@ class ScrapeResponse(BaseModel):
     total_items_scraped: int = 0
     started_at: str = Field(default_factory=utcnow_str)
     finished_at: str | None = None
+
+
+# ─── Endpoint Trigger Response ──────────────────────────────────────────────
+
+class ScrapeJobResponse(BaseModel):
+    """Immediate HTTP acknowledgment returned when the scraping job is queued."""
+
+    status: str = "accepted"
+    job_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    message: str = "Scraping job queued successfully in background"
+    request: ScrapeRequest
+    queued_at: str = Field(default_factory=utcnow_str)

@@ -67,8 +67,8 @@ def main():
         "--mode",
         type=str,
         default="brand-only",
-        choices=["brand", "brand-only", "store", "stores"],
-        help="Execution mode: 'brand-only'/'brand' (Official Brand Catalog Level 1/2) or 'store'/'stores' (Direct Retailer Store Scraping) (default: brand-only)",
+        choices=["brand", "brand-only", "store", "stores", "both", "all"],
+        help="Execution mode: 'brand'/'brand-only', 'store'/'stores', or 'both'/'all' (Scrapes all brands & stores) (default: brand-only)",
     )
     parser.add_argument(
         "--stores",
@@ -134,7 +134,17 @@ def main():
 
     # ── Build ScrapeRequest from CLI args ────────────────────────────────
 
-    if args.mode in ("store", "stores"):
+    if args.mode in ("both", "all"):
+        request = ScrapeRequest(
+            target_type="both",
+            targets="all",
+            level=args.level,
+            until_model=args.until_model,
+            max_pages=args.max_pages,
+            limit=args.limit,
+            send_email=args.send_email,
+        )
+    elif args.mode in ("store", "stores"):
         targets = "all" if args.stores.lower() == "all" else [s.strip().lower() for s in args.stores.split(",") if s.strip()]
         request = ScrapeRequest(
             target_type="store",

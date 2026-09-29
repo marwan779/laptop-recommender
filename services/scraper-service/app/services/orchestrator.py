@@ -82,11 +82,11 @@ class ScrapeOrchestrator:
         results: list[ScrapeTargetResult] = []
 
         should_send_email = request.send_email or self.send_email
-        target_keys = self._resolve_targets(request)
+        target_tasks = self._resolve_targets(request)
 
-        for key in target_keys:
+        for target_type, key in target_tasks:
             start_time = time.perf_counter()
-            if request.target_type == "brand":
+            if target_type == "brand":
                 result = self._scrape_brand(key, request)
             else:
                 result = self._scrape_store(key, request)
@@ -122,14 +122,36 @@ class ScrapeOrchestrator:
 
     # ── private helpers ─────────────────────────────────────────────────
 
-    def _resolve_targets(self, request: ScrapeRequest) -> list[str]:
-        """Expand ``"all"`` into the concrete list of registered keys."""
-        if request.targets == "all":
-            if request.target_type == "brand":
-                return list(BRAND_SERVICE_REGISTRY.keys())
-            return list(STORE_REGISTRY.keys())
+    def _resolve_targets(self, request: ScrapeRequest) -> list[tuple[str, str]]:
+        """Expand target keys into concrete (target_type, key) pairs."""
+        items: list[tuple[str, str]] = []
 
-        return [t.strip().lower() for t in request.targets if t.strip()]
+        if request.target_type == "brand":
+            keys = list(BRAND_SERVICE_REGISTRY.keys()) if request.targets == "all" else request.targets
+            items.extend([("brand", k.strip().lower()) for k in keys if k.strip()])
+
+        elif request.target_type == "store":
+            keys = list(STORE_REGISTRY.keys()) if request.targets == "all" else request.targets
+            items.extend([("store", k.strip().lower()) for k in keys if k.strip()])
+
+        elif request.target_type == "both":
+            if request.targets == "all":
+                items.extend([("brand", k) for k in BRAND_SERVICE_REGISTRY.keys()])
+                items.extend([("store", k) for k in STORE_REGISTRY.keys()])
+            else:
+                for t in request.targets:
+                    k = t.strip().lower()
+                    if not k:
+                        continue
+                    if k in BRAND_SERVICE_REGISTRY:
+                        items.append(("brand", k))
+                    elif k in STORE_REGISTRY:
+                        items.append(("store", k))
+                    else:
+                        # Unknown target - default to brand so error handling captures it cleanly
+                        items.append(("brand", k))
+
+        return items
 
     # ── brand dispatch ──────────────────────────────────────────────────
 
