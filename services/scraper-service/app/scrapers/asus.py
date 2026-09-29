@@ -649,6 +649,12 @@ class AsusBrandScraper(BaseBrandScraper):
         # Check for empty catalog placeholder indicators
         if re.search(r"viewing\s+\d+\s*-\s*0\s+of\s+0", raw_markdown, re.IGNORECASE):
             print(f"[ASUS Scraper] [!] '{summary.name}' has 0 configurations published on ASUS Egypt (Placeholder). Skipping.")
+            self.record_skipped(
+                name=summary.name,
+                url=target_url,
+                reason="0 configurations published on ASUS Egypt (Placeholder)",
+                stage="level2_specs",
+            )
             return None
 
         all_specs = self._parse_specs_from_markdown(raw_markdown)
@@ -666,6 +672,12 @@ class AsusBrandScraper(BaseBrandScraper):
 
         if not has_core_spec:
             print(f"[ASUS Scraper] [!] '{summary.name}' has no core hardware specifications (Placeholder). Skipping.")
+            self.record_skipped(
+                name=summary.name,
+                url=target_url,
+                reason="No core hardware specifications found (Placeholder)",
+                stage="level2_specs",
+            )
             return None
 
         # 1. Date Extraction (metadata preserved in detail model)

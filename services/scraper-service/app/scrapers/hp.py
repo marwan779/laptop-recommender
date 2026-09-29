@@ -398,6 +398,12 @@ class HpBrandScraper(BaseBrandScraper):
 
         if not all_specs and not pdp_html:
             print(f"[HP Scraper] Could not fetch specs or PDP for '{summary.name}'.")
+            self.record_skipped(
+                name=summary.name,
+                url=specs_url or summary.product_url,
+                reason="Could not fetch specs or PDP",
+                stage="level2_specs",
+            )
             return None
 
         # ---------------------------------------------------------------------

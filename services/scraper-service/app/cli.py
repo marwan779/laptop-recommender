@@ -207,6 +207,8 @@ def _display_store_result(target_result, args) -> None:
 
     pointers_str = ", ".join(catalog.latest_pointers) if catalog.latest_pointers else "None"
     console.print(f"[cyan]Latest Pointers (Top 3):[/cyan] [bold yellow]{pointers_str}[/bold yellow]")
+    if catalog.total_skipped > 0:
+        console.print(f"[yellow]Total Skipped Products (Filtered/Error):[/yellow] [bold red]{catalog.total_skipped}[/bold red]")
 
     dest_file = args.save_json or f"store_{target_result.target_key}.json"
     with open(dest_file, "w", encoding="utf-8") as f:
@@ -270,15 +272,26 @@ def _display_brand_result(target_result, args) -> None:
             f"Until Model: [bold]{catalog.until_model or 'None (Full Catalog)'}[/bold]\n"
             f"Latest Pointers (Top 3): [bold]{pointers_str}[/bold]\n"
             f"Total Laptops: [bold]{catalog.total_laptops}[/bold]\n"
-            f"Total Configurations: [bold]{catalog.total_configurations}[/bold]",
+            f"Total Configurations: [bold]{catalog.total_configurations}[/bold]\n"
+            f"Total Skipped: [bold yellow]{catalog.total_skipped}[/bold yellow]",
             border_style="green",
         )
     )
 
-    if args.save_json:
-        with open(args.save_json, "w", encoding="utf-8") as f:
-            json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
-        console.print(f"[green][+] Saved results to {args.save_json}[/green]")
+    if catalog.skipped_laptops:
+        skip_table = Table(title=f"Skipped Laptops for Debugging ({catalog.total_skipped})", style="yellow")
+        skip_table.add_column("No.", style="dim", width=4)
+        skip_table.add_column("Laptop Name", style="bold")
+        skip_table.add_column("Reason", style="red")
+        skip_table.add_column("URL", style="blue")
+        for idx, s in enumerate(catalog.skipped_laptops, 1):
+            skip_table.add_row(str(idx), safe_terminal_text(s.name), safe_terminal_text(s.reason), s.url or "N/A")
+        console.print(skip_table)
+
+    dest_file = args.save_json or f"brand_{target_result.target_key}.json"
+    with open(dest_file, "w", encoding="utf-8") as f:
+        json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
+    console.print(f"[green][+] Saved results to {dest_file}[/green]")
 
 
 if __name__ == "__main__":

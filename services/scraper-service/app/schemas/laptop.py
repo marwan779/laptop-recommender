@@ -63,6 +63,16 @@ class LaptopDetail(LaptopSummary):
     extra_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class SkippedLaptop(BaseModel):
+    """Details of a laptop or store product skipped during scraping for debugging."""
+    name: str
+    url: str | None = None
+    reason: str
+    error: str | None = None
+    stage: str | None = None
+    scraped_at: str = Field(default_factory=utcnow_str)
+
+
 class BrandCatalogResult(BaseModel):
     """Unified top-level output schema for any brand scraping, stored as a standalone JSON."""
     brand: str
@@ -74,8 +84,10 @@ class BrandCatalogResult(BaseModel):
     end_date: str | None = None
     total_laptops: int = 0
     total_configurations: int = 0
+    total_skipped: int = 0
     scraped_at: str = Field(default_factory=utcnow_str)
     laptops: list[LaptopDetail | LaptopSummary] = Field(default_factory=list)
+    skipped_laptops: list[SkippedLaptop] = Field(default_factory=list)
 
 
 # Backward-compatible aliases (existing services can keep using these names)
@@ -121,8 +133,10 @@ class StoreCatalogResult(BaseModel):
     until_model: str | None = None
     latest_pointers: list[str] = Field(default_factory=list)
     total_products: int = 0
+    total_skipped: int = 0
     scraped_at: str = Field(default_factory=utcnow_str)
     products: list[RetailerProduct] = Field(default_factory=list)
+    skipped_laptops: list[SkippedLaptop] = Field(default_factory=list)
 
 
 class RetailOffer(BaseModel):

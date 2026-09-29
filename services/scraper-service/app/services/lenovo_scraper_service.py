@@ -86,7 +86,9 @@ class LenovoScraperService:
                 latest_pointers=latest_pointers,
                 total_laptops=len(summaries),
                 total_configurations=len(summaries),
+                total_skipped=len(self.scraper.skipped_laptops),
                 laptops=summaries,
+                skipped_laptops=list(self.scraper.skipped_laptops),
             )
             self._save_if_requested(catalog_result, output_file)
             return catalog_result
@@ -98,11 +100,22 @@ class LenovoScraperService:
 
         for idx, summary in enumerate(summaries, 1):
             print(f"\n[Lenovo Service] [{idx}/{len(summaries)}] Deep Crawl: '{summary.name}'")
-            detail = self.scraper.get_laptop_detail(summary=summary)
-            if detail is None:
+            try:
+                detail = self.scraper.get_laptop_detail(summary=summary)
+                if detail is None:
+                    continue
+                detailed_laptops.append(detail)
+            except Exception as e:
+                print(f"[Lenovo Service] Error crawling details for '{summary.name}': {e}")
+                self.scraper.record_skipped(
+                    name=summary.name,
+                    url=summary.specs_url or summary.product_url,
+                    reason=f"Exception during detail crawl: {e}",
+                    error=str(e),
+                    stage="level2_specs",
+                )
                 continue
 
-            detailed_laptops.append(detail)
             if limit and len(detailed_laptops) >= limit:
                 print(f"[Lenovo Service] Reached requested limit of {limit} laptop(s).")
                 break
@@ -119,7 +132,9 @@ class LenovoScraperService:
             latest_pointers=latest_pointers,
             total_laptops=len(detailed_laptops),
             total_configurations=total_configs,
+            total_skipped=len(self.scraper.skipped_laptops),
             laptops=detailed_laptops,
+            skipped_laptops=list(self.scraper.skipped_laptops),
         )
 
         self._save_if_requested(catalog_result, output_file)

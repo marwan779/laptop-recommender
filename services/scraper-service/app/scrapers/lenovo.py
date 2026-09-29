@@ -451,6 +451,12 @@ class LenovoBrandScraper(BaseBrandScraper):
         has_core = any(k.lower() in core_keys for k in all_specs.keys())
         if not has_core:
             print(f"[Lenovo Scraper] [!] '{summary.name}' has no hardware specs (Placeholder/Unreleased). Skipping.")
+            self.record_skipped(
+                name=summary.name,
+                url=summary.specs_url or summary.product_url,
+                reason="No hardware specs found (Placeholder/Unreleased)",
+                stage="level2_specs",
+            )
             return None
 
         # 4. Map into Standardized Hardware Fields

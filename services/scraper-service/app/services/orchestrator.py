@@ -180,6 +180,7 @@ class ScrapeOrchestrator:
             )
 
         latest_pointers = [p.title for p in products[:3]]
+        skipped_list = list(getattr(store_scraper, "skipped_laptops", []))
 
         store_catalog = StoreCatalogResult(
             store_name=store_scraper.store_name,
@@ -193,7 +194,9 @@ class ScrapeOrchestrator:
             ),
             latest_pointers=latest_pointers,
             total_products=len(products),
+            total_skipped=len(skipped_list),
             products=products,
+            skipped_laptops=skipped_list,
         )
 
         if output_file:

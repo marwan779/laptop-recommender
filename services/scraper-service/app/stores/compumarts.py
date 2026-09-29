@@ -244,10 +244,22 @@ class CompumartsStoreScraper(BaseStoreScraper):
             title = link_elem.get("aria-label", "").strip() or link_elem.get_text(strip=True)
 
         if not title or len(title) < 5:
+            self.record_skipped(
+                name=title or "Unknown",
+                url=full_url,
+                reason="Title too short or missing",
+                stage="card_filter",
+            )
             return None
 
         # Filter out non-laptop accessories
         if self._is_standalone_accessory(title):
+            self.record_skipped(
+                name=title,
+                url=full_url,
+                reason="Filtered out as standalone accessory",
+                stage="accessory_filter",
+            )
             return None
 
         # Extract price

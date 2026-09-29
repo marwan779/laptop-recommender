@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 from app.engine.base import IScraperEngine
 from app.matching.normalizer import ModelNormalizer
-from app.schemas.laptop import ConfigurationItem, RetailerProduct
+from app.schemas.laptop import ConfigurationItem, RetailerProduct, SkippedLaptop
 
 
 class BaseStoreScraper(ABC):
@@ -17,8 +17,28 @@ class BaseStoreScraper(ABC):
         "laptop stand", "flash drive", "power bank", "docking",
     ]
 
-    def __init__(self, engine: IScraperEngine):
+    def __init__(self, engine: IScraperEngine | None = None):
         self.engine = engine
+        self.skipped_laptops: list[SkippedLaptop] = []
+
+    def record_skipped(
+        self,
+        name: str,
+        reason: str,
+        url: str | None = None,
+        error: str | None = None,
+        stage: str | None = None,
+    ) -> None:
+        """Record a skipped product for debugging and observability."""
+        self.skipped_laptops.append(
+            SkippedLaptop(
+                name=name,
+                url=url,
+                reason=reason,
+                error=error,
+                stage=stage,
+            )
+        )
 
     @classmethod
     def _is_standalone_accessory(cls, title: str) -> bool:

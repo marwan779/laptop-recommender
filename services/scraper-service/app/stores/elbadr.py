@@ -152,6 +152,12 @@ class ElBadrStoreScraper(BaseStoreScraper):
 
                 # Filter out standalone accessories (backpacks, mice, etc.)
                 if self._is_standalone_accessory(title):
+                    self.record_skipped(
+                        name=title,
+                        url=clean_url,
+                        reason="Filtered out as standalone accessory",
+                        stage="accessory_filter",
+                    )
                     continue
 
                 slug = clean_url.rstrip("/").split("/")[-1]
@@ -173,6 +179,12 @@ class ElBadrStoreScraper(BaseStoreScraper):
                 # Parse the product card (Level 1 or Level 2)
                 product = self._parse_product_card(card, level=level, product_url=product_url, clean_url=clean_url)
                 if not product:
+                    self.record_skipped(
+                        name=title,
+                        url=clean_url,
+                        reason="Failed to parse product card or PDP",
+                        stage="card_parse",
+                    )
                     continue
 
                 # Watermark check on extracted MPN or SKU

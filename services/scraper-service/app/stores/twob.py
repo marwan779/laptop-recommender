@@ -146,6 +146,12 @@ class TwoBStoreScraper(BaseStoreScraper):
 
                 # Filter out standalone accessories (backpacks, mice, etc.)
                 if self._is_standalone_accessory(title):
+                    self.record_skipped(
+                        name=title,
+                        url=clean_url,
+                        reason="Filtered out as standalone accessory",
+                        stage="accessory_filter",
+                    )
                     continue
 
                 seen_urls.add(clean_url)

@@ -11,11 +11,13 @@ from __future__ import annotations
 
 import itertools
 import re
+import time
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
+from curl_cffi.curl import CurlHttpVersion
 
 from app.core.normalizer import ModelNormalizer
 from app.engine.base import IScraperEngine
@@ -116,23 +118,26 @@ class GigabyteBrandScraper(BaseBrandScraper):
 
         return None
 
-    def _fetch_html(self, url: str, timeout: int = 20, retries: int = 3) -> str | None:
-        """Fetch HTML content with curl_cffi Chrome impersonation and connection retry."""
+    def _fetch_html(self, url: str, timeout: int = 15, retries: int = 3) -> str | None:
+        """Fetch HTML content with curl_cffi Chrome impersonation (HTTP/1.1) and connection retry."""
         for attempt in range(1, retries + 1):
             try:
                 resp = self._session.get(
                     url,
                     headers=self._headers,
                     impersonate="chrome120",
+                    http_version=CurlHttpVersion.V1_1,
                     timeout=timeout,
                 )
                 if resp.status_code == 200:
+                    time.sleep(0.15)  # Polite pacing to avoid CDN rate-limiting
                     return resp.text
                 elif resp.status_code == 404:
                     return None
             except Exception as e:
                 # Reset session on dead keep-alive socket or timeout
                 self._session = cffi_requests.Session()
+                time.sleep(0.5)
                 if attempt == retries:
                     print(f"[{self.brand_name}] Failed to fetch {url} after {retries} attempts: {e}")
                 continue
@@ -285,6 +290,12 @@ class GigabyteBrandScraper(BaseBrandScraper):
         html = self._fetch_html(target_url)
         if not html:
             print(f"[{self.brand_name}] Specs page not found or unavailable for '{summary.name}'. Skipping.")
+            self.record_skipped(
+                name=summary.name,
+                url=target_url,
+                reason="Specs page not found or unavailable",
+                stage="level2_specs",
+            )
             return None
 
         soup = BeautifulSoup(html, "html.parser")
@@ -313,6 +324,12 @@ class GigabyteBrandScraper(BaseBrandScraper):
 
         if not all_specs:
             print(f"[{self.brand_name}] [!] No specifications found for '{summary.name}' (Placeholder). Skipping.")
+            self.record_skipped(
+                name=summary.name,
+                url=target_url,
+                reason="No specifications found on specs page (Placeholder)",
+                stage="level2_specs",
+            )
             return None
 
         # Build structured specs

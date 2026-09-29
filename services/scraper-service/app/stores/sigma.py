@@ -228,6 +228,12 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
 
                 # Non-laptop accessory check
                 if self._is_standalone_accessory(name):
+                    self.record_skipped(
+                        name=name,
+                        url=urljoin(self.base_url, f"/product/{slug}"),
+                        reason="Filtered out as standalone accessory",
+                        stage="accessory_filter",
+                    )
                     continue
 
                 # Watermark pre-check before making any PDP request
@@ -237,6 +243,15 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
                     break
 
                 product = self._parse_product(raw, level=level)
+                if not product:
+                    self.record_skipped(
+                        name=name,
+                        url=urljoin(self.base_url, f"/product/{slug}"),
+                        reason="Failed to parse product data or PDP",
+                        stage="card_parse",
+                    )
+                    continue
+
                 if product:
                     # Also check product SKU / MPN for watermark
                     if until_model and any(

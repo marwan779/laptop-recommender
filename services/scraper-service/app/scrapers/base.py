@@ -2,14 +2,34 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from app.engine.base import IScraperEngine
-from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary
+from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary, SkippedLaptop
 
 
 class BaseBrandScraper(ABC):
     """Abstract base class for brand-specific laptop scrapers."""
 
-    def __init__(self, engine: IScraperEngine):
+    def __init__(self, engine: IScraperEngine | None = None):
         self.engine = engine
+        self.skipped_laptops: list[SkippedLaptop] = []
+
+    def record_skipped(
+        self,
+        name: str,
+        reason: str,
+        url: str | None = None,
+        error: str | None = None,
+        stage: str | None = None,
+    ) -> None:
+        """Record a skipped laptop for debugging and observability."""
+        self.skipped_laptops.append(
+            SkippedLaptop(
+                name=name,
+                url=url,
+                reason=reason,
+                error=error,
+                stage=stage,
+            )
+        )
 
     @property
     @abstractmethod

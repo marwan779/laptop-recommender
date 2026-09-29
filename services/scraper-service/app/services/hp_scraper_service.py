@@ -86,7 +86,9 @@ class HpScraperService:
                 latest_pointers=latest_pointers,
                 total_laptops=len(summaries),
                 total_configurations=len(summaries),
+                total_skipped=len(self.scraper.skipped_laptops),
                 laptops=summaries,
+                skipped_laptops=list(self.scraper.skipped_laptops),
             )
             self._save_if_requested(catalog_result, output_file)
             return catalog_result
@@ -109,8 +111,22 @@ class HpScraperService:
                     )
                 else:
                     print(f"  -> Skipping (no specifications found for '{summary.name}')")
+                    if not any(s.name == summary.name for s in self.scraper.skipped_laptops):
+                        self.scraper.record_skipped(
+                            name=summary.name,
+                            url=summary.specs_url or summary.product_url,
+                            reason="No specifications found for laptop",
+                            stage="level2_specs",
+                        )
             except Exception as e:
                 print(f"  -> Error crawling details for '{summary.name}': {e}")
+                self.scraper.record_skipped(
+                    name=summary.name,
+                    url=summary.specs_url or summary.product_url,
+                    reason=f"Exception during detail crawl: {e}",
+                    error=str(e),
+                    stage="level2_specs",
+                )
 
             if limit and len(detailed_laptops) >= limit:
                 print(f"\n[HP Service] Reached requested limit of {limit} laptops.")
@@ -146,7 +162,9 @@ class HpScraperService:
             # end_date=end_date_str,
             total_laptops=len(detailed_laptops),
             total_configurations=total_configs,
+            total_skipped=len(self.scraper.skipped_laptops),
             laptops=detailed_laptops,
+            skipped_laptops=list(self.scraper.skipped_laptops),
         )
 
         self._save_if_requested(catalog_result, output_file)
