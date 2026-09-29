@@ -126,7 +126,7 @@ class TradelineStoreScraper(BaseStoreScraper):
             if isinstance(until_model, (list, tuple, set))
             else (until_model or "None (Full Catalog)")
         )
-        max_pages_display = str(max_pages) if max_pages is not None else "Unlimited"
+        max_pages_display = str(max_pages) if max_pages else "Unlimited (All Pages)"
 
         print(
             f"[{self.store_name}] Starting Level {level} catalog crawl "
@@ -141,7 +141,7 @@ class TradelineStoreScraper(BaseStoreScraper):
             print(f"[{self.store_name}] Crawling collection: '{collection}'...")
 
             for page in itertools.count(1):
-                if max_pages is not None and page > max_pages:
+                if max_pages and page > max_pages:
                     break
                 if watermark_hit or (limit and len(products) >= limit):
                     break
@@ -177,6 +177,12 @@ class TradelineStoreScraper(BaseStoreScraper):
 
                     # 1. Filter out accessories
                     if self._is_standalone_accessory(title):
+                        self.record_skipped(
+                            name=title,
+                            reason="Filtered out non-laptop accessory or peripheral",
+                            url=product_url,
+                            stage="level1_filter",
+                        )
                         continue
 
                     # 2. Iterate through all variants (changeable options: RAM, SSD, Color, CPU)
@@ -212,6 +218,12 @@ class TradelineStoreScraper(BaseStoreScraper):
                         )
 
                         if not product:
+                            self.record_skipped(
+                                name=f"{title} - {variant_title}",
+                                reason="Product variant could not be parsed or zero/invalid price",
+                                url=product_url,
+                                stage="level1_parse",
+                            )
                             continue
 
                         # 4. Dual Watermark Check (Post-enrichment on discovered MPN / SKU)
@@ -460,11 +472,17 @@ class TradelineStoreScraper(BaseStoreScraper):
             results = data.get("resources", {}).get("results", {}).get("products", [])
             for item in results:
                 title = item.get("title", "")
-                if self._is_standalone_accessory(title):
-                    continue
-
                 handle = item.get("handle", "")
                 product_url = urljoin(self.base_url, item.get("url") or f"/products/{handle}")
+
+                if self._is_standalone_accessory(title):
+                    self.record_skipped(
+                        name=title,
+                        reason="Filtered out non-laptop accessory or peripheral",
+                        url=product_url,
+                        stage="search_filter",
+                    )
+                    continue
 
                 # Fetch Level 2 details for candidates
                 specs, raw_desc, p_val, p_str, sku, in_stock = self._extract_product_specs(product_url)
@@ -550,7 +568,15 @@ class TradelineStoreScraper(BaseStoreScraper):
 
             title_elem = card.find(class_=re.compile(r"title|name", re.I)) or link
             title = title_elem.get_text(strip=True)
-            if not title or self._is_standalone_accessory(title):
+            if not title:
+                continue
+            if self._is_standalone_accessory(title):
+                self.record_skipped(
+                    name=title,
+                    reason="Filtered out non-laptop accessory or peripheral",
+                    url=full_url,
+                    stage="html_fallback_filter",
+                )
                 continue
 
             price_elem = card.find(class_=re.compile(r"price", re.I))

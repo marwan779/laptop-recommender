@@ -11,6 +11,7 @@ from app.stores.compumarts import CompumartsStoreScraper
 from app.stores.elbadr import ElBadrStoreScraper
 from app.stores.sigma import SigmaComputerStoreScraper
 from app.stores.twob import TwoBStoreScraper
+from app.stores.tradeline import TradelineStoreScraper
 
 
 def test_skipped_laptop_schema_serialization():
@@ -188,3 +189,34 @@ def test_twob_records_skipped_accessory():
     assert len(scraper.skipped_laptops) == 1
     assert "HP Laptop Backpack 15.6 inch" in scraper.skipped_laptops[0].name
     assert "Filtered out as standalone accessory" in scraper.skipped_laptops[0].reason
+
+
+def test_tradeline_records_skipped_accessory():
+    scraper = TradelineStoreScraper()
+    mock_json = {
+        "products": [
+            {
+                "id": 111,
+                "title": "Apple Magic Mouse - White",
+                "handle": "apple-magic-mouse",
+                "variants": [{"id": 1111, "title": "Default Title", "price": "3999.00", "available": True}],
+            },
+            {
+                "id": 222,
+                "title": "Apple MacBook Air 13-inch M3",
+                "handle": "macbook-air-13-m3",
+                "variants": [
+                    {"id": 2221, "title": "16GB / 256GB / Midnight", "sku": "MRXV3AB/A", "price": "54000.00", "available": True},
+                ],
+            },
+        ]
+    }
+    scraper._fetch_json = MagicMock(return_value=mock_json)
+
+    products = scraper.scrape_catalog(level=1, max_pages=1, limit=5)
+    assert len(products) == 1
+    assert len(scraper.skipped_laptops) >= 1
+    skipped_names = [s.name for s in scraper.skipped_laptops]
+    assert "Apple Magic Mouse - White" in skipped_names
+    assert any("Filtered out non-laptop accessory" in s.reason for s in scraper.skipped_laptops)
+
