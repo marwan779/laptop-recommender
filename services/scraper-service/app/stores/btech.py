@@ -72,13 +72,7 @@ class BTechStoreScraper(BaseStoreScraper):
         return "btech.com"
 
     def _fetch_html(self, url: str) -> str:
-        """Fetch raw HTML using curl_cffi session with Chrome 120 impersonation or fallback Scrapling engine."""
-        try:
-            r = self._session.get(url, headers=self._headers, impersonate="chrome120", timeout=35.0)
-            if r.status_code == 200 and len(r.text) > 500:
-                return r.text
-        except Exception as e:
-            pass
+        """Fetch raw HTML using Scrapling engine or fallback curl_cffi session."""
         if self.engine:
             try:
                 doc = self.engine.fetch(url, stealth=False)
@@ -86,7 +80,12 @@ class BTechStoreScraper(BaseStoreScraper):
                     return doc.html
             except Exception:
                 pass
-        return ""
+        try:
+            r = self._session.get(url, headers=self._headers, impersonate="chrome120", timeout=25.0)
+            return r.text if r.status_code == 200 else ""
+        except Exception as e:
+            print(f"[{self.store_name}] Failed to fetch {url}: {e}")
+            return ""
 
     def _parse_next_f_items(self, html_text: str) -> list[dict]:
         """Extract product items from B.TECH Next.js App Router (RSC) self.__next_f chunks."""
