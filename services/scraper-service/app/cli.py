@@ -113,6 +113,14 @@ def main():
         default=False,
         help="Send email status notification after each scraper completes (default: False)",
     )
+    parser.add_argument(
+        "--upload-to-bucket",
+        "--upload-bucket",
+        dest="upload_to_bucket",
+        action="store_true",
+        default=False,
+        help="Upload scraped JSON output files to the configured Object Storage bucket (default: False)",
+    )
 
     args = parser.parse_args()
 
@@ -127,7 +135,8 @@ def main():
             f"[yellow]Until Model:[/yellow] {args.until_model or 'None (Full Catalog)'} | "
             f"[yellow]Max Pages:[/yellow] {max_pages_display} | "
             f"[yellow]Limit:[/yellow] {limit_display} | "
-            f"[yellow]Send Email:[/yellow] {args.send_email}",
+            f"[yellow]Send Email:[/yellow] {args.send_email} | "
+            f"[yellow]Upload to Bucket:[/yellow] {args.upload_to_bucket}",
             border_style="cyan",
         )
     )
@@ -143,6 +152,7 @@ def main():
             max_pages=args.max_pages,
             limit=args.limit,
             send_email=args.send_email,
+            upload_to_bucket=args.upload_to_bucket,
         )
     elif args.mode in ("store", "stores"):
         targets = "all" if args.stores.lower() == "all" else [s.strip().lower() for s in args.stores.split(",") if s.strip()]
@@ -154,6 +164,7 @@ def main():
             max_pages=args.max_pages,
             limit=args.limit,
             send_email=args.send_email,
+            upload_to_bucket=args.upload_to_bucket,
         )
     else:
         brand_val = args.brand.strip().lower()
@@ -166,6 +177,7 @@ def main():
             max_pages=args.max_pages,
             limit=args.limit,
             send_email=args.send_email,
+            upload_to_bucket=args.upload_to_bucket,
         )
 
     # ── Execute via orchestrator ─────────────────────────────────────────
