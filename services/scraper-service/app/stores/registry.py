@@ -1,9 +1,12 @@
 from typing import Type
 
 from app.engine.base import IScraperEngine
+from app.stores.amazon import AmazonStoreScraper
 from app.stores.base import BaseStoreScraper
+from app.stores.btech import BTechStoreScraper
 from app.stores.compumarts import CompumartsStoreScraper
 from app.stores.elbadr import ElBadrStoreScraper
+from app.stores.noon import NoonStoreScraper
 from app.stores.sigma import SigmaComputerStoreScraper
 from app.stores.tradeline import TradelineStoreScraper
 from app.stores.twob import TwoBStoreScraper
@@ -15,6 +18,9 @@ STORE_REGISTRY: dict[str, Type[BaseStoreScraper]] = {
     "sigma": SigmaComputerStoreScraper,
     "twob": TwoBStoreScraper,
     "tradeline": TradelineStoreScraper,
+    "amazon": AmazonStoreScraper,
+    "noon": NoonStoreScraper,
+    "btech": BTechStoreScraper,
 }
 
 
