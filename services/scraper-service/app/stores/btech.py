@@ -1,5 +1,6 @@
 import html
 import itertools
+import json
 import re
 from urllib.parse import quote_plus, urljoin, urlparse
 
@@ -38,6 +39,8 @@ class BTechStoreScraper(BaseStoreScraper):
         "laptop stand", "flash drive", "power bank", "docking", "privacy screen",
         "screen protector", "hub", "dongle", "stylus", "pen", "printer",
         "monitor", "desktop", "all-in-one", "all in one", "projector", "tablet", "ipad", "tv",
+        "extender", "router", "hard disk", "hard drive", "external hard", "external hdd", "webcam",
+        "memory card", "sd card", "microsd", "flash",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -69,7 +72,13 @@ class BTechStoreScraper(BaseStoreScraper):
         return "btech.com"
 
     def _fetch_html(self, url: str) -> str:
-        """Fetch raw HTML using Scrapling engine or fallback curl_cffi session."""
+        """Fetch raw HTML using curl_cffi session with Chrome 120 impersonation or fallback Scrapling engine."""
+        try:
+            r = self._session.get(url, headers=self._headers, impersonate="chrome120", timeout=35.0)
+            if r.status_code == 200 and len(r.text) > 500:
+                return r.text
+        except Exception as e:
+            pass
         if self.engine:
             try:
                 doc = self.engine.fetch(url, stealth=False)
@@ -77,12 +86,32 @@ class BTechStoreScraper(BaseStoreScraper):
                     return doc.html
             except Exception:
                 pass
-        try:
-            r = self._session.get(url, headers=self._headers, impersonate="chrome120", timeout=25.0)
-            return r.text if r.status_code == 200 else ""
-        except Exception as e:
-            print(f"[{self.store_name}] Failed to fetch {url}: {e}")
-            return ""
+        return ""
+
+    def _parse_next_f_items(self, html_text: str) -> list[dict]:
+        """Extract product items from B.TECH Next.js App Router (RSC) self.__next_f chunks."""
+        needle = '\\"items\\":['
+        pos = html_text.find(needle)
+        if pos != -1:
+            sub = html_text[pos + len(needle) - 1:].replace('\\"', '"').replace('\\\\', '\\')
+            try:
+                arr, _ = json.JSONDecoder().raw_decode(sub)
+                if isinstance(arr, list):
+                    return arr
+            except Exception:
+                pass
+
+        pos_u = html_text.find('"items":[')
+        if pos_u != -1:
+            sub_u = html_text[pos_u + 8:]
+            try:
+                arr, _ = json.JSONDecoder().raw_decode(sub_u)
+                if isinstance(arr, list):
+                    return arr
+            except Exception:
+                pass
+
+        return []
 
     def scrape_catalog(
         self,
@@ -127,6 +156,119 @@ class BTechStoreScraper(BaseStoreScraper):
                 print(f"[{self.store_name}] Empty response for page {page}. Halting crawl.")
                 break
 
+            # Strategy A: Next.js App Router streaming items (self.__next_f)
+            next_f_items = self._parse_next_f_items(html_text)
+            if next_f_items:
+                print(f"[{self.store_name}] Page {page}: Found {len(next_f_items)} products via Next.js state.")
+                for it in next_f_items:
+                    title = it.get("name", "")
+                    sku = it.get("sku", "")
+                    slug = it.get("slug", "")
+                    if not slug and not sku:
+                        continue
+                    clean_url = f"https://btech.com/en/p/{slug}" if slug else f"https://btech.com/en/p/{sku}"
+
+                    if not title or len(title) < 5 or clean_url in seen_urls:
+                        continue
+
+                    # Pre-enrichment watermark check
+                    if until_model and any(
+                        self._matches_watermark(ident, until_model)
+                        for ident in [title, sku, slug, clean_url]
+                    ):
+                        print(
+                            f"[{self.store_name}] Pre-enrichment watermark matched '{until_model}' "
+                            f"at '{title}' ({clean_url}). Halting crawl."
+                        )
+                        watermark_hit = True
+                        break
+
+                    # Accessory check
+                    if self._is_standalone_accessory(title):
+                        self.record_skipped(
+                            name=title,
+                            url=clean_url,
+                            reason="Filtered out non-laptop accessory or peripheral",
+                            stage="level1_filter",
+                        )
+                        continue
+
+                    seen_urls.add(clean_url)
+
+                    price_obj = it.get("price") or {}
+                    raw_price = price_obj.get("final_price") or price_obj.get("base_price")
+                    price_val = float(raw_price) if raw_price else None
+                    price_str = f"{price_val:,.2f} EGP" if price_val else None
+
+                    in_stock = it.get("is_in_stock", True)
+                    thumb = it.get("thumbnail_url")
+                    thumbnail_url = (
+                        thumb if (thumb and thumb.startswith("http"))
+                        else (f"https://f.btech.com/media/catalog/product/{thumb.lstrip('/')}" if thumb else None)
+                    )
+
+                    tokens = ModelNormalizer.extract_model_tokens(title)
+                    mpn = tokens.get("mpn")
+                    model_code = tokens.get("full_sku")
+
+                    specs: dict[str, str] = {}
+                    raw_desc: str | None = None
+                    if level >= 2:
+                        pdp_specs, pdp_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = (
+                            self._extract_product_specs(clean_url)
+                        )
+                        specs = pdp_specs
+                        raw_desc = pdp_desc
+                        if pdp_mpn:
+                            mpn = pdp_mpn
+                        if pdp_model:
+                            model_code = pdp_model
+                        if pdp_pval is not None:
+                            price_val = pdp_pval
+                            price_str = pdp_pstr
+                        if pdp_stock is not None:
+                            in_stock = pdp_stock
+
+                        # Post-enrichment watermark check
+                        if until_model and any(
+                            self._matches_watermark(ident, until_model)
+                            for ident in [mpn, model_code]
+                        ):
+                            print(
+                                f"[{self.store_name}] Post-enrichment watermark matched '{until_model}' "
+                                f"at '{title}'. Halting crawl."
+                            )
+                            watermark_hit = True
+
+                    product = RetailerProduct(
+                        store_name=self.store_name,
+                        store_key=self.store_key,
+                        store_domain=self.base_domain,
+                        title=title,
+                        product_url=clean_url,
+                        retailer_product_id=sku or slug,
+                        retailer_sku=sku or slug,
+                        mpn=mpn,
+                        model_code=model_code,
+                        sub_model=tokens.get("sub_model"),
+                        base_model=tokens.get("base_model"),
+                        price_egp=price_val,
+                        price_str=price_str,
+                        in_stock=in_stock,
+                        thumbnail_url=thumbnail_url,
+                        specs=specs,
+                        raw_description=raw_desc,
+                    )
+                    products.append(product)
+
+                    if watermark_hit or (limit and len(products) >= limit):
+                        break
+
+                if watermark_hit or (limit and len(products) >= limit):
+                    break
+                continue
+
+            # Strategy B: Legacy Magento 2 DOM cards fallback
             soup = BeautifulSoup(html_text, "html.parser")
             cards = soup.select(".products.wrapper .product-items > li.product-item")
             if not cards:
@@ -135,43 +277,6 @@ class BTechStoreScraper(BaseStoreScraper):
                 cards = soup.select(".product-item-info")
 
             if not cards:
-                # Next.js / regex link fallback
-                regex_links = re.findall(r'href=["\'](/en/p/[^"\']+)["\']', html_text)
-                if not regex_links:
-                    regex_links = re.findall(r'(/en/p/[a-zA-Z0-9\-_]+)', html_text)
-                if regex_links:
-                    unique_links = list(dict.fromkeys(regex_links))
-                    print(f"[{self.store_name}] Page {page}: Found {len(unique_links)} products via link pattern.")
-                    for raw_href in unique_links:
-                        clean_href = raw_href.split("?")[0].replace("\\", "")
-                        clean_url = urljoin(self.base_url, clean_href)
-                        if clean_url in seen_urls:
-                            continue
-                        url_slug = clean_href.split("/")[-1]
-                        title_clean = url_slug.replace("-", " ").title()
-
-                        if self._is_standalone_accessory(title_clean):
-                            self.record_skipped(name=title_clean, url=clean_url, reason="Filtered out non-laptop accessory or peripheral", stage="level1_filter")
-                            continue
-
-                        seen_urls.add(clean_url)
-                        product = RetailerProduct(
-                            store_name=self.store_name,
-                            store_key=self.store_key,
-                            store_domain=self.base_domain,
-                            title=title_clean,
-                            product_url=clean_url,
-                            retailer_product_id=url_slug,
-                            retailer_sku=url_slug,
-                            in_stock=True,
-                        )
-                        products.append(product)
-                        if limit and len(products) >= limit:
-                            break
-                    if limit and len(products) >= limit:
-                        break
-                    continue
-
                 print(f"[{self.store_name}] No product cards found on page {page}. Reached end of catalog.")
                 break
 
@@ -420,14 +525,45 @@ class BTechStoreScraper(BaseStoreScraper):
             if price_el:
                 price_val, price_str = self.parse_egp_price(price_el.get_text(strip=True))
 
-        # Specs table: #product-attribute-specs-table tr, .additional-attributes tr
-        for row in soup.select("#product-attribute-specs-table tr, .additional-attributes tr, table.data.table tr"):
-            th = row.select_one("th")
-            td = row.select_one("td")
+        # Strategy A: Next.js script specifications list
+        needle = '\\"specifications\\":['
+        pos = html_text.find(needle)
+        if pos != -1:
+            sub = html_text[pos + len(needle) - 1:].replace('\\"', '"').replace('\\\\', '\\')
+            try:
+                arr, _ = json.JSONDecoder().raw_decode(sub)
+                if isinstance(arr, list):
+                    for entry in arr:
+                        k = entry.get("key") or entry.get("name")
+                        v = entry.get("value")
+                        if k and v:
+                            specs[str(k).strip()] = str(v).strip()
+            except Exception:
+                pass
+
+        if not specs:
+            pos_u = html_text.find('"specifications":[')
+            if pos_u != -1:
+                sub_u = html_text[pos_u + 17:]
+                try:
+                    arr, _ = json.JSONDecoder().raw_decode(sub_u)
+                    if isinstance(arr, list):
+                        for entry in arr:
+                            k = entry.get("key") or entry.get("name")
+                            v = entry.get("value")
+                            if k and v:
+                                specs[str(k).strip()] = str(v).strip()
+                except Exception:
+                    pass
+
+        # Strategy B: Specs table DOM fallback
+        for row in soup.select("#product-attribute-specs-table tr, .additional-attributes tr, table.data.table tr, table.w-full tr, table tr"):
+            th = row.select_one("th, td.label, .table-label") or row.select_one("th")
+            td = row.select_one("td.data, td:last-child, .table-value") or row.select_one("td")
             if th and td:
                 k = th.get_text(strip=True)
                 v = td.get_text(" ", strip=True)
-                if k and v and len(k) < 60:
+                if k and v and len(k) < 60 and k not in specs:
                     specs[k] = v
 
         # Description

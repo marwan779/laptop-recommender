@@ -32,6 +32,9 @@ def test_noon_accessory_filtering():
         "Anker 65W Fast Wall Charger USB-C Power Adapter",
         "Wireless Optical Gaming Mouse 2.4GHz",
         "Aluminum Laptop Stand Ergonomic Riser",
+        "Canon 490 Ink Tank Cartridge 4 Color Set Black, Cyan, Yellow & Magenta",
+        "Customize Mac mini Apple M4 chip with 10-core CPU, 10-core GPU/16",
+        "1TB Portable SSD USB 3.2 Gen 2, 800MB/s Sequential Read Speed",
     ]:
         assert scraper._is_standalone_accessory(title) is True
 
@@ -39,6 +42,7 @@ def test_noon_accessory_filtering():
         "Lenovo V15 G3 IAP Laptop Intel Core i5-1235U 8GB RAM 512GB SSD 15.6 FHD",
         "HP 250 G9 Laptop Intel Core i7-1255U 16GB RAM 512GB SSD Iris Xe",
         "Dell Vostro 3520 Laptop Intel Core i3-1215U 8GB RAM 256GB SSD",
+        "New 2026 MacBook Air MDHE4 13 Inch Display |  M5 Air 10-Core CPU 8-Core GPU | 16GB RAM | 512GB SSD | macOS | English  Keyboard | International Version | Midnight",
     ]:
         assert scraper._is_standalone_accessory(laptop) is False
 

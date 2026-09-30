@@ -27,8 +27,15 @@ class NoonStoreScraper(BaseStoreScraper):
         "https://www.noon.com/egypt-en/electronics-and-mobiles/computers-and-accessories/laptops-and-notebooks/"
         "?sort%5Bby%5D=created_at&sort%5Bdir%5D=desc&page={page}"
     )
+    CATALOG_API_TEMPLATE = (
+        "https://www.noon.com/_svc/catalog/api/v3/u/egypt-en/electronics-and-mobiles/computers-and-accessories/laptops-and-notebooks/"
+        "?sort[by]=created_at&sort[dir]=desc&page={page}"
+    )
     SEARCH_URL_TEMPLATE = (
         "https://www.noon.com/egypt-en/search/?q={query}"
+    )
+    SEARCH_API_TEMPLATE = (
+        "https://www.noon.com/_svc/catalog/api/v3/u/egypt-en/search/?q={query}&page=1"
     )
 
     NON_LAPTOP_KEYWORDS = [
@@ -37,6 +44,10 @@ class NoonStoreScraper(BaseStoreScraper):
         "laptop stand", "flash drive", "power bank", "docking", "privacy screen",
         "screen protector", "hub", "dongle", "stylus", "pen", "printer",
         "monitor", "desktop", "all-in-one", "all in one", "projector", "tablet", "ipad", "tv",
+        "extender", "router", "hard disk", "hard drive", "external hard", "external hdd", "webcam",
+        "memory card", "sd card", "microsd", "micsd", "sdxc", "flash", "usb drive", "mac mini", "mini pc", "thermal paste",
+        "cooler", "cooling", "microphone", "mic", "sata ssd", "internal ssd", "nvme ssd", "m.2 ssd", "portable ssd", "external ssd",
+        "cartridge", "toner", "drum unit", "ink tank", "ribbon",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -45,7 +56,7 @@ class NoonStoreScraper(BaseStoreScraper):
         self._headers = {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
             ),
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
@@ -74,16 +85,103 @@ class NoonStoreScraper(BaseStoreScraper):
         if self.engine:
             try:
                 doc = self.engine.fetch(url, stealth=True)
-                if doc and doc.html and len(doc.html) > 500:
+                if (
+                    doc
+                    and doc.html
+                    and len(doc.html) > 500
+                    and "sec-if-cpt-container" not in doc.html
+                    and "akamai" not in doc.html.lower()
+                ):
                     return doc.html
             except Exception:
                 pass
         try:
             r = self._session.get(url, headers=self._headers, impersonate="chrome120", timeout=25.0)
-            return r.text if r.status_code == 200 else ""
+            if r.status_code == 200 and "sec-if-cpt-container" not in r.text:
+                return r.text
+            return ""
         except Exception as e:
             print(f"[{self.store_name}] Failed to fetch {url}: {e}")
             return ""
+
+    def _fetch_catalog_api(self, page: int = 1) -> list[dict]:
+        """Fetch catalog directly from Noon's catalog REST API, bypassing Akamai web challenge."""
+        url = self.CATALOG_API_TEMPLATE.format(page=page)
+        try:
+            headers = dict(self._headers)
+            headers["Accept"] = "application/json, text/plain, */*"
+            r = self._session.get(url, headers=headers, impersonate="chrome120", timeout=25.0)
+            if r.status_code == 200:
+                data = r.json()
+                hits = data.get("hits", [])
+                raw_items: list[dict] = []
+                for h in hits:
+                    pdp_path = h.get("pdp_url") or h.get("url") or ""
+                    pdp_url = (
+                        f"https://www.noon.com{pdp_path}"
+                        if pdp_path.startswith("/")
+                        else (f"https://www.noon.com/egypt-en/{pdp_path}/p/" if pdp_path else "")
+                    )
+                    price_val = float(h.get("sale_price") or h.get("price") or 0) or None
+                    img_key = h.get("image_key")
+                    img_url = h.get("image_url") or (
+                        f"https://f.nooncdn.com/p/{img_key}.jpg" if img_key else None
+                    )
+                    raw_items.append({
+                        "sku": h.get("sku", ""),
+                        "title": h.get("name", ""),
+                        "url": pdp_url,
+                        "price_val": price_val,
+                        "price_text": f"{price_val:,.2f} EGP" if price_val else "",
+                        "in_stock": h.get("is_buyable", True),
+                        "thumbnail_url": img_url,
+                        "mpn": h.get("model_number"),
+                        "model_code": h.get("model_name"),
+                        "brand": h.get("brand"),
+                    })
+                return raw_items
+        except Exception as e:
+            print(f"[{self.store_name}] Catalog API error on page {page}: {e}")
+        return []
+
+    def _fetch_search_api(self, query: str) -> list[dict]:
+        """Fetch candidates from Noon search REST API."""
+        try:
+            api_url = self.SEARCH_API_TEMPLATE.format(query=quote_plus(query))
+            headers = dict(self._headers)
+            headers["Accept"] = "application/json, text/plain, */*"
+            r = self._session.get(api_url, headers=headers, impersonate="chrome120", timeout=25.0)
+            if r.status_code == 200:
+                hits = r.json().get("hits", [])
+                raw_items: list[dict] = []
+                for h in hits:
+                    pdp_path = h.get("pdp_url") or h.get("url") or ""
+                    pdp_url = (
+                        f"https://www.noon.com{pdp_path}"
+                        if pdp_path.startswith("/")
+                        else (f"https://www.noon.com/egypt-en/{pdp_path}/p/" if pdp_path else "")
+                    )
+                    price_val = float(h.get("sale_price") or h.get("price") or 0) or None
+                    img_key = h.get("image_key")
+                    img_url = h.get("image_url") or (
+                        f"https://f.nooncdn.com/p/{img_key}.jpg" if img_key else None
+                    )
+                    raw_items.append({
+                        "sku": h.get("sku", ""),
+                        "title": h.get("name", ""),
+                        "url": pdp_url,
+                        "price_val": price_val,
+                        "price_text": f"{price_val:,.2f} EGP" if price_val else "",
+                        "in_stock": h.get("is_buyable", True),
+                        "thumbnail_url": img_url,
+                        "mpn": h.get("model_number"),
+                        "model_code": h.get("model_name"),
+                        "brand": h.get("brand"),
+                    })
+                return raw_items
+        except Exception as e:
+            print(f"[{self.store_name}] Search API fallback error for '{query}': {e}")
+        return []
 
     def scrape_catalog(
         self,
@@ -124,15 +222,16 @@ class NoonStoreScraper(BaseStoreScraper):
             url = self.CATALOG_URL_TEMPLATE.format(page=page)
             print(f"[{self.store_name}] Fetching page {page}: {url}...")
             html_text = self._fetch_html(url)
-            if not html_text:
-                print(f"[{self.store_name}] Empty response for page {page}. Halting crawl.")
-                break
 
-            # Strategy A: Extract NEXT_DATA JSON
-            raw_items = self._parse_next_data_hits(html_text)
+            # Strategy A: Extract NEXT_DATA JSON from HTML (used in unit test mocks)
+            raw_items = self._parse_next_data_hits(html_text) if (html_text and "__NEXT_DATA__" in html_text) else []
 
-            # Strategy B: DOM fallback if NEXT_DATA hits are empty
+            # Strategy B: Direct Catalog REST API (primary in live environments; immune to Akamai challenge & provides complete prices/images)
             if not raw_items:
+                raw_items = self._fetch_catalog_api(page=page)
+
+            # Strategy C: DOM fallback if both NEXT_DATA and Catalog API return empty
+            if not raw_items and html_text:
                 raw_items = self._parse_dom_cards(html_text)
 
             if not raw_items:
@@ -264,10 +363,17 @@ class NoonStoreScraper(BaseStoreScraper):
         search_url = self.SEARCH_URL_TEMPLATE.format(query=quote_plus(query))
         print(f"[{self.store_name}] Searching query '{query}': {search_url}")
         html_text = self._fetch_html(search_url)
-        if not html_text:
-            return []
+        # Strategy A: Extract NEXT_DATA JSON from HTML (used in unit test mocks)
+        raw_items = self._parse_next_data_hits(html_text) if (html_text and "__NEXT_DATA__" in html_text) else []
 
-        raw_items = self._parse_next_data_hits(html_text) or self._parse_dom_cards(html_text)
+        # Strategy B: Search REST API (primary in live environments; immune to Akamai challenge)
+        if not raw_items:
+            raw_items = self._fetch_search_api(query=query)
+
+        # Strategy C: DOM fallback if both fail
+        if not raw_items and html_text:
+            raw_items = self._parse_dom_cards(html_text)
+
         candidates: list[RetailerProduct] = []
         seen_skus: set[str] = set()
 
@@ -474,7 +580,7 @@ class NoonStoreScraper(BaseStoreScraper):
 
         # Specs table DOM fallback
         if not specs:
-            for row in soup.select("div[class*='specifications'] tr, table.specifications tr, .spec-row"):
+            for row in soup.select("div[class*='specifications'] tr, table.specifications tr, .spec-row, table tr"):
                 cells = row.select("td, th, div")
                 if len(cells) >= 2:
                     k = cells[0].get_text(strip=True)
