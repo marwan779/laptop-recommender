@@ -80,7 +80,7 @@ class ScrapeRequest(BaseModel):
     # Output
     output_dir: str | None = Field(
         default=None,
-        description="Directory to save JSON output files (leave null for in-memory only)",
+        description="Directory to save JSON output files locally (bypassed when upload_to_bucket=True to conserve server disk space)",
         examples=["scraping-results"],
     )
 

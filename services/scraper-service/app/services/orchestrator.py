@@ -26,9 +26,12 @@ Usage::
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 import time
 from typing import Type
+
+logger = logging.getLogger("scraper.orchestrator")
 
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
@@ -276,10 +279,19 @@ class ScrapeOrchestrator:
             store_result=store_catalog,
         )
 
-    # ── I/O utilities ───────────────────────────────────────────────────
+    def _should_upload(self, req: ScrapeRequest) -> bool:
+        return bool(req.upload_to_bucket or self.upload_to_bucket)
 
-    @staticmethod
-    def _output_path(req: ScrapeRequest, filename: str) -> Path | None:
+    def _output_path(self, req: ScrapeRequest, filename: str) -> Path | None:
+        if self._should_upload(req):
+            if req.output_dir:
+                msg = (
+                    f"[Orchestrator] upload_to_bucket=True: Bypassing local disk persistence "
+                    f"('{req.output_dir}') to preserve server disk space."
+                )
+                logger.info(msg)
+                print(msg)
+            return None
         if not req.output_dir:
             return None
         out_dir = Path(req.output_dir)

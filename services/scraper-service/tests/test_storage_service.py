@@ -641,3 +641,96 @@ def test_orchestrator_storage_error_is_fail_safe(mock_storage_service):
         assert len(response.results) == 1
         assert response.results[0].storage_key is None
         assert response.results[0].items_scraped == 5
+
+
+def test_orchestrator_bypasses_output_dir_when_upload_to_bucket_true(mock_storage_service, tmp_path):
+    """When upload_to_bucket is True, output_dir should be bypassed and no disk directory/file created."""
+    target_dir = tmp_path / "should_not_exist"
+    orchestrator = ScrapeOrchestrator(
+        storage_service=mock_storage_service,
+        upload_to_bucket=True,
+    )
+
+    req = ScrapeRequest(
+        target_type="brand",
+        targets=["asus"],
+        level=1,
+        output_dir=str(target_dir),
+        upload_to_bucket=True,
+    )
+
+    out_path = orchestrator._output_path(req, "brand_asus.json")
+    assert out_path is None
+    assert not target_dir.exists()
+
+
+def test_orchestrator_creates_output_dir_when_upload_to_bucket_false(mock_storage_service, tmp_path):
+    """When upload_to_bucket is False, output_dir is honored and directory is created."""
+    target_dir = tmp_path / "local_output"
+    orchestrator = ScrapeOrchestrator(
+        storage_service=mock_storage_service,
+        upload_to_bucket=False,
+    )
+
+    req = ScrapeRequest(
+        target_type="brand",
+        targets=["asus"],
+        level=1,
+        output_dir=str(target_dir),
+        upload_to_bucket=False,
+    )
+
+    out_path = orchestrator._output_path(req, "brand_asus.json")
+    assert out_path == target_dir / "brand_asus.json"
+    assert target_dir.exists()
+
+
+def test_orchestrator_zero_disk_upload_to_bucket_calls_upload_json(mock_storage_service, tmp_path):
+    """End-to-end execute() with upload_to_bucket=True must not write output_file and use upload_json."""
+    mock_email = MagicMock()
+    mock_obj = MagicMock(spec=StorageObject)
+    mock_obj.key = "brands/brand_asus.json"
+    mock_storage_service.upload_json.return_value = mock_obj
+
+    orchestrator = ScrapeOrchestrator(
+        email_service=mock_email,
+        storage_service=mock_storage_service,
+        upload_to_bucket=False,
+    )
+
+    fake_dir = tmp_path / "ignored_scrape_output"
+    mock_catalog = BrandCatalogResult(
+        brand="ASUS",
+        official_catalog_url="https://asus.com",
+        scrape_mode="level1",
+        total_laptops=2,
+        total_skipped=0,
+        latest_pointers=["Zenbook 14"],
+        laptops=[],
+    )
+
+    # Mock the brand service's scrape() method
+    with patch("app.services.orchestrator.BRAND_SERVICE_REGISTRY", {"asus": MagicMock()}):
+        mock_brand_service_instance = MagicMock()
+        mock_brand_service_instance.scrape.return_value = mock_catalog
+        mock_service_cls = MagicMock(return_value=mock_brand_service_instance)
+        
+        with patch.dict("app.services.orchestrator.BRAND_SERVICE_REGISTRY", {"asus": mock_service_cls}):
+            req = ScrapeRequest(
+                target_type="brand",
+                targets=["asus"],
+                level=1,
+                output_dir=str(fake_dir),
+                upload_to_bucket=True,
+            )
+            response = orchestrator.execute(req)
+
+            # Assert no local file/dir was created
+            assert not fake_dir.exists()
+            assert response.results[0].output_file is None
+            assert response.results[0].storage_key == "brands/brand_asus.json"
+
+            # Assert upload_json was used directly (in-memory streaming)
+            mock_storage_service.upload_json.assert_called_once()
+            mock_storage_service.upload_file.assert_not_called()
+

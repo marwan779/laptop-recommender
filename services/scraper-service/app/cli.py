@@ -257,17 +257,20 @@ def _display_store_result(target_result, args) -> None:
     if catalog.total_skipped > 0:
         console.print(f"[yellow]Total Skipped Products (Filtered/Error):[/yellow] [bold red]{catalog.total_skipped}[/bold red]")
 
-    if args.save_json and getattr(args, "_total_results", 1) == 1:
-        dest_file = args.save_json
-    elif args.save_json:
-        p = Path(args.save_json)
-        dest_file = str(p.with_name(f"{p.stem}_{target_result.target_key}{p.suffix}"))
-    else:
+    if args.save_json:
+        if getattr(args, "_total_results", 1) == 1:
+            dest_file = args.save_json
+        else:
+            p = Path(args.save_json)
+            dest_file = str(p.with_name(f"{p.stem}_{target_result.target_key}{p.suffix}"))
+        with open(dest_file, "w", encoding="utf-8") as f:
+            json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
+        console.print(f"[green][+] Saved {catalog.total_products} raw store products to {dest_file}[/green]")
+    elif not args.upload_to_bucket:
         dest_file = f"store_{target_result.target_key}.json"
-
-    with open(dest_file, "w", encoding="utf-8") as f:
-        json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
-    console.print(f"[green][+] Saved {catalog.total_products} raw store products to {dest_file}[/green]")
+        with open(dest_file, "w", encoding="utf-8") as f:
+            json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
+        console.print(f"[green][+] Saved {catalog.total_products} raw store products to {dest_file}[/green]")
 
 
 def _display_brand_result(target_result, args) -> None:
@@ -342,17 +345,20 @@ def _display_brand_result(target_result, args) -> None:
             skip_table.add_row(str(idx), safe_terminal_text(s.name), safe_terminal_text(s.reason), s.url or "N/A")
         console.print(skip_table)
 
-    if args.save_json and getattr(args, "_total_results", 1) == 1:
-        dest_file = args.save_json
-    elif args.save_json:
-        p = Path(args.save_json)
-        dest_file = str(p.with_name(f"{p.stem}_{target_result.target_key}{p.suffix}"))
-    else:
+    if args.save_json:
+        if getattr(args, "_total_results", 1) == 1:
+            dest_file = args.save_json
+        else:
+            p = Path(args.save_json)
+            dest_file = str(p.with_name(f"{p.stem}_{target_result.target_key}{p.suffix}"))
+        with open(dest_file, "w", encoding="utf-8") as f:
+            json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
+        console.print(f"[green][+] Saved results to {dest_file}[/green]")
+    elif not args.upload_to_bucket:
         dest_file = f"brand_{target_result.target_key}.json"
-
-    with open(dest_file, "w", encoding="utf-8") as f:
-        json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
-    console.print(f"[green][+] Saved results to {dest_file}[/green]")
+        with open(dest_file, "w", encoding="utf-8") as f:
+            json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
+        console.print(f"[green][+] Saved results to {dest_file}[/green]")
 
 
 if __name__ == "__main__":
