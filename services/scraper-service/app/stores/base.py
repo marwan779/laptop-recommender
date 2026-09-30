@@ -16,7 +16,6 @@ class BaseStoreScraper(ABC):
         "cable", "mouse", "headset", "earphones", "keyboard", "cooling pad",
         "laptop stand", "flash drive", "power bank", "docking", "printer",
         "monitor", "desktop", "all-in-one", "all in one", "projector", "tablet", "ipad", "tv",
-        "cartridge", "toner", "drum unit", "ink tank", "ribbon",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -46,24 +45,9 @@ class BaseStoreScraper(ABC):
     def _is_standalone_accessory(cls, title: str) -> bool:
         """Check if an item is purely an accessory and not a laptop or laptop bundle."""
         t = title.lower()
-
-        has_laptop_word = bool(re.search(r"\b(macbook|laptop|notebook|chromebook)\b", t))
-        has_cpu = bool(
-            re.search(
-                r"\b(i[3579]|ryzen|core\s*ultra|intel|amd|celeron|athlon|m[1-5](\s*pro|\s*max|\s*ultra)?|apple|snapdragon|snapdragon\s*x|qualcomm)\b",
-                t,
-            )
-        )
+        # If it has core laptop hardware specs, it is definitely a computer/laptop (or bundle)
+        has_cpu = bool(re.search(r"\b(i[3579]|ryzen|core\s*ultra|intel|amd|celeron|athlon)\b", t))
         has_specs = bool(re.search(r"\b(\d+\s*gb|ssd|nvme|fhd|ips|oled|wuxga|ddr\d?|rtx|gtx|radeon|geforce)\b", t))
-
-        # Real laptops (including laptop bundles like "Laptop + All-in-One Printer")
-        if has_laptop_word and has_specs:
-            return False
-
-        # Standalone non-laptop computer systems (mini PCs, desktops, all-in-ones)
-        if re.search(r"\b(mac\s*mini|mini\s*pc|desktop|all-in-one|all\s+in\s+one)\b", t):
-            return True
-
         if has_cpu and has_specs:
             return False
 
@@ -72,7 +56,7 @@ class BaseStoreScraper(ABC):
             if acc in t:
                 # Special case: 'keyboard' in a laptop title usually refers to the built-in keyboard layout
                 if acc == "keyboard":
-                    if re.search(r"\b(english|arabic|backlit|rgb|layout)\s+keyboard|keyboard\s+(english|arabic|layout|backlit|rgb)\b", t):
+                    if any(layout in t for layout in ["keyboard english", "keyboard arabic", "backlit", "rgb", "layout"]):
                         continue
                 return True
         return False

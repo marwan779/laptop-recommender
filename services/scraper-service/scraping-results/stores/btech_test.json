@@ -1,0 +1,93 @@
+{
+  "store_name": "B.TECH",
+  "store_key": "btech",
+  "store_domain": "btech.com",
+  "scrape_mode": "level2",
+  "until_model": null,
+  "latest_pointers": [
+    "Lenovo ThinkPad T480 Pre-owned Laptop ,Intel core i5-8250U ,1 TB ,8 GB ,Intel HD Graphics",
+    "Dell Latitude 5420 Pre-owned Laptop ,Intel Core i5-1145G7 ,256 GB SSD ,16 GB ,Intel Iris XE Graphics"
+  ],
+  "total_products": 2,
+  "total_skipped": 1,
+  "scraped_at": "2026-09-30T14:19:31.206683+00:00",
+  "products": [
+    {
+      "store_name": "B.TECH",
+      "store_key": "btech",
+      "store_domain": "btech.com",
+      "title": "Lenovo ThinkPad T480 Pre-owned Laptop ,Intel core i5-8250U ,1 TB ,8 GB ,Intel HD Graphics",
+      "product_url": "https://btech.com/en/p/lenovo-thinkpad-t480-laptop-14-inch-black-grade-a-intel-hd-graphics-intel-core-i5-8250u-8-gb-1-tb",
+      "retailer_product_id": "BE893C8E58124495692C",
+      "retailer_sku": "BE893C8E58124495692C",
+      "mpn": null,
+      "model_code": "ThinkPad T480",
+      "sub_model": null,
+      "base_model": "T480",
+      "price_egp": 17555.0,
+      "price_str": "17,555.00 EGP",
+      "in_stock": true,
+      "thumbnail_url": "https://f.btech.com/media/catalog/product/6/3/d/d/63dd9cb9e7a143cd14ab819c5eaf9cde0cb1d1ac_item_xl_44159604_f78618bc72e5b__2_.jpg",
+      "specs": {
+        "Brand": "Lenovo",
+        "Display Type": "HD",
+        "Keyboard Type": "Business",
+        "Color": "Black",
+        "Resolution Type": "HD",
+        "Operating System": "Windows 10 Pro",
+        "Headphones Output": "Yes",
+        "Keyboard Language": "English & Arabic",
+        "Is Online": "True",
+        "Model Name": "ThinkPad T480",
+        "Screen Size": "14 Inch",
+        "Number of USB Ports": "3",
+        "Number of HDMI Ports": "1"
+      },
+      "raw_description": null,
+      "scraped_at": "2026-09-30T14:19:29.480971+00:00"
+    },
+    {
+      "store_name": "B.TECH",
+      "store_key": "btech",
+      "store_domain": "btech.com",
+      "title": "Dell Latitude 5420 Pre-owned Laptop ,Intel Core i5-1145G7 ,256 GB SSD ,16 GB ,Intel Iris XE Graphics",
+      "product_url": "https://btech.com/en/p/14f8ca58-91c6-4e8a-95ba-685fb7e25f93",
+      "retailer_product_id": "A95337A282846AAC2893",
+      "retailer_sku": "A95337A282846AAC2893",
+      "mpn": null,
+      "model_code": "Latitude",
+      "sub_model": null,
+      "base_model": null,
+      "price_egp": 14999.0,
+      "price_str": "14,999.00 EGP",
+      "in_stock": true,
+      "thumbnail_url": "https://f.btech.com/media/catalog/product/f/e/4/f/fe4f4610bee4d98ddbbc17ed81e5cb24a932ebf0_606ac3d471dea76e6a3060a5f2aa535709e38196_ce963643ce5bc50a39334f73cac7d74b84af443419c84f3f219751.jpg",
+      "specs": {
+        "Brand": "Dell",
+        "Color": "Silver",
+        "Keyboard Type": "Business",
+        "Hard Drive Type": "SSD",
+        "Resolution Type": "FHD",
+        "Operating System": "Windows 10 Pro",
+        "Keyboard Language": "English & Arabic",
+        "Model Number": "5420",
+        "Model Name": "Latitude",
+        "Screen Size": "14 Inch",
+        "Number of USB Ports": "4",
+        "Number of HDMI Ports": "1"
+      },
+      "raw_description": null,
+      "scraped_at": "2026-09-30T14:19:31.206580+00:00"
+    }
+  ],
+  "skipped_laptops": [
+    {
+      "name": "Logitech BRIO 100 Webcam , Graphite",
+      "url": "https://btech.com/en/p/4d936dc0-4f48-4466-91c6-c01b04f5e477",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-09-30T14:19:29.481004+00:00"
+    }
+  ]
+}

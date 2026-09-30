@@ -45,9 +45,6 @@ class NoonStoreScraper(BaseStoreScraper):
         "screen protector", "hub", "dongle", "stylus", "pen", "printer",
         "monitor", "desktop", "all-in-one", "all in one", "projector", "tablet", "ipad", "tv",
         "extender", "router", "hard disk", "hard drive", "external hard", "external hdd", "webcam",
-        "memory card", "sd card", "microsd", "micsd", "sdxc", "flash", "usb drive", "mac mini", "mini pc", "thermal paste",
-        "cooler", "cooling", "microphone", "mic", "sata ssd", "internal ssd", "nvme ssd", "m.2 ssd", "portable ssd", "external ssd",
-        "cartridge", "toner", "drum unit", "ink tank", "ribbon",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -144,45 +141,6 @@ class NoonStoreScraper(BaseStoreScraper):
             print(f"[{self.store_name}] Catalog API error on page {page}: {e}")
         return []
 
-    def _fetch_search_api(self, query: str) -> list[dict]:
-        """Fetch candidates from Noon search REST API."""
-        try:
-            api_url = self.SEARCH_API_TEMPLATE.format(query=quote_plus(query))
-            headers = dict(self._headers)
-            headers["Accept"] = "application/json, text/plain, */*"
-            r = self._session.get(api_url, headers=headers, impersonate="chrome120", timeout=25.0)
-            if r.status_code == 200:
-                hits = r.json().get("hits", [])
-                raw_items: list[dict] = []
-                for h in hits:
-                    pdp_path = h.get("pdp_url") or h.get("url") or ""
-                    pdp_url = (
-                        f"https://www.noon.com{pdp_path}"
-                        if pdp_path.startswith("/")
-                        else (f"https://www.noon.com/egypt-en/{pdp_path}/p/" if pdp_path else "")
-                    )
-                    price_val = float(h.get("sale_price") or h.get("price") or 0) or None
-                    img_key = h.get("image_key")
-                    img_url = h.get("image_url") or (
-                        f"https://f.nooncdn.com/p/{img_key}.jpg" if img_key else None
-                    )
-                    raw_items.append({
-                        "sku": h.get("sku", ""),
-                        "title": h.get("name", ""),
-                        "url": pdp_url,
-                        "price_val": price_val,
-                        "price_text": f"{price_val:,.2f} EGP" if price_val else "",
-                        "in_stock": h.get("is_buyable", True),
-                        "thumbnail_url": img_url,
-                        "mpn": h.get("model_number"),
-                        "model_code": h.get("model_name"),
-                        "brand": h.get("brand"),
-                    })
-                return raw_items
-        except Exception as e:
-            print(f"[{self.store_name}] Search API fallback error for '{query}': {e}")
-        return []
-
     def scrape_catalog(
         self,
         level: int = 1,
@@ -223,16 +181,16 @@ class NoonStoreScraper(BaseStoreScraper):
             print(f"[{self.store_name}] Fetching page {page}: {url}...")
             html_text = self._fetch_html(url)
 
-            # Strategy A: Extract NEXT_DATA JSON from HTML (used in unit test mocks)
-            raw_items = self._parse_next_data_hits(html_text) if (html_text and "__NEXT_DATA__" in html_text) else []
+            # Strategy A: Extract NEXT_DATA JSON from HTML
+            raw_items = self._parse_next_data_hits(html_text) if html_text else []
 
-            # Strategy B: Direct Catalog REST API (primary in live environments; immune to Akamai challenge & provides complete prices/images)
-            if not raw_items:
-                raw_items = self._fetch_catalog_api(page=page)
-
-            # Strategy C: DOM fallback if both NEXT_DATA and Catalog API return empty
+            # Strategy B: DOM fallback if NEXT_DATA hits are empty
             if not raw_items and html_text:
                 raw_items = self._parse_dom_cards(html_text)
+
+            # Strategy C: Direct Catalog REST API fallback (immune to Akamai challenge)
+            if not raw_items:
+                raw_items = self._fetch_catalog_api(page=page)
 
             if not raw_items:
                 print(f"[{self.store_name}] No products found on page {page}. Halting.")
@@ -363,16 +321,45 @@ class NoonStoreScraper(BaseStoreScraper):
         search_url = self.SEARCH_URL_TEMPLATE.format(query=quote_plus(query))
         print(f"[{self.store_name}] Searching query '{query}': {search_url}")
         html_text = self._fetch_html(search_url)
-        # Strategy A: Extract NEXT_DATA JSON from HTML (used in unit test mocks)
-        raw_items = self._parse_next_data_hits(html_text) if (html_text and "__NEXT_DATA__" in html_text) else []
-
-        # Strategy B: Search REST API (primary in live environments; immune to Akamai challenge)
-        if not raw_items:
-            raw_items = self._fetch_search_api(query=query)
-
-        # Strategy C: DOM fallback if both fail
+        raw_items = self._parse_next_data_hits(html_text) if html_text else []
         if not raw_items and html_text:
             raw_items = self._parse_dom_cards(html_text)
+
+        # Fallback to search REST API if HTML was empty or blocked by Akamai
+        if not raw_items:
+            try:
+                api_url = self.SEARCH_API_TEMPLATE.format(query=quote_plus(query))
+                headers = dict(self._headers)
+                headers["Accept"] = "application/json, text/plain, */*"
+                r = self._session.get(api_url, headers=headers, impersonate="chrome120", timeout=25.0)
+                if r.status_code == 200:
+                    hits = r.json().get("hits", [])
+                    for h in hits:
+                        pdp_path = h.get("pdp_url") or h.get("url") or ""
+                        pdp_url = (
+                            f"https://www.noon.com{pdp_path}"
+                            if pdp_path.startswith("/")
+                            else (f"https://www.noon.com/egypt-en/{pdp_path}/p/" if pdp_path else "")
+                        )
+                        price_val = float(h.get("sale_price") or h.get("price") or 0) or None
+                        img_key = h.get("image_key")
+                        img_url = h.get("image_url") or (
+                            f"https://f.nooncdn.com/p/{img_key}.jpg" if img_key else None
+                        )
+                        raw_items.append({
+                            "sku": h.get("sku", ""),
+                            "title": h.get("name", ""),
+                            "url": pdp_url,
+                            "price_val": price_val,
+                            "price_text": f"{price_val:,.2f} EGP" if price_val else "",
+                            "in_stock": h.get("is_buyable", True),
+                            "thumbnail_url": img_url,
+                            "mpn": h.get("model_number"),
+                            "model_code": h.get("model_name"),
+                            "brand": h.get("brand"),
+                        })
+            except Exception as e:
+                print(f"[{self.store_name}] Search API fallback error: {e}")
 
         candidates: list[RetailerProduct] = []
         seen_skus: set[str] = set()
