@@ -91,6 +91,13 @@ class ScrapeRequest(BaseModel):
         examples=[True],
     )
 
+    # Object storage upload
+    upload_to_bucket: bool = Field(
+        default=False,
+        description="Upload scraped JSON output files to the configured object storage bucket",
+        examples=[False],
+    )
+
     @field_validator("targets", mode="before")
     @classmethod
     def normalize_targets(cls, v: Any) -> list[str] | Literal["all"]:
@@ -166,6 +173,7 @@ class ScrapeTargetResult(BaseModel):
     level: int
     items_scraped: int
     output_file: str | None = None
+    storage_key: str | None = None
     error: str | None = None
 
     # The actual catalog payload — exactly one of these will be populated.

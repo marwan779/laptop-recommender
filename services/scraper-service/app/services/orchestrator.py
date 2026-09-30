@@ -40,6 +40,8 @@ from app.services.email_service import EmailService
 from app.services.gigabyte_scraper_service import GigabyteScraperService
 from app.services.hp_scraper_service import HpScraperService
 from app.services.lenovo_scraper_service import LenovoScraperService
+from app.storage.base import IObjectStorageService
+from app.storage.factory import get_storage_service
 from app.stores.registry import STORE_REGISTRY, get_store_scraper
 
 
@@ -69,10 +71,14 @@ class ScrapeOrchestrator:
         engine: IScraperEngine | None = None,
         email_service: EmailService | None = None,
         send_email: bool = False,
+        storage_service: IObjectStorageService | None = None,
+        upload_to_bucket: bool = False,
     ) -> None:
         self.engine = engine or ScraplingEngine()
         self.email_service = email_service or EmailService()
         self.send_email = send_email
+        self.storage_service = storage_service or get_storage_service()
+        self.upload_to_bucket = upload_to_bucket
 
     # ── public API ──────────────────────────────────────────────────────
 
@@ -82,6 +88,7 @@ class ScrapeOrchestrator:
         results: list[ScrapeTargetResult] = []
 
         should_send_email = request.send_email or self.send_email
+        should_upload_to_bucket = request.upload_to_bucket or self.upload_to_bucket
         target_tasks = self._resolve_targets(request)
 
         for target_type, key in target_tasks:
@@ -109,6 +116,10 @@ class ScrapeOrchestrator:
                     self.email_service.send_scraper_finished_background(report)
                 except Exception as exc:
                     print(f"[Orchestrator] Warning: Failed to dispatch background email report for {key}: {exc}")
+
+            # Upload JSON results to object storage bucket after scraper finishes and email is sent (if enabled)
+            if should_upload_to_bucket:
+                self._upload_target_to_storage(result, target_type, key)
 
         total_items = sum(r.items_scraped for r in results)
 
@@ -281,3 +292,57 @@ class ScrapeOrchestrator:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data.model_dump(), f, indent=2, ensure_ascii=False)
         print(f"[Orchestrator] Saved store results to {path.resolve()}")
+
+    def _upload_target_to_storage(
+        self,
+        result: ScrapeTargetResult,
+        target_type: str,
+        key: str,
+    ) -> None:
+        """Upload scraped JSON results for a single target to object storage."""
+        if result.error:
+            # Do not upload failed scrape attempts
+            return
+
+        object_key = f"{target_type}s/{target_type}_{key}.json"
+        metadata = {
+            "target_type": target_type,
+            "target_key": key,
+            "target_name": result.target_name,
+            "items_scraped": str(result.items_scraped),
+            "level": str(result.level),
+        }
+
+        try:
+            if result.output_file and Path(result.output_file).is_file():
+                storage_obj = self.storage_service.upload_file(
+                    file_path=result.output_file,
+                    object_key=object_key,
+                    content_type="application/json",
+                    metadata=metadata,
+                )
+            elif result.brand_result is not None:
+                storage_obj = self.storage_service.upload_json(
+                    data=result.brand_result.model_dump(),
+                    object_key=object_key,
+                    metadata=metadata,
+                )
+            elif result.store_result is not None:
+                storage_obj = self.storage_service.upload_json(
+                    data=result.store_result.model_dump(),
+                    object_key=object_key,
+                    metadata=metadata,
+                )
+            else:
+                return
+
+            result.storage_key = storage_obj.key
+            print(
+                f"[Orchestrator] [+] Successfully uploaded '{key}' JSON to "
+                f"bucket '{self.storage_service.bucket_name}' as '{object_key}'"
+            )
+        except Exception as exc:
+            print(
+                f"[Orchestrator] Warning: Failed to upload '{key}' JSON to object storage: {exc}"
+            )
+

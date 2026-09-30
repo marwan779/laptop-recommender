@@ -23,13 +23,15 @@ def get_email_service() -> EmailService:
 def get_orchestrator() -> ScrapeOrchestrator:
     """Provider for ScrapeOrchestrator instance.
 
-    Injects the shared engine and email service.
+    Injects the shared engine, email service, and storage service.
     Can easily be overridden in test suites via app.dependency_overrides.
     """
     return ScrapeOrchestrator(
         engine=get_scraper_engine(),
         email_service=get_email_service(),
         send_email=False,  # Rely on ScrapeRequest.send_email
+        storage_service=get_storage(),
+        upload_to_bucket=False,  # Rely on ScrapeRequest.upload_to_bucket
     )
 
 
