@@ -37,6 +37,7 @@ class ScraperFinishedReport(BaseModel):
     latest_pointers: list[str] = Field(default_factory=list)
     duration_seconds: float = 0.0
     until_model: str | None = None
+    storage_key: str | None = None
     error_message: str | None = None
     timestamp: str = Field(default_factory=utcnow_str)
 
@@ -72,6 +73,7 @@ class ScraperFinishedReport(BaseModel):
             latest_pointers=pointers,
             duration_seconds=round(duration_seconds, 1),
             until_model=until_model,
+            storage_key=result.storage_key,
             error_message=result.error,
         )
 
@@ -87,6 +89,7 @@ class TargetSummaryItem(BaseModel):
     scraped_count: int = 0
     skipped_count: int = 0
     latest_pointers: list[str] = Field(default_factory=list)
+    storage_key: str | None = None
     error_message: str | None = None
 
 

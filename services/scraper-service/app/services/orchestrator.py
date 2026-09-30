@@ -100,7 +100,11 @@ class ScrapeOrchestrator:
             elapsed_time = time.perf_counter() - start_time
             results.append(result)
 
-            # Fire non-blocking background email report after each single scraper completes (if enabled)
+            # 1. Primary: Upload JSON results to object storage bucket first (if enabled and no error)
+            if should_upload_to_bucket:
+                self._upload_target_to_storage(result, target_type, key)
+
+            # 2. Auxiliary: Fire non-blocking background email report after storage persistence (if enabled)
             if should_send_email:
                 try:
                     watermark = (
@@ -116,10 +120,6 @@ class ScrapeOrchestrator:
                     self.email_service.send_scraper_finished_background(report)
                 except Exception as exc:
                     print(f"[Orchestrator] Warning: Failed to dispatch background email report for {key}: {exc}")
-
-            # Upload JSON results to object storage bucket after scraper finishes and email is sent (if enabled)
-            if should_upload_to_bucket:
-                self._upload_target_to_storage(result, target_type, key)
 
         total_items = sum(r.items_scraped for r in results)
 

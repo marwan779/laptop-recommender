@@ -104,12 +104,22 @@ def build_single_finished_email(report: ScraperFinishedReport) -> tuple[str, str
         </div>
         """
 
+    # Storage upload info note
+    storage_html = ""
+    if report.storage_key:
+        storage_html = f"""
+        <div style="margin-top: 12px; padding: 10px 14px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534;">
+          <strong>Object Storage (AWS S3):</strong> <code style="background-color: #dcfce7; padding: 2px 6px; border-radius: 4px; color: #14532d; font-family: monospace;">{report.storage_key}</code>
+        </div>
+        """
+
     content_html = f"""
     {status_bar_html}
     {error_html}
     {cards_html}
     {pointers_section_html}
     {watermark_html}
+    {storage_html}
     """
 
     html_body = render_shell(
@@ -129,6 +139,8 @@ def build_single_finished_email(report: ScraperFinishedReport) -> tuple[str, str
         f"Duration: {report.duration_seconds}s",
         f"Finished At: {report.timestamp}",
     ]
+    if report.storage_key:
+        text_lines.append(f"Storage Key (S3): {report.storage_key}")
     if report.latest_pointers:
         text_lines.append("")
         text_lines.append("Latest 3 Pointers:")

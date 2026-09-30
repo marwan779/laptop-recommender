@@ -48,7 +48,7 @@ def s3_service(storage_settings, mock_s3_client):
 
 
 def test_storage_settings_defaults():
-    settings = StorageSettings()
+    settings = StorageSettings(_env_file=None)
     assert settings.storage_provider == "s3"
     assert settings.aws_region == "eu-central-1"
     assert settings.aws_s3_bucket == "laptop-recommender-raw-catalog"
@@ -548,12 +548,18 @@ def test_orchestrator_uploads_when_request_upload_to_bucket_true(mock_storage_se
         assert call_kwargs["object_key"] == "stores/store_tradeline.json"
 
 
-def test_orchestrator_upload_happens_after_email():
-    """Verify that email sending is executed before storage upload."""
+def test_orchestrator_upload_happens_before_email():
+    """Verify that storage upload is executed before email sending, enriching the report with storage_key."""
     event_order = []
+    received_reports = []
 
     mock_email = MagicMock()
-    mock_email.send_scraper_finished_background.side_effect = lambda r: event_order.append("email")
+
+    def fake_email_dispatch(r):
+        event_order.append("email")
+        received_reports.append(r)
+
+    mock_email.send_scraper_finished_background.side_effect = fake_email_dispatch
 
     mock_storage = MagicMock(spec=IObjectStorageService)
     mock_storage.bucket_name = "test-bucket"
@@ -594,7 +600,9 @@ def test_orchestrator_upload_happens_after_email():
         req = ScrapeRequest(target_type="brand", targets=["asus"], level=1, send_email=True, upload_to_bucket=True)
         orchestrator.execute(req)
 
-        assert event_order == ["email", "storage"]
+        assert event_order == ["storage", "email"]
+        assert len(received_reports) == 1
+        assert received_reports[0].storage_key == "brands/brand_asus.json"
 
 
 def test_orchestrator_storage_error_is_fail_safe(mock_storage_service):
