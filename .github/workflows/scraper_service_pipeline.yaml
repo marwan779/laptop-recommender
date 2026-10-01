@@ -1,0 +1,123 @@
+name: Scraper Service CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/scraper-service/**"
+      - ".github/workflows/scraper_service_pipeline.yaml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "services/scraper-service/**"
+      - ".github/workflows/scraper_service_pipeline.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scraper-service-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  SERVICE_DIRECTORY: "services/scraper-service"
+
+jobs:
+  code_quality:
+    name: Code Quality & Syntax Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ./services/scraper-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v7   
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.SERVICE_DIRECTORY }}/requirements.txt
+
+      - name: Ruff lint
+        uses: astral-sh/ruff-action@v4
+        with:
+          args: "check"
+          src: ${{ env.SERVICE_DIRECTORY }}
+
+      - name: Ruff format check
+        uses: astral-sh/ruff-action@v4
+        with:
+          args: "format --check"
+          src: ${{ env.SERVICE_DIRECTORY }}
+
+      - name: Compile Python files (syntax check)
+        run: python -m compileall -q app/
+
+  security_governance:
+    name: Security Governance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    defaults:
+      run:
+        working-directory: ./services/scraper-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.SERVICE_DIRECTORY }}/requirements.txt
+
+      - name: Dockerfile policy check (conftest)
+        run: |
+          docker run --rm -v "${{ github.workspace }}":/project -w /project openpolicyagent/conftest \
+            test services/scraper-service/Dockerfile --policy dockerfile_security.rego
+
+      - name: Bandit security scan
+        run: |
+          pip install "bandit[sarif]"
+          bandit -r app/ -ll -f sarif -o bandit.sarif || true
+
+      - name: Upload SARIF report
+        if: always() && github.event.pull_request.head.repo.fork != true
+        uses: github/codeql-action/upload-sarif@v4  
+        with:
+          sarif_file: ${{ env.SERVICE_DIRECTORY }}/bandit.sarif
+          category: bandit
+
+      - name: Dependency vulnerability audit
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+      
+      - name: trivy scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'fs'
+          scanners: vuln,secret,misconfig          
+          format: 'sarif' 
+          output: 'trivy.sarif' 
+          limit-severities-for-sarif: true
+          ignore-unfixed: true  
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+          scan-ref: ${{ env.SERVICE_DIRECTORY}}
+
+      - name: Upload Trivy SARIF
+        if: always() && github.event.pull_request.head.repo.fork != true
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy.sarif
+          category: trivy    
+           
