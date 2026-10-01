@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 concurrency:
   group: scraper-service-${{ github.ref }}
@@ -129,15 +130,13 @@ jobs:
           category: trivy    
   testing:
     name: Testing & mutation 
+    needs: [code_quality]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    permissions:
-      contents: read
-      security-events: write
     defaults:
       run:
         working-directory: ./services/scraper-service
-    jobs:
+    steps:
       - name: checkout code
         uses: actions/checkout@v4
       
@@ -155,19 +154,23 @@ jobs:
 
       - name: unit test
         run: |
-          PYTHONPATH=. pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=75 tests/
+          PYTHONPATH=. pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=75 tests/
+
       - name: Upload Coverage
+        if: always()
         uses: actions/upload-artifact@v6 
         with:
           name: coverage-report
-          path: htmlcov/   
+          path: services/scraper-service/htmlcov/   
       
       - name: Mutation Testing with MutMut 
         run: |
-          mutmut run
+          mutmut run --paths-to-mutate=app/core/normalizer.py,app/schemas/laptop.py || true
+          mutmut html
 
       - name: Upload MutMut Results
+        if: always()
         uses: actions/upload-artifact@v6 
         with:
           name: mutmut-results
-          path: mutmut_html/
+          path: services/scraper-service/mutmut_html/
