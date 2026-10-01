@@ -127,4 +127,47 @@ jobs:
         with:
           sarif_file: trivy.sarif
           category: trivy    
-           
+  testing:
+    name: Testing & mutation 
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    defaults:
+      run:
+        working-directory: ./services/scraper-service
+    jobs:
+      - name: checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.SERVICE_DIRECTORY }}/requirements.txt
+
+      - name: Install Dependencies & Test Frameworks
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov mutmut
+
+      - name: unit test
+        run: |
+          PYTHONPATH=. pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=75 tests/
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v6 
+        with:
+          name: coverage-report
+          path: htmlcov/   
+      
+      - name: Mutation Testing with MutMut 
+        run: |
+          mutmut run
+
+      - name: Upload MutMut Results
+        uses: actions/upload-artifact@v6 
+        with:
+          name: mutmut-results
+          path: mutmut_html/
