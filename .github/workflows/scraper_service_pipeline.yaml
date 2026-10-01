@@ -44,13 +44,13 @@ jobs:
           cache-dependency-path: ${{ env.SERVICE_DIRECTORY }}/requirements.txt
 
       - name: Ruff lint
-        uses: astral-sh/ruff-action@v4
+        uses: astral-sh/ruff-action@v4.1.0
         with:
           args: "check"
           src: ${{ env.SERVICE_DIRECTORY }}
 
       - name: Ruff format check
-        uses: astral-sh/ruff-action@v4
+        uses: astral-sh/ruff-action@v4.1.0
         with:
           args: "format --check"
           src: ${{ env.SERVICE_DIRECTORY }}
