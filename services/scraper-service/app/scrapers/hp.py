@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
 
 from app.core.normalizer import ModelNormalizer
-from app.engine.base import IScraperEngine, ScrapedDocument
+from app.engine.base import IScraperEngine
 from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary
 from app.scrapers.base import BaseBrandScraper
 
@@ -59,15 +59,27 @@ class HpDateExtractor:
 
     HARDWARE_YEAR_MAP = [
         # NVIDIA GeForce RTX 50-series (Blackwell) - 2025
-        (re.compile(r"\b(?:RTX\s*5090|RTX\s*5080|RTX\s*5070\s*Ti|RTX\s*5070|RTX\s*5060|RTX\s*5050)\b", re.I), 2025, "2025-01-01"),
+        (
+            re.compile(r"\b(?:RTX\s*5090|RTX\s*5080|RTX\s*5070\s*Ti|RTX\s*5070|RTX\s*5060|RTX\s*5050)\b", re.I),
+            2025,
+            "2025-01-01",
+        ),
         # Intel Core Ultra Series 2 (Lunar Lake / Arrow Lake) - Late 2024 / 2025
-        (re.compile(r"\b(?:Ultra\s+[579]\s+2\d{2}[A-Za-z]?|288V|268V|258V|256V|228V|226V|Lunar\s+Lake)\b", re.I), 2024, "2024-09-01"),
+        (
+            re.compile(r"\b(?:Ultra\s+[579]\s+2\d{2}[A-Za-z]?|288V|268V|258V|256V|228V|226V|Lunar\s+Lake)\b", re.I),
+            2024,
+            "2024-09-01",
+        ),
         # AMD Strix Point (Ryzen AI 300) - Mid 2024 / 2025
         (re.compile(r"\b(?:Ryzen\s+AI\s+9|HX\s+375|HX\s+370|AI\s+9\s+365|Strix\s+Point)\b", re.I), 2024, "2024-07-01"),
         # Qualcomm Snapdragon X Elite / Plus - Mid 2024
         (re.compile(r"\b(?:Snapdragon\s+X\s+Elite|Snapdragon\s+X\s+Plus|Snapdragon\s+X)\b", re.I), 2024, "2024-06-01"),
         # Intel Core Ultra Series 1 (Meteor Lake) - Early 2024
-        (re.compile(r"\b(?:Ultra\s+[579]\s+1\d{2}[A-Za-z]?|185H|165H|155H|135H|125H|Meteor\s+Lake)\b", re.I), 2024, "2024-01-01"),
+        (
+            re.compile(r"\b(?:Ultra\s+[579]\s+1\d{2}[A-Za-z]?|185H|165H|155H|135H|125H|Meteor\s+Lake)\b", re.I),
+            2024,
+            "2024-01-01",
+        ),
         # AMD Hawk Point (Ryzen 8000) - Early 2024
         (re.compile(r"\b(?:Ryzen\s+[579]\s+8\d{3}|8945HS|8845HS|8645HS|Hawk\s+Point)\b", re.I), 2024, "2024-01-01"),
         # Intel 14th Gen HX / Refresh - 2024
@@ -96,8 +108,6 @@ class HpDateExtractor:
 
     @classmethod
     def extract(cls, name: str, specs_text: str = "") -> tuple[str | None, int | None]:
-        combined = f"{name} {specs_text}".lower()
-
         # 1. Hardware processor / GPU regex (highest precision)
         for pattern, yr, dt in cls.HARDWARE_YEAR_MAP:
             if pattern.search(specs_text) or pattern.search(name):
@@ -249,7 +259,11 @@ class HpBrandScraper(BaseBrandScraper):
                 raw_title = link_elem.get("data-gtm-value") or link_elem.get_text(strip=True)
                 href = link_elem.get("href", "")
                 product_url = urljoin("https://www.hp.com", href)
-                specs_url = f"https://www.hp.com/emea_middle_east-en/products/laptops/product-details/product-specifications/{pid}" if pid else None
+                specs_url = (
+                    f"https://www.hp.com/emea_middle_east-en/products/laptops/product-details/product-specifications/{pid}"
+                    if pid
+                    else None
+                )
 
                 # Extract thumbnail and date from tile ImageObject if available
                 thumbnail_url = None
@@ -270,7 +284,9 @@ class HpBrandScraper(BaseBrandScraper):
                 # Watermark check
                 identifiers = [raw_title, model_name, sku, pid, href]
                 if any(self._matches_watermark(ident, until_model) for ident in identifiers if ident):
-                    print(f"[HP Scraper] Watermark matched '{until_model}' at laptop '{raw_title}'. Halting Level 1 crawl.")
+                    print(
+                        f"[HP Scraper] Watermark matched '{until_model}' at laptop '{raw_title}'. Halting Level 1 crawl."
+                    )
                     watermark_hit = True
                     break
 
@@ -287,14 +303,18 @@ class HpBrandScraper(BaseBrandScraper):
                     store_url=product_url,
                     thumbnail_url=thumbnail_url,
                     release_date=date_published,
-                    release_year=int(date_published.split("-")[0]) if (date_published and date_published.count("-") >= 1) else None,
+                    release_year=int(date_published.split("-")[0])
+                    if (date_published and date_published.count("-") >= 1)
+                    else None,
                 )
                 summaries.append(summary)
 
                 if limit and len(summaries) >= limit:
                     break
 
-            print(f"[HP Scraper] Page {page} [{start}-{end}]: Processed {len(tiles)} tiles (Total accumulated: {len(summaries)})")
+            print(
+                f"[HP Scraper] Page {page} [{start}-{end}]: Processed {len(tiles)} tiles (Total accumulated: {len(summaries)})"
+            )
 
             if is_last or watermark_hit or (limit and len(summaries) >= limit):
                 break
@@ -412,17 +432,30 @@ class HpBrandScraper(BaseBrandScraper):
         section_mapping = {
             "Processor & Chipset": ["processor", "processor family", "chipset"],
             "Graphics & Display": [
-                "graphics", "display", "touchscreen", "screen-to-body ratio",
-                "color gamut", "brightness", "flicker-free"
+                "graphics",
+                "display",
+                "touchscreen",
+                "screen-to-body ratio",
+                "color gamut",
+                "brightness",
+                "flicker-free",
             ],
             "Memory & Storage": ["memory", "internal storage", "storage capacity", "memory size", "expansion slots"],
-            "Design & Dimensions": ["product color", "dimensions (w x d x h)", "weight", "sustainability specifications"],
+            "Design & Dimensions": [
+                "product color",
+                "dimensions (w x d x h)",
+                "weight",
+                "sustainability specifications",
+            ],
             "Battery & Power": ["battery type", "battery recharge time", "power supply type"],
             "Connectivity & Ports": ["wireless", "network interface", "ports"],
             "Peripherals & Media": ["keyboard", "camera", "audio", "pointing device", "input devices"],
             "Security & Software": [
-                "security management", "software included",
-                "software - productivity & finance", "cloud service", "manufacturer warranty"
+                "security management",
+                "software included",
+                "software - productivity & finance",
+                "cloud service",
+                "manufacturer warranty",
             ],
         }
 
@@ -475,26 +508,26 @@ class HpBrandScraper(BaseBrandScraper):
 
         if display:
             # Prioritize inches (e.g. 14", 16", 13.3", 15.6")
-            m_inch = re.search(r'(\d+(?:\.\d+)?)\s*(?:\"|\s*inch)', display, re.I)
+            m_inch = re.search(r"(\d+(?:\.\d+)?)\s*(?:\"|\s*inch)", display, re.I)
             if m_inch:
                 display_size = f'{m_inch.group(1)}"'
             else:
-                m_cm = re.search(r'(\d+(?:\.\d+)?)\s*cm', display, re.I)
+                m_cm = re.search(r"(\d+(?:\.\d+)?)\s*cm", display, re.I)
                 if m_cm:
                     cm_val = float(m_cm.group(1))
                     inch_val = round(cm_val / 2.54, 1)
                     display_size = f'{int(inch_val) if inch_val.is_integer() else inch_val}"'
 
-            m_dim = re.search(r'(\d{3,4}\s*x\s*\d{3,4})', display)
-            m_std = re.search(r'\b(WQXGA|WUXGA|FHD\+?|QHD\+?|UHD|4K|2\.8K|3K)\b', display, re.I)
+            m_dim = re.search(r"(\d{3,4}\s*x\s*\d{3,4})", display)
+            m_std = re.search(r"\b(WQXGA|WUXGA|FHD\+?|QHD\+?|UHD|4K|2\.8K|3K)\b", display, re.I)
             if m_dim and m_std:
                 resolution = f"{m_std.group(1).upper()} ({m_dim.group(1).replace(' ', '')})"
             elif m_dim:
-                resolution = m_dim.group(1).replace(' ', '')
+                resolution = m_dim.group(1).replace(" ", "")
             elif m_std:
                 resolution = m_std.group(1).upper()
 
-            m_hz = re.search(r'(\d{2,3}(?:-\d{2,3})?\s*Hz)', display, re.I)
+            m_hz = re.search(r"(\d{2,3}(?:-\d{2,3})?\s*Hz)", display, re.I)
             if m_hz:
                 refresh_rate = m_hz.group(1).strip()
 

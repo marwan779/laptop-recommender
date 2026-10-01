@@ -19,8 +19,8 @@ def render_badge(status: str) -> str:
 
     return (
         f'<span style="display: inline-block; padding: 4px 12px; font-size: 12px; '
-        f'font-weight: 700; border-radius: 9999px; background-color: {bg}; '
-        f'color: {color}; border: 1px solid {border}; text-transform: uppercase; '
+        f"font-weight: 700; border-radius: 9999px; background-color: {bg}; "
+        f"color: {color}; border: 1px solid {border}; text-transform: uppercase; "
         f'letter-spacing: 0.5px;">{status_upper.replace("_", " ")}</span>'
     )
 
@@ -42,12 +42,12 @@ def render_metric_cards(metrics: list[dict[str, Any]]) -> str:
             f'<div style="font-size: 24px; font-weight: 800; color: {color}; line-height: 1.2;">{val}</div>'
             f'<div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; '
             f'letter-spacing: 0.5px; margin-top: 4px;">{label}</div>'
-            f'</div></td>'
+            f"</div></td>"
         )
 
     return (
         '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 16px 0 24px 0;">'
-        f'<tr>{"".join(cards_html)}</tr></table>'
+        f"<tr>{''.join(cards_html)}</tr></table>"
     )
 
 
@@ -59,7 +59,7 @@ def render_pointers_list(pointers: list[str]) -> str:
     items = "".join(
         f'<div style="margin-bottom: 3px; font-size: 12px; color: #1e293b; line-height: 1.3;">'
         f'<span style="color: #3b82f6; font-weight: bold; margin-right: 4px;">&bull;</span> {p}'
-        f'</div>'
+        f"</div>"
         for p in pointers[:3]
     )
     return f'<div style="padding-top: 2px;">{items}</div>'
@@ -82,7 +82,7 @@ def render_shell(title: str, content_html: str, subtitle: str | None = None) -> 
 </head>
 <body style="margin: 0; padding: 24px 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #0f172a;">
   <div style="max-width: 660px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden;">
-    
+
     <!-- Header -->
     <div style="background-color: #0f172a; padding: 24px 28px; border-bottom: 3px solid #3b82f6;">
       <div style="font-size: 11px; font-weight: 700; color: #60a5fa; text-transform: uppercase; letter-spacing: 1px;">
@@ -109,4 +109,3 @@ def render_shell(title: str, content_html: str, subtitle: str | None = None) -> 
 </body>
 </html>
 """
-

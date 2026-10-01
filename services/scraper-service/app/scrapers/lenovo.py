@@ -6,10 +6,8 @@ import urllib.parse
 import urllib.request
 from datetime import date, datetime
 from typing import Any
-from urllib.parse import urljoin
 
 from app.core.normalizer import ModelNormalizer
-from app.engine.base import IScraperEngine, ScrapedDocument
 from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary
 from app.scrapers.base import BaseBrandScraper
 
@@ -54,9 +52,7 @@ def clean_html_text(raw_html: str | None) -> str:
     text = re.sub(r"<[^>]+>", "", text)
     # Decode HTML entities
     text = html.unescape(text)
-    # Clean up excessive whitespace
-    lines = [l.strip() for l in text.splitlines()]
-    clean_lines = [l for l in lines if l]
+    clean_lines = [line.strip() for line in text.splitlines() if line.strip()]
     return " \n ".join(clean_lines) if clean_lines else ""
 
 
@@ -67,11 +63,19 @@ class LenovoDateExtractor:
         # Qualcomm Snapdragon X Elite / Plus - Mid 2024
         (re.compile(r"\b(?:Snapdragon|X\s+Elite|X\s+Plus)\b", re.I), 2024, "2024-06-01"),
         # Intel Core Ultra Series 2 (Lunar Lake) - Late 2024 / 2025
-        (re.compile(r"\b(?:Ultra\s+[579]\s+2\d{2}[A-Za-z]?|288V|268V|258V|256V|228V|226V|Lunar\s+Lake)\b", re.I), 2024, "2024-09-01"),
+        (
+            re.compile(r"\b(?:Ultra\s+[579]\s+2\d{2}[A-Za-z]?|288V|268V|258V|256V|228V|226V|Lunar\s+Lake)\b", re.I),
+            2024,
+            "2024-09-01",
+        ),
         # AMD Strix Point (Ryzen AI 300) - Mid 2024
         (re.compile(r"\b(?:Ryzen\s+AI\s+9|HX\s+370|HX\s+365|Strix\s+Point)\b", re.I), 2024, "2024-07-01"),
         # Intel Core Ultra Series 1 (Meteor Lake) - Early 2024
-        (re.compile(r"\b(?:Ultra\s+[579]\s+1\d{2}[A-Za-z]?|185H|165H|155H|135H|125H|Meteor\s+Lake)\b", re.I), 2024, "2024-01-01"),
+        (
+            re.compile(r"\b(?:Ultra\s+[579]\s+1\d{2}[A-Za-z]?|185H|165H|155H|135H|125H|Meteor\s+Lake)\b", re.I),
+            2024,
+            "2024-01-01",
+        ),
         # AMD Hawk Point (Ryzen 8000) - Early 2024
         (re.compile(r"\b(?:Ryzen\s+[579]\s+8\d{3}|8945HS|8845HS|8645HS|Hawk\s+Point)\b", re.I), 2024, "2024-01-01"),
         # Intel 14th Gen HX / Refresh - 2024
@@ -106,7 +110,6 @@ class LenovoDateExtractor:
         for gen_str, (yr, dt) in cls.GEN_YEAR_MAP.items():
             if gen_str in combined:
                 return dt, yr
-
 
         # 3. Model number suffix patterns (e.g. LOQ 15IRX10 -> Gen 10 = 2024/2025; LOQ 16IRH8 -> Gen 8 = 2023)
         match_suffix = re.search(r"\b\d{2}[A-Z]{3}(\d{1,2})\b", name)
@@ -290,10 +293,11 @@ class LenovoBrandScraper(BaseBrandScraper):
                     model_code = self._extract_model_code(name, rel_url)
                     family = self._determine_family(name, rel_url)
 
-
                     # Check watermark
                     if matches_pointer(name, model_code, rel_url):
-                        print(f"[Lenovo Scraper] [->] Watermark reached at '{name}' ({model_code}). Halting catalog scan.")
+                        print(
+                            f"[Lenovo Scraper] [->] Watermark reached at '{name}' ({model_code}). Halting catalog scan."
+                        )
                         reached_watermark = True
                         break
 
@@ -399,7 +403,9 @@ class LenovoBrandScraper(BaseBrandScraper):
 
         # Extract product number / product code from URL or HTML
         product_number = ""
-        m_pn = re.search(r'<meta\s+name=["\'](?:productid|subseriesPHcode)["\']\s+content=["\'](.*?)["\']', raw_html, re.IGNORECASE)
+        m_pn = re.search(
+            r'<meta\s+name=["\'](?:productid|subseriesPHcode)["\']\s+content=["\'](.*?)["\']', raw_html, re.IGNORECASE
+        )
         if m_pn:
             product_number = m_pn.group(1).upper()
 
@@ -411,9 +417,10 @@ class LenovoBrandScraper(BaseBrandScraper):
         # 2. Extract structured specification tables
         tables = self._extract_tables_from_html(raw_html)
         if not tables and product_number:
-            print(f"[Lenovo Scraper] Embedded specs not found in HTML, calling official Tech Specs API for {product_number}...")
+            print(
+                f"[Lenovo Scraper] Embedded specs not found in HTML, calling official Tech Specs API for {product_number}..."
+            )
             tables = self._fetch_specs_via_api(product_number)
-
 
         all_specs: dict[str, str] = {}
         spec_sections: dict[str, dict[str, str]] = {}
@@ -505,7 +512,9 @@ class LenovoBrandScraper(BaseBrandScraper):
         if summary.thumbnail_url:
             gallery_images.append(summary.thumbnail_url)
 
-        img_matches = re.findall(r'["\'](//[a-z0-9.-]+\.static\.pub/[^"\']+\.(?:png|jpg|jpeg|webp))["\']', raw_html, re.I)
+        img_matches = re.findall(
+            r'["\'](//[a-z0-9.-]+\.static\.pub/[^"\']+\.(?:png|jpg|jpeg|webp))["\']', raw_html, re.I
+        )
         for img in img_matches:
             full_img = f"https:{img}"
             if full_img not in gallery_images:
@@ -545,7 +554,6 @@ class LenovoBrandScraper(BaseBrandScraper):
 
         base_model = clean_base or summary.family or "Lenovo Laptop"
         best_model = summary.model or product_number or "UNKNOWN"
-
 
         detail = LaptopDetail(
             brand=self.brand_name,

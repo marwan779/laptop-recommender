@@ -37,15 +37,29 @@ class TradelineStoreScraper(BaseStoreScraper):
         "?sort_by=created-descending&page={page}&limit=250"
     )
     COLLECTION_HTML_TEMPLATE = (
-        "https://tradelinestores.com/collections/{collection}"
-        "?sort_by=created-descending&page={page}"
+        "https://tradelinestores.com/collections/{collection}?sort_by=created-descending&page={page}"
     )
 
     NON_LAPTOP_KEYWORDS = [
-        "backpack", "sleeve", "bag", "adapter", "charger", "cable",
-        "mouse", "magic mouse", "headset", "earphones", "airpods",
-        "power adapter", "magsafe charger", "screen protector", "case",
-        "hub", "dock", "pencil", "keyboard cover",
+        "backpack",
+        "sleeve",
+        "bag",
+        "adapter",
+        "charger",
+        "cable",
+        "mouse",
+        "magic mouse",
+        "headset",
+        "earphones",
+        "airpods",
+        "power adapter",
+        "magsafe charger",
+        "screen protector",
+        "case",
+        "hub",
+        "dock",
+        "pencil",
+        "keyboard cover",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -153,7 +167,9 @@ class TradelineStoreScraper(BaseStoreScraper):
                 # Fallback to HTML if JSON returns empty on page 1
                 if not items and page == 1:
                     print(f"[{self.store_name}] JSON empty for '{collection}', attempting HTML fallback...")
-                    html_products = self._scrape_collection_html(collection, page=page, level=level, until_model=until_model)
+                    html_products = self._scrape_collection_html(
+                        collection, page=page, level=level, until_model=until_model
+                    )
                     for hp in html_products:
                         if hp.retailer_sku not in seen_variants:
                             seen_variants.add(hp.retailer_sku)
@@ -171,8 +187,6 @@ class TradelineStoreScraper(BaseStoreScraper):
                 for item in items:
                     title = item.get("title", "").strip()
                     handle = item.get("handle", "").strip()
-                    body_html = item.get("body_html", "")
-                    tags = item.get("tags", [])
                     product_url = urljoin(self.base_url, f"/products/{handle}")
 
                     # 1. Filter out accessories
@@ -311,7 +325,10 @@ class TradelineStoreScraper(BaseStoreScraper):
         specs: dict[str, str] = {}
         for tag in item.get("tags", []):
             tag_clean = tag.strip()
-            if any(k in tag_clean.lower() for k in ["ssd", "ram", "cpu", "gpu", "chip", "inch", "m1", "m2", "m3", "m4", "m5"]):
+            if any(
+                k in tag_clean.lower()
+                for k in ["ssd", "ram", "cpu", "gpu", "chip", "inch", "m1", "m2", "m3", "m4", "m5"]
+            ):
                 specs[f"Tag_{tag_clean}"] = tag_clean
 
         # Extract specs using regex from title (Chip, RAM, SSD, Screen, Color)
@@ -322,8 +339,8 @@ class TradelineStoreScraper(BaseStoreScraper):
         # Level 2 deep extraction
         pdp_sku: str | None = None
         if level == 2:
-            pdp_specs, pdp_desc, pdp_price_val, pdp_price_str, pdp_sku, pdp_in_stock = (
-                self._extract_product_specs(product_url)
+            pdp_specs, pdp_desc, pdp_price_val, pdp_price_str, pdp_sku, pdp_in_stock = self._extract_product_specs(
+                product_url
             )
             specs.update(pdp_specs)
             if pdp_desc:
@@ -409,7 +426,7 @@ class TradelineStoreScraper(BaseStoreScraper):
                 pass
 
         # 2. Extract from Shopify JS analytics meta script if present
-        meta_match = re.search(r'var meta\s*=\s*(\{.*?\});', html_text, re.DOTALL)
+        meta_match = re.search(r"var meta\s*=\s*(\{.*?\});", html_text, re.DOTALL)
         if meta_match:
             try:
                 meta_json = json.loads(meta_match.group(1))
@@ -436,7 +453,7 @@ class TradelineStoreScraper(BaseStoreScraper):
         for dl in soup.find_all("dl"):
             dts = dl.find_all("dt")
             dds = dl.find_all("dd")
-            for dt, dd in zip(dts, dds):
+            for dt, dd in zip(dts, dds, strict=False):
                 k = dt.get_text(strip=True).rstrip(":")
                 v = dd.get_text(strip=True)
                 if k and v and len(k) < 60:

@@ -6,19 +6,43 @@ from datetime import date, datetime
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
-from app.engine.base import IScraperEngine, ScrapedDocument
+from app.engine.base import ScrapedDocument
 from app.core.normalizer import ModelNormalizer
 from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary
 from app.scrapers.base import BaseBrandScraper
 
 KNOWN_HEADERS = [
-    "Model", "Color", "Operating System", "Platform", "Processor", "Graphics",
-    "Display", "Memory", "Storage", "Expansion Slots (includes used)", "Expansion Slots",
-    "I/O Ports", "Keyboard & Touchpad", "Keyboard", "Touchpad", "Camera", "Audio",
-    "Network and Communication", "Battery", "Power Supply", "Weight",
-    "Dimensions (W x D x H)", "Built-in Apps", "MyASUS Features", "Microsoft Office",
-    "Military Grade", "Eco Labels & Compliances", "Ecolabels & Compliances", "Security",
-    "Included in the Box", "Regulatory Compliance"
+    "Model",
+    "Color",
+    "Operating System",
+    "Platform",
+    "Processor",
+    "Graphics",
+    "Display",
+    "Memory",
+    "Storage",
+    "Expansion Slots (includes used)",
+    "Expansion Slots",
+    "I/O Ports",
+    "Keyboard & Touchpad",
+    "Keyboard",
+    "Touchpad",
+    "Camera",
+    "Audio",
+    "Network and Communication",
+    "Battery",
+    "Power Supply",
+    "Weight",
+    "Dimensions (W x D x H)",
+    "Built-in Apps",
+    "MyASUS Features",
+    "Microsoft Office",
+    "Military Grade",
+    "Eco Labels & Compliances",
+    "Ecolabels & Compliances",
+    "Security",
+    "Included in the Box",
+    "Regulatory Compliance",
 ]
 
 
@@ -106,11 +130,19 @@ class AsusDateExtractor:
         # Qualcomm Snapdragon X Elite / Plus - Mid 2024
         (re.compile(r"\b(?:Snapdragon|X\s+Elite|X\s+Plus)\b", re.I), 2024, "2024-06-01"),
         # Intel Core Ultra Series 2 (Lunar Lake) - Late 2024 / 2025
-        (re.compile(r"\b(?:Ultra\s+[579]\s+2\d{2}[A-Za-z]?|288V|268V|258V|256V|228V|226V|Lunar\s+Lake)\b", re.I), 2024, "2024-09-01"),
+        (
+            re.compile(r"\b(?:Ultra\s+[579]\s+2\d{2}[A-Za-z]?|288V|268V|258V|256V|228V|226V|Lunar\s+Lake)\b", re.I),
+            2024,
+            "2024-09-01",
+        ),
         # AMD Strix Point (Ryzen AI 300) - Mid 2024
         (re.compile(r"\b(?:Ryzen\s+AI\s+9|HX\s+370|HX\s+365|Strix\s+Point)\b", re.I), 2024, "2024-07-01"),
         # Intel Core Ultra Series 1 (Meteor Lake) - Early 2024
-        (re.compile(r"\b(?:Ultra\s+[579]\s+1\d{2}[A-Za-z]?|185H|165H|155H|135H|125H|Meteor\s+Lake)\b", re.I), 2024, "2024-01-01"),
+        (
+            re.compile(r"\b(?:Ultra\s+[579]\s+1\d{2}[A-Za-z]?|185H|165H|155H|135H|125H|Meteor\s+Lake)\b", re.I),
+            2024,
+            "2024-01-01",
+        ),
         # AMD Hawk Point (Ryzen 8000) - Early 2024
         (re.compile(r"\b(?:Ryzen\s+[579]\s+8\d{3}|8945HS|8845HS|8645HS|Hawk\s+Point)\b", re.I), 2024, "2024-01-01"),
         # Intel 14th Gen HX - 2024
@@ -210,6 +242,7 @@ class AsusDateExtractor:
 
 def extract_structured_specs(all_specs: dict[str, str]) -> dict[str, str | None]:
     """Map all raw specification headers into standardized hardware fields."""
+
     def _find_field(*candidates: str) -> str | None:
         for c in candidates:
             c_lower = c.strip().lower()
@@ -348,8 +381,16 @@ class AsusBrandScraper(BaseBrandScraper):
         reached_watermark = False
 
         excluded_slugs = {
-            "all-products", "all-series", "for-home", "for-work", "for-students",
-            "for-gaming", "for-creators", "business", "store", "support",
+            "all-products",
+            "all-series",
+            "for-home",
+            "for-work",
+            "for-students",
+            "for-gaming",
+            "for-creators",
+            "business",
+            "store",
+            "support",
         }
 
         watermark_msg = f" (Watermark: {', '.join(pointers)})" if pointers else " (Full catalog)"
@@ -412,7 +453,9 @@ class AsusBrandScraper(BaseBrandScraper):
 
                 # Check Watermark Pointer
                 if pointers and matches_pointer(clean_name, model, full_url):
-                    print(f"  [+] Reached Watermark pointer matching '{clean_name}' ({model or full_url})! Halting Level 1 scan.")
+                    print(
+                        f"  [+] Reached Watermark pointer matching '{clean_name}' ({model or full_url})! Halting Level 1 scan."
+                    )
                     reached_watermark = True
                     break
 
@@ -486,7 +529,9 @@ class AsusBrandScraper(BaseBrandScraper):
                     break
 
                 target_url = self.catalog_url if page_idx == 1 else f"{self.catalog_url}?page={page_idx}"
-                print(f"[ASUS Scraper] Fetching catalog page {page_idx} (max: {max_pages_display}, HTML): {target_url}...")
+                print(
+                    f"[ASUS Scraper] Fetching catalog page {page_idx} (max: {max_pages_display}, HTML): {target_url}..."
+                )
 
                 doc = self.engine.fetch(target_url, stealth=True, network_idle=True, disable_resources=True)
                 raw_page = doc.raw
@@ -494,17 +539,17 @@ class AsusBrandScraper(BaseBrandScraper):
                 product_cards = []
                 if hasattr(raw_page, "css"):
                     product_cards = raw_page.css(
-                        "div[class*=\"productCardContainer\"], div[class*=\"store_content_product\"], "
-                        "div[class*=\"ProductCard\"], div[class*=\"productCard\"], "
-                        "div[class*=\"ProductItem\"], div[class*=\"productItem\"], "
-                        "div[class*=\"ProductTile\"], article"
+                        'div[class*="productCardContainer"], div[class*="store_content_product"], '
+                        'div[class*="ProductCard"], div[class*="productCard"], '
+                        'div[class*="ProductItem"], div[class*="productItem"], '
+                        'div[class*="ProductTile"], article'
                     )
 
                 cards_added_this_page = 0
 
                 if product_cards:
                     for card in product_cards:
-                        link_el = card.css("a[href*=\"/laptops/\"]")
+                        link_el = card.css('a[href*="/laptops/"]')
                         if not link_el:
                             continue
                         href = link_el[0].attrib.get("href", "")
@@ -518,7 +563,9 @@ class AsusBrandScraper(BaseBrandScraper):
                             continue
 
                         name = ""
-                        for heading in card.css("h1, h2, h3, h4, h5, [class*='title'], [class*='Title'], [class*='heading'], [class*='Heading'], [class*='Name']"):
+                        for heading in card.css(
+                            "h1, h2, h3, h4, h5, [class*='title'], [class*='Title'], [class*='heading'], [class*='Heading'], [class*='Name']"
+                        ):
                             h_text = heading.text.strip()
                             if h_text and len(h_text) > 3 and "filter" not in h_text.lower():
                                 name = h_text
@@ -534,7 +581,9 @@ class AsusBrandScraper(BaseBrandScraper):
                         model = self._extract_model_code(name, full_url)
 
                         if pointers and matches_pointer(name, model, full_url):
-                            print(f"  [+] Reached Watermark pointer matching '{name}' ({model or full_url})! Halting Level 1 scan.")
+                            print(
+                                f"  [+] Reached Watermark pointer matching '{name}' ({model or full_url})! Halting Level 1 scan."
+                            )
                             reached_watermark = True
                             break
 
@@ -545,7 +594,7 @@ class AsusBrandScraper(BaseBrandScraper):
                                 price = txt
                                 break
                         if not price:
-                            price_el = card.css("[class*=\"price\"], [class*=\"Price\"]")
+                            price_el = card.css('[class*="price"], [class*="Price"]')
                             if price_el:
                                 price = price_el[0].text.strip()
 
@@ -600,35 +649,35 @@ class AsusBrandScraper(BaseBrandScraper):
         return summaries
 
     def _parse_specs_from_markdown(self, markdown_text: str) -> dict[str, str]:
-        lines = [l.strip() for l in markdown_text.splitlines() if l.strip()]
+        lines = [line.strip() for line in markdown_text.splitlines() if line.strip()]
         specs: dict[str, str] = {}
         current_header = None
         current_val: list[str] = []
 
         start_idx = 0
-        for idx, l in enumerate(lines):
-            if l in KNOWN_HEADERS:
+        for idx, line in enumerate(lines):
+            if line in KNOWN_HEADERS:
                 start_idx = idx
                 break
 
-        for l in lines[start_idx:]:
+        for line in lines[start_idx:]:
             if (
-                l.startswith("Laptops")
-                or l.startswith("Shop and Learn")
-                or l.startswith("About ASUS")
-                or "ASUSTeK" in l
-                or "products certified by" in l.lower()
+                line.startswith("Laptops")
+                or line.startswith("Shop and Learn")
+                or line.startswith("About ASUS")
+                or "ASUSTeK" in line
+                or "products certified by" in line.lower()
             ):
                 break
 
-            if l in KNOWN_HEADERS:
+            if line in KNOWN_HEADERS:
                 if current_header and current_val:
                     specs[current_header] = " \n ".join(current_val)
-                current_header = l
+                current_header = line
                 current_val = []
             elif current_header:
-                if not l.startswith("!["):
-                    current_val.append(l)
+                if not line.startswith("!["):
+                    current_val.append(line)
 
         if current_header and current_val:
             specs[current_header] = " \n ".join(current_val)
@@ -648,7 +697,9 @@ class AsusBrandScraper(BaseBrandScraper):
 
         # Check for empty catalog placeholder indicators
         if re.search(r"viewing\s+\d+\s*-\s*0\s+of\s+0", raw_markdown, re.IGNORECASE):
-            print(f"[ASUS Scraper] [!] '{summary.name}' has 0 configurations published on ASUS Egypt (Placeholder). Skipping.")
+            print(
+                f"[ASUS Scraper] [!] '{summary.name}' has 0 configurations published on ASUS Egypt (Placeholder). Skipping."
+            )
             self.record_skipped(
                 name=summary.name,
                 url=target_url,
