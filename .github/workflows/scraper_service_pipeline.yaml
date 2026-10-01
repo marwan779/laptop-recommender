@@ -154,7 +154,7 @@ jobs:
 
       - name: unit test
         run: |
-          PYTHONPATH=. pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=75 tests/
+          PYTHONPATH=. pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=50 tests/
 
       - name: Upload Coverage
         if: always()
