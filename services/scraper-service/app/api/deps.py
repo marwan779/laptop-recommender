@@ -6,6 +6,7 @@ from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
 from app.services.email_service import EmailService
 from app.services.orchestrator import ScrapeOrchestrator
+from app.storage.base import IObjectStorageService
 
 
 @lru_cache(maxsize=1)
@@ -40,4 +41,3 @@ def get_storage() -> "IObjectStorageService":
     from app.storage.factory import get_storage_service
 
     return get_storage_service()
-
