@@ -174,3 +174,19 @@ jobs:
         with:
           name: mutmut-results
           path: services/scraper-service/mutmut_html/
+
+      - name: Publish Test & Coverage Job Summary
+        if: always()
+        run: |
+          echo "## 🧪 Test & Quality Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          coverage report >> $GITHUB_STEP_SUMMARY 2>&1 || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          if [ -f .mutmut-cache ]; then
+            echo "### 🧬 Mutation Testing (MutMut)" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            mutmut results >> $GITHUB_STEP_SUMMARY 2>&1 || true
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
