@@ -205,7 +205,7 @@ def build_batch_finished_email(report: BatchScrapeReport) -> tuple[str, str, str
           <td style="padding: 12px; font-size: 13px; font-weight: 700; color: #16a34a; text-align: center;">
             {item.scraped_count}
           </td>
-          <td style="padding: 12px; font-size: 13px; font-weight: 600; color: {'#dc2626' if item.skipped_count > 0 else '#64748b'}; text-align: center;">
+          <td style="padding: 12px; font-size: 13px; font-weight: 600; color: {"#dc2626" if item.skipped_count > 0 else "#64748b"}; text-align: center;">
             {item.skipped_count}
           </td>
           <td style="padding: 12px; font-size: 12px; color: #334155;">

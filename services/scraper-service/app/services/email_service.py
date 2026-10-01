@@ -148,9 +148,7 @@ class EmailService:
 
         return self.send_email(req)
 
-    def send_scraper_finished_background(
-        self, report: ScraperFinishedReport
-    ) -> Future[bool]:
+    def send_scraper_finished_background(self, report: ScraperFinishedReport) -> Future[bool]:
         """Dispatch a single scraper finished report to the background thread pool.
 
         Returns immediately with a Future without blocking the scraping pipeline.
@@ -197,9 +195,7 @@ class EmailService:
         )
         return self.send_email(req)
 
-    def _save_preview_html(
-        self, req: EmailSendRequest, filename: str | None = None
-    ) -> Path:
+    def _save_preview_html(self, req: EmailSendRequest, filename: str | None = None) -> Path:
         """Save HTML email to disk for debugging and preview."""
         target_name = filename or self.preview_filename
         project_root = Path(__file__).resolve().parent.parent.parent

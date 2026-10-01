@@ -167,4 +167,3 @@ class ModelNormalizer:
                 result["base_model"] = token
 
         return result
-

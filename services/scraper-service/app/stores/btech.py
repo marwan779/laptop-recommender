@@ -1,7 +1,5 @@
-import html
 import itertools
 import json
-import re
 from urllib.parse import quote_plus, urljoin, urlparse
 
 from bs4 import BeautifulSoup
@@ -29,18 +27,52 @@ class BTechStoreScraper(BaseStoreScraper):
     CATALOG_PAGE_TEMPLATE = (
         "https://btech.com/en/c/laptop-pc?p={page}&product_list_order=entity_id&product_list_dir=desc"
     )
-    SEARCH_URL_TEMPLATE = (
-        "https://btech.com/en/catalogsearch/result/?q={query}"
-    )
+    SEARCH_URL_TEMPLATE = "https://btech.com/en/catalogsearch/result/?q={query}"
 
     NON_LAPTOP_KEYWORDS = [
-        "backpack", "sleeve", "bag", "cover", "case", "adapter", "charger",
-        "cable", "mouse", "headset", "earphones", "keyboard", "cooling pad",
-        "laptop stand", "flash drive", "power bank", "docking", "privacy screen",
-        "screen protector", "hub", "dongle", "stylus", "pen", "printer",
-        "monitor", "desktop", "all-in-one", "all in one", "projector", "tablet", "ipad", "tv",
-        "extender", "router", "hard disk", "hard drive", "external hard", "external hdd", "webcam",
-        "memory card", "sd card", "microsd", "flash",
+        "backpack",
+        "sleeve",
+        "bag",
+        "cover",
+        "case",
+        "adapter",
+        "charger",
+        "cable",
+        "mouse",
+        "headset",
+        "earphones",
+        "keyboard",
+        "cooling pad",
+        "laptop stand",
+        "flash drive",
+        "power bank",
+        "docking",
+        "privacy screen",
+        "screen protector",
+        "hub",
+        "dongle",
+        "stylus",
+        "pen",
+        "printer",
+        "monitor",
+        "desktop",
+        "all-in-one",
+        "all in one",
+        "projector",
+        "tablet",
+        "ipad",
+        "tv",
+        "extender",
+        "router",
+        "hard disk",
+        "hard drive",
+        "external hard",
+        "external hdd",
+        "webcam",
+        "memory card",
+        "sd card",
+        "microsd",
+        "flash",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -92,7 +124,7 @@ class BTechStoreScraper(BaseStoreScraper):
         needle = '\\"items\\":['
         pos = html_text.find(needle)
         if pos != -1:
-            sub = html_text[pos + len(needle) - 1:].replace('\\"', '"').replace('\\\\', '\\')
+            sub = html_text[pos + len(needle) - 1 :].replace('\\"', '"').replace("\\\\", "\\")
             try:
                 arr, _ = json.JSONDecoder().raw_decode(sub)
                 if isinstance(arr, list):
@@ -102,7 +134,7 @@ class BTechStoreScraper(BaseStoreScraper):
 
         pos_u = html_text.find('"items":[')
         if pos_u != -1:
-            sub_u = html_text[pos_u + 8:]
+            sub_u = html_text[pos_u + 8 :]
             try:
                 arr, _ = json.JSONDecoder().raw_decode(sub_u)
                 if isinstance(arr, list):
@@ -172,8 +204,7 @@ class BTechStoreScraper(BaseStoreScraper):
 
                     # Pre-enrichment watermark check
                     if until_model and any(
-                        self._matches_watermark(ident, until_model)
-                        for ident in [title, sku, slug, clean_url]
+                        self._matches_watermark(ident, until_model) for ident in [title, sku, slug, clean_url]
                     ):
                         print(
                             f"[{self.store_name}] Pre-enrichment watermark matched '{until_model}' "
@@ -202,7 +233,8 @@ class BTechStoreScraper(BaseStoreScraper):
                     in_stock = it.get("is_in_stock", True)
                     thumb = it.get("thumbnail_url")
                     thumbnail_url = (
-                        thumb if (thumb and thumb.startswith("http"))
+                        thumb
+                        if (thumb and thumb.startswith("http"))
                         else (f"https://f.btech.com/media/catalog/product/{thumb.lstrip('/')}" if thumb else None)
                     )
 
@@ -230,8 +262,7 @@ class BTechStoreScraper(BaseStoreScraper):
 
                         # Post-enrichment watermark check
                         if until_model and any(
-                            self._matches_watermark(ident, until_model)
-                            for ident in [mpn, model_code]
+                            self._matches_watermark(ident, until_model) for ident in [mpn, model_code]
                         ):
                             print(
                                 f"[{self.store_name}] Post-enrichment watermark matched '{until_model}' "
@@ -335,7 +366,9 @@ class BTechStoreScraper(BaseStoreScraper):
                 # Stock check
                 has_oos_btn = bool(card.select(".out-of-stock-btn, .stock.unavailable"))
                 card_text_lower = card.get_text(" ", strip=True).lower()
-                in_stock = not has_oos_btn and "out of stock" not in card_text_lower and "غير متوفر" not in card_text_lower
+                in_stock = (
+                    not has_oos_btn and "out of stock" not in card_text_lower and "غير متوفر" not in card_text_lower
+                )
 
                 # Thumbnail image
                 img_el = card.select_one("img.product-image-photo, img[src]")
@@ -365,10 +398,7 @@ class BTechStoreScraper(BaseStoreScraper):
                         in_stock = pdp_stock
 
                     # Post-enrichment watermark check
-                    if until_model and any(
-                        self._matches_watermark(ident, until_model)
-                        for ident in [mpn, model_code]
-                    ):
+                    if until_model and any(self._matches_watermark(ident, until_model) for ident in [mpn, model_code]):
                         print(
                             f"[{self.store_name}] Post-enrichment watermark matched '{until_model}' "
                             f"at '{title}'. Halting crawl."
@@ -435,7 +465,9 @@ class BTechStoreScraper(BaseStoreScraper):
                 continue
 
             seen_urls.add(clean_url)
-            price_el = card.find(attrs={"data-price-type": "finalPrice"}) or card.select_one(".special-price .price, .price")
+            price_el = card.find(attrs={"data-price-type": "finalPrice"}) or card.select_one(
+                ".special-price .price, .price"
+            )
             price_text = price_el.get_text(strip=True) if price_el else None
             price_val, price_str = self.parse_egp_price(price_text)
 
@@ -451,9 +483,7 @@ class BTechStoreScraper(BaseStoreScraper):
             retailer_product_id = pid_el.get("data-product-id") if pid_el else url_slug
 
             # Enrich with Level 2 PDP specs
-            specs, raw_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = (
-                self._extract_product_specs(clean_url)
-            )
+            specs, raw_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = self._extract_product_specs(clean_url)
             final_price_val = price_val if price_val is not None else pdp_pval
             final_price_str = price_str if price_str is not None else pdp_pstr
             if pdp_stock is not None:
@@ -520,7 +550,9 @@ class BTechStoreScraper(BaseStoreScraper):
             price_val, price_str = self.parse_egp_price(price_meta.get("content"))
 
         if price_val is None:
-            price_el = soup.find(attrs={"data-price-type": "finalPrice"}) or soup.select_one(".special-price .price, .price")
+            price_el = soup.find(attrs={"data-price-type": "finalPrice"}) or soup.select_one(
+                ".special-price .price, .price"
+            )
             if price_el:
                 price_val, price_str = self.parse_egp_price(price_el.get_text(strip=True))
 
@@ -528,7 +560,7 @@ class BTechStoreScraper(BaseStoreScraper):
         needle = '\\"specifications\\":['
         pos = html_text.find(needle)
         if pos != -1:
-            sub = html_text[pos + len(needle) - 1:].replace('\\"', '"').replace('\\\\', '\\')
+            sub = html_text[pos + len(needle) - 1 :].replace('\\"', '"').replace("\\\\", "\\")
             try:
                 arr, _ = json.JSONDecoder().raw_decode(sub)
                 if isinstance(arr, list):
@@ -543,7 +575,7 @@ class BTechStoreScraper(BaseStoreScraper):
         if not specs:
             pos_u = html_text.find('"specifications":[')
             if pos_u != -1:
-                sub_u = html_text[pos_u + 17:]
+                sub_u = html_text[pos_u + 17 :]
                 try:
                     arr, _ = json.JSONDecoder().raw_decode(sub_u)
                     if isinstance(arr, list):
@@ -556,7 +588,9 @@ class BTechStoreScraper(BaseStoreScraper):
                     pass
 
         # Strategy B: Specs table DOM fallback
-        for row in soup.select("#product-attribute-specs-table tr, .additional-attributes tr, table.data.table tr, table.w-full tr, table tr"):
+        for row in soup.select(
+            "#product-attribute-specs-table tr, .additional-attributes tr, table.data.table tr, table.w-full tr, table tr"
+        ):
             th = row.select_one("th, td.label, .table-label") or row.select_one("th")
             td = row.select_one("td.data, td:last-child, .table-value") or row.select_one("td")
             if th and td:

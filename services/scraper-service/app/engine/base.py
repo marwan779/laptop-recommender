@@ -6,6 +6,7 @@ from typing import Any
 @dataclass
 class ScrapedDocument:
     """Standardized representation of a scraped web page."""
+
     url: str
     status_code: int
     html: str
@@ -38,6 +39,7 @@ class ScrapedDocument:
     def get_json_ld(self) -> list[dict[str, Any]]:
         """Extract and parse all JSON-LD script blocks."""
         import json
+
         results = []
         for el in self.css('script[type="application/ld+json"]'):
             text = getattr(el, "text", "").strip()
@@ -73,4 +75,3 @@ class IScraperEngine(ABC):
     def fetch_json(self, url: str) -> dict[str, Any]:
         """Fetches a JSON endpoint directly."""
         pass
-

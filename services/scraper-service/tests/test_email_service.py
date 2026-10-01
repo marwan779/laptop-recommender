@@ -24,6 +24,7 @@ from app.services.orchestrator import ScrapeOrchestrator
 # 1. EmailSettings Tests
 # ---------------------------------------------------------------------------
 
+
 def test_email_settings_parsed_recipients():
     """Verify comma-separated recipients are correctly split into clean list."""
     settings = EmailSettings(
@@ -63,6 +64,7 @@ def test_email_settings_unconfigured_when_preview_mode():
 # ---------------------------------------------------------------------------
 # 2. DTO & Report Model Tests
 # ---------------------------------------------------------------------------
+
 
 def test_scraper_finished_report_from_brand_result():
     """Verify report construction from successful BrandCatalogResult."""
@@ -129,6 +131,7 @@ def test_scraper_finished_report_from_failed_target():
 # 3. HTML/Text Template Builder Tests
 # ---------------------------------------------------------------------------
 
+
 def test_build_single_finished_email_success():
     """Verify subject, HTML body, and plaintext content for a success report."""
     report = ScraperFinishedReport(
@@ -190,6 +193,7 @@ def test_build_single_finished_email_failed():
 # ---------------------------------------------------------------------------
 # 4. EmailService & Background Job Tests
 # ---------------------------------------------------------------------------
+
 
 def test_email_service_preview_fallback():
     """When SMTP is not configured, EmailService writes HTML preview to disk."""
@@ -294,6 +298,7 @@ def test_email_service_smtp_failure_is_fail_safe():
 # ---------------------------------------------------------------------------
 # 5. Orchestrator Integration Tests (Default False Param)
 # ---------------------------------------------------------------------------
+
 
 def test_orchestrator_does_not_send_email_when_send_email_false():
     """When send_email is False (e.g. CLI local testing), orchestrator does NOT dispatch emails."""

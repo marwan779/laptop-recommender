@@ -33,6 +33,7 @@ def client():
 # 1. Health & Root Endpoints
 # ---------------------------------------------------------------------------
 
+
 def test_health_check(client):
     """Verify health endpoint returns 200 OK."""
     response = client.get("/health")
@@ -52,6 +53,7 @@ def test_root_endpoint(client):
 # ---------------------------------------------------------------------------
 # 2. Trigger Scrape Endpoints (Non-blocking HTTP 202 Accepted)
 # ---------------------------------------------------------------------------
+
 
 def test_trigger_scrape_brand_all_returns_202_immediately(client):
     """Verify POST /api/v1/scrape returns 202 Accepted immediately with DTO matching."""
@@ -144,6 +146,7 @@ def test_trigger_scrape_invalid_target_type(client):
 # 3. Orchestrator 'both' execution tests
 # ---------------------------------------------------------------------------
 
+
 def test_orchestrator_both_resolves_and_executes_brands_and_stores():
     """Verify orchestrator runs both brands and stores when target_type is 'both'."""
     mock_email = MagicMock()
@@ -164,9 +167,10 @@ def test_orchestrator_both_resolves_and_executes_brands_and_stores():
         items_scraped=20,
     )
 
-    with patch.object(orchestrator, "_scrape_brand", return_value=brand_result) as mock_brand, \
-         patch.object(orchestrator, "_scrape_store", return_value=store_result) as mock_store:
-
+    with (
+        patch.object(orchestrator, "_scrape_brand", return_value=brand_result) as mock_brand,
+        patch.object(orchestrator, "_scrape_store", return_value=store_result) as mock_store,
+    ):
         request = ScrapeRequest(
             target_type="both",
             targets=["asus", "compumarts"],

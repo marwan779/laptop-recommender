@@ -1,8 +1,7 @@
-import html
 import itertools
 import json
 import re
-from urllib.parse import quote_plus, urlencode, urljoin
+from urllib.parse import urlencode, urljoin
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
@@ -31,9 +30,20 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
     ITEM_BASE_URL = "https://www.sigma-computer.com/en/item"
 
     NON_LAPTOP_KEYWORDS = [
-        "backpack", "sleeve", "bag", "adapter", "charger", "cable",
-        "mouse", "headset", "earphones", "keyboard", "cooling pad",
-        "flash drive", "power bank", "docking",
+        "backpack",
+        "sleeve",
+        "bag",
+        "adapter",
+        "charger",
+        "cable",
+        "mouse",
+        "headset",
+        "earphones",
+        "keyboard",
+        "cooling pad",
+        "flash drive",
+        "power bank",
+        "docking",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -145,7 +155,9 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
             if acc in t:
                 # Special case: 'keyboard' in a laptop title usually refers to the built-in keyboard layout
                 if acc == "keyboard":
-                    if any(layout in t for layout in ["keyboard english", "keyboard arabic", "backlit", "rgb", "layout"]):
+                    if any(
+                        layout in t for layout in ["keyboard english", "keyboard arabic", "backlit", "rgb", "layout"]
+                    ):
                         continue
                 return True
         return False
@@ -258,7 +270,9 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
                         self._matches_watermark(ident, until_model)
                         for ident in [product.title, product.retailer_sku, product.mpn]
                     ):
-                        print(f"[{self.store_name}] Watermark matched '{until_model}' at '{product.title}'. Halting crawl.")
+                        print(
+                            f"[{self.store_name}] Watermark matched '{until_model}' at '{product.title}'. Halting crawl."
+                        )
                         watermark_hit = True
                         break
 
@@ -501,13 +515,15 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
 
             if title and len(title) >= 5:
                 seen.add(slug)
-                products.append({
-                    "slug": slug,
-                    "name": title,
-                    "sku": None,
-                    "price_str": price_str,
-                    "thumbnail": img_url,
-                    "is_stock": True,
-                })
+                products.append(
+                    {
+                        "slug": slug,
+                        "name": title,
+                        "sku": None,
+                        "price_str": price_str,
+                        "thumbnail": img_url,
+                        "is_stock": True,
+                    }
+                )
 
         return products

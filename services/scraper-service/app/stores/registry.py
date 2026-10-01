@@ -1,5 +1,3 @@
-from typing import Type
-
 from app.engine.base import IScraperEngine
 from app.stores.amazon import AmazonStoreScraper
 from app.stores.base import BaseStoreScraper
@@ -12,7 +10,7 @@ from app.stores.tradeline import TradelineStoreScraper
 from app.stores.twob import TwoBStoreScraper
 
 # Extensible registry of Egyptian retail stores
-STORE_REGISTRY: dict[str, Type[BaseStoreScraper]] = {
+STORE_REGISTRY: dict[str, type[BaseStoreScraper]] = {
     "compumarts": CompumartsStoreScraper,
     "elbadr": ElBadrStoreScraper,
     "sigma": SigmaComputerStoreScraper,
@@ -28,9 +26,7 @@ def get_store_scraper(store_key: str, engine: IScraperEngine) -> BaseStoreScrape
     """Instantiate a store scraper by key."""
     scraper_cls = STORE_REGISTRY.get(store_key.lower())
     if not scraper_cls:
-        raise ValueError(
-            f"Unknown store '{store_key}'. Available stores: {list(STORE_REGISTRY.keys())}"
-        )
+        raise ValueError(f"Unknown store '{store_key}'. Available stores: {list(STORE_REGISTRY.keys())}")
     return scraper_cls(engine=engine)
 
 

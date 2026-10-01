@@ -4,5 +4,3 @@ from app.scrapers.lenovo import LenovoBrandScraper
 from app.scrapers.hp import HpBrandScraper, HpDateExtractor
 
 __all__ = ["BaseBrandScraper", "AsusBrandScraper", "LenovoBrandScraper", "HpBrandScraper", "HpDateExtractor"]
-
-

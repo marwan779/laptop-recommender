@@ -1,17 +1,13 @@
 import json
-from datetime import date, datetime
 from pathlib import Path
-from typing import Any
 
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
 from app.schemas.laptop import (
     LaptopDetail,
-    LaptopSummary,
     LenovoBrandCatalogResult,
-    utcnow_str,
 )
-from app.scrapers.lenovo import LenovoBrandScraper, parse_date_param
+from app.scrapers.lenovo import LenovoBrandScraper
 
 
 class LenovoScraperService:
@@ -58,7 +54,7 @@ class LenovoScraperService:
         )
 
         print("\n" + "=" * 80)
-        print(f"[Lenovo Service] Starting Lenovo Brand Scraping")
+        print("[Lenovo Service] Starting Lenovo Brand Scraping")
         print(f"  - Mode: {mode_clean.upper()}")
         print(f"  - Until Model (Watermark): {watermark_display}")
         print(f"  - Max Pages: {max_pages}")

@@ -1,7 +1,5 @@
-import html
 import itertools
-import re
-from urllib.parse import quote_plus, urljoin, urlparse
+from urllib.parse import quote_plus
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
@@ -26,16 +24,41 @@ class AmazonStoreScraper(BaseStoreScraper):
     CATALOG_URL_TEMPLATE = (
         "https://www.amazon.eg/s?i=computers&rh=n%3A21832907031&s=date-desc-rank&language=en_AE&page={page}"
     )
-    SEARCH_URL_TEMPLATE = (
-        "https://www.amazon.eg/s?k={query}&language=en_AE"
-    )
+    SEARCH_URL_TEMPLATE = "https://www.amazon.eg/s?k={query}&language=en_AE"
 
     NON_LAPTOP_KEYWORDS = [
-        "backpack", "sleeve", "bag", "cover", "case", "adapter", "charger",
-        "cable", "mouse", "headset", "earphones", "keyboard", "cooling pad",
-        "laptop stand", "flash drive", "power bank", "docking", "privacy screen",
-        "screen protector", "hub", "dongle", "stylus", "pen", "printer",
-        "monitor", "desktop", "all-in-one", "all in one", "projector", "tablet", "ipad", "tv",
+        "backpack",
+        "sleeve",
+        "bag",
+        "cover",
+        "case",
+        "adapter",
+        "charger",
+        "cable",
+        "mouse",
+        "headset",
+        "earphones",
+        "keyboard",
+        "cooling pad",
+        "laptop stand",
+        "flash drive",
+        "power bank",
+        "docking",
+        "privacy screen",
+        "screen protector",
+        "hub",
+        "dongle",
+        "stylus",
+        "pen",
+        "printer",
+        "monitor",
+        "desktop",
+        "all-in-one",
+        "all in one",
+        "projector",
+        "tablet",
+        "ipad",
+        "tv",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -141,11 +164,7 @@ class AmazonStoreScraper(BaseStoreScraper):
                     continue
 
                 # Title extraction
-                title_el = (
-                    card.select_one("h2 a span")
-                    or card.select_one("h2 span")
-                    or card.select_one("h2 a")
-                )
+                title_el = card.select_one("h2 a span") or card.select_one("h2 span") or card.select_one("h2 a")
                 title = title_el.get_text(strip=True) if title_el else ""
 
                 if not title or len(title) < 5:
@@ -165,8 +184,7 @@ class AmazonStoreScraper(BaseStoreScraper):
                 # Pre-enrichment watermark check
                 url_slug = raw_href.split("/")[1] if "/" in raw_href else asin
                 if until_model and any(
-                    self._matches_watermark(ident, until_model)
-                    for ident in [title, asin, url_slug, clean_url]
+                    self._matches_watermark(ident, until_model) for ident in [title, asin, url_slug, clean_url]
                 ):
                     print(
                         f"[{self.store_name}] Pre-enrichment watermark matched '{until_model}' "
@@ -239,10 +257,7 @@ class AmazonStoreScraper(BaseStoreScraper):
                         in_stock = pdp_stock
 
                     # Post-enrichment watermark check on PDP identifiers
-                    if until_model and any(
-                        self._matches_watermark(ident, until_model)
-                        for ident in [mpn, model_code]
-                    ):
+                    if until_model and any(self._matches_watermark(ident, until_model) for ident in [mpn, model_code]):
                         print(
                             f"[{self.store_name}] Post-enrichment watermark matched '{until_model}' "
                             f"at '{title}'. Halting crawl."
@@ -299,11 +314,7 @@ class AmazonStoreScraper(BaseStoreScraper):
             if not asin or asin in seen_asins:
                 continue
 
-            title_el = (
-                card.select_one("h2 a span")
-                or card.select_one("h2 span")
-                or card.select_one("h2 a")
-            )
+            title_el = card.select_one("h2 a span") or card.select_one("h2 span") or card.select_one("h2 a")
             title = title_el.get_text(strip=True) if title_el else ""
 
             if not title or len(title) < 5 or self._is_standalone_accessory(title):
@@ -317,14 +328,18 @@ class AmazonStoreScraper(BaseStoreScraper):
             price_val, price_str = self.parse_egp_price(price_text)
 
             card_text_lower = card.get_text(" ", strip=True).lower()
-            in_stock = price_val is not None and "currently unavailable" not in card_text_lower and "out of stock" not in card_text_lower
+            in_stock = (
+                price_val is not None
+                and "currently unavailable" not in card_text_lower
+                and "out of stock" not in card_text_lower
+            )
 
             img_el = card.select_one("img.s-image[src]")
             thumbnail_url = img_el.get("src") if img_el else None
 
             # Enrich candidates with Level 2 PDP specs
-            pdp_specs, pdp_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = (
-                self._extract_product_specs(clean_url)
+            pdp_specs, pdp_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = self._extract_product_specs(
+                clean_url
             )
             final_price_val = price_val if price_val is not None else pdp_pval
             final_price_str = price_str if price_str is not None else pdp_pstr
@@ -425,10 +440,7 @@ class AmazonStoreScraper(BaseStoreScraper):
             raw_desc = desc_el.get_text(" ", strip=True)[:1500]
 
         mpn = (
-            specs.get("Item model number")
-            or specs.get("Part Number")
-            or specs.get("Model Number")
-            or specs.get("MPN")
+            specs.get("Item model number") or specs.get("Part Number") or specs.get("Model Number") or specs.get("MPN")
         )
         model_code = specs.get("Model Name") or specs.get("Model")
 

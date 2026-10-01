@@ -10,7 +10,9 @@ class StorageError(Exception):
 class StorageNotFoundError(StorageError):
     """Raised when an object or bucket cannot be found."""
 
-    def __init__(self, message: str, key: str | None = None, bucket: str | None = None, original_error: Exception | None = None):
+    def __init__(
+        self, message: str, key: str | None = None, bucket: str | None = None, original_error: Exception | None = None
+    ):
         super().__init__(message, original_error=original_error)
         self.key = key
         self.bucket = bucket
@@ -19,7 +21,9 @@ class StorageNotFoundError(StorageError):
 class StoragePermissionError(StorageError):
     """Raised when access is denied or authentication credentials are invalid."""
 
-    def __init__(self, message: str, key: str | None = None, bucket: str | None = None, original_error: Exception | None = None):
+    def __init__(
+        self, message: str, key: str | None = None, bucket: str | None = None, original_error: Exception | None = None
+    ):
         super().__init__(message, original_error=original_error)
         self.key = key
         self.bucket = bucket

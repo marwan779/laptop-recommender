@@ -209,7 +209,13 @@ def test_tradeline_records_skipped_accessory():
                 "title": "Apple MacBook Air 13-inch M3",
                 "handle": "macbook-air-13-m3",
                 "variants": [
-                    {"id": 2221, "title": "16GB / 256GB / Midnight", "sku": "MRXV3AB/A", "price": "54000.00", "available": True},
+                    {
+                        "id": 2221,
+                        "title": "16GB / 256GB / Midnight",
+                        "sku": "MRXV3AB/A",
+                        "price": "54000.00",
+                        "available": True,
+                    },
                 ],
             },
         ]
@@ -254,6 +260,7 @@ def test_amazon_records_skipped_accessory():
 def test_noon_records_skipped_accessory():
     scraper = NoonStoreScraper()
     import json
+
     next_data_json = {
         "props": {
             "pageProps": {
@@ -321,5 +328,3 @@ def test_btech_records_skipped_accessory():
     assert len(scraper.skipped_laptops) == 1
     assert "HP 65W Smart AC Adapter Charger" in scraper.skipped_laptops[0].name
     assert "Filtered out non-laptop accessory" in scraper.skipped_laptops[0].reason
-
-

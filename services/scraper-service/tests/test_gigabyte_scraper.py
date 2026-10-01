@@ -100,7 +100,9 @@ def test_gigabyte_family_and_model():
     assert scraper._determine_family("AORUS MASTER 16 AM6H", "/Laptop/AORUS-MASTER-16-AM6H") == "AORUS"
     assert scraper._determine_family("GIGABYTE AERO X16 EG64H", "/Laptop/GIGABYTE-AERO-X16-EG64H") == "AERO"
     assert scraper._determine_family("GIGABYTE EAGLE GL6J", "/Laptop/GIGABYTE-EAGLE-GL6J") == "GIGABYTE EAGLE"
-    assert scraper._determine_family("GIGABYTE GAMING A16 GA6EH", "/Laptop/GIGABYTE-GAMING-A16-GA6EH") == "GIGABYTE Gaming"
+    assert (
+        scraper._determine_family("GIGABYTE GAMING A16 GA6EH", "/Laptop/GIGABYTE-GAMING-A16-GA6EH") == "GIGABYTE Gaming"
+    )
     assert scraper._determine_family("G6X (2024)", "/Laptop/G6X--2024") == "GIGABYTE Gaming"
 
     # Model codes
