@@ -165,7 +165,7 @@ jobs:
       
       - name: Mutation Testing with MutMut 
         run: |
-          mutmut run --paths-to-mutate=app/core/normalizer.py,app/schemas/laptop.py || true
+          mutmut run || true
           mutmut html || true
 
       - name: Upload MutMut Results
