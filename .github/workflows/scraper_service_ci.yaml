@@ -5,12 +5,12 @@ on:
     branches: [main]
     paths:
       - "services/scraper-service/**"
-      - ".github/workflows/scraper_service_pipeline.yaml"
+      - ".github/workflows/scraper_service_ci.yaml"
   pull_request:
     branches: [main]
     paths:
       - "services/scraper-service/**"
-      - ".github/workflows/scraper_service_pipeline.yaml"
+      - ".github/workflows/scraper_service_ci.yaml"
   workflow_dispatch:
 
 permissions:
@@ -33,6 +33,9 @@ jobs:
     name: Code Quality & Syntax Check
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    if: >
+      github.head_ref != 'release-please--branches--main' &&
+      !startsWith(github.event.head_commit.message, 'chore: release')
     defaults:
       run:
         working-directory: ./services/scraper-service
@@ -136,6 +139,9 @@ jobs:
     needs: [code_quality,security_governance]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: >
+      github.head_ref != 'release-please--branches--main' &&
+      !startsWith(github.event.head_commit.message, 'chore: release')
     defaults:
       run:
         working-directory: ./services/scraper-service
@@ -184,6 +190,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [testing]
+    if: >
+      github.head_ref != 'release-please--branches--main' &&
+      !startsWith(github.event.head_commit.message, 'chore: release')
     defaults:
       run:
         working-directory: ./services/scraper-service
@@ -228,24 +237,3 @@ jobs:
       - name: Push container image
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: docker push abdelhameed208/laptop_recommender_scraping_service:${{ github.sha }}
-    
-  release_please:
-    name: Release Please (PR Automation)
-    runs-on: ubuntu-latest
-    needs: [packaging] 
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - uses: googleapis/release-please-action@v4
-        id: release
-        with:
-          config-file: .release-please-config.json
-          manifest-file: .release-please-manifest.json
-         # target-branch: feat/scraper_service_pipeline
-
-
-
-          
-
