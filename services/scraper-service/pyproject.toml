@@ -7,8 +7,9 @@ requires-python = ">=3.12"
 # ─── MutMut (Mutation Testing) ─────────────────────────
 [tool.mutmut]
 source_paths = ["app"]
+only_mutate = ["app/core/normalizer.py"]
 backup = false
-runner = "python -m pytest"
+runner = "python -m pytest tests/test_normalizer.py -x -q -o addopts=''"
 
 # ─── Pytest Configuration ──────────────────────────────
 [tool.pytest.ini_options]

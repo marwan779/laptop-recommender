@@ -166,17 +166,17 @@ jobs:
           name: coverage-report
           path: services/scraper-service/htmlcov/   
       
-      # - name: Mutation Testing with MutMut 
-      #   run: |
-      #     mutmut run || true
-      #     mutmut results > mutmut-results.txt 2>&1 || true
+      - name: Mutation Testing with MutMut
+        run: |
+          mutmut run || true
+          mutmut results > mutmut-results.txt 2>&1 || true
 
-      # - name: Upload MutMut Results
-      #   if: always()
-      #   uses: actions/upload-artifact@v6 
-      #   with:
-      #     name: mutmut-results
-      #     path: services/scraper-service/mutmut-results.txt
+      - name: Upload MutMut Results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: mutmut-results
+          path: services/scraper-service/mutmut-results.txt
 
 
   packaging:
@@ -233,7 +233,7 @@ jobs:
     name: Release Please (PR Automation)
     runs-on: ubuntu-latest
     needs: [packaging] 
-   # if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     permissions:
       contents: write
       pull-requests: write
@@ -243,7 +243,7 @@ jobs:
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
-          target-branch: feat/scraper_service_pipeline
+         # target-branch: feat/scraper_service_pipeline
 
 
 
