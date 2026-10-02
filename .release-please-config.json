@@ -1,4 +1,8 @@
 {
+    "separate-pull-requests": true,
+    "pull-request-title-pattern": "chore: release ${component} ${version}",
+    "pull-request-header": "##  Release PR",
+    "pull-request-footer": "Merging this PR will tag the release and deploy to production.",
     "packages": {
         "services/scraper-service": {
             "release-type": "python",
