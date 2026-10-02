@@ -6,7 +6,7 @@ requires-python = ">=3.12"
 
 # ─── MutMut (Mutation Testing) ─────────────────────────
 [tool.mutmut]
-source_paths = ["app/core/normalizer.py", "app/schemas/laptop.py"]
+source_paths = ["app"]
 backup = false
 runner = "python -m pytest"
 

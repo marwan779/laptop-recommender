@@ -166,14 +166,14 @@ jobs:
       - name: Mutation Testing with MutMut 
         run: |
           mutmut run || true
-          mutmut html || true
+          mutmut results > mutmut-results.txt 2>&1 || true
 
       - name: Upload MutMut Results
         if: always()
         uses: actions/upload-artifact@v6 
         with:
           name: mutmut-results
-          path: services/scraper-service/mutmut_html/
+          path: services/scraper-service/mutmut-results.txt
 
       - name: Publish Test & Coverage Job Summary
         if: always()
