@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Any, Type
+from typing import Any
 
 from app.core.storage_config import StorageSettings, get_storage_settings
 from app.storage.base import IObjectStorageService
@@ -13,14 +13,14 @@ class StorageFactory:
     of new storage providers (MinIO, GCS, Azure, Local) without modifying factory core.
     """
 
-    _registry: dict[str, Type[IObjectStorageService]] = {
+    _registry: dict[str, type[IObjectStorageService]] = {
         "s3": S3StorageService,
         "aws": S3StorageService,
         "aws_s3": S3StorageService,
     }
 
     @classmethod
-    def register_provider(cls, name: str, provider_cls: Type[IObjectStorageService]) -> None:
+    def register_provider(cls, name: str, provider_cls: type[IObjectStorageService]) -> None:
         """Register a new storage provider driver dynamically."""
         cls._registry[name.strip().lower()] = provider_cls
 
@@ -37,10 +37,7 @@ class StorageFactory:
         provider_cls = cls._registry.get(provider_key)
         if not provider_cls:
             supported = list(cls._registry.keys())
-            raise ValueError(
-                f"Unsupported storage provider '{cfg.storage_provider}'. "
-                f"Supported providers: {supported}"
-            )
+            raise ValueError(f"Unsupported storage provider '{cfg.storage_provider}'. Supported providers: {supported}")
 
         if issubclass(provider_cls, S3StorageService):
             return provider_cls(settings=cfg, boto3_client=boto3_client)

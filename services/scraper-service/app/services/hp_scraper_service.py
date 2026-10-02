@@ -1,15 +1,11 @@
 import json
-from datetime import date, datetime
 from pathlib import Path
-from typing import Any
 
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
 from app.schemas.laptop import (
     HpBrandCatalogResult,
     LaptopDetail,
-    LaptopSummary,
-    utcnow_str,
 )
 from app.scrapers.hp import HpBrandScraper, parse_date_param
 
@@ -58,7 +54,7 @@ class HpScraperService:
         )
 
         print("\n" + "=" * 80)
-        print(f"[HP Service] Starting HP Brand Scraping")
+        print("[HP Service] Starting HP Brand Scraping")
         print(f"  - Mode: {mode_clean.upper()}")
         print(f"  - Until Model (Watermark): {watermark_display}")
         print(f"  - Max Pages: {max_pages}")
@@ -170,7 +166,7 @@ class HpScraperService:
         self._save_if_requested(catalog_result, output_file)
 
         print("\n" + "=" * 80)
-        print(f"[HP Service] Scraping Complete!")
+        print("[HP Service] Scraping Complete!")
         print(f"  - Total Laptops: {catalog_result.total_laptops}")
         print(f"  - Total Configurations: {catalog_result.total_configurations}")
         print(f"  - Date Range: {catalog_result.start_date} to {catalog_result.end_date}")

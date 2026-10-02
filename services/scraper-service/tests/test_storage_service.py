@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -83,7 +83,7 @@ def test_storage_object_helpers():
         size_bytes=len(data_bytes),
         content_type="application/json",
         etag="abc123",
-        last_modified=datetime.now(timezone.utc),
+        last_modified=datetime.now(UTC),
     )
     obj = StorageObject(key="test.json", bucket="test-bucket", content=data_bytes, metadata=meta)
 
@@ -129,20 +129,47 @@ def test_storage_factory_open_closed_registration():
         def bucket_name(self) -> str:
             return "dummy-bucket"
 
-        def upload_file(self, *args, **kwargs): pass
-        def upload_bytes(self, *args, **kwargs): pass
-        def upload_json(self, *args, **kwargs): pass
-        def get_object(self, *args, **kwargs): pass
-        def read_bytes(self, *args, **kwargs): pass
-        def read_json(self, *args, **kwargs): pass
-        def download_file(self, *args, **kwargs): pass
-        def exists(self, *args, **kwargs): pass
-        def get_metadata(self, *args, **kwargs): pass
-        def copy_object(self, *args, **kwargs): pass
-        def delete_object(self, *args, **kwargs): pass
-        def delete_objects(self, *args, **kwargs): pass
-        def list_objects(self, *args, **kwargs): pass
-        def generate_presigned_url(self, *args, **kwargs): pass
+        def upload_file(self, *args, **kwargs):
+            pass
+
+        def upload_bytes(self, *args, **kwargs):
+            pass
+
+        def upload_json(self, *args, **kwargs):
+            pass
+
+        def get_object(self, *args, **kwargs):
+            pass
+
+        def read_bytes(self, *args, **kwargs):
+            pass
+
+        def read_json(self, *args, **kwargs):
+            pass
+
+        def download_file(self, *args, **kwargs):
+            pass
+
+        def exists(self, *args, **kwargs):
+            pass
+
+        def get_metadata(self, *args, **kwargs):
+            pass
+
+        def copy_object(self, *args, **kwargs):
+            pass
+
+        def delete_object(self, *args, **kwargs):
+            pass
+
+        def delete_objects(self, *args, **kwargs):
+            pass
+
+        def list_objects(self, *args, **kwargs):
+            pass
+
+        def generate_presigned_url(self, *args, **kwargs):
+            pass
 
     StorageFactory.register_provider("dummy", DummyProvider)
     custom_settings = StorageSettings(storage_provider="dummy")
@@ -231,7 +258,7 @@ def test_s3_get_object_and_read(s3_service, mock_s3_client):
         "ContentType": "application/json",
         "ContentLength": len(content_bytes),
         "ETag": '"etag_read"',
-        "LastModified": datetime(2026, 1, 1, tzinfo=timezone.utc),
+        "LastModified": datetime(2026, 1, 1, tzinfo=UTC),
         "Metadata": {"env": "prod"},
     }
 
@@ -284,7 +311,7 @@ def test_s3_get_metadata(s3_service, mock_s3_client):
         "ContentLength": 2048,
         "ContentType": "application/pdf",
         "ETag": '"pdf_etag"',
-        "LastModified": datetime(2026, 2, 1, tzinfo=timezone.utc),
+        "LastModified": datetime(2026, 2, 1, tzinfo=UTC),
         "Metadata": {"doc": "manual"},
     }
 
@@ -344,13 +371,13 @@ def test_s3_list_objects(s3_service, mock_s3_client):
                 {
                     "Key": "brands/asus/1.json",
                     "Size": 1024,
-                    "LastModified": datetime(2026, 1, 1, tzinfo=timezone.utc),
+                    "LastModified": datetime(2026, 1, 1, tzinfo=UTC),
                     "ETag": '"e1"',
                 },
                 {
                     "Key": "brands/asus/2.json",
                     "Size": 2048,
-                    "LastModified": datetime(2026, 1, 2, tzinfo=timezone.utc),
+                    "LastModified": datetime(2026, 1, 2, tzinfo=UTC),
                     "ETag": '"e2"',
                 },
             ]
@@ -589,14 +616,18 @@ def test_orchestrator_upload_happens_before_email():
         laptops=[],
     )
 
-    with patch.object(orchestrator, "_scrape_brand", return_value=ScrapeTargetResult(
-        target_type="brand",
-        target_key="asus",
-        target_name="ASUS",
-        level=1,
-        items_scraped=5,
-        brand_result=mock_catalog,
-    )):
+    with patch.object(
+        orchestrator,
+        "_scrape_brand",
+        return_value=ScrapeTargetResult(
+            target_type="brand",
+            target_key="asus",
+            target_name="ASUS",
+            level=1,
+            items_scraped=5,
+            brand_result=mock_catalog,
+        ),
+    ):
         req = ScrapeRequest(target_type="brand", targets=["asus"], level=1, send_email=True, upload_to_bucket=True)
         orchestrator.execute(req)
 
@@ -626,14 +657,18 @@ def test_orchestrator_storage_error_is_fail_safe(mock_storage_service):
         laptops=[],
     )
 
-    with patch.object(orchestrator, "_scrape_brand", return_value=ScrapeTargetResult(
-        target_type="brand",
-        target_key="asus",
-        target_name="ASUS",
-        level=1,
-        items_scraped=5,
-        brand_result=mock_catalog,
-    )):
+    with patch.object(
+        orchestrator,
+        "_scrape_brand",
+        return_value=ScrapeTargetResult(
+            target_type="brand",
+            target_key="asus",
+            target_name="ASUS",
+            level=1,
+            items_scraped=5,
+            brand_result=mock_catalog,
+        ),
+    ):
         req = ScrapeRequest(target_type="brand", targets=["asus"], level=1, upload_to_bucket=True)
         response = orchestrator.execute(req)
 
@@ -714,7 +749,7 @@ def test_orchestrator_zero_disk_upload_to_bucket_calls_upload_json(mock_storage_
         mock_brand_service_instance = MagicMock()
         mock_brand_service_instance.scrape.return_value = mock_catalog
         mock_service_cls = MagicMock(return_value=mock_brand_service_instance)
-        
+
         with patch.dict("app.services.orchestrator.BRAND_SERVICE_REGISTRY", {"asus": mock_service_cls}):
             req = ScrapeRequest(
                 target_type="brand",
@@ -733,4 +768,3 @@ def test_orchestrator_zero_disk_upload_to_bucket_calls_upload_json(mock_storage_
             # Assert upload_json was used directly (in-memory streaming)
             mock_storage_service.upload_json.assert_called_once()
             mock_storage_service.upload_file.assert_not_called()
-

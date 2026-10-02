@@ -2,7 +2,7 @@ import html
 import itertools
 import json
 import re
-from urllib.parse import quote_plus, urljoin, urlparse
+from urllib.parse import quote_plus, urljoin
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
@@ -25,18 +25,26 @@ class CompumartsStoreScraper(BaseStoreScraper):
     """
 
     COLLECTION_BASE_URL = (
-        "https://www.compumarts.com/collections/laptop"
-        "?sort_by=created-descending&filter.v.availability=1"
+        "https://www.compumarts.com/collections/laptop?sort_by=created-descending&filter.v.availability=1"
     )
     COLLECTION_PAGE_TEMPLATE = (
-        "https://www.compumarts.com/collections/laptop"
-        "?filter.v.availability=1&sort_by=created-descending&page={page}"
+        "https://www.compumarts.com/collections/laptop?filter.v.availability=1&sort_by=created-descending&page={page}"
     )
 
     NON_LAPTOP_KEYWORDS = [
-        "backpack", "sleeve", "bag", "adapter", "charger", "cable",
-        "mouse", "headset", "earphones", "keyboard", "cooling pad",
-        "flash drive", "power bank",
+        "backpack",
+        "sleeve",
+        "bag",
+        "adapter",
+        "charger",
+        "cable",
+        "mouse",
+        "headset",
+        "earphones",
+        "keyboard",
+        "cooling pad",
+        "flash drive",
+        "power bank",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -149,21 +157,30 @@ class CompumartsStoreScraper(BaseStoreScraper):
 
             for card in cards:
                 # Pre-check card link and title for watermark before doing any deep work
-                link_elem = card.find("a", class_=re.compile(r"card-link|js-prod-link", re.I)) or card.find("a", href=re.compile(r"/products/"))
+                link_elem = card.find("a", class_=re.compile(r"card-link|js-prod-link", re.I)) or card.find(
+                    "a", href=re.compile(r"/products/")
+                )
                 if link_elem and until_model:
                     href = link_elem.get("href", "").split("?")[0]
                     card_title = link_elem.get("aria-label", "") or link_elem.get_text(strip=True)
                     handle = href.split("/")[-1]
                     if any(self._matches_watermark(ident, until_model) for ident in [card_title, handle, href]):
-                        print(f"[{self.store_name}] Watermark matched '{until_model}' at '{card_title}'. Halting crawl.")
+                        print(
+                            f"[{self.store_name}] Watermark matched '{until_model}' at '{card_title}'. Halting crawl."
+                        )
                         watermark_hit = True
                         break
 
                 product = self._parse_card(card, seen_urls, level=level)
                 if product:
                     # Also check product SKU / MPN for watermark
-                    if until_model and any(self._matches_watermark(ident, until_model) for ident in [product.title, product.retailer_sku, product.mpn]):
-                        print(f"[{self.store_name}] Watermark matched '{until_model}' at '{product.title}'. Halting crawl.")
+                    if until_model and any(
+                        self._matches_watermark(ident, until_model)
+                        for ident in [product.title, product.retailer_sku, product.mpn]
+                    ):
+                        print(
+                            f"[{self.store_name}] Watermark matched '{until_model}' at '{product.title}'. Halting crawl."
+                        )
                         watermark_hit = True
                         break
 
@@ -225,7 +242,9 @@ class CompumartsStoreScraper(BaseStoreScraper):
         level: int = 2,
     ) -> RetailerProduct | None:
         """Parse a single product-card element and crawl its PDP if level=2."""
-        link_elem = card.find("a", class_=re.compile(r"card-link|js-prod-link", re.I)) or card.find("a", href=re.compile(r"/products/"))
+        link_elem = card.find("a", class_=re.compile(r"card-link|js-prod-link", re.I)) or card.find(
+            "a", href=re.compile(r"/products/")
+        )
         if not link_elem:
             return None
 
@@ -264,7 +283,9 @@ class CompumartsStoreScraper(BaseStoreScraper):
 
         # Extract price
         price_text = None
-        price_elem = card.find(class_=re.compile(r"price__current", re.I)) or card.find(class_=re.compile(r"price", re.I))
+        price_elem = card.find(class_=re.compile(r"price__current", re.I)) or card.find(
+            class_=re.compile(r"price", re.I)
+        )
         if price_elem:
             price_val_elem = price_elem.find(class_="js-value")
             if price_val_elem:
@@ -298,9 +319,7 @@ class CompumartsStoreScraper(BaseStoreScraper):
 
         if level == 2:
             # Level 2: Deep Product Detail Page (PDP) Extraction
-            specs, raw_desc, pdp_price_val, pdp_price_str, pdp_sku, pdp_in_stock = (
-                self._extract_product_specs(full_url)
-            )
+            specs, raw_desc, pdp_price_val, pdp_price_str, pdp_sku, pdp_in_stock = self._extract_product_specs(full_url)
             if pdp_price_val is not None:
                 price_val, price_str = pdp_price_val, pdp_price_str
             if pdp_in_stock is not None:

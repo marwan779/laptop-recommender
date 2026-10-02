@@ -83,6 +83,7 @@ def test_hp_get_laptop_summaries_unlimited(monkeypatch):
       </body>
     </html>
     """
+
     class MockResponse:
         status_code = 200
         text = mock_html

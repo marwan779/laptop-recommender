@@ -1,6 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Sequence
+from collections.abc import Sequence
 from urllib.parse import urlparse
 
 from app.engine.base import IScraperEngine
@@ -12,10 +12,32 @@ class BaseStoreScraper(ABC):
     """Abstract base class for Egyptian retail store candidate searchers."""
 
     NON_LAPTOP_KEYWORDS = [
-        "backpack", "sleeve", "bag", "cover", "case", "adapter", "charger",
-        "cable", "mouse", "headset", "earphones", "keyboard", "cooling pad",
-        "laptop stand", "flash drive", "power bank", "docking", "printer",
-        "monitor", "desktop", "all-in-one", "all in one", "projector", "tablet", "ipad", "tv",
+        "backpack",
+        "sleeve",
+        "bag",
+        "cover",
+        "case",
+        "adapter",
+        "charger",
+        "cable",
+        "mouse",
+        "headset",
+        "earphones",
+        "keyboard",
+        "cooling pad",
+        "laptop stand",
+        "flash drive",
+        "power bank",
+        "docking",
+        "printer",
+        "monitor",
+        "desktop",
+        "all-in-one",
+        "all in one",
+        "projector",
+        "tablet",
+        "ipad",
+        "tv",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -56,7 +78,9 @@ class BaseStoreScraper(ABC):
             if acc in t:
                 # Special case: 'keyboard' in a laptop title usually refers to the built-in keyboard layout
                 if acc == "keyboard":
-                    if any(layout in t for layout in ["keyboard english", "keyboard arabic", "backlit", "rgb", "layout"]):
+                    if any(
+                        layout in t for layout in ["keyboard english", "keyboard arabic", "backlit", "rgb", "layout"]
+                    ):
                         continue
                 return True
         return False

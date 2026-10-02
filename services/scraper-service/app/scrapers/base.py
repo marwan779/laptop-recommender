@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Any
 
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary, SkippedLaptop
@@ -70,4 +69,3 @@ class BaseBrandScraper(ABC):
                 stores=[],
             )
         ]
-

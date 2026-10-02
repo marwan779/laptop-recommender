@@ -1,8 +1,7 @@
-import html
 import itertools
 import json
 import re
-from urllib.parse import quote_plus, urljoin, urlparse
+from urllib.parse import quote_plus, urljoin
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
@@ -31,20 +30,49 @@ class NoonStoreScraper(BaseStoreScraper):
         "https://www.noon.com/_svc/catalog/api/v3/u/egypt-en/electronics-and-mobiles/computers-and-accessories/laptops-and-notebooks/"
         "?sort[by]=created_at&sort[dir]=desc&page={page}"
     )
-    SEARCH_URL_TEMPLATE = (
-        "https://www.noon.com/egypt-en/search/?q={query}"
-    )
-    SEARCH_API_TEMPLATE = (
-        "https://www.noon.com/_svc/catalog/api/v3/u/egypt-en/search/?q={query}&page=1"
-    )
+    SEARCH_URL_TEMPLATE = "https://www.noon.com/egypt-en/search/?q={query}"
+    SEARCH_API_TEMPLATE = "https://www.noon.com/_svc/catalog/api/v3/u/egypt-en/search/?q={query}&page=1"
 
     NON_LAPTOP_KEYWORDS = [
-        "backpack", "sleeve", "bag", "cover", "case", "adapter", "charger",
-        "cable", "mouse", "headset", "earphones", "keyboard", "cooling pad",
-        "laptop stand", "flash drive", "power bank", "docking", "privacy screen",
-        "screen protector", "hub", "dongle", "stylus", "pen", "printer",
-        "monitor", "desktop", "all-in-one", "all in one", "projector", "tablet", "ipad", "tv",
-        "extender", "router", "hard disk", "hard drive", "external hard", "external hdd", "webcam",
+        "backpack",
+        "sleeve",
+        "bag",
+        "cover",
+        "case",
+        "adapter",
+        "charger",
+        "cable",
+        "mouse",
+        "headset",
+        "earphones",
+        "keyboard",
+        "cooling pad",
+        "laptop stand",
+        "flash drive",
+        "power bank",
+        "docking",
+        "privacy screen",
+        "screen protector",
+        "hub",
+        "dongle",
+        "stylus",
+        "pen",
+        "printer",
+        "monitor",
+        "desktop",
+        "all-in-one",
+        "all in one",
+        "projector",
+        "tablet",
+        "ipad",
+        "tv",
+        "extender",
+        "router",
+        "hard disk",
+        "hard drive",
+        "external hard",
+        "external hdd",
+        "webcam",
     ]
 
     def __init__(self, engine: IScraperEngine | None = None):
@@ -121,21 +149,21 @@ class NoonStoreScraper(BaseStoreScraper):
                     )
                     price_val = float(h.get("sale_price") or h.get("price") or 0) or None
                     img_key = h.get("image_key")
-                    img_url = h.get("image_url") or (
-                        f"https://f.nooncdn.com/p/{img_key}.jpg" if img_key else None
+                    img_url = h.get("image_url") or (f"https://f.nooncdn.com/p/{img_key}.jpg" if img_key else None)
+                    raw_items.append(
+                        {
+                            "sku": h.get("sku", ""),
+                            "title": h.get("name", ""),
+                            "url": pdp_url,
+                            "price_val": price_val,
+                            "price_text": f"{price_val:,.2f} EGP" if price_val else "",
+                            "in_stock": h.get("is_buyable", True),
+                            "thumbnail_url": img_url,
+                            "mpn": h.get("model_number"),
+                            "model_code": h.get("model_name"),
+                            "brand": h.get("brand"),
+                        }
                     )
-                    raw_items.append({
-                        "sku": h.get("sku", ""),
-                        "title": h.get("name", ""),
-                        "url": pdp_url,
-                        "price_val": price_val,
-                        "price_text": f"{price_val:,.2f} EGP" if price_val else "",
-                        "in_stock": h.get("is_buyable", True),
-                        "thumbnail_url": img_url,
-                        "mpn": h.get("model_number"),
-                        "model_code": h.get("model_name"),
-                        "brand": h.get("brand"),
-                    })
                 return raw_items
         except Exception as e:
             print(f"[{self.store_name}] Catalog API error on page {page}: {e}")
@@ -226,8 +254,7 @@ class NoonStoreScraper(BaseStoreScraper):
                 # Pre-enrichment watermark check
                 url_slug = product_url.split("/")[-2] if "/" in product_url else sku
                 if until_model and any(
-                    self._matches_watermark(ident, until_model)
-                    for ident in [title, sku, url_slug, product_url]
+                    self._matches_watermark(ident, until_model) for ident in [title, sku, url_slug, product_url]
                 ):
                     print(
                         f"[{self.store_name}] Pre-enrichment watermark matched '{until_model}' "
@@ -276,10 +303,7 @@ class NoonStoreScraper(BaseStoreScraper):
                         in_stock = pdp_stock
 
                     # Post-enrichment watermark check
-                    if until_model and any(
-                        self._matches_watermark(ident, until_model)
-                        for ident in [mpn, model_code]
-                    ):
+                    if until_model and any(self._matches_watermark(ident, until_model) for ident in [mpn, model_code]):
                         print(
                             f"[{self.store_name}] Post-enrichment watermark matched '{until_model}' "
                             f"at '{title}'. Halting crawl."
@@ -343,21 +367,21 @@ class NoonStoreScraper(BaseStoreScraper):
                         )
                         price_val = float(h.get("sale_price") or h.get("price") or 0) or None
                         img_key = h.get("image_key")
-                        img_url = h.get("image_url") or (
-                            f"https://f.nooncdn.com/p/{img_key}.jpg" if img_key else None
+                        img_url = h.get("image_url") or (f"https://f.nooncdn.com/p/{img_key}.jpg" if img_key else None)
+                        raw_items.append(
+                            {
+                                "sku": h.get("sku", ""),
+                                "title": h.get("name", ""),
+                                "url": pdp_url,
+                                "price_val": price_val,
+                                "price_text": f"{price_val:,.2f} EGP" if price_val else "",
+                                "in_stock": h.get("is_buyable", True),
+                                "thumbnail_url": img_url,
+                                "mpn": h.get("model_number"),
+                                "model_code": h.get("model_name"),
+                                "brand": h.get("brand"),
+                            }
                         )
-                        raw_items.append({
-                            "sku": h.get("sku", ""),
-                            "title": h.get("name", ""),
-                            "url": pdp_url,
-                            "price_val": price_val,
-                            "price_text": f"{price_val:,.2f} EGP" if price_val else "",
-                            "in_stock": h.get("is_buyable", True),
-                            "thumbnail_url": img_url,
-                            "mpn": h.get("model_number"),
-                            "model_code": h.get("model_name"),
-                            "brand": h.get("brand"),
-                        })
             except Exception as e:
                 print(f"[{self.store_name}] Search API fallback error: {e}")
 
@@ -388,8 +412,8 @@ class NoonStoreScraper(BaseStoreScraper):
                 price_str = f"{price_val:,.2f} EGP" if price_val else None
 
             # Deep spec extraction
-            specs, raw_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = (
-                self._extract_product_specs(product_url)
+            specs, raw_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = self._extract_product_specs(
+                product_url
             )
             final_price_val = price_val if price_val is not None else pdp_pval
             final_price_str = price_str if price_str is not None else pdp_pstr
@@ -465,16 +489,18 @@ class NoonStoreScraper(BaseStoreScraper):
                     else image_key
                 )
 
-                items.append({
-                    "title": name,
-                    "sku": sku,
-                    "url": p_url,
-                    "price_val": float(price) if price else None,
-                    "in_stock": not is_oos,
-                    "thumbnail_url": img_url,
-                    "mpn": hit.get("model_number"),
-                    "model_code": hit.get("model_name"),
-                })
+                items.append(
+                    {
+                        "title": name,
+                        "sku": sku,
+                        "url": p_url,
+                        "price_val": float(price) if price else None,
+                        "in_stock": not is_oos,
+                        "thumbnail_url": img_url,
+                        "mpn": hit.get("model_number"),
+                        "model_code": hit.get("model_name"),
+                    }
+                )
 
             return items
         except Exception as e:
@@ -509,15 +535,17 @@ class NoonStoreScraper(BaseStoreScraper):
             img_el = card.select_one("img[src]")
             img_url = img_el.get("src") if img_el else None
 
-            items.append({
-                "title": title,
-                "sku": sku,
-                "url": p_url,
-                "price_text": price_text,
-                "price_val": None,
-                "in_stock": True,
-                "thumbnail_url": img_url,
-            })
+            items.append(
+                {
+                    "title": title,
+                    "sku": sku,
+                    "url": p_url,
+                    "price_text": price_text,
+                    "price_val": None,
+                    "in_stock": True,
+                    "thumbnail_url": img_url,
+                }
+            )
 
         return items
 

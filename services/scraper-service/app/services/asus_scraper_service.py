@@ -1,17 +1,13 @@
 import json
-from datetime import date, datetime
 from pathlib import Path
-from typing import Any
 
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
 from app.schemas.laptop import (
     AsusBrandCatalogResult,
     LaptopDetail,
-    LaptopSummary,
-    utcnow_str,
 )
-from app.scrapers.asus import AsusBrandScraper, parse_date_param
+from app.scrapers.asus import AsusBrandScraper
 
 
 class AsusScraperService:
@@ -58,7 +54,7 @@ class AsusScraperService:
         )
 
         print("\n" + "=" * 80)
-        print(f"[ASUS Service] Starting ASUS Brand Scraping")
+        print("[ASUS Service] Starting ASUS Brand Scraping")
         print(f"  - Mode: {mode_clean.upper()}")
         print(f"  - Until Model (Watermark): {watermark_display}")
         print(f"  - Max Pages: {max_pages}")

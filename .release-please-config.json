@@ -1,0 +1,22 @@
+{
+    "packages": {
+        "services/scraper-service": {
+            "release-type": "python",
+            "package-name": "scraper-service",
+            "component": "scraper-service",
+            "tag-separator": "-v",
+            "include-component-in-tag": true,
+            "bump-minor-pre-major": true,
+            "bump-patch-for-minor-pre-major": true
+        },
+        "services/catalog-service": {
+            "release-type": "python",
+            "package-name": "catalog-service",
+            "component": "catalog-service",
+            "tag-separator": "-v",
+            "include-component-in-tag": true,
+            "bump-minor-pre-major": true,
+            "bump-patch-for-minor-pre-major": true
+        }
+    }
+}

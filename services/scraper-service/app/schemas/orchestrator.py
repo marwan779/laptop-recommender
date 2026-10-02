@@ -16,6 +16,7 @@ from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult, utcnow_st
 
 # ─── Request DTO ────────────────────────────────────────────────────────────
 
+
 class ScrapeRequest(BaseModel):
     """Describes *what* to scrape and *how*.
 
@@ -111,7 +112,8 @@ class ScrapeRequest(BaseModel):
             return [cleaned]
         if isinstance(v, list):
             cleaned_list = [
-                s.strip().lower() for s in v
+                s.strip().lower()
+                for s in v
                 if isinstance(s, str) and s.strip() and s.strip().lower() not in ("string", "none", "null")
             ]
             return cleaned_list if cleaned_list else "all"
@@ -142,7 +144,8 @@ class ScrapeRequest(BaseModel):
             return cleaned
         if isinstance(v, list):
             cleaned_list = [
-                s.strip() for s in v
+                s.strip()
+                for s in v
                 if isinstance(s, str) and s.strip() and s.strip().lower() not in ("string", "none", "null")
             ]
             return cleaned_list or None
@@ -164,6 +167,7 @@ class ScrapeRequest(BaseModel):
 
 # ─── Per-target result ──────────────────────────────────────────────────────
 
+
 class ScrapeTargetResult(BaseModel):
     """Result produced for a single scraping target (one brand or one store)."""
 
@@ -183,6 +187,7 @@ class ScrapeTargetResult(BaseModel):
 
 # ─── Aggregate response ────────────────────────────────────────────────────
 
+
 class ScrapeResponse(BaseModel):
     """Aggregate result returned by the orchestrator after all targets finish."""
 
@@ -194,6 +199,7 @@ class ScrapeResponse(BaseModel):
 
 
 # ─── Endpoint Trigger Response ──────────────────────────────────────────────
+
 
 class ScrapeJobResponse(BaseModel):
     """Immediate HTTP acknowledgment returned when the scraping job is queued."""

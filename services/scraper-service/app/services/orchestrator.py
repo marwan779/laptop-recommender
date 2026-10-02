@@ -29,9 +29,6 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import Type
-
-logger = logging.getLogger("scraper.orchestrator")
 
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
@@ -47,6 +44,8 @@ from app.storage.base import IObjectStorageService
 from app.storage.factory import get_storage_service
 from app.stores.registry import STORE_REGISTRY, get_store_scraper
 
+logger = logging.getLogger("scraper.orchestrator")
+
 
 # ---------------------------------------------------------------------------
 # Brand Service Registry
@@ -54,7 +53,7 @@ from app.stores.registry import STORE_REGISTRY, get_store_scraper
 # Maps brand keys (matching ``BRAND_CATALOGS`` in constants.py) to their
 # corresponding service classes.  Adding a new brand is a one-liner here.
 
-BRAND_SERVICE_REGISTRY: dict[str, Type] = {
+BRAND_SERVICE_REGISTRY: dict[str, type] = {
     "asus": AsusScraperService,
     "hp": HpScraperService,
     "lenovo": LenovoScraperService,
@@ -354,7 +353,4 @@ class ScrapeOrchestrator:
                 f"bucket '{self.storage_service.bucket_name}' as '{object_key}'"
             )
         except Exception as exc:
-            print(
-                f"[Orchestrator] Warning: Failed to upload '{key}' JSON to object storage: {exc}"
-            )
-
+            print(f"[Orchestrator] Warning: Failed to upload '{key}' JSON to object storage: {exc}")

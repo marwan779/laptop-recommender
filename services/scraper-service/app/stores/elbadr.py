@@ -1,6 +1,4 @@
-import html
 import itertools
-import json
 import re
 from urllib.parse import quote_plus, urljoin, urlparse
 
@@ -28,18 +26,12 @@ class ElBadrStoreScraper(BaseStoreScraper):
       - Candidate Search: Keyword/SKU search via /index.php?route=product/search&search={query}.
     """
 
-    CATALOG_BASE_URL = (
-        "https://elbadrgroupeg.store/laptop"
-        "?sort=p.date_added&order=DESC&limit=100"
-    )
+    CATALOG_BASE_URL = "https://elbadrgroupeg.store/laptop?sort=p.date_added&order=DESC&limit=100"
     CATALOG_PAGE_TEMPLATE = (
         "https://elbadrgroupeg.store/index.php?route=product/category&path=61"
         "&limit=100&sort=p.date_added&order=DESC&page={page}"
     )
-    SEARCH_URL_TEMPLATE = (
-        "https://elbadrgroupeg.store/index.php?route=product/search"
-        "&search={query}&limit={limit}"
-    )
+    SEARCH_URL_TEMPLATE = "https://elbadrgroupeg.store/index.php?route=product/search&search={query}&limit={limit}"
 
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
@@ -164,13 +156,9 @@ class ElBadrStoreScraper(BaseStoreScraper):
 
                 # Check watermark stopping condition on title or slug
                 if until_model and (
-                    self._matches_watermark(title, until_model)
-                    or self._matches_watermark(slug, until_model)
+                    self._matches_watermark(title, until_model) or self._matches_watermark(slug, until_model)
                 ):
-                    print(
-                        f"[{self.store_name}] Watermark matched '{until_model}' "
-                        f"at '{title}'. Halting crawl."
-                    )
+                    print(f"[{self.store_name}] Watermark matched '{until_model}' at '{title}'. Halting crawl.")
                     watermark_hit = True
                     break
 
@@ -304,11 +292,7 @@ class ElBadrStoreScraper(BaseStoreScraper):
         # In-Stock check
         card_text_lower = card.get_text().lower()
         has_zero_stock = "has-zero-stock" in card.get("class", [])
-        is_out_of_stock = (
-            has_zero_stock
-            or "out of stock" in card_text_lower
-            or "غير متوفر" in card_text_lower
-        )
+        is_out_of_stock = has_zero_stock or "out of stock" in card_text_lower or "غير متوفر" in card_text_lower
         in_stock = not is_out_of_stock
 
         # Thumbnail URL
@@ -326,7 +310,9 @@ class ElBadrStoreScraper(BaseStoreScraper):
         pdp_model: str | None = None
 
         if level == 2:
-            pdp_specs, pdp_desc, mpn_found, model_found, pdp_price_val, pdp_price_str = self._extract_product_specs(clean_url)
+            pdp_specs, pdp_desc, mpn_found, model_found, pdp_price_val, pdp_price_str = self._extract_product_specs(
+                clean_url
+            )
             specs = pdp_specs
             raw_desc = pdp_desc
             pdp_mpn = mpn_found
@@ -407,7 +393,11 @@ class ElBadrStoreScraper(BaseStoreScraper):
         if price_group:
             price_new_el = price_group.select_one(".price-new")
             price_reg_el = price_group.select_one(".product-price, .price")
-            p_text = price_new_el.get_text(strip=True) if price_new_el else (price_reg_el.get_text(strip=True) if price_reg_el else None)
+            p_text = (
+                price_new_el.get_text(strip=True)
+                if price_new_el
+                else (price_reg_el.get_text(strip=True) if price_reg_el else None)
+            )
             if p_text:
                 price_val, price_str = self.parse_egp_price(p_text)
 
@@ -430,7 +420,7 @@ class ElBadrStoreScraper(BaseStoreScraper):
         )
         if block:
             raw_desc = block.get_text("\n", strip=True)
-            lines = [l.strip() for l in raw_desc.split("\n") if l.strip()]
+            lines = [item_line.strip() for item_line in raw_desc.split("\n") if item_line.strip()]
             i = 0
             while i < len(lines):
                 line = lines[i]

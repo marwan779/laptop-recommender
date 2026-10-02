@@ -1,0 +1,31 @@
+[project]
+name = "scraper-service"
+version = "1.0.0"
+description = "Autonomous Scraper Service for Laptop Recommender"
+requires-python = ">=3.12"
+
+# ─── MutMut (Mutation Testing) ─────────────────────────
+[tool.mutmut]
+source_paths = ["app"]
+only_mutate = ["app/core/normalizer.py"]
+backup = false
+runner = "python -m pytest tests/test_normalizer.py -x -q -o addopts=''"
+
+# ─── Pytest Configuration ──────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+# ─── Code Coverage ─────────────────────────────────────
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "app/cli.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 50

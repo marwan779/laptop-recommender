@@ -14,4 +14,3 @@ __all__ = [
     "ScrapeOrchestrator",
     "BRAND_SERVICE_REGISTRY",
 ]
-

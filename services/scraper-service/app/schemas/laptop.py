@@ -1,23 +1,25 @@
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import datetime, UTC
+from enum import StrEnum
 from typing import Any
 from pydantic import BaseModel, Field
 
 
 def utcnow_str() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
-class MatchStatus(str, Enum):
+class MatchStatus(StrEnum):
     """Confidence level of matching a retailer product to an official configuration."""
+
     EXACT = "EXACT"
     PROBABLE = "PROBABLE"
     UNKNOWN = "UNKNOWN"
     REJECTED = "REJECTED"
 
 
-class MatchMethod(str, Enum):
+class MatchMethod(StrEnum):
     """The mechanism by which identity was established."""
+
     MPN = "MPN"
     FULL_SKU = "FULL_SKU"
     SUB_MODEL_SERIES = "SUB_MODEL_SERIES"
@@ -29,8 +31,10 @@ class MatchMethod(str, Enum):
 # Official Brand Schemas (Preserved for Level 1 / Level 2 Brand Scraping)
 # =============================================================================
 
+
 class LaptopSummary(BaseModel):
     """Level 1: Summary extracted from catalog listing page."""
+
     brand: str
     name: str
     price: str | None = None
@@ -49,6 +53,7 @@ class LaptopSummary(BaseModel):
 
 class LaptopDetail(LaptopSummary):
     """Level 2: Deep crawl with every detail provided on the official spec sheet."""
+
     base_model: str | None = None
     model_variants: list[str] = Field(default_factory=list)
     sku_part_number: str | None = None
@@ -65,6 +70,7 @@ class LaptopDetail(LaptopSummary):
 
 class SkippedLaptop(BaseModel):
     """Details of a laptop or store product skipped during scraping for debugging."""
+
     name: str
     url: str | None = None
     reason: str
@@ -75,6 +81,7 @@ class SkippedLaptop(BaseModel):
 
 class BrandCatalogResult(BaseModel):
     """Unified top-level output schema for any brand scraping, stored as a standalone JSON."""
+
     brand: str
     official_catalog_url: str
     scrape_mode: str = "level2"  # "level1" or "level2"
@@ -97,13 +104,14 @@ HpBrandCatalogResult = BrandCatalogResult
 GigabyteBrandCatalogResult = BrandCatalogResult
 
 
-
 # =============================================================================
 # Retailer Normalized Products & Matches (Multi-Store Layer)
 # =============================================================================
 
+
 class RetailerProduct(BaseModel):
     """Normalized product extracted from a retailer website prior to matching."""
+
     store_name: str
     store_key: str
     store_domain: str
@@ -126,6 +134,7 @@ class RetailerProduct(BaseModel):
 
 class StoreCatalogResult(BaseModel):
     """Top-level output schema for a retailer store crawl."""
+
     store_name: str
     store_key: str
     store_domain: str
@@ -141,6 +150,7 @@ class StoreCatalogResult(BaseModel):
 
 class RetailOffer(BaseModel):
     """Retailer offer verified and attached to an exact official configuration."""
+
     store_name: str
     store_key: str
     store_domain: str
@@ -170,8 +180,10 @@ StoreOffer = RetailOffer
 # Brand -> ModelFamily -> Configuration / Exact SKU -> RetailOffer
 # =============================================================================
 
+
 class ConfigurationItem(BaseModel):
     """An exact physical configuration / SKU represented on the official catalog."""
+
     model: str  # Full SKU (e.g. 'S3407AA-SF117W') or sub-model series (e.g. 'S5452MA')
     model_series: str | None = None  # Sub-model code (e.g. 'S3407AA', 'S3407CA')
     base_model: str | None = None  # Base chassis model (e.g. 'S3407')
@@ -182,6 +194,7 @@ class ConfigurationItem(BaseModel):
 
 class ModelFamily(BaseModel):
     """A product family line (e.g. 'ASUS Vivobook S14 (S3407)')."""
+
     name: str
     family: str | None = None
     base_model: str | None = None
@@ -193,6 +206,7 @@ class ModelFamily(BaseModel):
 
 class BrandStoreCatalog(BaseModel):
     """Top-level nested response: Brand -> Model Families -> Configurations -> Retail Offers."""
+
     brand: str
     official_catalog_url: str
     scraped_at: str = Field(default_factory=utcnow_str)

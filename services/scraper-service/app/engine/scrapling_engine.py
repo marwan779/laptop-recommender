@@ -1,11 +1,10 @@
-import json
 from typing import Any
 
 try:
-    from scrapling.fetchers.requests import Fetcher, FetcherSession
+    from scrapling.fetchers.requests import FetcherSession
     from scrapling.fetchers.stealth_chrome import StealthyFetcher
 except ImportError:
-    from scrapling.fetchers import Fetcher, FetcherSession, StealthyFetcher
+    from scrapling.fetchers import FetcherSession, StealthyFetcher
 
 from app.engine.base import IScraperEngine, ScrapedDocument
 
@@ -72,10 +71,8 @@ class ScraplingEngine(IScraperEngine):
                     raw=page,
                 )
 
-
     def fetch_json(self, url: str) -> dict[str, Any]:
         """Fetches a JSON endpoint using browser impersonation."""
         with FetcherSession(impersonate=self.default_impersonate) as session:
             response = session.get(url, stealthy_headers=True)
             return response.json()
-

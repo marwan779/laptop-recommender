@@ -201,7 +201,9 @@ def test_tradeline_search_candidates(monkeypatch):
     }
 
     monkeypatch.setattr(scraper, "_fetch_json", lambda url: mock_search_data)
-    monkeypatch.setattr(scraper, "_extract_product_specs", lambda url: ({}, None, 68900.0, "68,900.00 EGP", "MRXN3AB/A", True))
+    monkeypatch.setattr(
+        scraper, "_extract_product_specs", lambda url: ({}, None, 68900.0, "68,900.00 EGP", "MRXN3AB/A", True)
+    )
 
     candidates = scraper.search_candidates("macbook air m3", limit=2)
     assert len(candidates) == 1

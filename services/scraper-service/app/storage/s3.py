@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 import json
 import mimetypes
 from pathlib import Path
@@ -75,7 +75,7 @@ class S3StorageService(IObjectStorageService):
                 f"Failed to initialize AWS S3 client: {exc}",
                 endpoint=self.settings.aws_s3_endpoint_url,
                 original_error=exc,
-            )
+            ) from exc
 
     def _handle_error(self, exc: Exception, object_key: str | None = None) -> None:
         """Translate botocore / boto3 exceptions into domain storage exceptions."""
@@ -98,7 +98,10 @@ class S3StorageService(IObjectStorageService):
                     original_error=exc,
                 ) from exc
 
-            if error_code in ("AccessDenied", "InvalidAccessKeyId", "SignatureDoesNotMatch", "403") or http_status == 403:
+            if (
+                error_code in ("AccessDenied", "InvalidAccessKeyId", "SignatureDoesNotMatch", "403")
+                or http_status == 403
+            ):
                 raise StoragePermissionError(
                     f"Access denied for object '{object_key}' in bucket '{self.bucket_name}'.",
                     key=object_key,
@@ -175,7 +178,7 @@ class S3StorageService(IObjectStorageService):
                 size_bytes=len(data),
                 content_type=content_type,
                 etag=etag,
-                last_modified=datetime.now(timezone.utc),
+                last_modified=datetime.now(UTC),
                 custom_metadata=metadata or {},
             )
             return StorageObject(

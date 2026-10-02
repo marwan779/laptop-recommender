@@ -1,6 +1,4 @@
-import html
 import itertools
-import re
 from urllib.parse import quote_plus, urljoin, urlparse
 
 from bs4 import BeautifulSoup
@@ -31,12 +29,8 @@ class TwoBStoreScraper(BaseStoreScraper):
       - Candidate Search: Keyword/SKU search via /en/catalogsearch/result/?q={query}.
     """
 
-    CATALOG_PAGE_TEMPLATE = (
-        "https://2b.com.eg/en/computers/laptops.html?p={page}&product_list_limit=45"
-    )
-    SEARCH_URL_TEMPLATE = (
-        "https://2b.com.eg/en/catalogsearch/result/?q={query}"
-    )
+    CATALOG_PAGE_TEMPLATE = "https://2b.com.eg/en/computers/laptops.html?p={page}&product_list_limit=45"
+    SEARCH_URL_TEMPLATE = "https://2b.com.eg/en/catalogsearch/result/?q={query}"
 
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
@@ -175,23 +169,27 @@ class TwoBStoreScraper(BaseStoreScraper):
                 # Stock extraction from card
                 has_oos_btn = bool(card.select(".out-of-stock-btn, .stock.unavailable"))
                 card_text_lower = card.get_text(" ", strip=True).lower()
-                card_in_stock = not has_oos_btn and "out of stock" not in card_text_lower and "غير متوفر" not in card_text_lower
+                card_in_stock = (
+                    not has_oos_btn and "out of stock" not in card_text_lower and "غير متوفر" not in card_text_lower
+                )
 
                 # Thumbnail
                 img_el = card.select_one("img.product-image-photo, img[src]")
                 img_url = urljoin(self.base_url, img_el.get("src", "")) if img_el else None
 
-                raw_cards_info.append({
-                    "numeric_pid": numeric_pid,
-                    "retailer_product_id": retailer_product_id,
-                    "title": title,
-                    "clean_url": clean_url,
-                    "url_slug": url_slug,
-                    "card_price_val": card_price_val,
-                    "card_price_str": card_price_str,
-                    "card_in_stock": card_in_stock,
-                    "img_url": img_url,
-                })
+                raw_cards_info.append(
+                    {
+                        "numeric_pid": numeric_pid,
+                        "retailer_product_id": retailer_product_id,
+                        "title": title,
+                        "clean_url": clean_url,
+                        "url_slug": url_slug,
+                        "card_price_val": card_price_val,
+                        "card_price_str": card_price_str,
+                        "card_in_stock": card_in_stock,
+                        "img_url": img_url,
+                    }
+                )
 
         # Phase 2: Sort cards by entity_id descending (newest added first)
         raw_cards_info.sort(key=lambda x: x["numeric_pid"], reverse=True)
@@ -230,8 +228,8 @@ class TwoBStoreScraper(BaseStoreScraper):
             final_in_stock = item["card_in_stock"]
 
             if level >= 2:
-                pdp_specs, pdp_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = (
-                    self._extract_product_specs(clean_url)
+                pdp_specs, pdp_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = self._extract_product_specs(
+                    clean_url
                 )
                 specs = pdp_specs
                 raw_desc = pdp_desc
@@ -331,9 +329,7 @@ class TwoBStoreScraper(BaseStoreScraper):
             retailer_product_id = pid_el.get("data-product-id") if pid_el else url_slug
 
             # Deep spec extraction from product page
-            specs, raw_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = (
-                self._extract_product_specs(clean_url)
-            )
+            specs, raw_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = self._extract_product_specs(clean_url)
             final_price_val = price_val if price_val is not None else pdp_pval
             final_price_str = price_str if price_str is not None else pdp_pstr
             if pdp_stock is not None:
@@ -424,12 +420,7 @@ class TwoBStoreScraper(BaseStoreScraper):
             if desc_el:
                 raw_desc = desc_el.get_text(" ", strip=True)[:1500]
 
-            mpn = (
-                specs.get("MPN")
-                or specs.get("Part Number")
-                or specs.get("part_number")
-                or specs.get("Barcode")
-            )
+            mpn = specs.get("MPN") or specs.get("Part Number") or specs.get("part_number") or specs.get("Barcode")
             model_code = specs.get("Model")
 
             return specs, raw_desc, mpn, model_code, page_price_val, page_price_str, in_stock

@@ -1,15 +1,11 @@
 import json
 from pathlib import Path
-from typing import Any
 
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
 from app.schemas.laptop import (
     BrandCatalogResult,
-    GigabyteBrandCatalogResult,
     LaptopDetail,
-    LaptopSummary,
-    utcnow_str,
 )
 from app.scrapers.gigabyte import GigabyteBrandScraper
 
@@ -58,7 +54,7 @@ class GigabyteScraperService:
         )
 
         print("\n" + "=" * 80)
-        print(f"[GigaByte Service] Starting GigaByte Brand Scraping")
+        print("[GigaByte Service] Starting GigaByte Brand Scraping")
         print(f"  - Mode: {mode_clean.upper()}")
         print(f"  - Until Model (Watermark): {watermark_display}")
         print(f"  - Max Pages: {max_pages}")

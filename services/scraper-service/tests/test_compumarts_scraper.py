@@ -62,7 +62,9 @@ def test_compumarts_mock_pdp_specs(monkeypatch):
     </html>
     """
     monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_html)
-    specs, desc, p_val, p_str, sku, in_stock = scraper._extract_product_specs("https://www.compumarts.com/products/test")
+    specs, desc, p_val, p_str, sku, in_stock = scraper._extract_product_specs(
+        "https://www.compumarts.com/products/test"
+    )
 
     assert sku == "15-fa2352TX"
     assert p_val == 59999.0
@@ -103,9 +105,8 @@ def test_compumarts_catalog_watermark_stop(monkeypatch):
     </html>
     """
     monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_collection_html)
-    
+
     # Halt at Model 2 (so only Model 1 is ingested)
     results = scraper.scrape_catalog(level=1, until_model="Model 2", max_pages=1)
     assert len(results) == 1
     assert "Model 1" in results[0].title
-

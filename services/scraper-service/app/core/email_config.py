@@ -55,4 +55,3 @@ class EmailSettings(BaseSettings):
 def get_email_settings() -> EmailSettings:
     """Singleton provider for EmailSettings."""
     return EmailSettings()
-

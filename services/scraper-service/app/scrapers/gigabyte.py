@@ -12,14 +12,12 @@ from __future__ import annotations
 import itertools
 import re
 import time
-from typing import Any
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
 from curl_cffi.curl import CurlHttpVersion
 
-from app.core.normalizer import ModelNormalizer
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary
 from app.scrapers.base import BaseBrandScraper
@@ -32,9 +30,23 @@ class GigabyteDateExtractor:
 
     HARDWARE_YEAR_MAP = [
         # RTX 50 Series / Intel Ultra Series 2 / AMD Ryzen 200 - 2025/2026
-        (re.compile(r"\b(?:RTX\s*50|5090|5080|5070|5060|Series\s*2|288V|268V|258V|256V|Ryzen\s*(?:AI)?\s*[79]\s*2\d{2}|9955HX|Strix\s*Point)\b", re.I), 2025, "2025-01-01"),
+        (
+            re.compile(
+                r"\b(?:RTX\s*50|5090|5080|5070|5060|Series\s*2|288V|268V|258V|256V|Ryzen\s*(?:AI)?\s*[79]\s*2\d{2}|9955HX|Strix\s*Point)\b",
+                re.I,
+            ),
+            2025,
+            "2025-01-01",
+        ),
         # Intel Core Ultra Series 1 / 14th Gen / RTX 40 Series Refresh - 2024
-        (re.compile(r"\b(?:Ultra\s+[579]\s+1\d{2}[A-Za-z]?|14900HX|14700HX|14650HX|14th\s+Gen|Hawk\s+Point|8945HS|8845HS|2024)\b", re.I), 2024, "2024-01-01"),
+        (
+            re.compile(
+                r"\b(?:Ultra\s+[579]\s+1\d{2}[A-Za-z]?|14900HX|14700HX|14650HX|14th\s+Gen|Hawk\s+Point|8945HS|8845HS|2024)\b",
+                re.I,
+            ),
+            2024,
+            "2024-01-01",
+        ),
         # 13th Gen Intel / RTX 40 Series Initial - 2023
         (re.compile(r"\b(?:13980HX|13900H|13700H|13500H|13th\s+Gen|RTX\s*40|2023)\b", re.I), 2023, "2023-01-01"),
         # 12th Gen Intel / RTX 30 Series Refresh - 2022
@@ -234,7 +246,9 @@ class GigabyteBrandScraper(BaseBrandScraper):
                     or self._matches_watermark(model_code, until_model)
                     or self._matches_watermark(slug, until_model)
                 ):
-                    print(f"[{self.brand_name}] Reached watermark '{watermark_display}' at '{name}'. Halting Level 1 scan.")
+                    print(
+                        f"[{self.brand_name}] Reached watermark '{watermark_display}' at '{name}'. Halting Level 1 scan."
+                    )
                     watermark_hit = True
                     break
 

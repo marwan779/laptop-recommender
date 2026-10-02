@@ -7,7 +7,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from app.core.constants import BRAND_CATALOGS
 from app.engine.scrapling_engine import ScraplingEngine
 from app.schemas.orchestrator import ScrapeRequest
 from app.services.orchestrator import BRAND_SERVICE_REGISTRY, ScrapeOrchestrator
@@ -155,7 +154,9 @@ def main():
             upload_to_bucket=args.upload_to_bucket,
         )
     elif args.mode in ("store", "stores"):
-        targets = "all" if args.stores.lower() == "all" else [s.strip().lower() for s in args.stores.split(",") if s.strip()]
+        targets = (
+            "all" if args.stores.lower() == "all" else [s.strip().lower() for s in args.stores.split(",") if s.strip()]
+        )
         request = ScrapeRequest(
             target_type="store",
             targets=targets,
@@ -255,7 +256,9 @@ def _display_store_result(target_result, args) -> None:
     pointers_str = ", ".join(catalog.latest_pointers) if catalog.latest_pointers else "None"
     console.print(f"[cyan]Latest Pointers (Top 3):[/cyan] [bold yellow]{pointers_str}[/bold yellow]")
     if catalog.total_skipped > 0:
-        console.print(f"[yellow]Total Skipped Products (Filtered/Error):[/yellow] [bold red]{catalog.total_skipped}[/bold red]")
+        console.print(
+            f"[yellow]Total Skipped Products (Filtered/Error):[/yellow] [bold red]{catalog.total_skipped}[/bold red]"
+        )
 
     if args.save_json:
         if getattr(args, "_total_results", 1) == 1:
@@ -303,13 +306,23 @@ def _display_brand_result(target_result, args) -> None:
 
     elif args.level == 2:
         for detail in catalog.laptops:
-            console.print(f"\n[bold blue]{'='*80}[/bold blue]")
-            console.print(f"[bold white on blue] LAPTOP: {safe_terminal_text(detail.name)} ({detail.family or 'Unknown'}) [/bold white on blue]")
-            console.print(f"[cyan]Model / Variants:[/cyan] [bold magenta]{safe_terminal_text(detail.model or '')}[/bold magenta] ({len(detail.model_variants)} variants)")
-            console.print(f"[cyan]Est. Release Date / Year:[/cyan] [bold yellow]{detail.release_date or detail.release_year or 'N/A'}[/bold yellow]")
+            console.print(f"\n[bold blue]{'=' * 80}[/bold blue]")
+            console.print(
+                f"[bold white on blue] LAPTOP: {safe_terminal_text(detail.name)} ({detail.family or 'Unknown'}) [/bold white on blue]"
+            )
+            console.print(
+                f"[cyan]Model / Variants:[/cyan] [bold magenta]{safe_terminal_text(detail.model or '')}[/bold magenta] ({len(detail.model_variants)} variants)"
+            )
+            console.print(
+                f"[cyan]Est. Release Date / Year:[/cyan] [bold yellow]{detail.release_date or detail.release_year or 'N/A'}[/bold yellow]"
+            )
             console.print(f"[cyan]Price (EGP):[/cyan] [bold green]{detail.price or 'N/A'}[/bold green]")
-            console.print(f"[cyan]Configurations Identified:[/cyan] [bold cyan]{len(detail.configurations)}[/bold cyan]")
-            console.print(f"[cyan]Total Specs Fields Extracted:[/cyan] [bold green]{len(detail.all_specs)}[/bold green]")
+            console.print(
+                f"[cyan]Configurations Identified:[/cyan] [bold cyan]{len(detail.configurations)}[/bold cyan]"
+            )
+            console.print(
+                f"[cyan]Total Specs Fields Extracted:[/cyan] [bold green]{len(detail.all_specs)}[/bold green]"
+            )
 
             if detail.structured_specs:
                 spec_table = Table(title="Core Structured Hardware Specifications")
@@ -318,7 +331,9 @@ def _display_brand_result(target_result, args) -> None:
 
                 for k, v in detail.structured_specs.items():
                     if v:
-                        spec_table.add_row(k.replace('_', ' ').title(), safe_terminal_text(v[:120]) + ("..." if len(v) > 120 else ""))
+                        spec_table.add_row(
+                            k.replace("_", " ").title(), safe_terminal_text(v[:120]) + ("..." if len(v) > 120 else "")
+                        )
                 console.print(spec_table)
 
     pointers_str = ", ".join(catalog.latest_pointers) if catalog.latest_pointers else "None"
