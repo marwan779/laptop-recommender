@@ -768,3 +768,104 @@ def test_orchestrator_zero_disk_upload_to_bucket_calls_upload_json(mock_storage_
             # Assert upload_json was used directly (in-memory streaming)
             mock_storage_service.upload_json.assert_called_once()
             mock_storage_service.upload_file.assert_not_called()
+
+
+# ── Additional S3 Storage Edge Cases & Mutation Tests ───────────────────────
+
+
+def test_s3_init_with_endpoint_url_and_disabled_ssl():
+    """Verify S3 client initializes with custom endpoint and use_ssl=False."""
+    settings = StorageSettings(
+        aws_access_key_id="minio_admin",
+        aws_secret_access_key="minio_secret",
+        aws_s3_endpoint_url="http://localhost:9000",
+        aws_s3_use_ssl=False,
+    )
+    with patch("boto3.session.Session.client") as mock_client_factory:
+        svc = S3StorageService(settings=settings)
+        assert svc.provider_name == "s3"
+        call_kwargs = mock_client_factory.call_args.kwargs
+        assert call_kwargs["endpoint_url"] == "http://localhost:9000"
+        assert call_kwargs["use_ssl"] is False
+        assert call_kwargs["aws_access_key_id"] == "minio_admin"
+
+
+def test_s3_init_failure_raises_storage_connection_error():
+    """Verify S3 client initialization failure raises StorageConnectionError."""
+    settings = StorageSettings(aws_access_key_id="test", aws_secret_access_key="test")
+    with patch("boto3.session.Session.client", side_effect=Exception("Boto3 init failure")):
+        with pytest.raises(StorageConnectionError, match="Failed to initialize AWS S3 client"):
+            S3StorageService(settings=settings)
+
+
+def test_s3_handle_error_auth_and_re_raise_storage_error(s3_service):
+    """Verify _handle_error maps signature and key auth errors and re-raises StorageError."""
+    # 1. InvalidAccessKeyId ClientError -> StoragePermissionError
+    client_err = ClientError(
+        {"Error": {"Code": "InvalidAccessKeyId", "Message": "The key is invalid"}},
+        "HeadObject",
+    )
+    with pytest.raises(StoragePermissionError):
+        s3_service._handle_error(client_err, "test.json")
+
+    # 2. Existing StorageError re-raised without wrapping
+    custom_err = StorageNotFoundError("Already a storage error")
+    with pytest.raises(StorageNotFoundError):
+        s3_service._handle_error(custom_err, "test.json")
+
+    # 3. Arbitrary non-boto error -> StorageOperationError
+    arbitrary_err = ValueError("Something unexpected")
+    with pytest.raises(StorageOperationError, match="Unexpected error"):
+        s3_service._handle_error(arbitrary_err, "test.json")
+
+
+def test_s3_upload_json_serialization_failure_raises(s3_service):
+    """Verify upload_json raises StorageOperationError if JSON serialization fails."""
+    class Unserializable:
+        pass
+
+    with pytest.raises(StorageOperationError):
+        s3_service.upload_json(Unserializable(), "unserializable.json")
+
+
+def test_s3_read_json_invalid_json_raises(s3_service, mock_s3_client):
+    """Verify read_json raises StorageOperationError if content is not valid JSON."""
+    mock_body = MagicMock()
+    mock_body.read.return_value = b"<html>Not JSON</html>"
+    mock_s3_client.get_object.return_value = {
+        "Body": mock_body,
+        "ContentType": "application/json",
+        "ContentLength": 20,
+    }
+
+    with pytest.raises(StorageOperationError, match="Failed to deserialize"):
+        s3_service.read_json("invalid.json")
+
+
+def test_s3_exists_returns_false_on_404_and_raises_on_500(s3_service, mock_s3_client):
+    """Verify exists returns False on 404 and raises on server error."""
+    # 404 returns False
+    mock_s3_client.head_object.side_effect = ClientError(
+        {"Error": {"Code": "404", "Message": "Not Found"}}, "HeadObject"
+    )
+    assert s3_service.exists("missing.json") is False
+
+    # 500 raises StorageOperationError
+    mock_s3_client.head_object.side_effect = ClientError(
+        {"Error": {"Code": "500", "Message": "Internal Error"}}, "HeadObject"
+    )
+    with pytest.raises(StorageOperationError):
+        s3_service.exists("error.json")
+
+
+def test_s3_generate_presigned_url_custom_method(s3_service, mock_s3_client):
+    """Verify generate_presigned_url passes custom expiration and HTTP method."""
+    mock_s3_client.generate_presigned_url.return_value = "https://s3/presigned-put"
+    url = s3_service.generate_presigned_url("upload.json", expiration_seconds=1800, http_method="PUT")
+    assert url == "https://s3/presigned-put"
+    mock_s3_client.generate_presigned_url.assert_called_once_with(
+        ClientMethod="put_object",
+        Params={"Bucket": "test-bucket", "Key": "upload.json"},
+        ExpiresIn=1800,
+    )
+
