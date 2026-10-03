@@ -250,18 +250,3 @@ jobs:
           manifest-file: .release-please-manifest.json
           skip-github-release: true
 
-  deploy:
-    name: Deploy & Release Scraper Service
-    needs: [packaging]
-    permissions:
-      contents: write
-      pull-requests: write
-    if: |
-      github.ref == 'refs/heads/main' &&
-      github.event_name != 'pull_request' &&
-      (
-        contains(github.event.head_commit.message, 'release-please--branches--main--components--scraper-service') ||
-        (contains(github.event.head_commit.message, 'scraper-service') && (startsWith(github.event.head_commit.message, 'chore(main): release') || startsWith(github.event.head_commit.message, 'chore: release')))
-      )
-    uses: ./.github/workflows/deploy_scraper_service.yaml
-    secrets: inherit
