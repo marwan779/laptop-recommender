@@ -23,41 +23,27 @@ env:
 
 jobs:
   meta:
-    name: Resolve version & source image
+    name: Resolve version
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       version: ${{ steps.m.outputs.version }}
       tag: ${{ steps.m.outputs.tag }}
-      source_sha: ${{ steps.m.outputs.source_sha }}
     steps:
-      - name: Checkout tagged commit (full history to find the source commit)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - id: m
-        env:
-          TAG: ${{ github.ref_name }}
-          SERVICE_DIRECTORY: services/scraper-service
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             RAW_VER="${{ inputs.target_version }}"
             CLEAN_VER=$(echo "$RAW_VER" | sed -E 's/.*v//')
             echo "version=${CLEAN_VER}" >> "$GITHUB_OUTPUT"
             echo "tag=scraper-service-v${CLEAN_VER}" >> "$GITHUB_OUTPUT"
-            echo "Manual deploy/rollback requested for version: ${CLEAN_VER}"
+            echo "Deploying version: ${CLEAN_VER}"
           else
+            TAG="${{ github.ref_name }}"
             echo "version=${TAG#scraper-service-v}" >> "$GITHUB_OUTPUT"
             echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+            echo "Deploying version: ${TAG#scraper-service-v}"
           fi
-
-          # The tag points at the release commit (version files only).
-          # Follow the first-parent line of history on main to find the commit
-          # that triggered CI and pushed the image to Docker Hub.
-          SRC=$(git log -1 --first-parent --format=%H HEAD^ -- "$SERVICE_DIRECTORY" || true)
-          echo "Source commit for image: $SRC"
-          echo "source_sha=$SRC" >> "$GITHUB_OUTPUT"
 
   promote_and_deploy:
     name: Promote Image & Deploy
@@ -76,20 +62,15 @@ jobs:
       - name: Promote Container Image (No Rebuild)
         run: |
           RELEASE_TAG="${{ needs.meta.outputs.version }}"
-          SOURCE_SHA="${{ needs.meta.outputs.source_sha }}"
 
-          # Verify if target release tag already exists (e.g. redeploy/rollback)
           if docker manifest inspect "${{ env.IMAGE }}:${RELEASE_TAG}" > /dev/null 2>&1; then
             echo "Image ${{ env.IMAGE }}:${RELEASE_TAG} already exists in registry."
-          elif [ -n "$SOURCE_SHA" ]; then
-            echo "Promoting image: ${{ env.IMAGE }}:${SOURCE_SHA} -> ${{ env.IMAGE }}:${RELEASE_TAG} and ${{ env.IMAGE }}:latest"
+          else
+            echo "Promoting image: ${{ env.IMAGE }}:edge -> ${{ env.IMAGE }}:${RELEASE_TAG} and ${{ env.IMAGE }}:latest"
             docker buildx imagetools create \
               --tag "${{ env.IMAGE }}:${RELEASE_TAG}" \
               --tag "${{ env.IMAGE }}:latest" \
-              "${{ env.IMAGE }}:${SOURCE_SHA}"
-          else
-            echo "::error::Neither ${{ env.IMAGE }}:${RELEASE_TAG} exists nor could source_sha be found!"
-            exit 1
+              "${{ env.IMAGE }}:edge"
           fi
 
       - name: Deploy to AWS Batch / Fargate

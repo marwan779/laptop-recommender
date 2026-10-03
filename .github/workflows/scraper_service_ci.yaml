@@ -227,6 +227,7 @@ jobs:
         run: |
           docker build \
             -t ${{ env.IMAGE }}:${{ github.sha }} \
+            -t ${{ env.IMAGE }}:edge \
             .
 
       - name: Scan container image
@@ -249,7 +250,9 @@ jobs:
 
       - name: Push container image
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        run: docker push ${{ env.IMAGE }}:${{ github.sha }}
+        run: |
+          docker push ${{ env.IMAGE }}:${{ github.sha }}
+          docker push ${{ env.IMAGE }}:edge
 
   release_please:
     name: Release Please (PR & Tag Automation)
