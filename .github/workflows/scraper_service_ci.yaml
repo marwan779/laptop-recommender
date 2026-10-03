@@ -1,4 +1,4 @@
-name: Scraper Service CI/CD Pipeline
+name: Scraper Service CI
 
 on:
   push:
@@ -16,11 +16,9 @@ on:
 permissions:
   contents: read
   security-events: write
-  pull-requests: write
-
 
 concurrency:
-  group: scraper-service-${{ github.ref }}
+  group: scraper-service-ci-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -28,40 +26,11 @@ env:
   SERVICE_DIRECTORY: "services/scraper-service"
   IMAGE: "abdelhameed208/laptop_recommender_scraping_service"
 
-  
-  
-
 jobs:
-  meta:
-    name: Detect run type
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      is_release: ${{ steps.m.outputs.is_release }}
-      version: ${{ steps.m.outputs.version }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
- 
-      - id: m
-        env:
-          EVENT: ${{ github.event_name }}
-          MSG: ${{ github.event.head_commit.message }}
-        run: |
-          if [[ "$EVENT" == "push" && ("$MSG" == *"release-please--"* || "$MSG" =~ [Rr]elease[[:space:]]+scraper-service || "$MSG" =~ chore.*:\ +release) ]]; then
-            echo "is_release=true" >> "$GITHUB_OUTPUT"
-            echo "version=$(jq -r '."services/scraper-service"' .release-please-manifest.json)" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_release=false" >> "$GITHUB_OUTPUT"
-            echo "version=" >> "$GITHUB_OUTPUT"
-          fi
-
   code_quality:
     name: Code Quality & Syntax Check
-    needs: meta
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: needs.meta.outputs.is_release != 'true' && !startsWith(github.head_ref, 'release-please--')
     defaults:
       run:
         working-directory: ./services/scraper-service
@@ -70,7 +39,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v7   
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -100,10 +69,8 @@ jobs:
 
   security_governance:
     name: Security Governance
-    needs: meta
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: needs.meta.outputs.is_release != 'true' && !startsWith(github.head_ref, 'release-please--')
     permissions:
       contents: read
       security-events: write
@@ -133,7 +100,7 @@ jobs:
 
       - name: Upload SARIF report
         if: always() && github.event.pull_request.head.repo.fork != true
-        uses: github/codeql-action/upload-sarif@v4  
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: ${{ env.SERVICE_DIRECTORY }}/bandit.sarif
           category: bandit
@@ -142,39 +109,39 @@ jobs:
         run: |
           pip install pip-audit
           pip-audit -r requirements.txt
-      
-      - name: trivy scan
+
+      - name: Trivy scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
-          scanners: vuln,secret,misconfig          
-          format: 'sarif' 
-          output: 'trivy.sarif' 
+          scanners: vuln,secret,misconfig
+          format: 'sarif'
+          output: 'trivy.sarif'
           limit-severities-for-sarif: true
-          ignore-unfixed: true  
+          ignore-unfixed: true
           exit-code: '1'
           severity: 'HIGH,CRITICAL'
-          scan-ref: ${{ env.SERVICE_DIRECTORY}}
+          scan-ref: ${{ env.SERVICE_DIRECTORY }}
 
       - name: Upload Trivy SARIF
         if: always() && github.event.pull_request.head.repo.fork != true
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy.sarif
-          category: trivy    
+          category: trivy
+
   testing:
-    name: Testing & mutation 
-    needs: [meta,code_quality,security_governance]
+    name: Testing & Mutation
+    needs: [code_quality, security_governance]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: needs.meta.outputs.is_release != 'true' && !startsWith(github.head_ref, 'release-please--')
     defaults:
       run:
         working-directory: ./services/scraper-service
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
@@ -187,17 +154,17 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov mutmut
 
-      - name: unit test
+      - name: Unit test
         run: |
           PYTHONPATH=. pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=50 tests/
 
       - name: Upload Coverage
         if: always()
-        uses: actions/upload-artifact@v6 
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-report
-          path: services/scraper-service/htmlcov/   
-      
+          path: services/scraper-service/htmlcov/
+
       - name: Mutation Testing with MutMut
         run: |
           mutmut run || true
@@ -210,42 +177,40 @@ jobs:
           name: mutmut-results
           path: services/scraper-service/mutmut-results.txt
 
-
   packaging:
     name: Packaging, Scan & Delivery
-    needs: [meta,testing]
+    needs: [testing]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: needs.meta.outputs.is_release != 'true' && !startsWith(github.head_ref, 'release-please--')
     defaults:
       run:
         working-directory: ./services/scraper-service
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
-      
+
       - name: Login to Docker Hub
         if: github.event.pull_request.head.repo.fork != true
         uses: docker/login-action@v4
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+
       - name: Build container image
         run: |
           docker build \
-            -t abdelhameed208/laptop_recommender_scraping_service:${{ github.sha }} \
+            -t ${{ env.IMAGE }}:${{ github.sha }} \
             .
-      
+
       - name: Scan container image
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'image'
           scanners: vuln,secret,misconfig
-          image-ref: abdelhameed208/laptop_recommender_scraping_service:${{ github.sha }}
+          image-ref: ${{ env.IMAGE }}:${{ github.sha }}
           format: 'sarif'
           exit-code: '0'
           severity: 'HIGH,CRITICAL'
@@ -260,11 +225,11 @@ jobs:
 
       - name: Push container image
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        run: docker push abdelhameed208/laptop_recommender_scraping_service:${{ github.sha }}
-  
-  release_pr:
-    name: Release PR (versioning)
-    needs: packaging
+        run: docker push ${{ env.IMAGE }}:${{ github.sha }}
+
+  release_please:
+    name: Release Please (PR & Tag Automation)
+    needs: [packaging]
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -276,58 +241,3 @@ jobs:
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
-          skip-github-release: true           
-  
-  promote:
-    name: Promote image (retag)
-    needs: meta
-    if: needs.meta.outputs.is_release == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
- 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
- 
-      # The Release PR commit only changes version files, so the image to promote
-      # is the one built from the previous main commit (the last tested feature merge).
-      - name: Verify source image exists
-        run: docker buildx imagetools inspect ${{ env.IMAGE }}:${{ github.event.before }}
- 
-      - name: Retag (no rebuild)
-        run: |
-          docker buildx imagetools create \
-            --tag ${{ env.IMAGE }}:${{ needs.meta.outputs.version }} \
-            ${{ env.IMAGE }}:${{ github.event.before }}
-  
-  deploy_prod:    
-    name: Deploy to Production (Fargate)
-    needs: [meta, promote]
-    runs-on: ubuntu-latest
-    timeout-minutes: 30   
-    if: needs.meta.outputs.is_release == 'true'
-    steps: 
-      - name: Deploy to Production (Fargate) placeholder 
-        run: |
-          echo "Deploy to Production (Fargate) placeholder"
-          echo "Version: ${{ needs.meta.outputs.version }}"
-
-  tag_release:
-    name: Create tag & GitHub Release
-    needs: deploy_prod
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - uses: googleapis/release-please-action@v4
-        with:
-          config-file: .release-please-config.json
-          manifest-file: .release-please-manifest.json
-          skip-github-pull-request: true     
