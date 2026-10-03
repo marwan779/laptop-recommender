@@ -205,13 +205,34 @@ def test_readiness_endpoint(client):
     assert data["ready"] is True
 
 
-def test_liveness_endpoint(client):
-    """Verify /live endpoint returns alive status."""
-    response = client.get("/live")
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert data["service"] == "scraper-service"
-    assert data["alive"] is True
+def test_orchestrator_resolve_targets_all_brands():
+    """Verify orchestrator expands 'all' brands properly."""
+    orchestrator = ScrapeOrchestrator(email_service=MagicMock())
+    request = ScrapeRequest(target_type="brand", targets="all", level=1)
+    targets = orchestrator._resolve_targets(request)
+    assert len(targets) == 4
+    assert ("brand", "asus") in targets
+    assert ("brand", "lenovo") in targets
+
+
+def test_orchestrator_resolve_targets_both_mixed():
+    """Verify orchestrator resolves mixed brand and store targets."""
+    orchestrator = ScrapeOrchestrator(email_service=MagicMock())
+    request = ScrapeRequest(target_type="both", targets=["asus", "btech", "unknown_brand"], level=1)
+    targets = orchestrator._resolve_targets(request)
+    assert ("brand", "asus") in targets
+    assert ("store", "btech") in targets
+    assert ("brand", "unknown_brand") in targets
+
+
+def test_orchestrator_scrape_unknown_brand_returns_error():
+    """Verify orchestrator gracefully records error for non-existent brand."""
+    orchestrator = ScrapeOrchestrator(email_service=MagicMock())
+    request = ScrapeRequest(target_type="brand", targets=["nonexistent_brand"], level=1)
+    result = orchestrator._scrape_brand("nonexistent_brand", request)
+    assert result.error is not None
+    assert "Unknown brand" in result.error
+    assert result.items_scraped == 0
 
 
 def test_execute_scrape_background_success():

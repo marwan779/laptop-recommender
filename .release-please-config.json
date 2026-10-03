@@ -11,7 +11,8 @@
             "tag-separator": "-",
             "include-component-in-tag": true,
             "bump-minor-pre-major": true,
-            "bump-patch-for-minor-pre-major": true
+            "bump-patch-for-minor-pre-major": true,
+            "prerelease": true
         },
         "services/catalog-service": {
             "release-type": "python",

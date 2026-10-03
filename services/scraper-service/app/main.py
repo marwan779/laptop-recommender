@@ -62,12 +62,3 @@ def readiness_check():
         "service": "scraper-service",
         "ready": True,
     }
-
-
-@app.get("/live", tags=["Health"])
-def liveness_check():
-    """Liveness probe endpoint for container orchestrators."""
-    return {
-        "service": "scraper-service",
-        "alive": True,
-    }
