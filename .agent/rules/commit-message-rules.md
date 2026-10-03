@@ -1,4 +1,10 @@
-# Git Commit Message Rules
+# Git Rules and Workflow Guidelines
+
+## General Workflow Rules
+
+* **Do not commit or push any changes unless explicitly instructed by the user.** Never run `git commit`, `git push`, or create commits proactively without explicit user confirmation.
+
+## Git Commit Message Rules
 
 Always follow these rules when creating, suggesting, or reviewing Git commit messages.
 
