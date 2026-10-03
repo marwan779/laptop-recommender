@@ -259,3 +259,53 @@ def test_execute_scrape_background_handles_exception():
     # Should not raise exception
     _execute_scrape_background(mock_orchestrator, request, "job-fail-123")
     mock_orchestrator.execute.assert_called_once_with(request)
+
+
+# ---------------------------------------------------------------------------
+# 5. Dependency Injection Providers (app.api.deps)
+# ---------------------------------------------------------------------------
+
+
+def test_deps_get_scraper_engine_returns_singleton():
+    """Verify get_scraper_engine returns an IScraperEngine instance and caches it."""
+    from app.api.deps import get_scraper_engine
+    from app.engine.base import IScraperEngine
+
+    engine1 = get_scraper_engine()
+    engine2 = get_scraper_engine()
+    assert isinstance(engine1, IScraperEngine)
+    assert engine1 is engine2
+
+
+def test_deps_get_email_service_returns_singleton():
+    """Verify get_email_service returns an EmailService instance and caches it."""
+    from app.api.deps import get_email_service
+    from app.services.email_service import EmailService
+
+    service1 = get_email_service()
+    service2 = get_email_service()
+    assert isinstance(service1, EmailService)
+    assert service1 is service2
+
+
+def test_deps_get_storage_returns_storage_service():
+    """Verify get_storage returns an object storage service instance."""
+    from app.api.deps import get_storage
+    from app.storage.base import IObjectStorageService
+
+    storage = get_storage()
+    assert isinstance(storage, IObjectStorageService)
+
+
+def test_deps_get_orchestrator_builds_configured_instance():
+    """Verify get_orchestrator injects engine, email service, and storage with correct defaults."""
+    from app.api.deps import get_orchestrator
+
+    orchestrator = get_orchestrator()
+    assert isinstance(orchestrator, ScrapeOrchestrator)
+    assert orchestrator.engine is not None
+    assert orchestrator.email_service is not None
+    assert orchestrator.storage_service is not None
+    assert orchestrator.send_email is False
+    assert orchestrator.upload_to_bucket is False
+

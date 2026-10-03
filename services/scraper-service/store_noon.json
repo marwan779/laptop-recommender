@@ -2,44 +2,136 @@
   "store_name": "Noon",
   "store_key": "noon",
   "store_domain": "noon.com",
-  "scrape_mode": "level1",
+  "scrape_mode": "level2",
   "until_model": null,
   "latest_pointers": [
-    "HP Smart Tank 581 Wireless All In One Printer, Print, Scan, Copy, Print up to 6000 black or 6000 color pages - Grey [4A8D4A] Grey/Black",
-    "BenQ 24 inch 100Hz Gaming Computer Monitor FHD 1920x1080p | IPS | Eye-Care Tech | Low Blue Light | Anti-Glare | Adaptive Brightness | Built-in Speakers | DisplayPort | HDMI x 2 I Black/Noir"
+    "Kingston DataTraveler Exodia USB 3.2 Flash – DTX/128GB - 128 GB",
+    "Kingston 64GB micSDXC Canvas Select Plus 100R A1 C10 Card + ADP",
+    "Canon Pack of 2 Canon Pixma 445/446 Ink Cartridge Set Tri Colour & Black"
   ],
-  "total_products": 2,
-  "total_skipped": 1,
-  "scraped_at": "2026-09-29T18:47:28.638569+00:00",
+  "total_products": 5,
+  "total_skipped": 9,
+  "scraped_at": "2026-10-01T15:34:39.779190+00:00",
   "products": [
     {
       "store_name": "Noon",
       "store_key": "noon",
       "store_domain": "noon.com",
-      "title": "HP Smart Tank 581 Wireless All In One Printer, Print, Scan, Copy, Print up to 6000 black or 6000 color pages - Grey [4A8D4A] Grey/Black",
-      "product_url": "https://www.noon.com/egypt-en/smart-tank-581-wireless-all-in-one-printer-print-scan-copy-print-up-to-6000-black-or-6000-color-pages-grey-4a8d4a-grey-black/N53399135A/p/?o=c953df8cc743417c",
-      "retailer_product_id": "N53399135A",
-      "retailer_sku": "N53399135A",
-      "mpn": null,
-      "model_code": null,
+      "title": "Kingston DataTraveler Exodia USB 3.2 Flash – DTX/128GB - 128 GB",
+      "product_url": "https://www.noon.com/egypt-en/datatraveler-exodia-usb-3-2-flash-dtx-128gb-128-gb/N44695537A/p/?o=b1cfdb6265ef768e",
+      "retailer_product_id": "N44695537A",
+      "retailer_sku": "N44695537A",
+      "mpn": "740617309928",
+      "model_code": "Flash",
       "sub_model": null,
       "base_model": null,
       "price_egp": null,
       "price_str": null,
       "in_stock": true,
       "thumbnail_url": "https://f.nooncdn.com/s/app/com/noon/images/media-placeholder.svg",
-      "specs": {},
+      "specs": {
+        "Product Weight": "11 g",
+        "Connection Type": "Micro USB",
+        "Model Number": "740617309928",
+        "Product Height": "6.73 cm",
+        "Product Width": "1.01 cm",
+        "Storage Capacity": "128 GB",
+        "What's In The Box": "Kingston 128Gb Exodia Usb 3.20 Flash - Dtx/128Gb Black, manual",
+        "Color": "Black",
+        "Model Name": "Flash",
+        "Number of pieces": "1",
+        "Product Length": "2.11 cm",
+        "Read Speed": "200 MBps",
+        "Generation": "USB 3.2",
+        "Write Speed": "60 MBps"
+      },
       "raw_description": null,
-      "scraped_at": "2026-09-29T18:47:28.637932+00:00"
+      "scraped_at": "2026-10-01T15:32:24.595392+00:00"
     },
     {
       "store_name": "Noon",
       "store_key": "noon",
       "store_domain": "noon.com",
-      "title": "BenQ 24 inch 100Hz Gaming Computer Monitor FHD 1920x1080p | IPS | Eye-Care Tech | Low Blue Light | Anti-Glare | Adaptive Brightness | Built-in Speakers | DisplayPort | HDMI x 2 I Black/Noir",
-      "product_url": "https://www.noon.com/egypt-en/24-inch-100hz-gaming-computer-monitor-fhd-1920x1080p-ips-eye-care-tech-low-blue-light-anti-glare-adaptive-brightness-built-in-speakers-displayport-hdmi-x-2-i-black-noir/N70095666V/p/?o=c2abf7e468c6866c",
-      "retailer_product_id": "N70095666V",
-      "retailer_sku": "N70095666V",
+      "title": "Kingston 64GB micSDXC Canvas Select Plus 100R A1 C10 Card + ADP",
+      "product_url": "https://www.noon.com/egypt-en/64gb-micsdxc-canvas-select-plus-100r-a1-c10-card-adp/N50609744A/p/?o=b4890d3974dc9d6d",
+      "retailer_product_id": "N50609744A",
+      "retailer_sku": "N50609744A",
+      "mpn": "SDCS2/64GB, SDC10/64GB",
+      "model_code": "SDCS2/64GB",
+      "sub_model": null,
+      "base_model": null,
+      "price_egp": null,
+      "price_str": null,
+      "in_stock": true,
+      "thumbnail_url": "https://f.nooncdn.com/s/app/com/noon/images/media-placeholder.svg",
+      "specs": {
+        "Memory Type": "Micro SDXC",
+        "Model Name": "SDCS2/64GB",
+        "Storage Capacity": "64 GB",
+        "Color": "Black",
+        "Model Number": "SDCS2/64GB, SDC10/64GB",
+        "What's In The Box": "Flash drive"
+      },
+      "raw_description": null,
+      "scraped_at": "2026-10-01T15:33:19.817469+00:00"
+    },
+    {
+      "store_name": "Noon",
+      "store_key": "noon",
+      "store_domain": "noon.com",
+      "title": "Canon Pack of 2 Canon Pixma 445/446 Ink Cartridge Set Tri Colour & Black",
+      "product_url": "https://www.noon.com/egypt-en/pack-of-2-canon-pixma-445-446-ink-cartridge-set-tri-colour-black/N18552981A/p/?o=c59c72bf92a6b71c",
+      "retailer_product_id": "N18552981A",
+      "retailer_sku": "N18552981A",
+      "mpn": "PG-445/CL-446",
+      "model_code": "PG-445/CL-446",
+      "sub_model": null,
+      "base_model": null,
+      "price_egp": null,
+      "price_str": null,
+      "in_stock": true,
+      "thumbnail_url": "https://f.nooncdn.com/s/app/com/noon/images/media-placeholder.svg",
+      "specs": {
+        "Color": "Black",
+        "Model Number": "PG-445/CL-446",
+        "Model Name": "PG-445/CL-446"
+      },
+      "raw_description": null,
+      "scraped_at": "2026-10-01T15:33:30.175548+00:00"
+    },
+    {
+      "store_name": "Noon",
+      "store_key": "noon",
+      "store_domain": "noon.com",
+      "title": "Arctic Thermal Compound Paste Heat Cooling Grease Heatsink Mx-4 Arctic Cooling , 2g",
+      "product_url": "https://www.noon.com/egypt-en/thermal-compound-paste-heat-cooling-grease-heatsink-mx-4-arctic-cooling-2g/ZB8FAD78DCB9DC8C72CBEZ/p/?o=zb8fad78dcb9dc8c72cbez-1",
+      "retailer_product_id": "ZB8FAD78DCB9DC",
+      "retailer_sku": "ZB8FAD78DCB9DC",
+      "mpn": "MZ4 2g",
+      "model_code": "MZ4 2g",
+      "sub_model": null,
+      "base_model": null,
+      "price_egp": null,
+      "price_str": null,
+      "in_stock": true,
+      "thumbnail_url": "https://f.nooncdn.com/s/app/com/noon/images/media-placeholder.svg",
+      "specs": {
+        "Color": "MZ4 2g",
+        "Model Number": "MZ4 2g",
+        "Model Name": "MZ4 2g",
+        "Number of pieces": "1"
+      },
+      "raw_description": null,
+      "scraped_at": "2026-10-01T15:34:27.165367+00:00"
+    },
+    {
+      "store_name": "Noon",
+      "store_key": "noon",
+      "store_domain": "noon.com",
+      "title": "EVO Micro SD Memory Card XC1 Speed Up To 100 MB/s - 64 GB",
+      "product_url": "https://www.noon.com/egypt-en/micro-sd-memory-card-xc1-speed-up-to-100-mb-s-64-gb/Z52B9903E2C737B7F602EZ/p/?o=b019aadd64b6948d",
+      "retailer_product_id": "Z52B9903E2C737",
+      "retailer_sku": "Z52B9903E2C737",
       "mpn": null,
       "model_code": null,
       "sub_model": null,
@@ -48,9 +140,11 @@
       "price_str": null,
       "in_stock": true,
       "thumbnail_url": "https://f.nooncdn.com/s/app/com/noon/images/media-placeholder.svg",
-      "specs": {},
+      "specs": {
+        "Storage Capacity": "64 GB"
+      },
       "raw_description": null,
-      "scraped_at": "2026-09-29T18:47:28.638081+00:00"
+      "scraped_at": "2026-10-01T15:34:39.778976+00:00"
     }
   ],
   "skipped_laptops": [
@@ -60,7 +154,71 @@
       "reason": "Filtered out non-laptop accessory or peripheral",
       "error": null,
       "stage": "level1_filter",
-      "scraped_at": "2026-09-29T18:47:28.637731+00:00"
+      "scraped_at": "2026-10-01T15:32:12.911218+00:00"
+    },
+    {
+      "name": "JOYROOM JR-BP560S Capacitive Touchscreen Stylus Passive Capacitive Pen For iPad iPhone All Capacitive Screens With Two Replacement Nibs Black",
+      "url": "https://www.noon.com/egypt-en/jr-bp560s-capacitive-touchscreen-stylus-passive-capacitive-pen-for-ipad-iphone-all-capacitive-screens-with-two-replacement-nibs-black/N70016911V/p/?o=a062e2ede1a625ad",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-10-01T15:32:12.911272+00:00"
+    },
+    {
+      "name": "Canon PIXMA TS3640 Wireless Colour 3-in-one Inkjet Photo Printer, Print, Copy & Scan | Black Black",
+      "url": "https://www.noon.com/egypt-en/canon-pixma-ts3640-wireless-colour-3-in-one-inkjet-photo-printer-print-copy-scan-black-black/N70118685V/p/?o=b1a9667854e903dd",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-10-01T15:32:12.911298+00:00"
+    },
+    {
+      "name": "WD 2TB My Passport External Portable Hard Disk Drive USB 3.0 - WDBYVG0020BBK 2 TB",
+      "url": "https://www.noon.com/egypt-en/2tb-my-passport-external-portable-hard-disk-drive-usb-3-0-wdbyvg0020bbk-2-tb/N32571547A/p/?o=fcc582ff9ed8df8b",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-10-01T15:32:12.911315+00:00"
+    },
+    {
+      "name": "Apple New 2026 MacBook Air MDHE4 13 Inch Display |  M5 Air 10-Core CPU 8-Core GPU | 16GB RAM | 512GB SSD | macOS | English  Keyboard | International Version | Midnight",
+      "url": "https://www.noon.com/egypt-en/new-2026-macbook-air-mdhe4-13-inch-display-m5-air-10-core-cpu-8-core-gpu-16gb-ram-512gb-ssd-macos-english-keyboard-international-version-midnight/N70298796V/p/?o=f99bc37bc124ec3f",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-10-01T15:32:24.595427+00:00"
+    },
+    {
+      "name": "Onikuma X31 RGB Wired Gaming Headset with Noise Cancelling Microphone Nintendo Switch, Xbox One, PS4, PS5, Bass Surround and Noise Cancelling with Flexible Mic, RGB Headphones for Laptop PC iPad Smartphones",
+      "url": "https://www.noon.com/egypt-en/onikuma-x31-rgb-wired-gaming-headset-with-noise-cancelling-microphone-nintendo-switch-xbox-one-ps4-ps5-bass-surround-and-noise-cancelling-with-flexible-mic-rgb-headphones-for-laptop-pc-ipad-smartphones/Z745EC4657D1E920EB558Z/p/?o=z745ec4657d1e920eb558z-1",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-10-01T15:32:24.595443+00:00"
+    },
+    {
+      "name": "onikuma X92 RGB Wired Gaming Headset with 3D Surround Sound and Noise Cancelling Microphone, 50mm Custom Drivers, Comfortable Over-Ear Design with Adaptive Headband for PC, Laptop and Mobile Devices",
+      "url": "https://www.noon.com/egypt-en/x92-rgb-wired-gaming-headset-with-3d-surround-sound-and-noise-cancelling-microphone-50mm-custom-drivers-comfortable-over-ear-design-with-adaptive-headband-for-pc-laptop-and-mobile-devices/Z104F6C550542D0B8897BZ/p/?o=c6efd88f6e866dce",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-10-01T15:32:24.595456+00:00"
+    },
+    {
+      "name": "HP LaserJet MFP M141W Printer, Print/ Scan / Copy, Wireless Printing, Up to 20 ppm Print Speed, 8,000 pages Duty Cycle, 150 Sheet Input Tray, 600 x 400 dpi Copy Resolution 7MD74A White",
+      "url": "https://www.noon.com/egypt-en/laserjet-mfp-m141w-printer-print-scan-copy-wireless-printing-up-to-20-ppm-print-speed-8-000-pages-duty-cycle-150-sheet-input-tray-600-x-400-dpi-copy-resolution-7md74a-white/N53181748A/p/?o=a14b4f77dc3cc14d",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-10-01T15:33:19.817509+00:00"
+    },
+    {
+      "name": "Logitech G102 Light Sync Gaming Mouse with Customizable RGB Lighting, 6 Programmable Buttons Light Weight Black",
+      "url": "https://www.noon.com/egypt-en/logitech-g102-light-sync-gaming-mouse-with-customizable-rgb-lighting-6-programmable-buttons-light-weight-black/N28863701A/p/?o=c6454896f517ccee",
+      "reason": "Filtered out non-laptop accessory or peripheral",
+      "error": null,
+      "stage": "level1_filter",
+      "scraped_at": "2026-10-01T15:33:19.817520+00:00"
     }
   ]
 }

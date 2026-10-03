@@ -13,7 +13,7 @@ FROM python:3.13-slim AS runner
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwrightz
 
 RUN addgroup --gid 10001 app \
     && adduser --uid 10001 --gid 10001 --disabled-password --gecos "" app
