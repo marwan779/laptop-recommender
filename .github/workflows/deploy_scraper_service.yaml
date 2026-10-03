@@ -28,6 +28,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       version: ${{ steps.m.outputs.version }}
+      tag: ${{ steps.m.outputs.tag }}
       source_sha: ${{ steps.m.outputs.source_sha }}
     steps:
       - name: Checkout tagged commit (full history to find the source commit)
@@ -44,22 +45,19 @@ jobs:
             RAW_VER="${{ inputs.target_version }}"
             CLEAN_VER=$(echo "$RAW_VER" | sed -E 's/.*v//')
             echo "version=${CLEAN_VER}" >> "$GITHUB_OUTPUT"
+            echo "tag=scraper-service-v${CLEAN_VER}" >> "$GITHUB_OUTPUT"
             echo "Manual deploy/rollback requested for version: ${CLEAN_VER}"
           else
             echo "version=${TAG#scraper-service-v}" >> "$GITHUB_OUTPUT"
-
-            # The tag points at the release commit (version files only).
-            # The image to promote was built by CI from the LAST commit that changed the
-            # service folder before the release commit. We cannot just use HEAD^ because
-            # commits that touch other folders do not trigger this service's CI (no image).
-            SRC=$(git log -1 --format=%H HEAD^ -- "$SERVICE_DIRECTORY")
-            if [ -z "$SRC" ]; then
-              echo "::error::Could not find a source commit for $SERVICE_DIRECTORY"
-              exit 1
-            fi
-            echo "Source commit for image: $SRC"
-            echo "source_sha=$SRC" >> "$GITHUB_OUTPUT"
+            echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           fi
+
+          # The tag points at the release commit (version files only).
+          # Follow the first-parent line of history on main to find the commit
+          # that triggered CI and pushed the image to Docker Hub.
+          SRC=$(git log -1 --first-parent --format=%H HEAD^ -- "$SERVICE_DIRECTORY" || true)
+          echo "Source commit for image: $SRC"
+          echo "source_sha=$SRC" >> "$GITHUB_OUTPUT"
 
   promote_and_deploy:
     name: Promote Image & Deploy
@@ -78,17 +76,20 @@ jobs:
       - name: Promote Container Image (No Rebuild)
         run: |
           RELEASE_TAG="${{ needs.meta.outputs.version }}"
+          SOURCE_SHA="${{ needs.meta.outputs.source_sha }}"
 
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Rollback/Manual deploy requested for existing tag: ${{ env.IMAGE }}:${RELEASE_TAG}"
-            docker manifest inspect "${{ env.IMAGE }}:${RELEASE_TAG}" > /dev/null
-          else
-            SOURCE_SHA="${{ needs.meta.outputs.source_sha }}"
+          # Verify if target release tag already exists (e.g. redeploy/rollback)
+          if docker manifest inspect "${{ env.IMAGE }}:${RELEASE_TAG}" > /dev/null 2>&1; then
+            echo "Image ${{ env.IMAGE }}:${RELEASE_TAG} already exists in registry."
+          elif [ -n "$SOURCE_SHA" ]; then
             echo "Promoting image: ${{ env.IMAGE }}:${SOURCE_SHA} -> ${{ env.IMAGE }}:${RELEASE_TAG} and ${{ env.IMAGE }}:latest"
             docker buildx imagetools create \
               --tag "${{ env.IMAGE }}:${RELEASE_TAG}" \
               --tag "${{ env.IMAGE }}:latest" \
               "${{ env.IMAGE }}:${SOURCE_SHA}"
+          else
+            echo "::error::Neither ${{ env.IMAGE }}:${RELEASE_TAG} exists nor could source_sha be found!"
+            exit 1
           fi
 
       - name: Deploy to AWS Batch / Fargate
@@ -99,8 +100,7 @@ jobs:
 
   publish_release:
     name: Promote Pre-release to Official Latest Release
-    needs: [promote_and_deploy]
-    if: github.event_name != 'workflow_dispatch'
+    needs: [meta, promote_and_deploy]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -109,6 +109,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Promoting ${{ github.ref_name }} from Pre-release to Official Production Release..."
-          gh release edit "${{ github.ref_name }}" --prerelease=false --latest
-          echo "Release ${{ github.ref_name }} is now marked as the official latest release!"
+          TAG="${{ needs.meta.outputs.tag }}"
+          echo "Promoting ${TAG} from Pre-release to Official Production Release..."
+          gh release edit "${TAG}" --prerelease=false --latest
+          echo "Release ${TAG} is now marked as the official latest release!"
