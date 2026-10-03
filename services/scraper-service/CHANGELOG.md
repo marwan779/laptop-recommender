@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.5.0...scraper-service-v1.6.0) (2026-10-03)
+
+
+### Features
+
+* **scraper:** add unit tests for catalog schemas and data models ([e6b4a60](https://github.com/marwan779/laptop-recommender/commit/e6b4a602107791696c29b251171e1e3effa45316))
+* **scraper:** add unit tests for catalog schemas and data models ([2efad27](https://github.com/marwan779/laptop-recommender/commit/2efad27926a439b9d080224a6eb5f31c527113fd))
+
+
+### Bug Fixes
+
+* **scraper:** provide required product_url in RetailOffer test and add ModelNormalizer tests ([73dc864](https://github.com/marwan779/laptop-recommender/commit/73dc864bc251ad7223e54b6b3f5b614626cd919a))
+
 ## [1.5.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.4.0...scraper-service-v1.5.0) (2026-10-03)
 
 
