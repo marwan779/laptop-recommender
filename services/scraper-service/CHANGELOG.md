@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.4.0...scraper-service-v1.5.0) (2026-10-03)
+
+
+### Features
+
+* **scraper:** add orchestrator unit tests and configure pre-release deployment flow ([f725121](https://github.com/marwan779/laptop-recommender/commit/f72512170f0ced43808231761b6b3a8ad1ec1557))
+
 ## [1.4.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.3.0...scraper-service-v1.4.0) (2026-10-03)
 
 
