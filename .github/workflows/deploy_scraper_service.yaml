@@ -89,8 +89,9 @@ jobs:
       - name: Mark Release as Production Latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           TAG="${{ needs.meta.outputs.tag }}"
           echo "Promoting ${TAG} from Pre-release to Official Production Release..."
-          gh release edit "${TAG}" --prerelease=false --latest
+          gh release edit "${TAG}" --repo "${{ github.repository }}" --prerelease=false --latest
           echo "Release ${TAG} is now marked as the official latest release!"
