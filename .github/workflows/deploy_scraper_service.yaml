@@ -22,22 +22,50 @@ env:
   IMAGE: "abdelhameed208/laptop_recommender_scraping_service"
 
 jobs:
-  promote_and_deploy:
-    name: Promote Image & Deploy
+  meta:
+    name: Resolve version & source image
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.m.outputs.version }}
+      source_sha: ${{ steps.m.outputs.source_sha }}
     steps:
-      - name: Extract Clean Version
-        id: vars
+      - name: Checkout tagged commit (full history to find the source commit)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: m
+        env:
+          TAG: ${{ github.ref_name }}
+          SERVICE_DIRECTORY: services/scraper-service
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             RAW_VER="${{ inputs.target_version }}"
+            CLEAN_VER=$(echo "$RAW_VER" | sed -E 's/.*v//')
+            echo "version=${CLEAN_VER}" >> "$GITHUB_OUTPUT"
+            echo "Manual deploy/rollback requested for version: ${CLEAN_VER}"
           else
-            RAW_VER="${{ github.ref_name }}"
-          fi
-          CLEAN_VER=$(echo "$RAW_VER" | sed -E 's/.*v//')
-          echo "version=${CLEAN_VER}" >> $GITHUB_OUTPUT
-          echo "Deploying version: ${CLEAN_VER}"
+            echo "version=${TAG#scraper-service-v}" >> "$GITHUB_OUTPUT"
 
+            # The tag points at the release commit (version files only).
+            # The image to promote was built by CI from the LAST commit that changed the
+            # service folder before the release commit. We cannot just use HEAD^ because
+            # commits that touch other folders do not trigger this service's CI (no image).
+            SRC=$(git log -1 --format=%H HEAD^ -- "$SERVICE_DIRECTORY")
+            if [ -z "$SRC" ]; then
+              echo "::error::Could not find a source commit for $SERVICE_DIRECTORY"
+              exit 1
+            fi
+            echo "Source commit for image: $SRC"
+            echo "source_sha=$SRC" >> "$GITHUB_OUTPUT"
+          fi
+
+  promote_and_deploy:
+    name: Promote Image & Deploy
+    needs: [meta]
+    runs-on: ubuntu-latest
+    steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -49,24 +77,25 @@ jobs:
 
       - name: Promote Container Image (No Rebuild)
         run: |
-          RELEASE_TAG="${{ steps.vars.outputs.version }}"
+          RELEASE_TAG="${{ needs.meta.outputs.version }}"
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "Rollback/Manual deploy requested for existing tag: ${{ env.IMAGE }}:${RELEASE_TAG}"
             docker manifest inspect "${{ env.IMAGE }}:${RELEASE_TAG}" > /dev/null
           else
-            echo "Promoting image: ${{ env.IMAGE }}:${{ github.sha }} -> ${{ env.IMAGE }}:${RELEASE_TAG} and ${{ env.IMAGE }}:latest"
+            SOURCE_SHA="${{ needs.meta.outputs.source_sha }}"
+            echo "Promoting image: ${{ env.IMAGE }}:${SOURCE_SHA} -> ${{ env.IMAGE }}:${RELEASE_TAG} and ${{ env.IMAGE }}:latest"
             docker buildx imagetools create \
               --tag "${{ env.IMAGE }}:${RELEASE_TAG}" \
               --tag "${{ env.IMAGE }}:latest" \
-              "${{ env.IMAGE }}:${{ github.sha }}"
+              "${{ env.IMAGE }}:${SOURCE_SHA}"
           fi
 
       - name: Deploy to AWS Batch / Fargate
         run: |
-          echo "Deploying ${{ env.IMAGE }}:${{ steps.vars.outputs.version }} to AWS Batch..."
+          echo "Deploying ${{ env.IMAGE }}:${{ needs.meta.outputs.version }} to AWS Batch..."
           # aws batch register-job-definition ...
-          echo "Successfully deployed version ${{ steps.vars.outputs.version }} to production!"
+          echo "Successfully deployed version ${{ needs.meta.outputs.version }} to production!"
 
   publish_release:
     name: Promote Pre-release to Official Latest Release
