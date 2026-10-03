@@ -2,10 +2,8 @@ name: Deploy Scraper Service
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - "services/scraper-service/CHANGELOG.md"
+    tags:
+      - 'scraper-service-v*'
   workflow_dispatch:
     inputs:
       target_version:
@@ -15,7 +13,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
   group: deploy-scraper-service
@@ -25,22 +22,17 @@ env:
   IMAGE: "abdelhameed208/laptop_recommender_scraping_service"
 
 jobs:
-  promote:
-    name: Promote & Package Image
+  promote_and_deploy:
+    name: Promote Image & Deploy
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.vars.outputs.version }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Extract Clean Version
         id: vars
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             RAW_VER="${{ inputs.target_version }}"
           else
-            RAW_VER=$(jq -r '."services/scraper-service"' .release-please-manifest.json)
+            RAW_VER="${{ github.ref_name }}"
           fi
           CLEAN_VER=$(echo "$RAW_VER" | sed -E 's/.*v//')
           echo "version=${CLEAN_VER}" >> $GITHUB_OUTPUT
@@ -55,7 +47,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Promote or Build Release Image
+      - name: Promote Container Image (No Rebuild)
         run: |
           RELEASE_TAG="${{ steps.vars.outputs.version }}"
 
@@ -63,49 +55,31 @@ jobs:
             echo "Rollback/Manual deploy requested for existing tag: ${{ env.IMAGE }}:${RELEASE_TAG}"
             docker manifest inspect "${{ env.IMAGE }}:${RELEASE_TAG}" > /dev/null
           else
-            # Check if SHA tag exists in Docker Hub to promote in seconds, otherwise build & push
-            if docker manifest inspect "${{ env.IMAGE }}:${{ github.sha }}" > /dev/null 2>&1; then
-              echo "Promoting existing image: ${{ env.IMAGE }}:${{ github.sha }} -> ${{ env.IMAGE }}:${RELEASE_TAG}"
-              docker buildx imagetools create \
-                --tag "${{ env.IMAGE }}:${RELEASE_TAG}" \
-                --tag "${{ env.IMAGE }}:latest" \
-                "${{ env.IMAGE }}:${{ github.sha }}"
-            else
-              echo "Building and pushing release image: ${{ env.IMAGE }}:${RELEASE_TAG}"
-              docker build \
-                -t "${{ env.IMAGE }}:${RELEASE_TAG}" \
-                -t "${{ env.IMAGE }}:latest" \
-                ./services/scraper-service
-              docker push "${{ env.IMAGE }}:${RELEASE_TAG}"
-              docker push "${{ env.IMAGE }}:latest"
-            fi
+            echo "Promoting image: ${{ env.IMAGE }}:${{ github.sha }} -> ${{ env.IMAGE }}:${RELEASE_TAG} and ${{ env.IMAGE }}:latest"
+            docker buildx imagetools create \
+              --tag "${{ env.IMAGE }}:${RELEASE_TAG}" \
+              --tag "${{ env.IMAGE }}:latest" \
+              "${{ env.IMAGE }}:${{ github.sha }}"
           fi
 
-  deploy_prod:
-    name: Deploy to Production (AWS Fargate / Batch)
-    needs: [promote]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to AWS Batch (placeholder)
+      - name: Deploy to AWS Batch / Fargate
         run: |
-          echo "Deploying ${{ env.IMAGE }}:${{ needs.promote.outputs.version }} to AWS Batch..."
+          echo "Deploying ${{ env.IMAGE }}:${{ steps.vars.outputs.version }} to AWS Batch..."
           # aws batch register-job-definition ...
-          echo "Successfully deployed version ${{ needs.promote.outputs.version }} to production!"
+          echo "Successfully deployed version ${{ steps.vars.outputs.version }} to production!"
 
-  tag_release:
-    name: Create Tag & GitHub Release (Post-Deploy)
-    needs: [deploy_prod]
+  publish_release:
+    name: Promote Pre-release to Official Latest Release
+    needs: [promote_and_deploy]
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     steps:
-      - uses: googleapis/release-please-action@v4
-        with:
-          config-file: .release-please-config.json
-          manifest-file: .release-please-manifest.json
-          skip-github-pull-request: true
+      - name: Mark Release as Production Latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Promoting ${{ github.ref_name }} from Pre-release to Official Production Release..."
+          gh release edit "${{ github.ref_name }}" --prerelease=false --latest
+          echo "Release ${{ github.ref_name }} is now marked as the official latest release!"
