@@ -48,7 +48,7 @@ jobs:
           EVENT: ${{ github.event_name }}
           MSG: ${{ github.event.head_commit.message }}
         run: |
-          if [[ "$EVENT" == "push" && ("$MSG" == *"release scraper-service"* || "$MSG" =~ ^chore(\(.*\))?:\ release) ]]; then
+          if [[ "$EVENT" == "push" && ("$MSG" == *"release-please--"* || "$MSG" =~ [Rr]elease[[:space:]]+scraper-service || "$MSG" =~ chore.*:\ +release) ]]; then
             echo "is_release=true" >> "$GITHUB_OUTPUT"
             echo "version=$(jq -r '."services/scraper-service"' .release-please-manifest.json)" >> "$GITHUB_OUTPUT"
           else
