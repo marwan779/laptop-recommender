@@ -31,6 +31,11 @@ env:
 jobs:
   code_quality:
     name: Code Quality & Syntax Check
+    if: |
+      !startsWith(github.head_ref, 'release-please--') &&
+      !contains(github.event.head_commit.message, 'release-please--') &&
+      !startsWith(github.event.head_commit.message, 'chore(main): release') &&
+      !startsWith(github.event.head_commit.message, 'chore: release')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -71,6 +76,11 @@ jobs:
 
   security_governance:
     name: Security Governance
+    if: |
+      !startsWith(github.head_ref, 'release-please--') &&
+      !contains(github.event.head_commit.message, 'release-please--') &&
+      !startsWith(github.event.head_commit.message, 'chore(main): release') &&
+      !startsWith(github.event.head_commit.message, 'chore: release')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -135,6 +145,11 @@ jobs:
   testing:
     name: Testing & Mutation
     needs: [code_quality, security_governance]
+    if: |
+      !startsWith(github.head_ref, 'release-please--') &&
+      !contains(github.event.head_commit.message, 'release-please--') &&
+      !startsWith(github.event.head_commit.message, 'chore(main): release') &&
+      !startsWith(github.event.head_commit.message, 'chore: release')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -182,6 +197,13 @@ jobs:
   packaging:
     name: Packaging, Scan & Delivery
     needs: [testing]
+    if: |
+      always() &&
+      !startsWith(github.head_ref, 'release-please--') &&
+      !contains(github.event.head_commit.message, 'release-please--') &&
+      !startsWith(github.event.head_commit.message, 'chore(main): release') &&
+      !startsWith(github.event.head_commit.message, 'chore: release') &&
+      needs.testing.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -232,7 +254,11 @@ jobs:
   release_please:
     name: Release Please (PR & Tag Automation)
     needs: [packaging]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: |
+      always() &&
+      github.ref == 'refs/heads/main' &&
+      github.event_name != 'pull_request' &&
+      (needs.packaging.result == 'success' || needs.packaging.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -241,6 +267,7 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
