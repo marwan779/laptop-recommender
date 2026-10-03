@@ -53,3 +53,12 @@ def version():
         "service": "scraper-service",
         "version": app.version,
     }
+
+
+@app.get("/ready", tags=["Health"])
+def readiness_check():
+    """Readiness probe endpoint for container orchestrators."""
+    return {
+        "service": "scraper-service",
+        "ready": True,
+    }

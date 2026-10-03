@@ -193,3 +193,12 @@ def test_version_endpoint(client):
     data = response.json()
     assert data["service"] == "scraper-service"
     assert "version" in data
+
+
+def test_readiness_endpoint(client):
+    """Verify /ready endpoint returns ready status."""
+    response = client.get("/ready")
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["service"] == "scraper-service"
+    assert data["ready"] is True
