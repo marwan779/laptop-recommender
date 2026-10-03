@@ -26,16 +26,42 @@ concurrency:
 env:
   PYTHON_VERSION: "3.12"
   SERVICE_DIRECTORY: "services/scraper-service"
+  IMAGE: "abdelhameed208/laptop_recommender_scraping_service"
+
+  
   
 
 jobs:
+  meta:
+    name: Detect run type
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      is_release: ${{ steps.m.outputs.is_release }}
+      version: ${{ steps.m.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - id: m
+        env:
+          EVENT: ${{ github.event_name }}
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if [[ "$EVENT" == "push" && ("$MSG" == *"release scraper-service"* || "$MSG" =~ ^chore(\(.*\))?:\ release) ]]; then
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+            echo "version=$(jq -r '."services/scraper-service"' .release-please-manifest.json)" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_release=false" >> "$GITHUB_OUTPUT"
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+
   code_quality:
     name: Code Quality & Syntax Check
+    needs: meta
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: >
-      github.head_ref != 'release-please--branches--main' &&
-      !startsWith(github.event.head_commit.message, 'chore: release')
+    if: needs.meta.outputs.is_release != 'true' && !startsWith(github.head_ref, 'release-please--')
     defaults:
       run:
         working-directory: ./services/scraper-service
@@ -74,8 +100,10 @@ jobs:
 
   security_governance:
     name: Security Governance
+    needs: meta
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: needs.meta.outputs.is_release != 'true' && !startsWith(github.head_ref, 'release-please--')
     permissions:
       contents: read
       security-events: write
@@ -136,12 +164,10 @@ jobs:
           category: trivy    
   testing:
     name: Testing & mutation 
-    needs: [code_quality,security_governance]
+    needs: [meta,code_quality,security_governance]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: >
-      github.head_ref != 'release-please--branches--main' &&
-      !startsWith(github.event.head_commit.message, 'chore: release')
+    if: needs.meta.outputs.is_release != 'true' && !startsWith(github.head_ref, 'release-please--')
     defaults:
       run:
         working-directory: ./services/scraper-service
@@ -187,12 +213,10 @@ jobs:
 
   packaging:
     name: Packaging, Scan & Delivery
+    needs: [meta,testing]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [testing]
-    if: >
-      github.head_ref != 'release-please--branches--main' &&
-      !startsWith(github.event.head_commit.message, 'chore: release')
+    if: needs.meta.outputs.is_release != 'true' && !startsWith(github.head_ref, 'release-please--')
     defaults:
       run:
         working-directory: ./services/scraper-service
@@ -237,3 +261,73 @@ jobs:
       - name: Push container image
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: docker push abdelhameed208/laptop_recommender_scraping_service:${{ github.sha }}
+  
+  release_pr:
+    name: Release PR (versioning)
+    needs: packaging
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+          skip-github-release: true           
+  
+  promote:
+    name: Promote image (retag)
+    needs: meta
+    if: needs.meta.outputs.is_release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+ 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+ 
+      # The Release PR commit only changes version files, so the image to promote
+      # is the one built from the previous main commit (the last tested feature merge).
+      - name: Verify source image exists
+        run: docker buildx imagetools inspect ${{ env.IMAGE }}:${{ github.event.before }}
+ 
+      - name: Retag (no rebuild)
+        run: |
+          docker buildx imagetools create \
+            --tag ${{ env.IMAGE }}:${{ needs.meta.outputs.version }} \
+            ${{ env.IMAGE }}:${{ github.event.before }}
+  
+  deploy_prod:    
+    name: Deploy to Production (Fargate)
+    needs: [meta, promote]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30   
+    if: needs.meta.outputs.is_release == 'true'
+    steps: 
+      - name: Deploy to Production (Fargate) placeholder 
+        run: |
+          echo "Deploy to Production (Fargate) placeholder"
+          echo "Version: ${{ needs.meta.outputs.version }}"
+
+  tag_release:
+    name: Create tag & GitHub Release
+    needs: deploy_prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+          skip-github-pull-request: true     

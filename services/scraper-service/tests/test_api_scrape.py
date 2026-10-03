@@ -184,3 +184,12 @@ def test_orchestrator_both_resolves_and_executes_brands_and_stores():
         mock_store.assert_called_once_with("compumarts", request)
         assert len(response.results) == 2
         assert response.total_items_scraped == 30
+
+
+def test_version_endpoint(client):
+    """Verify /version endpoint returns service name and current version."""
+    response = client.get("/version")
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["service"] == "scraper-service"
+    assert "version" in data
