@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.3.0...scraper-service-v1.4.0) (2026-10-03)
+
+
+### Features
+
+* **scraper:** add /live liveness probe endpoint and backend unit tests ([b280688](https://github.com/marwan779/laptop-recommender/commit/b280688933d124188181d54b26710f5991c5a0aa))
+
 ## [1.3.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.2.0...scraper-service-v1.3.0) (2026-10-03)
 
 
