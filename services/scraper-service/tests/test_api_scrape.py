@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from app.api.deps import get_orchestrator
+from app.api.routes.scrape import _execute_scrape_background
 from app.main import app
 from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult
 from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
@@ -202,3 +203,38 @@ def test_readiness_endpoint(client):
     data = response.json()
     assert data["service"] == "scraper-service"
     assert data["ready"] is True
+
+
+def test_liveness_endpoint(client):
+    """Verify /live endpoint returns alive status."""
+    response = client.get("/live")
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["service"] == "scraper-service"
+    assert data["alive"] is True
+
+
+def test_execute_scrape_background_success():
+    """Verify background scrape worker executes orchestrator successfully."""
+    mock_orchestrator = MagicMock(spec=ScrapeOrchestrator)
+    mock_orchestrator.execute.return_value = ScrapeResponse(
+        results=[],
+        total_targets=1,
+        total_items_scraped=5,
+    )
+    request = ScrapeRequest(target_type="brand", targets=["asus"], level=1)
+
+    _execute_scrape_background(mock_orchestrator, request, "job-test-123")
+
+    mock_orchestrator.execute.assert_called_once_with(request)
+
+
+def test_execute_scrape_background_handles_exception():
+    """Verify background scrape worker catches exceptions gracefully without raising."""
+    mock_orchestrator = MagicMock(spec=ScrapeOrchestrator)
+    mock_orchestrator.execute.side_effect = RuntimeError("Worker failure test")
+    request = ScrapeRequest(target_type="store", targets=["btech"], level=1)
+
+    # Should not raise exception
+    _execute_scrape_background(mock_orchestrator, request, "job-fail-123")
+    mock_orchestrator.execute.assert_called_once_with(request)
