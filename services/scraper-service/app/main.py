@@ -44,3 +44,12 @@ def root():
         "status": "ok",
         "docs": "/docs",
     }
+
+
+@app.get("/version", tags=["Health"])
+def version():
+    """Return the current service version."""
+    return {
+        "service": "scraper-service",
+        "version": app.version,
+    }
