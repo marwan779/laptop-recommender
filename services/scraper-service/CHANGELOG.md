@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.2.0...scraper-service-v1.3.0) (2026-10-03)
+
+
+### Features
+
+* **scraper:** add /ready readiness probe endpoint ([08ecaa2](https://github.com/marwan779/laptop-recommender/commit/08ecaa2df72ea96d237fa68c88837640c929927f))
+* **scraper:** add /ready readiness probe endpoint ([002dbf7](https://github.com/marwan779/laptop-recommender/commit/002dbf7072c6f1ea22341147b26b7ebae6fe2082))
+
 ## [1.2.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-vv1.1.0...scraper-service-vv1.2.0) (2026-10-03)
 
 
