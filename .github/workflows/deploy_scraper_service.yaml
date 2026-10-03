@@ -1,10 +1,11 @@
 name: Deploy Scraper Service
 
 on:
-  workflow_run:
-    workflows: ["Scraper Service CI"]
-    types: [completed]
-    branches: [main]
+  push:
+    branches:
+      - main
+    paths:
+      - "services/scraper-service/CHANGELOG.md"
   workflow_dispatch:
     inputs:
       target_version:
@@ -25,27 +26,13 @@ env:
 
 jobs:
   promote:
-    name: Promote Image
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event_name == 'workflow_run' &&
-        github.event.workflow_run.conclusion == 'success' &&
-        contains(github.event.workflow_run.head_commit.message, 'scraper-service') &&
-        (
-          contains(github.event.workflow_run.head_commit.message, 'release-please--') ||
-          startsWith(github.event.workflow_run.head_commit.message, 'chore(main): release') ||
-          startsWith(github.event.workflow_run.head_commit.message, 'chore: release')
-        )
-      )
+    name: Promote & Package Image
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.vars.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
       - name: Extract Clean Version
         id: vars
@@ -68,20 +55,30 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Promote Image (No Rebuild)
+      - name: Promote or Build Release Image
         run: |
           RELEASE_TAG="${{ steps.vars.outputs.version }}"
-          TARGET_SHA="${{ github.event.workflow_run.head_sha || github.sha }}"
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "Rollback/Manual deploy requested for existing tag: ${{ env.IMAGE }}:${RELEASE_TAG}"
             docker manifest inspect "${{ env.IMAGE }}:${RELEASE_TAG}" > /dev/null
           else
-            echo "Promoting image: ${{ env.IMAGE }}:${TARGET_SHA} -> ${{ env.IMAGE }}:${RELEASE_TAG} and ${{ env.IMAGE }}:latest"
-            docker buildx imagetools create \
-              --tag "${{ env.IMAGE }}:${RELEASE_TAG}" \
-              --tag "${{ env.IMAGE }}:latest" \
-              "${{ env.IMAGE }}:${TARGET_SHA}"
+            # Check if SHA tag exists in Docker Hub to promote in seconds, otherwise build & push
+            if docker manifest inspect "${{ env.IMAGE }}:${{ github.sha }}" > /dev/null 2>&1; then
+              echo "Promoting existing image: ${{ env.IMAGE }}:${{ github.sha }} -> ${{ env.IMAGE }}:${RELEASE_TAG}"
+              docker buildx imagetools create \
+                --tag "${{ env.IMAGE }}:${RELEASE_TAG}" \
+                --tag "${{ env.IMAGE }}:latest" \
+                "${{ env.IMAGE }}:${{ github.sha }}"
+            else
+              echo "Building and pushing release image: ${{ env.IMAGE }}:${RELEASE_TAG}"
+              docker build \
+                -t "${{ env.IMAGE }}:${RELEASE_TAG}" \
+                -t "${{ env.IMAGE }}:latest" \
+                ./services/scraper-service
+              docker push "${{ env.IMAGE }}:${RELEASE_TAG}"
+              docker push "${{ env.IMAGE }}:latest"
+            fi
           fi
 
   deploy_prod:
@@ -91,8 +88,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
       - name: Deploy to AWS Batch (placeholder)
         run: |
