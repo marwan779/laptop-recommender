@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-vv1.1.0...scraper-service-vv1.2.0) (2026-10-03)
+
+
+### Features
+
+* **scraper:** add /version metadata endpoint ([a31b920](https://github.com/marwan779/laptop-recommender/commit/a31b9202f64c2579a3968f785c6a7f867f6abe6e))
+
 ## [1.1.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-vv1.0.0...scraper-service-vv1.1.0) (2026-10-02)
 
 

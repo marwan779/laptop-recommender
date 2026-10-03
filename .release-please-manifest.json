@@ -1,4 +1,4 @@
 {
-    "services/scraper-service": "1.1.0",
+    "services/scraper-service": "1.2.0",
     "services/catalog-service": "1.0.0"
 }
