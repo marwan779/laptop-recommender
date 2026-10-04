@@ -168,11 +168,12 @@ class TradelineStoreScraper(BaseStoreScraper):
                     handle = item.get("handle", "").strip()
                     product_url = urljoin(self.base_url, f"/products/{handle}")
 
-                    # 1. Filter out accessories
-                    if self._is_standalone_accessory(title):
+                    # 1. Filter out accessories and non-laptop/used products
+                    is_valid, reason = self.is_valid_new_laptop(title=title, url=product_url)
+                    if not is_valid:
                         self.record_skipped(
                             name=title,
-                            reason="Filtered out non-laptop accessory or peripheral",
+                            reason=f"Filtered out non-laptop accessory or peripheral: {reason}",
                             url=product_url,
                             stage="level1_filter",
                         )
@@ -321,7 +322,22 @@ class TradelineStoreScraper(BaseStoreScraper):
             pdp_specs, pdp_desc, pdp_price_val, pdp_price_str, pdp_sku, pdp_in_stock = self._extract_product_specs(
                 product_url
             )
-            specs.update(pdp_specs)
+            merged_specs = {**specs, **pdp_specs}
+            pdp_valid, pdp_reason = self.is_valid_new_laptop(
+                title=title,
+                specs=merged_specs,
+                url=product_url,
+                description=pdp_desc or raw_desc,
+            )
+            if not pdp_valid:
+                self.record_skipped(
+                    name=title,
+                    url=product_url,
+                    reason=f"Filtered out after PDP inspection: {pdp_reason}",
+                    stage="pdp_filter",
+                )
+                return None
+            specs = merged_specs
             if pdp_desc:
                 raw_desc = pdp_desc
             if pdp_price_val is not None:

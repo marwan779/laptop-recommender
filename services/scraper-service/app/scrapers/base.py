@@ -32,9 +32,40 @@ class BaseBrandScraper(ABC):
         )
 
     @classmethod
-    def is_valid_new_laptop(cls, title: str | None) -> tuple[bool, str]:
-        """Validate whether a product title represents a legitimate, brand-new laptop."""
-        return ProductClassifier.is_valid_new_laptop(title)
+    def is_valid_new_laptop(
+        cls,
+        title: str | None,
+        specs: dict | None = None,
+        url: str | None = None,
+        description: str | None = None,
+        item_condition: str | None = None,
+    ) -> tuple[bool, str]:
+        """Validate whether a product represents a legitimate, brand-new laptop."""
+        return ProductClassifier.is_valid_new_laptop(
+            title=title,
+            specs=specs,
+            url=url,
+            description=description,
+            item_condition=item_condition,
+        )
+
+    @classmethod
+    def is_used_or_refurbished(
+        cls,
+        title: str | None = None,
+        specs: dict | None = None,
+        url: str | None = None,
+        description: str | None = None,
+        item_condition: str | None = None,
+    ) -> bool:
+        """Check if product indicates used or refurbished condition across any data source."""
+        return ProductClassifier.is_used_or_refurbished(
+            title=title,
+            specs=specs,
+            url=url,
+            description=description,
+            item_condition=item_condition,
+        )
 
     @property
     @abstractmethod

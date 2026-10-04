@@ -159,12 +159,13 @@ class AmazonStoreScraper(BaseStoreScraper):
                     watermark_hit = True
                     break
 
-                # Accessory check
-                if self._is_standalone_accessory(title):
+                # Level 1 Validation: Non-laptop and used/refurbished check
+                is_valid, reason = self.is_valid_new_laptop(title=title, url=clean_url)
+                if not is_valid:
                     self.record_skipped(
                         name=title,
                         url=clean_url,
-                        reason="Filtered out non-laptop accessory or peripheral",
+                        reason=f"Filtered out non-laptop accessory or device: {reason}",
                         stage="level1_filter",
                     )
                     continue
@@ -210,6 +211,22 @@ class AmazonStoreScraper(BaseStoreScraper):
                     pdp_specs, pdp_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = (
                         self._extract_product_specs(clean_url)
                     )
+                    # Level 2 validation: Verify PDP specs/condition
+                    pdp_valid, pdp_reason = self.is_valid_new_laptop(
+                        title=title,
+                        specs=pdp_specs,
+                        url=clean_url,
+                        description=pdp_desc,
+                    )
+                    if not pdp_valid:
+                        self.record_skipped(
+                            name=title,
+                            url=clean_url,
+                            reason=f"Filtered out after PDP inspection: {pdp_reason}",
+                            stage="pdp_filter",
+                        )
+                        continue
+
                     specs = pdp_specs
                     raw_desc = pdp_desc
                     if pdp_mpn:

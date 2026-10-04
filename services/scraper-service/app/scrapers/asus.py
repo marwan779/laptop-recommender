@@ -830,6 +830,23 @@ class AsusBrandScraper(BaseBrandScraper):
             f"Specs: {len(all_specs)} fields, Variants: {len(sorted_variants)}"
         )
 
+        # Validate that detail specifications and markdown do not represent a non-laptop device or used product
+        is_valid, reason = self.is_valid_new_laptop(
+            title=summary.name,
+            specs=all_specs,
+            url=summary.product_url,
+            description=raw_markdown,
+        )
+        if not is_valid:
+            print(f"[ASUS Scraper] [!] '{summary.name}' rejected after deep specs inspection: {reason}")
+            self.record_skipped(
+                name=summary.name,
+                url=summary.product_url,
+                reason=f"Rejected after deep specs inspection: {reason}",
+                stage="level2_specs",
+            )
+            return None
+
         detail = LaptopDetail(
             brand=summary.brand,
             name=summary.name,

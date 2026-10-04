@@ -256,13 +256,14 @@ class CompumartsStoreScraper(BaseStoreScraper):
             )
             return None
 
-        # Filter out non-laptop accessories
-        if self._is_standalone_accessory(title):
+        # Filter out non-laptop accessories and used/refurbished items
+        is_valid, reason = self.is_valid_new_laptop(title=title, url=full_url)
+        if not is_valid:
             self.record_skipped(
                 name=title,
                 url=full_url,
-                reason="Filtered out as standalone accessory",
-                stage="accessory_filter",
+                reason=f"Filtered out as standalone accessory or non-laptop: {reason}",
+                stage="card_filter",
             )
             return None
 
@@ -305,6 +306,22 @@ class CompumartsStoreScraper(BaseStoreScraper):
         if level == 2:
             # Level 2: Deep Product Detail Page (PDP) Extraction
             specs, raw_desc, pdp_price_val, pdp_price_str, pdp_sku, pdp_in_stock = self._extract_product_specs(full_url)
+            # Level 2 validation: Verify PDP specs/condition do not reveal a used/refurbished or non-laptop product
+            pdp_valid, pdp_reason = self.is_valid_new_laptop(
+                title=title,
+                specs=specs,
+                url=full_url,
+                description=raw_desc,
+            )
+            if not pdp_valid:
+                self.record_skipped(
+                    name=title,
+                    url=full_url,
+                    reason=f"Filtered out after PDP inspection: {pdp_reason}",
+                    stage="pdp_filter",
+                )
+                return None
+
             if pdp_price_val is not None:
                 price_val, price_str = pdp_price_val, pdp_price_str
             if pdp_in_stock is not None:
@@ -374,6 +391,12 @@ class CompumartsStoreScraper(BaseStoreScraper):
                             in_stock = True
                         elif "OutOfStock" in avail:
                             in_stock = False
+                        cond = offers.get("itemCondition")
+                        if cond:
+                            specs["itemCondition"] = str(cond)
+                    cond_direct = data.get("itemCondition")
+                    if cond_direct and "itemCondition" not in specs:
+                        specs["itemCondition"] = str(cond_direct)
                     raw_desc = data.get("description")
                     break
             except Exception:

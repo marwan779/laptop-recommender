@@ -11,6 +11,7 @@ Covers:
 
 import json
 from unittest.mock import MagicMock
+from bs4 import BeautifulSoup
 import pytest
 
 from app.schemas.laptop import RetailerProduct
@@ -498,3 +499,195 @@ def test_twob_scrape_catalog_level_2_enrichment():
     assert p.specs["Processor"] == "Intel Core i5-13420H"
     assert p.mpn == "804W8EA"
     assert p.price_egp == 37999.0
+
+
+def test_stores_level2_pdp_filter_rejects_used_or_non_laptop():
+    # 1. Amazon Level 2 PDP used rejection
+    amz = AmazonStoreScraper()
+    cat_amz = """
+    <div class="s-main-slot">
+      <div class="s-result-item" data-asin="B0DUSED001">
+        <h2><a href="/dp/B0DUSED001"><span>Dell Latitude 5490 Core i5 8GB 256GB SSD</span></a></h2>
+        <div class="a-price"><span class="a-offscreen">EGP 12,500.00</span></div>
+      </div>
+    </div>
+    """
+    amz._fetch_html = MagicMock(return_value=cat_amz)
+    amz._extract_product_specs = MagicMock(
+        return_value=(
+            {"Condition": "Refurbished", "Processor": "i5-8250U"},
+            "Used condition",
+            "5490",
+            "5490",
+            12500.0,
+            "12,500 EGP",
+            True,
+        )
+    )
+    amz_prods = amz.scrape_catalog(level=2, max_pages=1)
+    assert len(amz_prods) == 0
+    assert any("Filtered out after PDP inspection" in s.reason for s in amz.skipped_laptops)
+
+    # 2. Noon Level 2 PDP used rejection
+    noon = NoonStoreScraper()
+    cat_noon = json.dumps({
+        "props": {
+            "pageProps": {
+                "catalog": {
+                    "hits": [
+                        {
+                            "title": "HP EliteBook 840 G5",
+                            "sku": "N123456",
+                            "price": 14000,
+                            "url": "/hp-840/N123456/p/",
+                        }
+                    ]
+                }
+            }
+        }
+    })
+    noon_html = f"<html><script id='__NEXT_DATA__'>{cat_noon}</script></html>"
+    noon._fetch_html = MagicMock(return_value=noon_html)
+    noon._extract_product_specs = MagicMock(
+        return_value=(
+            {"Item Condition": "Used - Grade A"},
+            "Seller refurbished",
+            "840G5",
+            "840G5",
+            14000.0,
+            "14,000 EGP",
+            True,
+        )
+    )
+    noon_prods = noon.scrape_catalog(level=2, max_pages=1)
+    assert len(noon_prods) == 0
+    assert any("Filtered out after PDP inspection" in s.reason for s in noon.skipped_laptops)
+
+    # 3. B.TECH Level 2 PDP used rejection
+    btech = BTechStoreScraper()
+    btech_chunk = 'self.__next_f.push([1, "1:{\\"items\\":[{\\"name\\":\\"Lenovo ThinkPad T480\\",\\"sku\\":\\"T480\\",\\"slug\\":\\"lenovo-t480\\",\\"price\\":{\\"final_price\\":15000}}]}"])'
+    btech._fetch_html = MagicMock(return_value=btech_chunk)
+    btech._extract_product_specs = MagicMock(
+        return_value=(
+            {"الحالة": "مستعمل"},
+            "وارد دبي",
+            "T480",
+            "T480",
+            15000.0,
+            "15,000 EGP",
+            True,
+        )
+    )
+    btech_prods = btech.scrape_catalog(level=2, max_pages=1)
+    assert len(btech_prods) == 0
+    assert any("Filtered out after PDP inspection" in s.reason for s in btech.skipped_laptops)
+
+    # 4. Sigma Level 2 PDP used rejection
+    sigma = SigmaComputerStoreScraper()
+    raw_sigma = [{"name": "Dell Precision 7520", "slug": "dell-7520", "price": 18000, "is_stock": 1}]
+    sigma._decode_rsc_payload = MagicMock(return_value="")
+    sigma._extract_products_from_rsc = MagicMock(return_value=raw_sigma)
+    sigma._fetch_html = MagicMock(return_value="<html>data</html>")
+    sigma._extract_product_specs = MagicMock(
+        return_value=({"Device Condition": "Refurbished"}, "Clean device")
+    )
+    sigma_prods = sigma.scrape_catalog(level=2, max_pages=1)
+    assert len(sigma_prods) == 0
+    assert any("Filtered out after PDP inspection" in s.reason for s in sigma.skipped_laptops)
+
+    # 5. Tradeline Level 2 PDP used rejection
+    tradeline = TradelineStoreScraper()
+    raw_tl_items = [{
+        "title": "Apple MacBook Pro 14-inch M3",
+        "handle": "apple-macbook-pro-14-m3",
+        "variants": [{"id": 999, "sku": "MRX33", "price": 95000, "available": True}],
+    }]
+    tradeline.COLLECTIONS = ["macbook-pro"]
+    tradeline._fetch_json = MagicMock(return_value={"products": raw_tl_items})
+    tradeline._extract_product_specs = MagicMock(
+        return_value=(
+            {"Condition": "Refurbished - Grade A", "Processor": "Apple M3"},
+            "Used MacBook Pro",
+            95000.0,
+            "95,000 EGP",
+            "MRX33",
+            True,
+        )
+    )
+    tl_prods = tradeline.scrape_catalog(level=2, max_pages=1)
+    assert len(tl_prods) == 0
+    assert any("Filtered out after PDP inspection" in s.reason for s in tradeline.skipped_laptops)
+
+    # 6. TwoB Level 2 PDP used rejection
+    twob = TwoBStoreScraper()
+    twob_html = """
+    <div class="products wrapper"><ul class="product-items">
+      <li class="product-item" data-product-id="777">
+        <div class="product-item-name"><a class="product-item-link" href="https://2b.com.eg/en/hp-probook-450-g6.html">HP ProBook 450 G6</a></div>
+        <span class="price">13,000 EGP</span>
+      </li>
+    </ul></div>
+    """
+    twob._fetch_html = MagicMock(return_value=twob_html)
+    twob._extract_product_specs = MagicMock(
+        return_value=(
+            {"حالة المنتج": "كسر زيرو"},
+            "مستعمل",
+            "450G6",
+            "450G6",
+            13000.0,
+            "13,000 EGP",
+            True,
+        )
+    )
+    twob_prods = twob.scrape_catalog(level=2, max_pages=1)
+    assert len(twob_prods) == 0
+    assert any("Filtered out after PDP inspection" in s.reason for s in twob.skipped_laptops)
+
+    # 7. Compumarts Level 2 PDP used rejection
+    comp = CompumartsStoreScraper()
+    comp_card_html = """
+    <product-card>
+      <a class="card-link" href="/products/lenovo-t490">Lenovo ThinkPad T490 Core i5</a>
+      <div class="card__title">Lenovo ThinkPad T490 Core i5</div>
+      <div class="price__current"><span class="js-value">16,000.00 EGP</span></div>
+    </product-card>
+    """
+    soup = BeautifulSoup(comp_card_html, "html.parser")
+    comp._extract_product_specs = MagicMock(
+        return_value=(
+            {"itemCondition": "https://schema.org/UsedCondition"},
+            "Used",
+            16000.0,
+            "16,000 EGP",
+            "T490",
+            True,
+        )
+    )
+    p_comp = comp._parse_card(soup.find("product-card"), seen_urls=set(), level=2)
+    assert p_comp is None
+    assert any("Filtered out after PDP inspection" in s.reason for s in comp.skipped_laptops)
+
+    # 8. ElBadr Level 2 PDP used rejection
+    elbadr = ElBadrStoreScraper()
+    elbadr_card_html = """
+    <div class="product-layout">
+      <div class="name"><a href="/product/dell-e7470">Dell Latitude E7470 Intel Core i7</a></div>
+      <div class="price"><span class="price-new">11,500 EGP</span></div>
+    </div>
+    """
+    soup_el = BeautifulSoup(elbadr_card_html, "html.parser")
+    elbadr._extract_product_specs = MagicMock(
+        return_value=(
+            {"Condition": "Refurbished"},
+            "Used laptop",
+            "E7470",
+            "E7470",
+            11500.0,
+            "11,500 EGP",
+        )
+    )
+    p_el = elbadr._parse_product_card(soup_el.find("div", class_="product-layout"), level=2)
+    assert p_el is None
+    assert any("Filtered out after PDP inspection" in s.reason for s in elbadr.skipped_laptops)
+

@@ -11,8 +11,38 @@ class ProductClassifier:
 
     # Used / Refurbished / Pre-owned patterns (English & Arabic)
     USED_PATTERN = re.compile(
-        r"\b(used|refurbished|renewed|open[- ]?box|pre[- ]?owned|second[- ]?hand|secondhand|b[- ]?grade|c[- ]?grade)\b|"
-        r"(مستعمل|استعمال|استيراد|كسر\s*زيرو|مجدد|معاد\s*تصنيعه|مفتوح\s*العلبة|مفتوح\s*الكرتونة|فرز\s*ثان|فرز\s*تاني)",
+        r"\b(used|refurbished|renewed|open[- ]?box|pre[- ]?owned|second[- ]?hand|secondhand|b[- ]?grade|c[- ]?grade|reconditioned|outlet)\b|"
+        r"(مستعمل|استعمال|استيراد|كسر\s*زيرو|مجدد|معاد\s*تصنيعه|مفتوح\s*العلبة|مفتوح\s*الكرتونة|فرز\s*ثان|فرز\s*تاني|اوتلت)",
+        re.IGNORECASE,
+    )
+
+    # URL path/slug pattern indicating used or refurbished catalog segments
+    URL_USED_PATTERN = re.compile(
+        r"[/_-](used(-laptops?)?|refurbished|renewed|open[- ]?box|pre[- ]?owned|outlet|reconditioned)[/_\-?#]",
+        re.IGNORECASE,
+    )
+
+    # Common specification keys describing item condition
+    CONDITION_KEYS = {
+        "condition",
+        "item condition",
+        "itemcondition",
+        "product condition",
+        "device condition",
+        "physical condition",
+        "grade",
+        "status",
+        "حالة",
+        "الحالة",
+        "حالة المنتج",
+        "حالة الجهاز",
+    }
+
+    # Explicit condition indicators in descriptions
+    DESC_CONDITION_PATTERN = re.compile(
+        r"(condition\s*:\s*(used|refurbished|renewed|pre[- ]?owned|open[- ]?box|grade\s*[abc]|reconditioned)|"
+        r"(الحالة|حالة الجهاز|حالة المنتج)\s*:\s*(مستعمل|استيراد|كسر\s*زيرو|مجدد)|"
+        r"\b(certified\s+refurbished|factory\s+refurbished|seller\s+refurbished|renewed\s+laptop)\b)",
         re.IGNORECASE,
     )
 
@@ -30,7 +60,8 @@ class ProductClassifier:
             "monitor",
             re.compile(
                 r"\b(gaming\s+monitor|curved\s+monitor|portable\s+monitor|oled\s+monitor|ultrawide\s+monitor|"
-                r"ips\s+monitor|smart\s+monitor|lcd\s+monitor|led\s+monitor|displaywidget|tripod\s+socket)\b|"
+                r"ips\s+monitor|smart\s+monitor|lcd\s+monitor|led\s+monitor|studio\s+display|pro\s+display|"
+                r"displaywidget|tripod\s+socket)\b|"
                 r"\bmonitors?\b|"
                 r"(شاشة|شاشه|شاشات)",
                 re.IGNORECASE,
@@ -143,8 +174,94 @@ class ProductClassifier:
     )
 
     @classmethod
-    def is_valid_new_laptop(cls, title: str | None) -> tuple[bool, str]:
-        """Validate whether a product title represents a legitimate, brand-new laptop.
+    def is_used_or_refurbished(
+        cls,
+        title: str | None = None,
+        specs: dict[str, Any] | None = None,
+        url: str | None = None,
+        description: str | None = None,
+        item_condition: str | None = None,
+    ) -> bool:
+        """Check if product indicates used, refurbished, or renewed condition across any data source.
+
+        Returns True if used/refurbished/open-box/pre-owned, False otherwise.
+        """
+        # 1. Title check
+        if title and cls.USED_PATTERN.search(title):
+            return True
+
+        # 2. Schema.org / Offer condition check
+        if item_condition:
+            ic_lower = str(item_condition).lower()
+            if any(
+                u in ic_lower
+                for u in [
+                    "used",
+                    "refurbished",
+                    "preowned",
+                    "pre-owned",
+                    "damaged",
+                    "renewed",
+                    "reconditioned",
+                    "outlet",
+                    "مستعمل",
+                    "مجدد",
+                ]
+            ):
+                return True
+
+        # 3. URL path/slug check
+        if url:
+            normalized_url = str(url).rstrip("/") + "/"
+            if cls.URL_USED_PATTERN.search(normalized_url):
+                return True
+
+        # 4. Specifications table check
+        if specs:
+            for k, v in specs.items():
+                k_clean = str(k).strip().lower()
+                v_str = str(v).strip()
+                if k_clean in cls.CONDITION_KEYS:
+                    v_lower = v_str.lower()
+                    if any(
+                        u in v_lower
+                        for u in [
+                            "used",
+                            "refurbished",
+                            "preowned",
+                            "pre-owned",
+                            "damaged",
+                            "renewed",
+                            "reconditioned",
+                            "outlet",
+                            "مستعمل",
+                            "مجدد",
+                            "استيراد",
+                            "كسر زيرو",
+                        ]
+                    ) or cls.USED_PATTERN.search(v_str):
+                        return True
+                elif cls.USED_PATTERN.search(v_str):
+                    return True
+
+        # 5. Raw description check
+        if description and cls.DESC_CONDITION_PATTERN.search(description):
+            return True
+
+        return False
+
+    @classmethod
+    def is_valid_new_laptop(
+        cls,
+        title: str | None,
+        specs: dict[str, Any] | None = None,
+        url: str | None = None,
+        description: str | None = None,
+        item_condition: str | None = None,
+    ) -> tuple[bool, str]:
+        """Validate whether a product represents a legitimate, brand-new laptop.
+
+        Evaluates title, specifications, product URL, raw description, and itemCondition.
 
         Returns:
             (True, "valid_laptop") or (True, "valid_laptop_bundle") if valid.
@@ -155,8 +272,14 @@ class ProductClassifier:
 
         t = title.strip()
 
-        # 1. Used / Refurbished veto
-        if cls.USED_PATTERN.search(t):
+        # 1. Used / Refurbished multi-source veto
+        if cls.is_used_or_refurbished(
+            title=t,
+            specs=specs,
+            url=url,
+            description=description,
+            item_condition=item_condition,
+        ):
             return False, "used_or_refurbished"
 
         # 2. Hard veto for non-laptop machines, components, displays, etc.
@@ -208,14 +331,20 @@ class ProductClassifier:
         return True, "valid_laptop"
 
     @classmethod
-    def is_used_or_refurbished(cls, title: str | None) -> bool:
-        """Check if product title indicates used, refurbished, or renewed condition."""
-        if not title:
-            return False
-        return bool(cls.USED_PATTERN.search(title))
-
-    @classmethod
-    def is_standalone_accessory(cls, title: str | None) -> bool:
-        """Convenience method returning True if title is NOT a valid new laptop."""
-        valid, _ = cls.is_valid_new_laptop(title)
+    def is_standalone_accessory(
+        cls,
+        title: str | None,
+        specs: dict[str, Any] | None = None,
+        url: str | None = None,
+        description: str | None = None,
+        item_condition: str | None = None,
+    ) -> bool:
+        """Convenience method returning True if item is NOT a valid new laptop."""
+        valid, _ = cls.is_valid_new_laptop(
+            title=title,
+            specs=specs,
+            url=url,
+            description=description,
+            item_condition=item_condition,
+        )
         return not valid

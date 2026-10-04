@@ -142,12 +142,13 @@ class ElBadrStoreScraper(BaseStoreScraper):
                 if not title or clean_url in seen_urls:
                     continue
 
-                # Filter out standalone accessories (backpacks, mice, etc.)
-                if self._is_standalone_accessory(title):
+                # Filter out standalone accessories and non-laptop/used items
+                is_valid, reason = self.is_valid_new_laptop(title=title, url=clean_url)
+                if not is_valid:
                     self.record_skipped(
                         name=title,
                         url=clean_url,
-                        reason="Filtered out as standalone accessory",
+                        reason=f"Filtered out as standalone accessory or non-laptop: {reason}",
                         stage="accessory_filter",
                     )
                     continue
@@ -313,6 +314,20 @@ class ElBadrStoreScraper(BaseStoreScraper):
             pdp_specs, pdp_desc, mpn_found, model_found, pdp_price_val, pdp_price_str = self._extract_product_specs(
                 clean_url
             )
+            pdp_valid, pdp_reason = self.is_valid_new_laptop(
+                title=title,
+                specs=pdp_specs,
+                url=clean_url,
+                description=pdp_desc,
+            )
+            if not pdp_valid:
+                self.record_skipped(
+                    name=title,
+                    url=clean_url,
+                    reason=f"Filtered out after PDP inspection: {pdp_reason}",
+                    stage="pdp_filter",
+                )
+                return None
             specs = pdp_specs
             raw_desc = pdp_desc
             pdp_mpn = mpn_found

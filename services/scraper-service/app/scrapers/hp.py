@@ -595,6 +595,23 @@ class HpBrandScraper(BaseBrandScraper):
             stores=[],
         )
 
+        # Validate against non-laptop or used indicators revealed in specs
+        is_valid, reason = self.is_valid_new_laptop(
+            title=summary.name,
+            specs=all_specs,
+            url=summary.product_url,
+            description=tagline,
+        )
+        if not is_valid:
+            print(f"[HP Scraper] [!] '{summary.name}' rejected after deep specs inspection: {reason}")
+            self.record_skipped(
+                name=summary.name,
+                url=summary.product_url,
+                reason=f"Rejected after deep specs inspection: {reason}",
+                stage="level2_specs",
+            )
+            return None
+
         return LaptopDetail(
             brand="HP",
             name=summary.name,

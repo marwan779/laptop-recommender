@@ -201,12 +201,15 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
                 name = raw.get("name") or raw.get("title") or ""
                 sku = raw.get("sku") or ""
 
-                # Non-laptop accessory check
-                if self._is_standalone_accessory(name):
+                # Non-laptop accessory and used/refurbished check
+                is_valid, reason = self.is_valid_new_laptop(
+                    title=name, url=urljoin(self.base_url, f"/product/{slug}")
+                )
+                if not is_valid:
                     self.record_skipped(
                         name=name,
                         url=urljoin(self.base_url, f"/product/{slug}"),
-                        reason="Filtered out as standalone accessory",
+                        reason=f"Filtered out as standalone accessory or non-laptop: {reason}",
                         stage="accessory_filter",
                     )
                     continue
@@ -349,6 +352,20 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
 
         if level == 2:
             pdp_specs, pdp_desc = self._extract_product_specs(product_url)
+            pdp_valid, pdp_reason = self.is_valid_new_laptop(
+                title=title,
+                specs=pdp_specs,
+                url=product_url,
+                description=pdp_desc,
+            )
+            if not pdp_valid:
+                self.record_skipped(
+                    name=title,
+                    url=product_url,
+                    reason=f"Filtered out after PDP inspection: {pdp_reason}",
+                    stage="pdp_filter",
+                )
+                return None
             specs = pdp_specs
             raw_desc = pdp_desc
 
