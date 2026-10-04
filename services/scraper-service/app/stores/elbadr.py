@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
 
 from app.core.normalizer import ModelNormalizer
+from app.core.patterns import PatternEngine, SpecExtractionResult
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import RetailerProduct
 from app.stores.base import BaseStoreScraper
@@ -310,10 +311,39 @@ class ElBadrStoreScraper(BaseStoreScraper):
         pdp_mpn: str | None = None
         pdp_model: str | None = None
 
+        has_text_specs: bool = True
+        specs_extraction_source: str = "dom"
+        specs_fallback_reason: str | None = None
+        has_specs_image: bool = False
+        specs_image_url: str | None = None
+
         if level == 2:
-            pdp_specs, pdp_desc, mpn_found, model_found, pdp_price_val, pdp_price_str = self._extract_product_specs(
-                clean_url
-            )
+            spec_res = self._extract_product_specs(clean_url, title=title)
+            if isinstance(spec_res, tuple):
+                pdp_specs = spec_res[0] if len(spec_res) > 0 else {}
+                pdp_desc = spec_res[1] if len(spec_res) > 1 else None
+                mpn_found = spec_res[2] if len(spec_res) > 2 else None
+                model_found = spec_res[3] if len(spec_res) > 3 else None
+                pdp_price_val = spec_res[4] if len(spec_res) > 4 else None
+                pdp_price_str = spec_res[5] if len(spec_res) > 5 else None
+                has_text_specs = spec_res[6] if len(spec_res) > 6 else (len(pdp_specs) > 0)
+                specs_extraction_source = spec_res[7] if len(spec_res) > 7 else "dom"
+                specs_fallback_reason = spec_res[8] if len(spec_res) > 8 else None
+                has_specs_image = spec_res[9] if len(spec_res) > 9 else False
+                specs_image_url = spec_res[10] if len(spec_res) > 10 else None
+            else:
+                pdp_specs = spec_res.specs
+                pdp_desc = spec_res.raw_description
+                mpn_found = spec_res.mpn
+                model_found = spec_res.model_code
+                pdp_price_val = spec_res.price_val
+                pdp_price_str = spec_res.price_str
+                has_text_specs = spec_res.has_text_specs
+                specs_extraction_source = spec_res.specs_extraction_source
+                specs_fallback_reason = spec_res.specs_fallback_reason
+                has_specs_image = spec_res.has_specs_image
+                specs_image_url = spec_res.specs_image_url
+
             pdp_valid, pdp_reason = self.is_valid_new_laptop(
                 title=title,
                 specs=pdp_specs,
@@ -361,49 +391,33 @@ class ElBadrStoreScraper(BaseStoreScraper):
             thumbnail_url=thumbnail_url,
             specs=specs,
             raw_description=raw_desc,
+            has_text_specs=has_text_specs,
+            specs_extraction_source=specs_extraction_source,
+            specs_fallback_reason=specs_fallback_reason,
+            has_specs_image=has_specs_image,
+            specs_image_url=specs_image_url,
         )
 
-    def _extract_product_specs(
-        self, product_url: str
-    ) -> tuple[dict[str, str], str | None, str | None, str | None, float | None, str | None]:
+    def _extract_product_specs(self, product_url: str, title: str = "") -> SpecExtractionResult:
         """Fetch El Badr Group PDP to extract specifications, product stats, and description.
 
-        Returns:
-          (specs_dict, raw_description, mpn, model_code, price_val, price_str)
+        Returns SpecExtractionResult (which also unpacks as legacy 6-tuple for backward compatibility).
         """
-        specs: dict[str, str] = {}
-        raw_desc: str | None = None
-        mpn: str | None = None
-        model_code: str | None = None
-        price_val: float | None = None
-        price_str: str | None = None
-
         html_text = self._fetch_html(product_url)
         if not html_text:
-            return specs, raw_desc, mpn, model_code, price_val, price_str
+            return SpecExtractionResult(
+                has_text_specs=False,
+                specs_extraction_source="none",
+                specs_fallback_reason="Failed to fetch PDP HTML",
+            )
 
         soup = BeautifulSoup(html_text, "html.parser")
         for s in soup(["style", "script"]):
             s.decompose()
 
-        # 1. Product Stats Extraction (.product-stats li)
-        stats_items = soup.select(".product-stats li, ul.list-unstyled li")
-        for li in stats_items:
-            txt = li.get_text(" ", strip=True)
-            if ":" in txt:
-                k, v = txt.split(":", 1)
-                k_clean = k.strip().lower()
-                v_clean = v.strip()
-                if not v_clean:
-                    continue
-                if "mpn" in k_clean:
-                    mpn = v_clean
-                elif "model" in k_clean:
-                    model_code = v_clean
-                elif "upc" in k_clean and not mpn:
-                    mpn = v_clean
-
-        # 2. PDP Price Fallback
+        # PDP Price Fallback
+        price_val: float | None = None
+        price_str: str | None = None
         price_group = soup.select_one(".product-price-group, .product-price")
         if price_group:
             price_new_el = price_group.select_one(".price-new")
@@ -416,61 +430,12 @@ class ElBadrStoreScraper(BaseStoreScraper):
             if p_text:
                 price_val, price_str = self.parse_egp_price(p_text)
 
-        # 3. HTML Table Specifications (#tab-specification, table.attribute)
-        spec_tables = soup.select("#tab-specification table, table.attribute, .table-bordered")
-        for table in spec_tables:
-            for row in table.find_all("tr"):
-                cells = row.find_all(["td", "th"])
-                if len(cells) >= 2:
-                    k = cells[0].get_text(strip=True)
-                    v = cells[1].get_text(strip=True)
-                    if k and v and len(k) < 60:
-                        specs[k] = v
-
-        # 4. Product Blocks Specifications (.product_blocks-default .block-content)
-        block = soup.select_one(
-            ".product_blocks-default .block-content, "
-            ".product-blocks-default .block-content, "
-            ".product_extra .block-content"
+        # Delegate spec, stats, description, and OCR metadata extraction to PatternEngine
+        return PatternEngine.extract_specs(
+            soup=soup,
+            title=title,
+            store_key=self.store_key,
+            base_url=self.base_url,
+            price_val=price_val,
+            price_str=price_str,
         )
-        if block:
-            raw_desc = block.get_text("\n", strip=True)
-            lines = [item_line.strip() for item_line in raw_desc.split("\n") if item_line.strip()]
-            i = 0
-            while i < len(lines):
-                line = lines[i]
-                if line.endswith(":"):
-                    k = line[:-1].strip()
-                    if i + 1 < len(lines) and not lines[i + 1].endswith(":"):
-                        specs[k] = lines[i + 1]
-                        i += 2
-                        continue
-                elif ":" in line:
-                    k, v = line.split(":", 1)
-                    k_str = k.strip()
-                    v_str = v.strip()
-                    if k_str and v_str and len(k_str) < 50:
-                        specs[k_str] = v_str
-                        i += 1
-                        continue
-                elif (
-                    i + 1 < len(lines)
-                    and len(line) < 40
-                    and not any(line.startswith(x) for x in ["Note", "Important", "Click"])
-                    and not lines[i + 1].endswith(":")
-                ):
-                    k = line
-                    v = lines[i + 1]
-                    if "Specification" not in k and "Features" not in k and len(v) < 120:
-                        specs[k] = v
-                        i += 2
-                        continue
-                i += 1
-
-        # Fallback description if block was not found
-        if not raw_desc:
-            desc_el = soup.select_one("#tab-description, .product-description")
-            if desc_el:
-                raw_desc = desc_el.get_text("\n", strip=True)
-
-        return specs, raw_desc, mpn, model_code, price_val, price_str

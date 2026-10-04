@@ -129,6 +129,11 @@ class RetailerProduct(BaseModel):
     thumbnail_url: str | None = None
     specs: dict[str, str] = Field(default_factory=dict)
     raw_description: str | None = None
+    has_text_specs: bool = True
+    specs_extraction_source: str = "dom"  # "dom", "title_fallback", or "hybrid"
+    specs_fallback_reason: str | None = None
+    has_specs_image: bool = False
+    specs_image_url: str | None = None
     scraped_at: str = Field(default_factory=utcnow_str)
 
 
