@@ -33,47 +33,6 @@ class NoonStoreScraper(BaseStoreScraper):
     SEARCH_URL_TEMPLATE = "https://www.noon.com/egypt-en/search/?q={query}"
     SEARCH_API_TEMPLATE = "https://www.noon.com/_svc/catalog/api/v3/u/egypt-en/search/?q={query}&page=1"
 
-    NON_LAPTOP_KEYWORDS = [
-        "backpack",
-        "sleeve",
-        "bag",
-        "cover",
-        "case",
-        "adapter",
-        "charger",
-        "cable",
-        "mouse",
-        "headset",
-        "earphones",
-        "keyboard",
-        "cooling pad",
-        "laptop stand",
-        "flash drive",
-        "power bank",
-        "docking",
-        "privacy screen",
-        "screen protector",
-        "hub",
-        "dongle",
-        "stylus",
-        "pen",
-        "printer",
-        "monitor",
-        "desktop",
-        "all-in-one",
-        "all in one",
-        "projector",
-        "tablet",
-        "ipad",
-        "tv",
-        "extender",
-        "router",
-        "hard disk",
-        "hard drive",
-        "external hard",
-        "external hdd",
-        "webcam",
-    ]
 
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)

@@ -26,40 +26,6 @@ class AmazonStoreScraper(BaseStoreScraper):
     )
     SEARCH_URL_TEMPLATE = "https://www.amazon.eg/s?k={query}&language=en_AE"
 
-    NON_LAPTOP_KEYWORDS = [
-        "backpack",
-        "sleeve",
-        "bag",
-        "cover",
-        "case",
-        "adapter",
-        "charger",
-        "cable",
-        "mouse",
-        "headset",
-        "earphones",
-        "keyboard",
-        "cooling pad",
-        "laptop stand",
-        "flash drive",
-        "power bank",
-        "docking",
-        "privacy screen",
-        "screen protector",
-        "hub",
-        "dongle",
-        "stylus",
-        "pen",
-        "printer",
-        "monitor",
-        "desktop",
-        "all-in-one",
-        "all in one",
-        "projector",
-        "tablet",
-        "ipad",
-        "tv",
-    ]
 
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)

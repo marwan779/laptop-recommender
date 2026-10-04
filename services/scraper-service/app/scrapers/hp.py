@@ -278,6 +278,16 @@ class HpBrandScraper(BaseBrandScraper):
                     except Exception:
                         pass
 
+                is_valid, reason = self.is_valid_new_laptop(raw_title)
+                if not is_valid:
+                    self.record_skipped(
+                        name=raw_title,
+                        url=product_url,
+                        reason=f"Filtered out: {reason}",
+                        stage="catalog_filtering",
+                    )
+                    continue
+
                 family = self._determine_family(raw_title, product_url)
                 model_name = self._extract_model(raw_title, sku)
 

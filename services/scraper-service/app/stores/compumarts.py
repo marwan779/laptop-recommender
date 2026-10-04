@@ -31,21 +31,6 @@ class CompumartsStoreScraper(BaseStoreScraper):
         "https://www.compumarts.com/collections/laptop?filter.v.availability=1&sort_by=created-descending&page={page}"
     )
 
-    NON_LAPTOP_KEYWORDS = [
-        "backpack",
-        "sleeve",
-        "bag",
-        "adapter",
-        "charger",
-        "cable",
-        "mouse",
-        "headset",
-        "earphones",
-        "keyboard",
-        "cooling pad",
-        "flash drive",
-        "power bank",
-    ]
 
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)

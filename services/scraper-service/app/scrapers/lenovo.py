@@ -290,6 +290,16 @@ class LenovoBrandScraper(BaseBrandScraper):
                         rel_clean = rel_url if rel_url.startswith("/") else f"/{rel_url}"
                         full_url = f"https://www.lenovo.com/eg/en{rel_clean}"
 
+                    is_valid, reason = self.is_valid_new_laptop(name)
+                    if not is_valid:
+                        self.record_skipped(
+                            name=name,
+                            url=full_url,
+                            reason=f"Filtered out: {reason}",
+                            stage="catalog_filtering",
+                        )
+                        continue
+
                     model_code = self._extract_model_code(name, rel_url)
                     family = self._determine_family(name, rel_url)
 

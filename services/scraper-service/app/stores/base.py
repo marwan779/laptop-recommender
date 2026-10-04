@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from urllib.parse import urlparse
 
+from app.core.classifier import ProductClassifier
 from app.engine.base import IScraperEngine
 from app.matching.normalizer import ModelNormalizer
 from app.schemas.laptop import ConfigurationItem, RetailerProduct, SkippedLaptop
@@ -11,6 +12,7 @@ from app.schemas.laptop import ConfigurationItem, RetailerProduct, SkippedLaptop
 class BaseStoreScraper(ABC):
     """Abstract base class for Egyptian retail store candidate searchers."""
 
+    # Backward compatibility alias
     NON_LAPTOP_KEYWORDS = [
         "backpack",
         "sleeve",
@@ -64,26 +66,15 @@ class BaseStoreScraper(ABC):
         )
 
     @classmethod
-    def _is_standalone_accessory(cls, title: str) -> bool:
-        """Check if an item is purely an accessory and not a laptop or laptop bundle."""
-        t = title.lower()
-        # If it has core laptop hardware specs, it is definitely a computer/laptop (or bundle)
-        has_cpu = bool(re.search(r"\b(i[3579]|ryzen|core\s*ultra|intel|amd|celeron|athlon)\b", t))
-        has_specs = bool(re.search(r"\b(\d+\s*gb|ssd|nvme|fhd|ips|oled|wuxga|ddr\d?|rtx|gtx|radeon|geforce)\b", t))
-        if has_cpu and has_specs:
-            return False
+    def is_valid_new_laptop(cls, title: str | None) -> tuple[bool, str]:
+        """Validate whether a product title represents a legitimate, brand-new laptop."""
+        return ProductClassifier.is_valid_new_laptop(title)
 
-        # If it contains accessory keywords without core laptop hardware, it is an accessory
-        for acc in cls.NON_LAPTOP_KEYWORDS:
-            if acc in t:
-                # Special case: 'keyboard' in a laptop title usually refers to the built-in keyboard layout
-                if acc == "keyboard":
-                    if any(
-                        layout in t for layout in ["keyboard english", "keyboard arabic", "backlit", "rgb", "layout"]
-                    ):
-                        continue
-                return True
-        return False
+    @classmethod
+    def _is_standalone_accessory(cls, title: str) -> bool:
+        """Check if an item is NOT a valid new laptop (non-laptop device, accessory, or used/refurbished)."""
+        valid, _ = cls.is_valid_new_laptop(title)
+        return not valid
 
     @staticmethod
     def _matches_watermark(identifier: str | None, until_model: str | list[str] | None) -> bool:

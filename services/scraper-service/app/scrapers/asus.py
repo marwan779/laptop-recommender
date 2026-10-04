@@ -448,6 +448,16 @@ class AsusBrandScraper(BaseBrandScraper):
                 if full_url in seen_urls:
                     continue
 
+                is_valid, reason = self.is_valid_new_laptop(clean_name)
+                if not is_valid:
+                    self.record_skipped(
+                        name=clean_name,
+                        url=full_url,
+                        reason=f"Filtered out: {reason}",
+                        stage="catalog_filtering",
+                    )
+                    continue
+
                 family = self._determine_family(clean_name, full_url)
                 model = self._extract_model_code(clean_name, full_url)
 
@@ -576,6 +586,16 @@ class AsusBrandScraper(BaseBrandScraper):
 
                         if not name or len(name) < 3:
                             name = clean_path[-1].replace("-", " ").title()
+
+                        is_valid, reason = self.is_valid_new_laptop(name)
+                        if not is_valid:
+                            self.record_skipped(
+                                name=name,
+                                url=full_url,
+                                reason=f"Filtered out: {reason}",
+                                stage="catalog_filtering",
+                            )
+                            continue
 
                         family = self._determine_family(name, full_url)
                         model = self._extract_model_code(name, full_url)

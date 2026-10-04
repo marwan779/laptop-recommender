@@ -236,6 +236,16 @@ class GigabyteBrandScraper(BaseBrandScraper):
                 if not name:
                     continue
 
+                is_valid, reason = self.is_valid_new_laptop(name)
+                if not is_valid:
+                    self.record_skipped(
+                        name=name,
+                        url=full_url,
+                        reason=f"Filtered out: {reason}",
+                        stage="catalog_filtering",
+                    )
+                    continue
+
                 family = self._determine_family(name, full_url)
                 model_code = self._extract_model_code(name, full_url)
                 slug = full_url.rstrip("/").split("/")[-1]

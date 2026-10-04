@@ -29,22 +29,6 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
     SEARCH_BASE_URL = "https://www.sigma-computer.com/en/search"
     ITEM_BASE_URL = "https://www.sigma-computer.com/en/item"
 
-    NON_LAPTOP_KEYWORDS = [
-        "backpack",
-        "sleeve",
-        "bag",
-        "adapter",
-        "charger",
-        "cable",
-        "mouse",
-        "headset",
-        "earphones",
-        "keyboard",
-        "cooling pad",
-        "flash drive",
-        "power bank",
-        "docking",
-    ]
 
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
@@ -140,27 +124,6 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
                 return True
         return False
 
-    @classmethod
-    def _is_standalone_accessory(cls, title: str) -> bool:
-        """Check if an item is purely an accessory and not a laptop or laptop bundle."""
-        t = title.lower()
-        # If it has core laptop hardware specs, it is definitely a computer/laptop (or bundle)
-        has_cpu = bool(re.search(r"\b(i[3579]|ryzen|core\s*ultra|intel|amd|celeron|athlon)\b", t))
-        has_specs = bool(re.search(r"\b(\d+\s*gb|ssd|nvme|fhd|ips|oled|wuxga|ddr\d?|rtx|gtx|radeon|geforce)\b", t))
-        if has_cpu and has_specs:
-            return False
-
-        # If it contains accessory keywords without core laptop hardware, it is an accessory
-        for acc in cls.NON_LAPTOP_KEYWORDS:
-            if acc in t:
-                # Special case: 'keyboard' in a laptop title usually refers to the built-in keyboard layout
-                if acc == "keyboard":
-                    if any(
-                        layout in t for layout in ["keyboard english", "keyboard arabic", "backlit", "rgb", "layout"]
-                    ):
-                        continue
-                return True
-        return False
 
     def scrape_catalog(
         self,

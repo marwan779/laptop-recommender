@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from app.core.classifier import ProductClassifier
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import ConfigurationItem, LaptopDetail, LaptopSummary, SkippedLaptop
 
@@ -29,6 +30,11 @@ class BaseBrandScraper(ABC):
                 stage=stage,
             )
         )
+
+    @classmethod
+    def is_valid_new_laptop(cls, title: str | None) -> tuple[bool, str]:
+        """Validate whether a product title represents a legitimate, brand-new laptop."""
+        return ProductClassifier.is_valid_new_laptop(title)
 
     @property
     @abstractmethod

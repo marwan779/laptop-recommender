@@ -40,27 +40,6 @@ class TradelineStoreScraper(BaseStoreScraper):
         "https://tradelinestores.com/collections/{collection}?sort_by=created-descending&page={page}"
     )
 
-    NON_LAPTOP_KEYWORDS = [
-        "backpack",
-        "sleeve",
-        "bag",
-        "adapter",
-        "charger",
-        "cable",
-        "mouse",
-        "magic mouse",
-        "headset",
-        "earphones",
-        "airpods",
-        "power adapter",
-        "magsafe charger",
-        "screen protector",
-        "case",
-        "hub",
-        "dock",
-        "pencil",
-        "keyboard cover",
-    ]
 
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
