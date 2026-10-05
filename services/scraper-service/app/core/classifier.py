@@ -153,7 +153,7 @@ class ProductClassifier:
 
     # Core laptop hardware and form factor indicators used to recognize bundles
     CPU_PATTERN = re.compile(
-        r"\b(i[3579]|ryzen|core\s*ultra|intel|amd|celeron|athlon|m[1-4](\s+pro|\s+max)?|snapdragon)\b",
+        r"\b(i[3579]|ci[3579]|ryzen|core\s*ultra|ultra\s*[579]|intel|amd|celeron|athlon|r[3579]\s*\d{4}|m[1-4](\s+pro|\s+max)?|snapdragon)\b",
         re.IGNORECASE,
     )
     SPECS_PATTERN = re.compile(
@@ -216,7 +216,7 @@ class ProductClassifier:
             if cls.URL_USED_PATTERN.search(normalized_url):
                 return True
 
-        # 4. Specifications table check
+        # 4. Specifications table check (strictly check explicit condition keys only)
         if specs:
             for k, v in specs.items():
                 k_clean = str(k).strip().lower()
@@ -241,8 +241,6 @@ class ProductClassifier:
                         ]
                     ) or cls.USED_PATTERN.search(v_str):
                         return True
-                elif cls.USED_PATTERN.search(v_str):
-                    return True
 
         # 5. Raw description check
         if description and cls.DESC_CONDITION_PATTERN.search(description):
@@ -310,13 +308,20 @@ class ProductClassifier:
         if cls.ACCESSORY_PATTERN.search(t):
             t_lower = t.lower()
 
-            # Special case: keyboard layout / backlit descriptors (e.g. "backlit keyboard", "keyboard arabic", "layout")
-            if "keyboard" in t_lower and any(
-                k in t_lower for k in ["keyboard english", "keyboard arabic", "backlit", "rgb", "layout"]
-            ):
-                t_without_keyboard = re.sub(r"\bkeyboard\b", " ", t_lower)
-                if not cls.ACCESSORY_PATTERN.search(t_without_keyboard):
-                    return True, "valid_laptop"
+            # Special case: keyboard layout / backlit descriptors (e.g. "arabic keyboard", "english keyboard", "backlit keyboard")
+            if "keyboard" in t_lower:
+                has_layout_modifier = any(
+                    mod in t_lower
+                    for mod in ["arabic", "english", "backlit", "rgb", "layout", "island-style", "chiclet"]
+                )
+                if has_layout_modifier:
+                    t_without_keyboard = re.sub(
+                        r"\b(arabic|english|backlit|rgb|island[- ]style|chiclet)\s+keyboard\b|\bkeyboard\s+(arabic|english|backlit|rgb|layout)\b|\bkeyboard\b",
+                        " ",
+                        t_lower,
+                    )
+                    if not cls.ACCESSORY_PATTERN.search(t_without_keyboard):
+                        return True, "valid_laptop"
 
             has_cpu = bool(cls.CPU_PATTERN.search(t_lower))
             has_specs = bool(cls.SPECS_PATTERN.search(t_lower))

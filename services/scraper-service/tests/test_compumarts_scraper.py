@@ -110,3 +110,60 @@ def test_compumarts_catalog_watermark_stop(monkeypatch):
     results = scraper.scrape_catalog(level=1, until_model="Model 2", max_pages=1)
     assert len(results) == 1
     assert "Model 1" in results[0].title
+
+
+def test_compumarts_pattern_registry_profile():
+    from app.core.patterns.registry import PatternRegistry
+
+    cfg = PatternRegistry.get("compumarts")
+    assert cfg.store_key == "compumarts"
+    assert "table" in cfg.container_selectors
+    assert any(".product-description" in sel for sel in cfg.container_selectors)
+    assert any(".rte" in sel for sel in cfg.container_selectors)
+
+
+def test_compumarts_empty_pdp_title_fallback(monkeypatch):
+    scraper = CompumartsStoreScraper()
+    mock_html = """
+    <html>
+      <head>
+        <script type="application/ld+json">
+        {
+          "@type": "Product",
+          "name": "ASUS TUF Gaming FX607VU",
+          "sku": "FX607VU-RL167W",
+          "offers": {
+            "@type": "Offer",
+            "price": "49999.00",
+            "availability": "http://schema.org/InStock"
+          }
+        }
+        </script>
+      </head>
+      <body>
+        <div class="rte">
+          <p>Welcome to our store. Learn more</p>
+        </div>
+      </body>
+    </html>
+    """
+    monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_html)
+    card_html = BeautifulSoup(
+        """
+        <product-card>
+          <a class="card-link" href="/products/asus-tuf-f16">
+            Laptop ASUS TUF Gaming FX607VU – Intel Core 7 240H RTX 4050 6GB 16GB DDR5 512GB SSD 16 FHD
+          </a>
+        </product-card>
+        """,
+        "html.parser",
+    )
+    product = scraper._parse_card(card_html, seen_urls=set(), level=2)
+    assert product is not None
+    assert product.has_text_specs is False
+    assert product.specs_extraction_source == "title_fallback"
+    assert product.specs_fallback_reason == "No text specs found in PDP"
+    assert product.specs.get("Processor") == "Intel Core 7 240H"
+    assert product.specs.get("Graphics") == "RTX 4050 6GB"
+    assert product.specs.get("Memory") == "16GB DDR5"
+    assert product.specs.get("Storage") == "512GB SSD"

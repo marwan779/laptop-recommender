@@ -2,15 +2,37 @@ import html
 import itertools
 import json
 import re
+import time
 from urllib.parse import quote_plus, urljoin
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
 
 from app.core.normalizer import ModelNormalizer
+from app.core.patterns import PatternEngine, SpecExtractionResult
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import RetailerProduct
 from app.stores.base import BaseStoreScraper
+
+
+class CompumartsSpecResult(tuple):
+    """6-tuple compatible container that also exposes SpecExtractionResult fields."""
+
+    def __new__(cls, specs, raw_desc, price_val, price_str, sku, in_stock, spec_res=None):
+        instance = super().__new__(cls, (specs, raw_desc, price_val, price_str, sku, in_stock))
+        instance.specs = specs
+        instance.raw_description = raw_desc
+        instance.price_val = price_val
+        instance.price_str = price_str
+        instance.sku = sku
+        instance.in_stock = in_stock
+        instance.spec_res = spec_res
+        instance.has_text_specs = getattr(spec_res, "has_text_specs", True) if spec_res else bool(specs)
+        instance.specs_extraction_source = getattr(spec_res, "specs_extraction_source", "dom") if spec_res else "dom"
+        instance.specs_fallback_reason = getattr(spec_res, "specs_fallback_reason", None) if spec_res else None
+        instance.has_specs_image = getattr(spec_res, "has_specs_image", False) if spec_res else False
+        instance.specs_image_url = getattr(spec_res, "specs_image_url", None) if spec_res else None
+        return instance
 
 
 class CompumartsStoreScraper(BaseStoreScraper):
@@ -57,7 +79,7 @@ class CompumartsStoreScraper(BaseStoreScraper):
         return "https://www.compumarts.com"
 
     def _fetch_html(self, url: str) -> str:
-        """Fetch raw HTML using Scrapling engine or fallback curl_cffi session."""
+        """Fetch raw HTML using Scrapling engine or fallback curl_cffi session with Cloudflare resilience."""
         if self.engine:
             try:
                 doc = self.engine.fetch(url, stealth=False)
@@ -65,12 +87,18 @@ class CompumartsStoreScraper(BaseStoreScraper):
                     return doc.html
             except Exception:
                 pass
-        try:
-            r = self._session.get(url, headers=self._headers, impersonate="chrome120", timeout=25.0)
-            return r.text if r.status_code == 200 else ""
-        except Exception as e:
-            print(f"[{self.store_name}] Failed to fetch {url}: {e}")
-            return ""
+
+        impersonations = ["safari15_5", "chrome110", "edge99"]
+        for attempt, imp in enumerate(impersonations):
+            try:
+                r = self._session.get(url, headers=self._headers, impersonate=imp, timeout=25.0)
+                if r.status_code == 200 and len(r.text) > 500:
+                    return r.text
+                elif r.status_code == 429:
+                    time.sleep((attempt + 1) * 1.5)
+            except Exception as e:
+                time.sleep(0.5)
+        return ""
 
     def _matches_watermark(self, identifier: str | None, until_model: str | list[str] | None) -> bool:
         """Check if any target watermark matches the product identifier."""
@@ -302,10 +330,40 @@ class CompumartsStoreScraper(BaseStoreScraper):
         specs: dict[str, str] = {}
         raw_desc: str | None = None
         pdp_sku: str | None = None
+        has_text_specs: bool = True
+        specs_extraction_source: str = "dom"
+        specs_fallback_reason: str | None = None
+        has_specs_image: bool = False
+        specs_image_url: str | None = None
 
         if level == 2:
             # Level 2: Deep Product Detail Page (PDP) Extraction
-            specs, raw_desc, pdp_price_val, pdp_price_str, pdp_sku, pdp_in_stock = self._extract_product_specs(full_url)
+            spec_res = self._extract_product_specs(full_url, title=title)
+            if isinstance(spec_res, tuple) and not hasattr(spec_res, "specs"):
+                specs = spec_res[0] if len(spec_res) > 0 else {}
+                raw_desc = spec_res[1] if len(spec_res) > 1 else None
+                pdp_price_val = spec_res[2] if len(spec_res) > 2 else None
+                pdp_price_str = spec_res[3] if len(spec_res) > 3 else None
+                pdp_sku = spec_res[4] if len(spec_res) > 4 else None
+                pdp_in_stock = spec_res[5] if len(spec_res) > 5 else None
+                has_text_specs = bool(specs)
+                specs_extraction_source = "dom"
+                specs_fallback_reason = None
+                has_specs_image = False
+                specs_image_url = None
+            else:
+                specs = spec_res.specs
+                raw_desc = spec_res.raw_description
+                pdp_price_val = spec_res.price_val
+                pdp_price_str = spec_res.price_str
+                pdp_sku = spec_res.sku
+                pdp_in_stock = spec_res.in_stock
+                has_text_specs = spec_res.has_text_specs
+                specs_extraction_source = spec_res.specs_extraction_source
+                specs_fallback_reason = spec_res.specs_fallback_reason
+                has_specs_image = spec_res.has_specs_image
+                specs_image_url = spec_res.specs_image_url
+
             # Level 2 validation: Verify PDP specs/condition do not reveal a used/refurbished or non-laptop product
             pdp_valid, pdp_reason = self.is_valid_new_laptop(
                 title=title,
@@ -353,33 +411,44 @@ class CompumartsStoreScraper(BaseStoreScraper):
             thumbnail_url=thumbnail_url,
             specs=specs,
             raw_description=raw_desc,
+            has_text_specs=has_text_specs,
+            specs_extraction_source=specs_extraction_source,
+            specs_fallback_reason=specs_fallback_reason,
+            has_specs_image=has_specs_image,
+            specs_image_url=specs_image_url,
         )
 
     def _extract_product_specs(
-        self, product_url: str
-    ) -> tuple[dict[str, str], str | None, float | None, str | None, str | None, bool | None]:
-        """Fetch PDP to extract Schema.org Product JSON-LD, specs table, and description.
+        self, product_url: str, title: str = ""
+    ) -> CompumartsSpecResult:
+        """Fetch Compumarts PDP to extract Schema.org JSON-LD, specs table, and description.
 
-        Returns:
-            (specs, raw_description, price_val, price_str, sku, in_stock)
+        Returns CompumartsSpecResult (unpacks as 6-tuple for backward compatibility).
         """
         html_text = self._fetch_html(product_url)
         if not html_text:
-            return {}, None, None, None, None, None
+            empty_res = SpecExtractionResult(
+                has_text_specs=False,
+                specs_extraction_source="none",
+                specs_fallback_reason="Failed to fetch PDP HTML",
+            )
+            return CompumartsSpecResult({}, None, None, None, None, None, empty_res)
 
         soup = BeautifulSoup(html_text, "html.parser")
-        specs: dict[str, str] = {}
-        raw_desc: str | None = None
+        for s in soup(["style"]):
+            s.decompose()
+
+        # 1. Parse Schema.org Product JSON-LD for SKU, Price, Availability
+        sku: str | None = None
         price_val: float | None = None
         price_str: str | None = None
-        sku: str | None = None
         in_stock: bool | None = None
+        json_desc: str | None = None
 
-        # 1. Parse Schema.org Product JSON-LD
         for s in soup.find_all("script", type="application/ld+json"):
             try:
                 data = json.loads(s.string or "")
-                if data.get("@type") == "Product":
+                if isinstance(data, dict) and data.get("@type") == "Product":
                     sku = data.get("sku")
                     offers = data.get("offers", {})
                     if isinstance(offers, dict):
@@ -391,35 +460,38 @@ class CompumartsStoreScraper(BaseStoreScraper):
                             in_stock = True
                         elif "OutOfStock" in avail:
                             in_stock = False
-                        cond = offers.get("itemCondition")
-                        if cond:
-                            specs["itemCondition"] = str(cond)
-                    cond_direct = data.get("itemCondition")
-                    if cond_direct and "itemCondition" not in specs:
-                        specs["itemCondition"] = str(cond_direct)
-                    raw_desc = data.get("description")
+                    json_desc = data.get("description")
                     break
             except Exception:
                 pass
 
-        # 2. Parse Specifications Tables
-        tables = soup.find_all("table")
-        for tbl in tables:
-            for row in tbl.find_all("tr"):
-                cells = row.find_all(["td", "th"])
-                if len(cells) >= 2:
-                    k = cells[0].get_text(separator=" ", strip=True)
-                    v = cells[1].get_text(separator=" ", strip=True)
-                    # Clean up footnote symbols and spaces
-                    k = re.sub(r"[:\*]+$", "", k).strip()
-                    v = html.unescape(v).replace("\xa0", " ").strip()
-                    if k and v and len(k) < 60 and k.lower() != "category":
-                        specs[k] = v
+        if in_stock is None:
+            sold_out_elem = soup.select_one(".product-label--sold-out, .sold-out, [data-sold-out]")
+            if sold_out_elem or "sold out" in soup.get_text().lower():
+                in_stock = False
+            else:
+                in_stock = True
 
-        # 3. Fallback description from RTE content
-        if not raw_desc:
-            desc_elem = soup.find(class_=re.compile(r"product-description|rte", re.I))
-            if desc_elem:
-                raw_desc = desc_elem.get_text(separator="\n", strip=True)[:1000]
+        spec_res = PatternEngine.extract_specs(
+            soup=soup,
+            title=title,
+            store_key=self.store_key,
+            base_url=self.base_url,
+            price_val=price_val,
+            price_str=price_str,
+        )
 
-        return specs, raw_desc, price_val, price_str, sku, in_stock
+        final_sku = sku or spec_res.mpn
+        final_price_val = price_val or spec_res.price_val
+        final_price_str = price_str or spec_res.price_str
+        final_desc = spec_res.raw_description or json_desc
+
+        return CompumartsSpecResult(
+            spec_res.specs,
+            final_desc,
+            final_price_val,
+            final_price_str,
+            final_sku,
+            in_stock,
+            spec_res,
+        )

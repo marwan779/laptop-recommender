@@ -169,12 +169,13 @@ class ElBadrStoreScraper(BaseStoreScraper):
                 # Parse the product card (Level 1 or Level 2)
                 product = self._parse_product_card(card, level=level, product_url=product_url, clean_url=clean_url)
                 if not product:
-                    self.record_skipped(
-                        name=title,
-                        url=clean_url,
-                        reason="Failed to parse product card or PDP",
-                        stage="card_parse",
-                    )
+                    if not any(s.url == clean_url for s in self.skipped_laptops):
+                        self.record_skipped(
+                            name=title,
+                            url=clean_url,
+                            reason="Failed to parse product card or PDP",
+                            stage="card_parse",
+                        )
                     continue
 
                 # Watermark check on extracted MPN or SKU
