@@ -32,6 +32,8 @@ class CompumartsSpecResult(tuple):
         instance.specs_fallback_reason = getattr(spec_res, "specs_fallback_reason", None) if spec_res else None
         instance.has_specs_image = getattr(spec_res, "has_specs_image", False) if spec_res else False
         instance.specs_image_url = getattr(spec_res, "specs_image_url", None) if spec_res else None
+        instance.pattern_learned = getattr(spec_res, "pattern_learned", False) if spec_res else False
+        instance.learned_pattern_type = getattr(spec_res, "learned_pattern_type", None) if spec_res else None
         return instance
 
 
@@ -335,6 +337,8 @@ class CompumartsStoreScraper(BaseStoreScraper):
         specs_fallback_reason: str | None = None
         has_specs_image: bool = False
         specs_image_url: str | None = None
+        pattern_learned: bool = False
+        learned_pattern_type: str | None = None
 
         if level == 2:
             # Level 2: Deep Product Detail Page (PDP) Extraction
@@ -363,6 +367,8 @@ class CompumartsStoreScraper(BaseStoreScraper):
                 specs_fallback_reason = spec_res.specs_fallback_reason
                 has_specs_image = spec_res.has_specs_image
                 specs_image_url = spec_res.specs_image_url
+                pattern_learned = getattr(spec_res, "pattern_learned", False)
+                learned_pattern_type = getattr(spec_res, "learned_pattern_type", None)
 
             # Level 2 validation: Verify PDP specs/condition do not reveal a used/refurbished or non-laptop product
             pdp_valid, pdp_reason = self.is_valid_new_laptop(
@@ -416,6 +422,8 @@ class CompumartsStoreScraper(BaseStoreScraper):
             specs_fallback_reason=specs_fallback_reason,
             has_specs_image=has_specs_image,
             specs_image_url=specs_image_url,
+            pattern_learned=pattern_learned,
+            learned_pattern_type=learned_pattern_type,
         )
 
     def _extract_product_specs(

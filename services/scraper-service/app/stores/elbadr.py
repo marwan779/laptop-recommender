@@ -317,6 +317,8 @@ class ElBadrStoreScraper(BaseStoreScraper):
         specs_fallback_reason: str | None = None
         has_specs_image: bool = False
         specs_image_url: str | None = None
+        pattern_learned: bool = False
+        learned_pattern_type: str | None = None
 
         if level == 2:
             spec_res = self._extract_product_specs(clean_url, title=title)
@@ -344,6 +346,8 @@ class ElBadrStoreScraper(BaseStoreScraper):
                 specs_fallback_reason = spec_res.specs_fallback_reason
                 has_specs_image = spec_res.has_specs_image
                 specs_image_url = spec_res.specs_image_url
+                pattern_learned = getattr(spec_res, "pattern_learned", False)
+                learned_pattern_type = getattr(spec_res, "learned_pattern_type", None)
 
             pdp_valid, pdp_reason = self.is_valid_new_laptop(
                 title=title,
@@ -397,6 +401,8 @@ class ElBadrStoreScraper(BaseStoreScraper):
             specs_fallback_reason=specs_fallback_reason,
             has_specs_image=has_specs_image,
             specs_image_url=specs_image_url,
+            pattern_learned=pattern_learned,
+            learned_pattern_type=learned_pattern_type,
         )
 
     def _extract_product_specs(self, product_url: str, title: str = "") -> SpecExtractionResult:
@@ -413,7 +419,7 @@ class ElBadrStoreScraper(BaseStoreScraper):
             )
 
         soup = BeautifulSoup(html_text, "html.parser")
-        for s in soup(["style", "script"]):
+        for s in soup(["style"]):
             s.decompose()
 
         # PDP Price Fallback

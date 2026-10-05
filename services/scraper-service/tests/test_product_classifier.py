@@ -99,12 +99,15 @@ class TestProductClassifierUnits:
             ("USED HP Pro x360 Fortis 11 G10 2-in-1 Touch Laptop – Core i5-1230U", "used_or_refurbished"),
             ("Used HP ZBook 17 G6 Workstation Laptop – Core i5-9400H 32GB RAM", "used_or_refurbished"),
             ("USED Dell Latitude 7410 – Core i5-10310U – 8GB RAM – 256GB SSD", "used_or_refurbished"),
+            ("as new Apple MacBook Pro 2019 Touchbar i9-9980HK 2.90GHz 15.4\" Retina", "used_or_refurbished"),
+            ("Lenovo ThinkPad X1 Carbon Gen 9 Like New with original charger", "used_or_refurbished"),
             ("Apple MacBook Air 13-inch M1 - Renewed Grade A", "used_or_refurbished"),
             ("Lenovo ThinkPad T14 Gen 2 (Refurbished)", "used_or_refurbished"),
             ("Dell XPS 13 9310 Open Box with full warranty", "used_or_refurbished"),
             ("لاب توب ديل لاتيتيود 5490 كور اي 5 مستعمل وارد دبي", "used_or_refurbished"),
             ("لابتوب اتش بي زد بوك كسر زيرو بالكرتونة", "used_or_refurbished"),
             ("لاب توب لينوفو ثينك باد استيراد الخارج بحالة الزيرو", "used_or_refurbished"),
+            ("لاب توب ديل لاتيتيود بحالة الجديد بالكرتونة", "used_or_refurbished"),
         ],
     )
     def test_rejects_used_refurbished_open_box(self, title: str, expected_reason: str):

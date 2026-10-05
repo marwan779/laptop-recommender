@@ -41,6 +41,31 @@ class PatternRegistry:
     def list_registered(cls) -> list[str]:
         return list(cls._registry.keys())
 
+    @classmethod
+    def learn_selector(cls, store_key: str, selector: str) -> bool:
+        """Dynamically learn and register a new container selector for a store."""
+        config = cls.get(store_key)
+        learned = config.add_learned_selector(selector)
+        if learned:
+            cls.register(config)
+        return learned
+
+    @classmethod
+    def learn_attribute(cls, store_key: str, attr: str) -> bool:
+        """Dynamically learn and register a new data attribute for a store."""
+        config = cls.get(store_key)
+        learned = config.add_learned_attribute(attr)
+        if learned:
+            cls.register(config)
+        return learned
+
+    @classmethod
+    def reset_learned(cls) -> None:
+        """Reset learned patterns across all registered stores."""
+        for config in cls._registry.values():
+            config.learned_selectors.clear()
+            config.learned_data_attributes = ["data-raw-spec"]
+
 
 # =============================================================================
 # Registered Profiles
@@ -109,3 +134,33 @@ COMPUMARTS_PATTERN = StorePatternConfig(
 )
 
 PatternRegistry.register(COMPUMARTS_PATTERN)
+
+
+# Sigma Computer Pattern Profile
+# Derived from Next.js App Router RSC stream and HTML spec layouts:
+#  - Pattern 1: Next.js React Server Components (RSC) streamed specifications array
+#  - Pattern 2: HTML specs table (table tr) inside item detail container
+#  - Pattern 3: Specs flyer images with title fallback
+SIGMA_PATTERN = StorePatternConfig(
+    store_key="sigma",
+    name="Sigma Computer",
+    container_selectors=[
+        "table",
+        ".specifications",
+        ".product-specs",
+        "#specifications",
+        ".item-description table",
+    ],
+    stats_selector=None,
+    delimiters=[":", "—", "–", "-"],
+    skip_empty_image_blocks=True,
+    min_block_text_length=15,
+    flyer_image_selectors=[
+        ".item-description img",
+        ".product-description img",
+        "main img",
+        ".product-images img",
+    ],
+)
+
+PatternRegistry.register(SIGMA_PATTERN)

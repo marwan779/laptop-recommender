@@ -55,10 +55,19 @@ class TitleSpecExtractor:
         if cpu_m:
             specs["Processor"] = cpu_m.group(0).strip()
 
-        # 3. RAM / Memory (supports 16GB, 16G DDR5, soldered, LPDDR)
-        ram_explicit = re.search(r"\b(\d{1,2})\s*G(?:B)?\b\s*(?:DDR[45]|LPDDR\w*|RAM)\b", title, re.I)
-        if ram_explicit:
-            specs["Memory"] = ram_explicit.group(0).strip()
+        # 2.1 CPU Core Count
+        cores_m = re.search(r"\b(\d{1,2}\s*(?:Cores?|Core))\b(?:\s*/\s*(\d{1,2}\s*Threads?))?", title, re.I)
+        if cores_m:
+            specs["Cores"] = cores_m.group(0).strip()
+
+        # 3. RAM / Memory (supports 16GB, 24GB DDR5 5600, 16GB DDR4 4266, LPDDR)
+        ram_speed_m = re.search(
+            r"\b(\d{1,3}\s*G(?:B)?\s*(?:DDR[45]|LPDDR\w*|RAM)(?:\s*(?:MHz|\d{4,5}(?:\s*MHz)?))?)\b",
+            title,
+            re.I,
+        )
+        if ram_speed_m:
+            specs["Memory"] = ram_speed_m.group(0).strip()
         else:
             for rm in re.finditer(r"\b(\d{1,2})\s*G(?:B)?\b", title, re.I):
                 start = rm.start()
@@ -71,9 +80,9 @@ class TitleSpecExtractor:
 
         # 4. Storage (supports dual-drive setups e.g. 1TB HDD + 256GB SSD)
         storage_matches = list(re.finditer(
-            r"\b(\d{1,2}(?:\.\d+)?\s*(?:TB|GB))\s*(?:SSD|HDD|HHD|NVMe|PCIe|M\.2|Gen\d)\b",
+            r"\b(\d{1,4}(?:\.\d+)?\s*(?:TB|GB))\s*(?:SSD|HDD|HHD|NVMe|PCIe|M\.2|Gen\d[x\d]*)\b",
             title,
-            re.I
+            re.I,
         ))
         if storage_matches:
             specs["Storage"] = " + ".join(m.group(0).strip() for m in storage_matches)
@@ -82,11 +91,11 @@ class TitleSpecExtractor:
             if st_fallback and "ram" not in st_fallback.group(0).lower():
                 specs["Storage"] = st_fallback.group(0).strip()
 
-        # 5. Display / Screen (handles 15.6 FHD, 16" 165Hz, 15.6 HD, 18'' QHD+, 40.6 cm (16) WUXGA)
+        # 5. Display / Screen (handles size and features even when separated)
         disp_m = re.search(
-            r"(\b\d{2}(?:\.\d)?\s*(?:[\"']{1,2}|inch|-inch)\s*(?:(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|(?:60|120|144|165|240|360)\s*Hz)\b[^\s,–—()]*)*|"
+            r"(\b\d{2}(?:\.\d)?\s*(?:[\"'\u201c\u201d\u2018\u2019\ufffd]{1,2}|-?inch\b)\s*(?:(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|(?:60|120|144|165|240|360)\s*Hz)\b[^\s,–—()]*)*|"
             r"\b\d{2}(?:\.\d)?\s*(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|(?:60|120|144|165|240|360)\s*Hz)\b(?:[^\s,–—()]+|\s+(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|\d+Hz|sRGB|G-SYNC|100%))*|"
-            r"\b\d{2}(?:\.\d)?\s*(?:[\"']{1,2}|inch|-inch)\b|"
+            r"\b\d{2}(?:\.\d)?\s*(?:[\"'\u201c\u201d\u2018\u2019\ufffd]{1,2}|-?inch\b)|"
             r"\b\d{2}(?:\.\d)?\s*HD\b|"
             r"\b(?:QHD\+?|WUXGA|WQXGA|FHD\+?)\s*(?:Display|Screen)\b|"
             r"\b\d{2}(?:\.\d)?\s*cm\s*\(\d{2}\)\s*\w+)",
@@ -94,18 +103,30 @@ class TitleSpecExtractor:
             re.I,
         )
         if disp_m:
-            specs["Display"] = disp_m.group(0).strip().rstrip("-")
-        else:
-            # Dell numbering fallback (e.g. Dell 3510 / 5510 / 3520 where middle digit 5 indicates 15.6")
-            if re.search(r"\bDELL\s*(?:[A-Za-z]+\s*)?[357]5\d{2}\b", title, re.I):
-                specs["Display"] = "15.6 Inch"
-            elif specs_image_url and re.search(r"\b(?:vostro|inspiron|latitude)-?15\b", specs_image_url, re.I):
-                specs["Display"] = "15.6 Inch"
+            disp_val = disp_m.group(0).strip().rstrip("-")
+            feat_m = re.search(r"\b(FHD(?:\s*Touch)?|QHD(?:\s*Touch)?|UHD(?:\s*Touch)?|WUXGA(?:\s*Touch)?|OLED(?:\s*Touch)?|Touch)\b", title, re.I)
+            if feat_m and feat_m.group(0).lower() not in disp_val.lower():
+                disp_val = f"{disp_val} {feat_m.group(0).strip()}"
+            specs["Display"] = disp_val
 
         # 6. Operating System
         os_m = re.search(r"\b(Win(?:dows)?\s*(?:11|10)(?:\s*(?:Home|Pro))?|DOS)\b", title, re.I)
         if os_m:
             specs["Operating System"] = os_m.group(0).strip()
+
+        # 7. Warranty
+        warranty_m = re.search(
+            r"\b(\d{1,2}\s*(?:Y|Years?|yr)\s*Warranty|\d{1,2}\s*Years?\s*Local\s*Warranty|ضمان\s*(?:سنة|سنتين|عام|عامين|\d+\s*سنوات))\b",
+            title,
+            re.I,
+        )
+        if warranty_m:
+            specs["Warranty"] = warranty_m.group(0).strip()
+
+        # 8. Certification
+        cert_m = re.search(r"\b(Intel\s*EVO|Copilot\+\s*PC|NVIDIA\s*Studio)\b", title, re.I)
+        if cert_m:
+            specs["Certification"] = cert_m.group(0).strip()
 
         # 7. Integrated GPU fallback if no discrete GPU was present in title
         if "Graphics" not in specs:
@@ -114,6 +135,8 @@ class TitleSpecExtractor:
                 specs["Graphics"] = "Intel Integrated Graphics"
             elif any(w in proc for w in ["athlon", "ryzen", "amd"]):
                 specs["Graphics"] = "AMD Radeon Graphics"
+            elif any(w in proc for w in ["snapdragon", "qualcomm"]):
+                specs["Graphics"] = "Qualcomm Adreno GPU"
 
         return specs
 
@@ -176,10 +199,10 @@ class TitleSpecExtractor:
             if not storage:
                 if any(w in k_low for w in ["slots", "expansion", "support", "interface", "form factor"]):
                     continue
-                if any(w in k_low for w in ["storage", "primary drive", "ssd", "hard drive", "storage capacity"]):
+                if any(w in k_low for w in ["storage", "primary drive", "ssd", "hard drive", "storage capacity", "solid state drive", "state drive", "drive capacity"]):
                     if any(c in v_low for c in ["gb", "tb", "512", "256", "1tb", "2tb", "ssd", "hdd"]):
                         storage = vs
-                elif "capacity" in k_low and any(w in v_low for w in ["ssd", "nvme", "hdd", "pcie", "1tb", "2tb", "512gb", "256gb"]) and "wh" not in v_low:
+                elif "capacity" in k_low and any(w in v_low for w in ["ssd", "nvme", "hdd", "pcie", "1tb", "2tb", "512gb", "256gb", "gb", "tb"]) and "wh" not in v_low:
                     storage = vs
 
         # 4. GPU Slot
@@ -190,7 +213,7 @@ class TitleSpecExtractor:
             v_low = vs.lower()
             comb = f"{ks}: {vs}".lower()
             if not gpu:
-                if any(w in comb for w in ["gpu", "graphic", "graphics", "video card", "vga", "geforce", "rtx", "gtx", "radeon", "intel iris", "intel arc", "intel graphics", "integrated graphics"]):
+                if any(w in comb for w in ["gpu", "graphic", "graphics", "video card", "vga", "geforce", "rtx", "gtx", "radeon", "intel iris", "intel arc", "intel graphics", "integrated graphics", "adreno"]):
                     gpu = vs
                 elif k_low == "controller" and any(w in v_low for w in ["intel", "nvidia", "amd"]):
                     gpu = vs
@@ -205,7 +228,7 @@ class TitleSpecExtractor:
                 if any(w in k_low for w in ["support", "port", "output"]):
                     continue
                 if any(w in k_low for w in ["screen size", "display size", "display", "resolution", "panel type", "screen"]):
-                    if any(c in v_low or c in k_low for c in ['"', "inch", "cm", "15", "16", "14", "17", "18", "13", "11", "12", "fhd", "qhd", "wqxga", "wuxga", "oled", "ips", "hz", "touch"]):
+                    if any(c in v_low or c in k_low for c in ['"', "inch", "cm", "15", "16", "14", "17", "18", "13", "11", "12", "fhd", "qhd", "wqxga", "wuxga", "oled", "ips", "hz", "touch", "full hd", "1920", "1080", "2560", "1200"]):
                         display = vs
                 elif k_low == "size" and any(w in v_low for w in ['"', "inch", "cm", "15", "16", "14", "17", "18", "13", "11", "12"]):
                     display = vs

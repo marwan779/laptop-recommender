@@ -36,6 +36,25 @@ class StorePatternConfig(BaseModel):
         ]
     )
 
+    # Dynamic learned patterns (discovered and registered at runtime)
+    learned_selectors: list[str] = Field(default_factory=list)
+    learned_data_attributes: list[str] = Field(default_factory=lambda: ["data-raw-spec"])
+
+    def add_learned_selector(self, selector: str) -> bool:
+        """Add a newly discovered selector to the profile if not already present."""
+        if not selector or selector in self.container_selectors or selector in self.learned_selectors:
+            return False
+        self.learned_selectors.append(selector)
+        self.container_selectors.insert(0, selector)
+        return True
+
+    def add_learned_attribute(self, attr: str) -> bool:
+        """Add a newly discovered data attribute to the profile."""
+        if not attr or attr in self.learned_data_attributes:
+            return False
+        self.learned_data_attributes.append(attr)
+        return True
+
 
 class SpecExtractionResult(BaseModel):
     """Result of extracting specs and OCR-readiness metadata from a PDP."""
@@ -53,6 +72,12 @@ class SpecExtractionResult(BaseModel):
     specs_fallback_reason: str | None = None
     has_specs_image: bool = False
     specs_image_url: str | None = None
+
+    # Autonomous Discovery & Self-Learning Telemetry
+    pattern_learned: bool = False
+    learned_pattern_type: str | None = None
+    is_anomaly: bool = False
+    anomaly_reason: str | None = None
 
     def __iter__(self) -> Iterator[Any]:
         """Support legacy 6-tuple unpacking: (specs, raw_desc, mpn, model_code, price_val, price_str)."""

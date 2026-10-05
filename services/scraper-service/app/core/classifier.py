@@ -11,8 +11,8 @@ class ProductClassifier:
 
     # Used / Refurbished / Pre-owned patterns (English & Arabic)
     USED_PATTERN = re.compile(
-        r"\b(used|refurbished|renewed|open[- ]?box|pre[- ]?owned|second[- ]?hand|secondhand|b[- ]?grade|c[- ]?grade|reconditioned|outlet)\b|"
-        r"(مستعمل|استعمال|استيراد|كسر\s*زيرو|مجدد|معاد\s*تصنيعه|مفتوح\s*العلبة|مفتوح\s*الكرتونة|فرز\s*ثان|فرز\s*تاني|اوتلت)",
+        r"\b(used|refurbished|renewed|open[- ]?box|pre[- ]?owned|second[- ]?hand|secondhand|b[- ]?grade|c[- ]?grade|reconditioned|outlet|as[- ]?new|like[- ]?new)\b|"
+        r"(مستعمل|استعمال|استيراد|كسر\s*زيرو|مجدد|معاد\s*تصنيعه|مفتوح\s*العلبة|مفتوح\s*الكرتونة|فرز\s*ثان|فرز\s*تاني|اوتلت|كالجديد|بحالة\s*الجديد)",
         re.IGNORECASE,
     )
 
@@ -40,8 +40,8 @@ class ProductClassifier:
 
     # Explicit condition indicators in descriptions
     DESC_CONDITION_PATTERN = re.compile(
-        r"(condition\s*:\s*(used|refurbished|renewed|pre[- ]?owned|open[- ]?box|grade\s*[abc]|reconditioned)|"
-        r"(الحالة|حالة الجهاز|حالة المنتج)\s*:\s*(مستعمل|استيراد|كسر\s*زيرو|مجدد)|"
+        r"(condition\s*:\s*(used|refurbished|renewed|pre[- ]?owned|open[- ]?box|grade\s*[abc]|reconditioned|as[- ]?new|like[- ]?new)|"
+        r"(الحالة|حالة الجهاز|حالة المنتج)\s*:\s*(مستعمل|استيراد|كسر\s*زيرو|مجدد|كالجديد|بحالة\s*الجديد)|"
         r"\b(certified\s+refurbished|factory\s+refurbished|seller\s+refurbished|renewed\s+laptop)\b)",
         re.IGNORECASE,
     )

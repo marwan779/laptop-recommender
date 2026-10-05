@@ -167,3 +167,68 @@ def test_compumarts_empty_pdp_title_fallback(monkeypatch):
     assert product.specs.get("Graphics") == "RTX 4050 6GB"
     assert product.specs.get("Memory") == "16GB DDR5"
     assert product.specs.get("Storage") == "512GB SSD"
+
+
+def test_compumarts_data_raw_spec_extraction(monkeypatch):
+    scraper = CompumartsStoreScraper()
+    raw_spec_text = (
+        "Part No\n90NR0N06-M00JB0\n"
+        "Sales Model Name\nFX607VU-RL167W\n"
+        "Marketing Name\nASUS TUF Gaming F16\n"
+        "Color\nMecha Gray\n"
+        "Processor\nIntel Core 7 Processor 240H 2.5 GHz\n"
+        "Graphics\nNVIDIA GeForce RTX 4050 Laptop GPU\n"
+        "Panel Size\n16-inch\n"
+        "Resolution\nFHD+ 16:10 (1920 x 1200, WUXGA) Value IPS-level\n"
+        "Memory\n16GB DDR5-5600 SO-DIMM\n"
+        "Storage\n512GB PCIe 4.0 NVMe M.2 SSD"
+    )
+    mock_html = f"""
+    <html>
+      <head>
+        <script type="application/ld+json">
+        {{
+          "@type": "Product",
+          "name": "ASUS TUF Gaming F16",
+          "sku": "90NR0N06-M00JB0",
+          "offers": {{
+            "@type": "Offer",
+            "price": "52000.00",
+            "availability": "http://schema.org/InStock"
+          }}
+        }}
+        </script>
+      </head>
+      <body>
+        <table class="dark-spec-table">
+          <thead><tr><th>Category</th><th>Specification Details</th></tr></thead>
+          <tbody data-raw-spec="{raw_spec_text}"></tbody>
+        </table>
+      </body>
+    </html>
+    """
+    monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_html)
+    spec_res = scraper._extract_product_specs(
+        "https://www.compumarts.com/products/asus-tuf-gaming-f16",
+        title="Laptop ASUS TUF Gaming FX607VU-RL167W",
+    )
+    assert spec_res.has_text_specs is True
+    assert spec_res.specs_extraction_source == "dom"
+    assert spec_res.specs.get("Part No") == "90NR0N06-M00JB0"
+    assert "240H" in spec_res.specs.get("Processor", "")
+    assert "RTX 4050" in spec_res.specs.get("Graphics", "")
+    assert "16-inch" in spec_res.specs.get("Panel Size", "")
+    assert "16GB" in spec_res.specs.get("Memory", "")
+    assert "512GB" in spec_res.specs.get("Storage", "")
+
+
+def test_compumarts_as_new_macbook_filtered():
+    scraper = CompumartsStoreScraper()
+    title = (
+        'as new Apple MacBook Pro 2019 Touchbar i9-9980HK 2.90GHz 15.4" Retina (2880x1800) '
+        'USB-C INTEL UHD Graphics 630 - AMD Radeon Pro 560X 4 GB 32GB DDR4 512GB NVMe Silver'
+    )
+    is_valid, reason = scraper.is_valid_new_laptop(title=title)
+    assert is_valid is False
+    assert reason == "used_or_refurbished"
+

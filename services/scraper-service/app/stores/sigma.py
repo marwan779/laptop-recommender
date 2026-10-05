@@ -7,9 +7,30 @@ from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
 
 from app.core.normalizer import ModelNormalizer
+from app.core.patterns.engine import PatternEngine
+from app.core.patterns.models import SpecExtractionResult
+from app.core.patterns.registry import PatternRegistry
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import RetailerProduct
 from app.stores.base import BaseStoreScraper
+
+
+class SigmaSpecResult(tuple):
+    """2-tuple compatible container that also exposes SpecExtractionResult fields."""
+
+    def __new__(cls, specs, raw_desc, spec_res=None):
+        instance = super().__new__(cls, (specs, raw_desc))
+        instance.specs = specs
+        instance.raw_description = raw_desc
+        instance.spec_res = spec_res
+        instance.has_text_specs = getattr(spec_res, "has_text_specs", True) if spec_res else bool(specs)
+        instance.specs_extraction_source = getattr(spec_res, "specs_extraction_source", "dom") if spec_res else "dom"
+        instance.specs_fallback_reason = getattr(spec_res, "specs_fallback_reason", None) if spec_res else None
+        instance.has_specs_image = getattr(spec_res, "has_specs_image", False) if spec_res else False
+        instance.specs_image_url = getattr(spec_res, "specs_image_url", None) if spec_res else None
+        instance.pattern_learned = getattr(spec_res, "pattern_learned", False) if spec_res else False
+        instance.learned_pattern_type = getattr(spec_res, "learned_pattern_type", None) if spec_res else None
+        return instance
 
 
 class SigmaComputerStoreScraper(BaseStoreScraper):
@@ -202,13 +223,14 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
                 sku = raw.get("sku") or ""
 
                 # Non-laptop accessory and used/refurbished check
+                item_url = f"{self.ITEM_BASE_URL}?id={slug}"
                 is_valid, reason = self.is_valid_new_laptop(
-                    title=name, url=urljoin(self.base_url, f"/product/{slug}")
+                    title=name, url=item_url
                 )
                 if not is_valid:
                     self.record_skipped(
                         name=name,
-                        url=urljoin(self.base_url, f"/product/{slug}"),
+                        url=item_url,
                         reason=f"Filtered out as standalone accessory or non-laptop: {reason}",
                         stage="accessory_filter",
                     )
@@ -349,14 +371,36 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
         # Level 1 vs Level 2 specs
         specs: dict[str, str] = {}
         raw_desc: str | None = None
+        has_text_specs: bool = True
+        specs_extraction_source: str = "dom"
+        specs_fallback_reason: str | None = None
+        has_specs_image: bool = False
+        specs_image_url: str | None = None
+        pattern_learned: bool = False
+        learned_pattern_type: str | None = None
 
         if level == 2:
-            pdp_specs, pdp_desc = self._extract_product_specs(product_url)
+            spec_res = self._extract_product_specs(product_url, title=title)
+            if isinstance(spec_res, tuple) and hasattr(spec_res, "specs"):
+                specs = spec_res.specs
+                raw_desc = spec_res.raw_description
+                has_text_specs = spec_res.has_text_specs
+                specs_extraction_source = spec_res.specs_extraction_source
+                specs_fallback_reason = spec_res.specs_fallback_reason
+                has_specs_image = spec_res.has_specs_image
+                specs_image_url = spec_res.specs_image_url
+                pattern_learned = spec_res.pattern_learned
+                learned_pattern_type = spec_res.learned_pattern_type
+            elif isinstance(spec_res, tuple) and len(spec_res) >= 2:
+                specs = spec_res[0]
+                raw_desc = spec_res[1]
+                has_text_specs = bool(specs)
+
             pdp_valid, pdp_reason = self.is_valid_new_laptop(
                 title=title,
-                specs=pdp_specs,
+                specs=specs,
                 url=product_url,
-                description=pdp_desc,
+                description=raw_desc,
             )
             if not pdp_valid:
                 self.record_skipped(
@@ -366,8 +410,6 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
                     stage="pdp_filter",
                 )
                 return None
-            specs = pdp_specs
-            raw_desc = pdp_desc
 
         # Model normalizer token extraction
         combined_text = f"{title} {raw_sku or ''} {' '.join(specs.values())}"
@@ -394,66 +436,44 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
             thumbnail_url=thumbnail_url,
             specs=specs,
             raw_description=raw_desc,
+            has_text_specs=has_text_specs,
+            specs_extraction_source=specs_extraction_source,
+            specs_fallback_reason=specs_fallback_reason,
+            has_specs_image=has_specs_image,
+            specs_image_url=specs_image_url,
+            pattern_learned=pattern_learned,
+            learned_pattern_type=learned_pattern_type,
         )
 
-    def _extract_product_specs(self, product_url: str) -> tuple[dict[str, str], str | None]:
+    def _extract_product_specs(self, product_url: str, title: str = "") -> SigmaSpecResult:
         """Fetch Sigma Computer PDP to extract structured specifications array and description."""
-        specs: dict[str, str] = {}
-        raw_desc: str | None = None
-
         html_text = self._fetch_html(product_url)
         if not html_text:
-            return specs, raw_desc
+            empty_res = SpecExtractionResult(
+                has_text_specs=False,
+                specs_extraction_source="none",
+                specs_fallback_reason="Failed to fetch PDP HTML",
+            )
+            return SigmaSpecResult({}, None, empty_res)
 
-        # 1. Primary: Decode Next.js RSC payload
-        rsc_text = self._decode_rsc_payload(html_text)
-        if rsc_text:
-            spec_start = rsc_text.find('"specifications":[')
-            if spec_start != -1:
-                start = spec_start + len('"specifications":')
-                bracket_count = 0
-                end = -1
-                for i in range(start, len(rsc_text)):
-                    if rsc_text[i] == "[":
-                        bracket_count += 1
-                    elif rsc_text[i] == "]":
-                        bracket_count -= 1
-                        if bracket_count == 0:
-                            end = i + 1
-                            break
-                if end != -1:
-                    try:
-                        raw_specs = json.loads(rsc_text[start:end])
-                        for item in raw_specs:
-                            k = item.get("name", "").strip()
-                            v = item.get("value", "").strip()
-                            if k and v:
-                                specs[k] = v
-                    except Exception:
-                        pass
+        soup = BeautifulSoup(html_text, "html.parser")
+        for s in soup(["style"]):
+            s.decompose()
 
-            desc_match = re.search(r'"description":\s*("(?:\\.|[^"\\])*")', rsc_text)
-            if desc_match:
-                try:
-                    d = json.loads(desc_match.group(1))
-                    if d and d.strip() and d.strip().lower() != "page not found":
-                        raw_desc = d.strip()
-                except Exception:
-                    pass
+        soup_title = title
+        if not soup_title:
+            title_tag = soup.find("title")
+            if title_tag:
+                soup_title = title_tag.get_text(strip=True).split("|")[0].split("-")[0].strip()
 
-        # 2. Resilient Fallback: HTML table parsing
-        if not specs:
-            soup = BeautifulSoup(html_text, "html.parser")
-            for tbl in soup.find_all("table"):
-                for row in tbl.find_all("tr"):
-                    cells = row.find_all(["td", "th"])
-                    if len(cells) >= 2:
-                        k = cells[0].get_text(strip=True)
-                        v = cells[1].get_text(strip=True)
-                        if k and v and len(k) < 60:
-                            specs[k] = v
+        spec_res = PatternEngine.extract_specs(
+            soup=soup,
+            title=soup_title,
+            store_key=self.store_key,
+            base_url=self.base_url,
+        )
 
-        return specs, raw_desc
+        return SigmaSpecResult(spec_res.specs, spec_res.raw_description, spec_res)
 
     def _extract_products_from_html(self, html_text: str) -> list[dict]:
         """Resilient DOM fallback for catalog cards if RSC extraction fails."""
