@@ -25,6 +25,64 @@ class TitleSpecExtractor:
 
         specs: dict[str, str] = {}
 
+        # 0. Brand (supports direct brands and sub-brands like ROG Strix -> ASUS, Alienware -> DELL)
+        sub_brand_map = {
+            "rog strix": "ASUS",
+            "rog zephyrus": "ASUS",
+            "rog flow": "ASUS",
+            "rog": "ASUS",
+            "tuf": "ASUS",
+            "zenbook": "ASUS",
+            "vivobook": "ASUS",
+            "proart": "ASUS",
+            "alienware": "DELL",
+            "xps": "DELL",
+            "inspiron": "DELL",
+            "vostro": "DELL",
+            "latitude": "DELL",
+            "legion": "Lenovo",
+            "loq": "Lenovo",
+            "ideapad": "Lenovo",
+            "thinkpad": "Lenovo",
+            "thinkbook": "Lenovo",
+            "yoga": "Lenovo",
+            "predator": "Acer",
+            "nitro": "Acer",
+            "aspire": "Acer",
+            "swift": "Acer",
+            "travelmate": "Acer",
+            "victus": "HP",
+            "omen": "HP",
+            "pavilion": "HP",
+            "envy": "HP",
+            "spectre": "HP",
+            "probook": "HP",
+            "elitebook": "HP",
+            "aorus": "Gigabyte",
+            "aero": "Gigabyte",
+            "cyborg": "MSI",
+            "katana": "MSI",
+            "sword": "MSI",
+            "thin": "MSI",
+            "vector": "MSI",
+            "stealth": "MSI",
+            "titan": "MSI",
+            "raider": "MSI",
+            "crosshair": "MSI",
+            "modern": "MSI",
+            "prestige": "MSI",
+        }
+        for b in ["acer", "asus", "lenovo", "hp", "dell", "msi", "apple", "samsung", "huawei", "gigabyte", "razer", "microsoft"]:
+            if re.search(rf"\b{b}\b", title, re.I):
+                specs["Brand"] = b.upper() if b in ("hp", "msi", "dell", "asus") else b.capitalize()
+                break
+        if "Brand" not in specs:
+            t_low = title.lower()
+            for sub, parent in sub_brand_map.items():
+                if re.search(rf"\b{re.escape(sub)}\b", t_low):
+                    specs["Brand"] = parent
+                    break
+
         # 1. GPU (Extracted first to capture VRAM so system RAM doesn't accidentally match VRAM)
         gpu_m = re.search(
             r"(RTX\s*\d{4}(?:\s*Ti)?(?:\s*\d{1,2}GB(?:\s*GDDR[67])?)?|"

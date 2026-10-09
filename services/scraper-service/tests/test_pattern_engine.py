@@ -27,6 +27,13 @@ def test_title_spec_extractor():
     assert "RTX 5050" in specs["Graphics"]
     assert "Operating System" in specs
     assert "Win11" in specs["Operating System"]
+    assert specs.get("Brand") == "ASUS"
+
+
+def test_title_spec_extractor_rog_strix_subbrand():
+    title = "ROG Strix SCAR 18 (2025) GAMING LAPTOP G835LW-AI642W Intel Core Ultra 9 275HX RTX 5080 32GB 2TB SSD 18 Inch"
+    specs = TitleSpecExtractor.extract(title)
+    assert specs.get("Brand") == "ASUS"
 
 
 def test_title_spec_extractor_flyer_laptop():
