@@ -120,7 +120,7 @@ jobs:
 
   publish_release:
     name: Promote Pre-release to Official Latest Release
-    needs: [deploy]
+    needs: [deploy, meta]
     runs-on: ubuntu-latest
     permissions:
       contents: write
