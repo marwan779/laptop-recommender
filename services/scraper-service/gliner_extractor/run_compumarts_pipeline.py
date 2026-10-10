@@ -1,200 +1,119 @@
 """Full End-to-End CompuMarts Scraping and Hybrid Extraction Pipeline.
 
 Flow:
-1. Scrapes raw specification tables for all in-stock PDPs from CompuMarts Egypt.
-2. Extracts specifications through dedicated CompumartsExtractor (Tier 1).
-3. Hands off complex / unmapped fields with ContextEnvelopes to GLiNER (Tier 2).
-4. Outputs the structured results to gliner_extractor/hybrid_results.json as usual.
+1. Discovers and scrapes raw specification tables for all in-stock PDPs from CompuMarts Egypt
+   using production CompumartsStoreScraper.
+2. Filters out non-laptop items (accessories, bags, monitors, desktops).
+3. Extracts specifications through dedicated CompumartsExtractor (Tier 1).
+4. Hands off complex / unmapped fields with ContextEnvelopes to GLiNER (Tier 2).
+5. Supports checkpoint streaming (.checkpoint.jsonl) and atomic file replace.
+6. Emits structured results to hybrid_results.json and execution metrics to run_summary.json.
 
 Usage:
-    # Run full flow on all live PDPs (uses fresh cached PDPs or live scrape)
     python gliner_extractor/run_compumarts_pipeline.py
-
-    # Run full flow with live network re-scrape of every PDP
     python gliner_extractor/run_compumarts_pipeline.py --live
-
-    # Limit to first 10 laptops for quick test
+    python gliner_extractor/run_compumarts_pipeline.py --resume
     python gliner_extractor/run_compumarts_pipeline.py --limit 10
-
-    # Custom output file
-    python gliner_extractor/run_compumarts_pipeline.py --output gliner_extractor/hybrid_results.json
 """
 
+from __future__ import annotations
+
 import argparse
-import itertools
 import json
+import logging
 import os
-import re
 import sys
 import time
-from urllib.parse import urljoin
+from pathlib import Path
+from typing import Any
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 # Ensure project root is in sys.path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, PROJECT_ROOT)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
+from app.stores.compumarts import CompumartsStoreScraper
+from gliner_extractor.compumarts_extractor import CompumartsExtractor
 from gliner_extractor.hybrid_extractor import HybridLaptopExtractor
 
+logger = logging.getLogger(__name__)
+
 DEFAULT_OUTPUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hybrid_results.json")
+DEFAULT_SUMMARY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "run_summary.json")
 CACHE_FILE = os.path.join(
     r"C:\Users\COMPUMARTS\.gemini\antigravity\brain\6c47eca0-37e4-4ea1-98d4-14195fc0dba0\scratch",
     "compumarts_fresh_live_pdp_cache.json"
 )
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-}
 
+def scrape_live_compumarts_pdps(limit: int | None = None) -> list[dict[str, Any]]:
+    """Crawl live CompuMarts catalog and extract raw PDP tables using production scraper."""
+    print("[*] Stage 1 & 2: Scraping live CompuMarts catalog with CompumartsStoreScraper...")
+    scraper = CompumartsStoreScraper()
+    products = scraper.scrape_catalog(level=2, limit=limit)
 
-def scrape_live_compumarts_pdps(limit: int | None = None) -> list[dict]:
-    """Crawl collection pages and fetch all raw tables from live PDPs."""
-    try:
-        from curl_cffi import requests
-        from bs4 import BeautifulSoup
-    except ImportError:
-        print("[ERROR] curl_cffi or beautifulsoup4 not installed. Run: pip install curl_cffi beautifulsoup4")
-        sys.exit(1)
-
-    base_domain = "https://www.compumarts.com"
-    collection_tpl = "https://www.compumarts.com/collections/laptop?filter.v.availability=1&sort_by=created-descending&page={page}"
-
-    discovered_pdps: list[dict] = []
-    seen_urls: set[str] = set()
-
-    print("[*] Stage 1: Discovering all in-stock laptops from CompuMarts collection...")
-    for page in itertools.count(1):
-        url = collection_tpl.format(page=page)
-        r = None
-        for attempt in range(5):
-            try:
-                r = requests.get(url, headers=HEADERS, impersonate="chrome120", timeout=20)
-                if r.status_code == 200 and len(r.text) > 500:
-                    break
-                elif r.status_code == 429:
-                    time.sleep(3.0 * (attempt + 1))
-            except Exception:
-                time.sleep(1.0)
-
-        if not r or r.status_code != 200 or len(r.text) < 500:
-            print(f"Failed (status {r.status_code if r else 'error'}). Finished collection discovery.")
-            break
-
-        soup = BeautifulSoup(r.text, "html.parser")
-        cards = soup.find_all("product-card") or soup.find_all(attrs={"class": re.compile(r"card--product|grid__item", re.I)})
-        if not cards:
-            print("0 cards found. Finished collection discovery.")
-            break
-
-        page_new = 0
-        for card in cards:
-            link = card.find("a", class_=re.compile(r"card-link|js-prod-link", re.I)) or card.find("a", href=re.compile(r"/products/"))
-            if not link:
-                continue
-            href = link.get("href", "").split("?")[0]
-            full_url = urljoin(base_domain, href)
-            if full_url in seen_urls:
-                continue
-
-            title = ""
-            title_el = card.find(class_=re.compile(r"card__title|title", re.I))
-            if title_el:
-                title = title_el.get_text(strip=True)
-            if not title:
-                title = link.get("aria-label", "").strip() or link.get_text(strip=True)
-
-            seen_urls.add(full_url)
-            discovered_pdps.append({"url": full_url, "title": title})
-            page_new += 1
-
-            if limit and len(discovered_pdps) >= limit:
-                break
-
-        print(f"found {page_new} laptops. Total so far: {len(discovered_pdps)}")
-        if page_new == 0 or (limit and len(discovered_pdps) >= limit):
-            break
-
-    print(f"[OK] Total in-stock PDPs discovered: {len(discovered_pdps)}")
-
-    # Fetch live PDP tables
-    print("\n[*] Stage 2: Crawling raw specification tables for each PDP...")
-    from app.core.patterns import PatternEngine
-
-    laptops: list[dict] = []
-    for i, item in enumerate(discovered_pdps):
-        pdp_url = item["url"]
-        card_title = item["title"]
-
-        specs = {}
-        page_title = card_title
-        metadata = {}
-        soup_pdp = None
-        for attempt in range(5):
-            try:
-                rp = requests.get(pdp_url, headers=HEADERS, impersonate="chrome120", timeout=25)
-                if rp.status_code == 200 and len(rp.text) > 500:
-                    soup_pdp = BeautifulSoup(rp.text, "html.parser")
-                    break
-                elif rp.status_code == 429:
-                    time.sleep(2.0 * (attempt + 1))
-            except Exception:
-                time.sleep(1.0)
-        time.sleep(0.15)
-
-        if soup_pdp:
-            t_el = soup_pdp.find("h1")
-            if t_el and len(t_el.get_text(strip=True)) > 5:
-                page_title = t_el.get_text(strip=True)
-
-            spec_res = PatternEngine.extract_specs(
-                soup=soup_pdp,
-                title=page_title,
-                store_key="compumarts",
-                base_url="https://www.compumarts.com",
-            )
-            specs = spec_res.specs
-            if spec_res.mpn:
-                metadata["mpn"] = spec_res.mpn
-
+    laptops: list[dict[str, Any]] = []
+    for p in products:
         laptops.append({
-            "product_url": pdp_url,
-            "title": page_title,
-            "specs": specs,
-            "metadata": metadata,
+            "product_url": p.product_url,
+            "title": p.title,
+            "specs": p.specs or {},
+            "metadata": {
+                "mpn": p.mpn,
+                "retailer_sku": p.retailer_sku,
+                "price": p.price_egp,
+                "price_egp": p.price_egp,
+                "price_str": p.price_str,
+                "in_stock": p.in_stock,
+            },
         })
-        print(f"    [{i+1:03d}/{len(discovered_pdps):03d}] {page_title[:55]} | Specs: {len(specs)} rows")
-
+    print(f"[OK] Live scrape finished: {len(laptops)} products retrieved.")
     return laptops
 
 
-def load_cached_compumarts_pdps(limit: int | None = None) -> list[dict]:
+def load_cached_compumarts_pdps(limit: int | None = None) -> list[dict[str, Any]]:
     """Load from freshly crawled raw specs or store results."""
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, "r", encoding="utf-8") as f:
-            cache_data = json.load(f)
-        laptops = []
-        for url, data in cache_data.items():
-            laptops.append({
-                "product_url": url,
-                "title": data.get("title", ""),
-                "specs": data.get("specs", {}),
-            })
-            if limit and len(laptops) >= limit:
-                break
-        if laptops:
-            return laptops
-
-    # Check freshest crawled specs first (sorted by created-descending as requested)
+    # 1. Check local_extractor/my_raw_specs.json
     raw_specs_file = os.path.join(PROJECT_ROOT, "local_extractor", "my_raw_specs.json")
     if os.path.exists(raw_specs_file):
-        with open(raw_specs_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        if isinstance(data, list) and data:
+        try:
+            with open(raw_specs_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, list) and data:
+                laptops = []
+                for p in data:
+                    laptops.append({
+                        "product_url": p.get("product_url", ""),
+                        "title": p.get("title", ""),
+                        "specs": p.get("specs", {}),
+                        "metadata": {
+                            "mpn": p.get("mpn") or p.get("retailer_sku"),
+                            "retailer_sku": p.get("retailer_sku"),
+                            "price_egp": p.get("price_egp"),
+                            "price": p.get("price_egp"),
+                            "brand": p.get("brand"),
+                            "in_stock": p.get("in_stock", True),
+                        },
+                    })
+                    if limit and len(laptops) >= limit:
+                        break
+                if laptops:
+                    return laptops
+        except Exception as e:
+            logger.warning("Failed loading my_raw_specs.json: %s", e)
+
+    # 2. Check store_compumarts.json
+    store_file = os.path.join(PROJECT_ROOT, "scraping-results", "stores", "store_compumarts.json")
+    if os.path.exists(store_file):
+        try:
+            with open(store_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            prods = data.get("products", [])
             laptops = []
-            for p in data:
+            for p in prods:
                 laptops.append({
                     "product_url": p.get("product_url", ""),
                     "title": p.get("title", ""),
@@ -203,66 +122,65 @@ def load_cached_compumarts_pdps(limit: int | None = None) -> list[dict]:
                         "mpn": p.get("mpn") or p.get("retailer_sku"),
                         "retailer_sku": p.get("retailer_sku"),
                         "price_egp": p.get("price_egp"),
+                        "price": p.get("price_egp"),
                         "brand": p.get("brand"),
+                        "in_stock": p.get("in_stock", True),
                     },
                 })
                 if limit and len(laptops) >= limit:
                     break
             if laptops:
                 return laptops
+        except Exception as e:
+            logger.warning("Failed loading store_compumarts.json: %s", e)
 
-    store_file = os.path.join(PROJECT_ROOT, "scraping-results", "stores", "store_compumarts.json")
-    if os.path.exists(store_file):
-        with open(store_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        prods = data.get("products", [])
-        laptops = []
-        for p in prods:
-            laptops.append({
-                "product_url": p.get("product_url", ""),
-                "title": p.get("title", ""),
-                "specs": p.get("specs", {}),
-                "metadata": {
-                    "mpn": p.get("mpn") or p.get("retailer_sku"),
-                    "retailer_sku": p.get("retailer_sku"),
-                    "price_egp": p.get("price_egp"),
-                    "brand": p.get("brand"),
-                },
-            })
-            if limit and len(laptops) >= limit:
-                break
-        if laptops:
-            return laptops
-
+    # 3. Check scratch cache
     if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, "r", encoding="utf-8") as f:
-            cache_data = json.load(f)
-        laptops = []
-        for url, data in cache_data.items():
-            laptops.append({
-                "product_url": url,
-                "title": data.get("title", ""),
-                "specs": data.get("specs", {}),
-            })
-            if limit and len(laptops) >= limit:
-                break
-        return laptops
+        try:
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                cache_data = json.load(f)
+            laptops = []
+            for url, data in cache_data.items():
+                laptops.append({
+                    "product_url": url,
+                    "title": data.get("title", ""),
+                    "specs": data.get("specs", {}),
+                    "metadata": data.get("metadata", {}),
+                })
+                if limit and len(laptops) >= limit:
+                    break
+            return laptops
+        except Exception as e:
+            logger.warning("Failed loading CACHE_FILE: %s", e)
 
     return []
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run full end-to-end CompuMarts scraping and hybrid extraction pipeline.")
+    parser = argparse.ArgumentParser(
+        description="Run robust end-to-end CompuMarts scraping and hybrid extraction pipeline."
+    )
     parser.add_argument(
         "--live",
         action="store_true",
         help="Perform a fresh live crawl over CompuMarts website instead of using cache.",
     )
     parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume execution from existing checkpoint (.checkpoint.jsonl).",
+    )
+    parser.add_argument(
         "--output",
         type=str,
         default=DEFAULT_OUTPUT,
         help=f"Output path for structured JSON results (default: {DEFAULT_OUTPUT}).",
+    )
+    parser.add_argument(
+        "--summary",
+        type=str,
+        default=DEFAULT_SUMMARY,
+        help=f"Output path for execution summary JSON (default: {DEFAULT_SUMMARY}).",
     )
     parser.add_argument(
         "--limit",
@@ -278,105 +196,214 @@ def main():
     )
     args = parser.parse_args()
 
+    output_path = os.path.abspath(args.output)
+    summary_path = os.path.abspath(args.summary)
+    checkpoint_path = f"{output_path}.checkpoint.jsonl"
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
     print("=" * 80)
-    print("🚀 COMPUMARTS FULL PIPELINE: SCRAPE RAW TABLES -> STORE EXTRACTOR -> GLINER -> JSON")
-    print(f"[*] Target Output: {args.output}")
+    print("🚀 COMPUMARTS ROBUST HYBRID PIPELINE (TIER 1 + TIER 2 GLINER)")
+    print(f"[*] Target Output:     {output_path}")
+    print(f"[*] Checkpoint File:   {checkpoint_path}")
+    print(f"[*] Summary Output:    {summary_path}")
     print("=" * 80)
 
-    # 1. Scrape raw tables
-    laptops: list[dict] = []
+    # 1. Ingest raw tables
+    laptops: list[dict[str, Any]] = []
     if args.live:
         laptops = scrape_live_compumarts_pdps(limit=args.limit)
     else:
-        print("[*] Loading discovered live PDP tables (cached)...")
+        print("[*] Loading cached raw PDP tables...")
         laptops = load_cached_compumarts_pdps(limit=args.limit)
         if not laptops:
             print("[*] Cache not found. Running live crawl...")
             laptops = scrape_live_compumarts_pdps(limit=args.limit)
 
     if not laptops:
-        print("[ERROR] No laptops found to process.")
+        print("[ERROR] No items found to process.")
         sys.exit(1)
 
-    print(f"\n[OK] Ready to process {len(laptops)} laptops.")
+    print(f"\n[OK] Retrieved {len(laptops)} items from catalog.")
+
+    # 2. Filter non-laptop products
+    helper_extractor = CompumartsExtractor()
+    valid_laptops: list[dict[str, Any]] = []
+    skipped_items: list[dict[str, Any]] = []
+
+    for item in laptops:
+        title = item.get("title", "")
+        specs = item.get("specs", {})
+        p_type = helper_extractor.detect_product_type(specs, title)
+        if p_type != "laptop":
+            skipped_items.append({
+                "title": title,
+                "url": item.get("product_url", ""),
+                "detected_type": p_type,
+                "reason": f"Filtered out non-laptop category ({p_type})",
+            })
+        else:
+            valid_laptops.append(item)
+
+    print(f"[OK] Filtered catalog: {len(valid_laptops)} valid laptops ({len(skipped_items)} non-laptop items skipped).")
     print("=" * 80)
 
-    # 2. Initialize 2-Tier Hybrid Extractor
+    # 3. Checkpoint handling (--resume)
+    results: list[dict[str, Any]] = []
+    processed_urls: set[str] = set()
+
+    if args.resume and os.path.exists(checkpoint_path):
+        print(f"[*] Resuming from checkpoint: {checkpoint_path}...")
+        try:
+            with open(checkpoint_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line_s = line.strip()
+                    if line_s:
+                        record = json.loads(line_s)
+                        results.append(record)
+                        if record.get("product_url"):
+                            processed_urls.add(record["product_url"])
+            print(f"[OK] Loaded {len(results)} previously processed records from checkpoint.")
+        except Exception as e:
+            logger.warning("Error reading checkpoint file: %s", e)
+
+    # 4. Initialize Hybrid Extractor
     print("[*] Initializing Hybrid Laptop Extractor (CompumartsExtractor + GLiNER)...")
     extractor = HybridLaptopExtractor(model_name=args.model)
 
-    # 3. Extraction Loop
-    results: list[dict] = []
+    # 5. Extraction Loop
     latencies: list[float] = []
     total_envelopes = 0
     total_gliner_calls = 0
+    status_counts = {"ok": 0, "partial": 0, "failed": 0}
 
     print(f"\n[*] Processing laptops through 2-Tier Pipeline...")
     t_start = time.perf_counter()
 
-    for idx, laptop in enumerate(laptops):
-        title = laptop.get("title", "")
-        specs = laptop.get("specs", {})
-        url = laptop.get("product_url", "")
+    # Open checkpoint in append mode
+    with open(checkpoint_path, "a", encoding="utf-8") as checkpoint_f:
+        for idx, laptop in enumerate(valid_laptops):
+            url = laptop.get("product_url", "")
+            title = laptop.get("title", "")
+            specs = laptop.get("specs", {})
 
-        t0 = time.perf_counter()
-        structured, meta = extractor.extract(
-            title=title,
-            specs=specs,
-            metadata=laptop,
-            store="compumarts",
-        )
-        dur_ms = meta["total_time_ms"]
-        latencies.append(dur_ms)
-        total_envelopes += meta.get("envelopes_count", 0)
-        total_gliner_calls += meta.get("gliner_calls_count", 0)
+            if url in processed_urls:
+                continue
 
-        results.append({
-            "index": idx,
-            "title": title,
-            "product_url": url,
-            "latency_ms": round(dur_ms, 2),
-            "structured": structured,
-        })
+            try:
+                structured, meta = extractor.extract(
+                    title=title,
+                    specs=specs,
+                    metadata=laptop.get("metadata", laptop),
+                    store="compumarts",
+                )
+            except Exception as exc:
+                logger.exception("Catastrophic error in laptop extraction for %s: %s", url, exc)
+                from gliner_extractor.schema import empty_structured
+                structured = empty_structured()
+                structured["extraction_meta"]["status"] = "failed"
+                structured["extraction_meta"]["warnings"].append(f"fatal_loop_error: {str(exc)}")
+                meta = {
+                    "total_time_ms": 0.0,
+                    "layer1_time_ms": 0.0,
+                    "gliner_time_ms": 0.0,
+                    "gliner_calls_count": 0,
+                    "envelopes_count": 0,
+                }
 
-        # Compact progress output
-        brand = structured["identity"].get("brand") or "N/A"
-        cpu_name = structured["cpu"].get("full_name") or f"{structured['cpu'].get('line') or ''} {structured['cpu'].get('model') or ''}".strip() or "N/A"
-        gpu_name = structured["gpu"].get("model") or "N/A"
-        ram_cap = structured["memory"].get("capacity_gb")
-        st_cap = structured["storage"].get("capacity_gb")
-        res_str = structured["display"].get("resolution") or f"{structured['display'].get('size_inches')}\"" if structured['display'].get('size_inches') else "N/A"
+            dur_ms = meta["total_time_ms"]
+            latencies.append(dur_ms)
+            total_envelopes += meta.get("envelopes_count", 0)
+            total_gliner_calls += meta.get("gliner_calls_count", 0)
+            rec_status = structured.get("extraction_meta", {}).get("status", "ok")
+            status_counts[rec_status] = status_counts.get(rec_status, 0) + 1
 
-        print(
-            f"  [{idx+1:03d}/{len(laptops):03d}] {dur_ms:6.1f}ms | "
-            f"Brand: {brand[:8]:<8} | "
-            f"CPU: {cpu_name[:24]:<24} | "
-            f"GPU: {gpu_name[:18]:<18} | "
-            f"RAM: {ram_cap}GB | "
-            f"SSD: {st_cap}GB | "
-            f"Disp: {res_str[:11]}"
-        )
+            record = {
+                "index": len(results),
+                "title": title,
+                "product_url": url,
+                "latency_ms": round(dur_ms, 2),
+                "structured": structured,
+            }
+            results.append(record)
+            processed_urls.add(url)
+
+            # Stream immediately to checkpoint
+            checkpoint_f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            checkpoint_f.flush()
+
+            # Compact progress log
+            brand = structured["identity"].get("brand") or "N/A"
+            cpu_name = (
+                structured["cpu"].get("full_name")
+                or f"{structured['cpu'].get('line') or ''} {structured['cpu'].get('model') or ''}".strip()
+                or "N/A"
+            )
+            gpu_name = structured["gpu"].get("model") or "N/A"
+            ram_cap = structured["memory"].get("capacity_gb")
+            st_cap = structured["storage"].get("capacity_gb")
+            res_str = (
+                structured["display"].get("resolution")
+                or (f"{structured['display'].get('size_inches')}\"" if structured['display'].get('size_inches') else "N/A")
+            )
+
+            print(
+                f"  [{len(results):03d}/{len(valid_laptops):03d}] {dur_ms:6.1f}ms | "
+                f"Status: {rec_status.upper():<7} | "
+                f"Brand: {brand[:8]:<8} | "
+                f"CPU: {cpu_name[:24]:<24} | "
+                f"GPU: {gpu_name[:18]:<18} | "
+                f"RAM: {ram_cap}GB | "
+                f"SSD: {st_cap}GB | "
+                f"Disp: {res_str[:11]}"
+            )
 
     total_time_s = time.perf_counter() - t_start
     avg_latency = sum(latencies) / len(latencies) if latencies else 0
 
-    # 4. Save Output JSON as usual
-    output_path = os.path.abspath(args.output)
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as f:
+    # 6. Atomic File Replace on Write for hybrid_results.json
+    temp_output_path = f"{output_path}.tmp"
+    with open(temp_output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
+    os.replace(temp_output_path, output_path)
+
+    # 7. Write run_summary.json
+    run_summary = {
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "total_catalog_discovered": len(laptops),
+        "valid_laptops_count": len(valid_laptops),
+        "skipped_items_count": len(skipped_items),
+        "processed_results_count": len(results),
+        "status_breakdown": status_counts,
+        "runtime_seconds": round(total_time_s, 2),
+        "average_latency_ms": round(avg_latency, 2),
+        "min_latency_ms": round(min(latencies), 2) if latencies else 0.0,
+        "max_latency_ms": round(max(latencies), 2) if latencies else 0.0,
+        "total_envelopes_created": total_envelopes,
+        "total_gliner_calls": total_gliner_calls,
+        "gliner_tokens": {
+            "max_tokens_seen": extractor.gliner.max_tokens_seen,
+            "truncations_prevented": extractor.gliner.truncations_prevented,
+        },
+        "skipped_items": skipped_items,
+    }
+    with open(summary_path, "w", encoding="utf-8") as f:
+        json.dump(run_summary, f, indent=2, ensure_ascii=False)
 
     print("\n" + "=" * 80)
     print("🎯 FULL PIPELINE EXECUTION SUMMARY:")
-    print(f"  - Total laptops scraped & extracted: {len(results)}")
+    print(f"  - Total catalog items:                {len(laptops)}")
+    print(f"  - Valid laptops processed:            {len(results)}")
+    print(f"  - Non-laptop items skipped:           {len(skipped_items)}")
+    print(f"  - Status breakdown:                   {status_counts}")
     print(f"  - Total pipeline time:                {total_time_s:.2f}s")
     print(f"  - Average latency per laptop:         {avg_latency:.2f} ms")
     print(f"  - ContextEnvelopes created:           {total_envelopes}")
     print(f"  - GLiNER fallback calls:              {total_gliner_calls}")
+    print(f"  - GLiNER max tokens observed:         {extractor.gliner.max_tokens_seen}")
     print(f"  - Output JSON saved to:               {output_path}")
+    print(f"  - Run summary saved to:               {summary_path}")
     print("=" * 80)
 
 
 if __name__ == "__main__":
     main()
-
