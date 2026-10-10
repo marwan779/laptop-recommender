@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.6.0...scraper-service-v1.6.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **scraper-service:** correct playwright browsers path in dockerfile ([b058c78](https://github.com/marwan779/laptop-recommender/commit/b058c78e64299508505414c7c3e5bc64f9c93613))
+
 ## [1.6.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.5.0...scraper-service-v1.6.0) (2026-10-03)
 
 
