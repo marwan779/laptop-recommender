@@ -72,51 +72,51 @@ jobs:
               --tag "${{ env.IMAGE }}:latest" \
               "${{ env.IMAGE }}:edge"
           fi
-    deploy:
-      name: Deploy New AWS Batch Job Definition Revision
-      runs-on: ubuntu-latest
-      needs: [meta, promote_image]
-      permissions:
-        contents: read
-        id-token: write
+  deploy:
+    name: Deploy New AWS Batch Job Definition Revision
+    runs-on: ubuntu-latest
+    needs: [meta, promote_image]
+    permissions:
+      contents: read
+      id-token: write
 
-      steps:
-        - name: Configure AWS Credentials
-          uses: aws-actions/configure-aws-credentials@v6
-          with:
-            role-to-assume: arn:aws:iam::042513197445:role/GitHubActionsSAMDeployRole
-            aws-region: us-east-1
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::042513197445:role/GitHubActionsSAMDeployRole
+          aws-region: us-east-1
 
-        - name: Register Updated AWS Batch Job Definition
-          env:
-            IMAGE_TAG: ${{ needs.meta.outputs.version }}
-            IMAGE: ${{ env.IMAGE }}
-          run: |
-            set -euo pipefail
+      - name: Register Updated AWS Batch Job Definition
+        env:
+          IMAGE_TAG: ${{ needs.meta.outputs.version }}
+          IMAGE: ${{ env.IMAGE }}
+        run: |
+          set -euo pipefail
 
-            IMAGE_URI="${IMAGE}:${IMAGE_TAG}"
+          IMAGE_URI="${IMAGE}:${IMAGE_TAG}"
 
-            aws batch describe-job-definitions \
-              --job-definition-name scraper-job-def \
-              --status ACTIVE \
-              --query 'jobDefinitions | sort_by(@, &revision) | [-1]' \
-              > current-job-definition.json
+          aws batch describe-job-definitions \
+            --job-definition-name scraper-job-def \
+            --status ACTIVE \
+            --query 'jobDefinitions | sort_by(@, &revision) | [-1]' \
+            > current-job-definition.json
 
-            jq --arg image "$IMAGE_URI" '
-              .containerProperties.image = $image
-              | del(
-                  .jobDefinitionArn,
-                  .revision,
-                  .status,
-                  .registeredAt,
-                  .registeredBy,
-                  .deregisteredAt,
-                  .containerOrchestrationType
-                )
-            ' current-job-definition.json > updated-job-definition.json
+          jq --arg image "$IMAGE_URI" '
+            .containerProperties.image = $image
+            | del(
+                .jobDefinitionArn,
+                .revision,
+                .status,
+                .registeredAt,
+                .registeredBy,
+                .deregisteredAt,
+                .containerOrchestrationType
+              )
+          ' current-job-definition.json > updated-job-definition.json
 
-            aws batch register-job-definition \
-              --cli-input-json file://updated-job-definition.json
+          aws batch register-job-definition \
+            --cli-input-json file://updated-job-definition.json
 
   publish_release:
     name: Promote Pre-release to Official Latest Release
