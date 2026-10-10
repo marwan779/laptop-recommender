@@ -308,4 +308,3 @@ def test_deps_get_orchestrator_builds_configured_instance():
     assert orchestrator.storage_service is not None
     assert orchestrator.send_email is False
     assert orchestrator.upload_to_bucket is False
-

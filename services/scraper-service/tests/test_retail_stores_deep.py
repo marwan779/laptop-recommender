@@ -124,7 +124,9 @@ def test_noon_fetch_html_akamai_challenge_fallback():
     engine = MagicMock()
     # Engine returns Akamai challenge page
     doc_challenge = MagicMock()
-    doc_challenge.html = "<html><head><title>Akamai Access Denied</title></head><body>sec-if-cpt-container</body></html>"
+    doc_challenge.html = (
+        "<html><head><title>Akamai Access Denied</title></head><body>sec-if-cpt-container</body></html>"
+    )
     engine.fetch.return_value = doc_challenge
 
     scraper = NoonStoreScraper(engine=engine)
