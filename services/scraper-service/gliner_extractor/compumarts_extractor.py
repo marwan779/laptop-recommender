@@ -1817,8 +1817,16 @@ class CompumartsExtractor:
             m_ff_c = re.search(r"M\.2\s*(2230|2242|2280)", combined_text, re.I)
             if m_ff_c:
                 storage["form_factor"] = f"M.2 {m_ff_c.group(1)}"
-            elif re.search(r"M\.2\s*2280", combined_text, re.I):
-                storage["form_factor"] = "M.2 2280"
+            elif re.search(r"\bM\.2\b", combined_text, re.I):
+                storage["form_factor"] = "M.2"
+            elif re.search(r'2\.5(?:\s*\"|\s*inch)?', combined_text, re.I):
+                storage["form_factor"] = '2.5"'
+
+        if storage["form_factor"]:
+            v_ff, err_ff = validate_storage_form_factor(storage["form_factor"])
+            storage["form_factor"] = v_ff
+            if err_ff and rejections is not None:
+                rejections.append({"field": "storage.form_factor", "value": storage["form_factor"], "rule": err_ff})
 
         if storage["slot_count"] is None:
             m_sl_c = re.search(r"\b([1234])\s*(?:x\s*M\.2|x\s*slots?|M\.2\s*slots?)\b", combined_text, re.I)
@@ -2080,7 +2088,10 @@ class CompumartsExtractor:
             if re.search(r"\b(ports?|hdmi|usb|type[- ]?c|thunderbolt|ethernet|rj[- ]?45|displayport|audio[- ]?jack)\b", k_clean, re.I):
                 if re.search(r"\b(ethernet|rj[- ]?45)\b", k_clean, re.I) and not conn["ethernet"]:
                     conn["ethernet"] = v_str
-                if not any(ex in k_clean for ex in ["supported", "memory", "ram", "storage", "drive", "ssd", "interface", "card reader"]):
+                is_excluded = any(
+                    ex in k_clean for ex in ["supported", "memory", "ram", "storage", "drive", "ssd", "card reader"]
+                ) or ("interface" in k_clean and "port" not in k_clean)
+                if not is_excluded:
                     if v_str.lower() not in ("no", "0", "none"):
                         conn["ports"].append(f"{raw_k}: {v_str}")
                 continue
