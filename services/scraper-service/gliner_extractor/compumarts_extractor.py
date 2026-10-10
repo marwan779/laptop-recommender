@@ -10,12 +10,60 @@ Features:
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
+from gliner_extractor.schema import empty_structured
+from gliner_extractor.validators import (
+    INTEGRATED_GPU_PATTERNS,
+    clean_text,
+    compute_aspect_ratio,
+    is_placeholder,
+    normalize_cpu_line,
+    normalize_dimensions,
+    validate_battery_capacity,
+    validate_battery_cells,
+    validate_bluetooth,
+    validate_brand,
+    validate_color,
+    validate_cpu_cores_threads,
+    validate_display_size,
+    validate_ethernet,
+    validate_gpu_integrated,
+    validate_gpu_vram,
+    validate_microphone,
+    validate_mpn,
+    validate_os_name,
+    validate_panel_type,
+    validate_power_adapter,
+    validate_ram_capacity,
+    validate_ram_slots,
+    validate_ram_speed,
+    validate_ram_type,
+    validate_refresh_rate,
+    validate_resolution,
+    validate_storage_capacity,
+    validate_storage_form_factor,
+    validate_storage_interface,
+    validate_webcam,
+    validate_weight,
+    validate_wifi,
+)
+
 logger = logging.getLogger(__name__)
+
+CPU_SPECS_PATH = Path(__file__).parent / "data" / "cpu_specs.json"
+_CPU_SPECS_DB: dict[str, dict[str, Any]] = {}
+if CPU_SPECS_PATH.exists():
+    try:
+        with open(CPU_SPECS_PATH, "r", encoding="utf-8") as _f:
+            _CPU_SPECS_DB = json.load(_f)
+    except Exception as _e:
+        logger.warning(f"Failed to load cpu_specs.json: {_e}")
 
 
 @dataclass
@@ -924,11 +972,89 @@ class CompumartsExtractor:
     # EXTRACTION METHODS
     # -------------------------------------------------------------------------
 
+    def find_mpn(
+        self,
+        raw_specs: dict[str, Any],
+        title: str,
+        metadata: dict[str, Any] | None = None,
+        rejections: list[dict[str, Any]] | None = None,
+    ) -> str | None:
+        """Find and validate manufacturer part number / SKU from metadata, table, or title."""
+        # 1. Metadata candidate
+        if metadata:
+            for k in ("mpn", "retailer_sku", "sku"):
+                cand = metadata.get(k)
+                if cand:
+                    v_mpn, err = validate_mpn(cand)
+                    if v_mpn:
+                        return v_mpn
+                    elif err and rejections is not None:
+                        rejections.append({"field": "identity.manufacturer_part_number", "value": cand, "rule": err})
+
+        # 2. Table spec candidate
+        for raw_k, raw_v in raw_specs.items():
+            if not raw_v:
+                continue
+            k_norm = self._normalize_key(raw_k)
+            role = self.IDENTITY_KEYWORDS.get(k_norm) or self.IDENTITY_KEYWORDS.get(raw_k.strip().lower())
+            if role == "manufacturer_part_number":
+                cand = str(raw_v).strip()
+                v_mpn, err = validate_mpn(cand)
+                if v_mpn:
+                    return v_mpn
+                elif err and rejections is not None:
+                    rejections.append({"field": "identity.manufacturer_part_number", "value": cand, "rule": err})
+
+        # 3. Regex patterns from title
+        patterns = [
+            r"\b(NH\.[A-Z0-9]{5}\.[A-Z0-9]{3})\b",
+            r"\b([0-9]{2}[A-Z0-9]{8})\b",
+            r"\b([A-Z0-9]{4,8}-[A-Z0-9]{4,8}(?:-[A-Z0-9]{2,6})?)\b",
+            r"\b([A-Z0-9]{6,12}#[A-Z0-9]{3,4})\b",
+        ]
+        for pat in patterns:
+            m = re.search(pat, title, re.I)
+            if m:
+                cand = m.group(1).strip()
+                v_mpn, err = validate_mpn(cand)
+                if v_mpn:
+                    return v_mpn
+                elif err and rejections is not None:
+                    rejections.append({"field": "identity.manufacturer_part_number", "value": cand, "rule": err})
+
+        return None
+
+    def detect_product_type(self, raw_specs: dict[str, Any], title: str) -> str:
+        """Detect product category to filter out non-laptop items."""
+        t_low = title.lower()
+        if any(w in t_low for w in ["backpack", "sleeve", "bag", "carry case", "briefcase"]):
+            return "bag"
+        if any(w in t_low for w in ["mouse", "headset", "docking", "dock", "charger", "adapter", "power bank", "keyboard"]):
+            if not any(w in t_low for w in ["laptop", "notebook", "gaming laptop"]):
+                return "accessory"
+        if "monitor" in t_low and not any(w in t_low for w in ["laptop", "notebook"]):
+            return "monitor"
+        if any(w in t_low for w in ["desktop", "all-in-one", "aio", "tower"]) and not any(w in t_low for w in ["laptop", "notebook"]):
+            return "desktop"
+        return "laptop"
+
+    def detect_condition(self, raw_specs: dict[str, Any], title: str) -> str:
+        """Detect item condition (new, refurbished, open_box, used)."""
+        combined = f"{title} {' '.join(str(v) for v in raw_specs.values())}".lower()
+        if "refurbished" in combined or "renewed" in combined:
+            return "refurbished"
+        if "open box" in combined or "open-box" in combined:
+            return "open_box"
+        if "used" in combined or "pre-owned" in combined:
+            return "used"
+        return "new"
+
     def extract_identity(
         self,
         raw_specs: dict[str, Any],
         title: str,
         metadata: dict[str, Any] | None = None,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract brand, family, model, and part numbers."""
         envelopes: list[ContextEnvelope] = []
@@ -939,30 +1065,26 @@ class CompumartsExtractor:
             "manufacturer_part_number": None,
         }
 
-        # Check metadata first
-        if metadata:
-            if metadata.get("brand"):
-                ident["brand"] = metadata["brand"]
-            if metadata.get("mpn"):
-                ident["manufacturer_part_number"] = metadata["mpn"]
-            elif metadata.get("retailer_sku"):
-                ident["manufacturer_part_number"] = metadata["retailer_sku"]
+        # 1. MPN extraction via find_mpn
+        ident["manufacturer_part_number"] = self.find_mpn(raw_specs, title, metadata, rejections=rejections)
 
-        # Check raw specs table
+        # 2. Extract brand, model, family
+        raw_brand = None
+        if metadata and metadata.get("brand"):
+            raw_brand = metadata["brand"]
+
         for raw_k, raw_v in raw_specs.items():
             k_norm = self._normalize_key(raw_k)
             role = self.IDENTITY_KEYWORDS.get(k_norm) or self.IDENTITY_KEYWORDS.get(raw_k.strip().lower())
             if not role or not raw_v:
                 continue
             v_str = str(raw_v).strip()
-            if role == "brand" and not ident["brand"]:
-                ident["brand"] = v_str
+            if role == "brand" and not raw_brand:
+                raw_brand = v_str
             elif role == "laptop_model" and not ident["laptop_model"]:
                 ident["laptop_model"] = v_str
             elif role == "laptop_family" and not ident["laptop_family"]:
                 ident["laptop_family"] = v_str
-            elif role == "manufacturer_part_number" and not ident["manufacturer_part_number"]:
-                ident["manufacturer_part_number"] = v_str
 
         # Title Family & Brand Normalization
         if not ident["laptop_family"]:
@@ -971,35 +1093,35 @@ class CompumartsExtractor:
                     ident["laptop_family"] = fam
                     break
 
-        if not ident["brand"]:
+        if not raw_brand:
             t_low = title.lower()
             # 1. Direct brands
             for b in ["acer", "asus", "lenovo", "hp", "dell", "msi", "apple", "samsung", "huawei", "gigabyte", "razer", "microsoft"]:
                 if re.search(rf"\b{b}\b", t_low):
-                    ident["brand"] = b.upper() if b in ("hp", "msi", "dell", "asus") else b.capitalize()
+                    raw_brand = b
                     break
             # 2. Sub-brands
-            if not ident["brand"]:
+            if not raw_brand:
                 for sub, parent in self.SUB_BRAND_MAP.items():
                     if re.search(rf"\b{re.escape(sub)}\b", t_low):
-                        ident["brand"] = parent
+                        raw_brand = parent
                         if not ident["laptop_family"]:
                             ident["laptop_family"] = sub.title()
                         break
 
-        # If brand still not found but laptop_family found, infer brand from sub-brand map
-        if not ident["brand"] and ident["laptop_family"]:
+        if not raw_brand and ident["laptop_family"]:
             fam_low = ident["laptop_family"].lower()
             for sub, parent in self.SUB_BRAND_MAP.items():
                 if sub in fam_low:
-                    ident["brand"] = parent
+                    raw_brand = parent
                     break
 
-        # Fallback part number from title if model code present (e.g. 83LY00R8ED, G835LW-AI642W)
-        if not ident["manufacturer_part_number"]:
-            m_mpn = re.search(r"\b([0-9]{2}[A-Z0-9]{8}|[A-Z0-9]{5,8}-[A-Z0-9]{5,8})\b", title)
-            if m_mpn:
-                ident["manufacturer_part_number"] = m_mpn.group(1)
+        # Validate brand
+        if raw_brand:
+            v_b, err_b = validate_brand(raw_brand)
+            ident["brand"] = v_b
+            if err_b and rejections is not None:
+                rejections.append({"field": "identity.brand", "value": raw_brand, "rule": err_b})
 
         missing_ident = []
         if not ident["brand"]:
@@ -1029,6 +1151,7 @@ class CompumartsExtractor:
         self,
         raw_specs: dict[str, Any],
         title: str,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract CPU hardware specifications with limit boundary detection."""
         envelopes: list[ContextEnvelope] = []
@@ -1155,6 +1278,48 @@ class CompumartsExtractor:
                 if m_clk:
                     cpu["clock_speed"] = m_clk.group(0).strip()
 
+        # Lookup verified specs in _CPU_SPECS_DB
+        lookup_spec = None
+        for cand_key in [cpu["model"], cpu["full_name"], title]:
+            if cand_key:
+                clean_k = str(cand_key).strip()
+                if clean_k in _CPU_SPECS_DB:
+                    lookup_spec = _CPU_SPECS_DB[clean_k]
+                    break
+                elif clean_k.lower() in _CPU_SPECS_DB:
+                    lookup_spec = _CPU_SPECS_DB[clean_k.lower()]
+                    break
+        if not lookup_spec and cpu["model"]:
+            m_code = re.search(r"\b([0-9]{3,5}[A-Za-z0-9]{0,3}|HX\s*[0-9]{3,4}|X1[EP]-[0-9]{2}-[0-9]{3})\b", cpu["model"], re.I)
+            if m_code:
+                code_str = m_code.group(1).strip()
+                if code_str in _CPU_SPECS_DB:
+                    lookup_spec = _CPU_SPECS_DB[code_str]
+                elif code_str.lower() in _CPU_SPECS_DB:
+                    lookup_spec = _CPU_SPECS_DB[code_str.lower()]
+
+        if lookup_spec:
+            if cpu["manufacturer"] is None:
+                cpu["manufacturer"] = lookup_spec.get("manufacturer")
+            if cpu["line"] is None:
+                cpu["line"] = lookup_spec.get("line")
+            if cpu["cores"] is None:
+                cpu["cores"] = lookup_spec.get("cores")
+            if cpu["threads"] is None:
+                cpu["threads"] = lookup_spec.get("threads")
+            if cpu.get("clock_base_ghz") is None:
+                cpu["clock_base_ghz"] = lookup_spec.get("clock_base_ghz")
+            if cpu.get("clock_boost_ghz") is None:
+                cpu["clock_boost_ghz"] = lookup_spec.get("clock_boost_ghz")
+
+        # Normalize line & validate cores/threads
+        cpu["line"] = normalize_cpu_line(cpu["line"])
+        v_cores, v_threads, err_ct = validate_cpu_cores_threads(cpu["cores"], cpu["threads"])
+        if err_ct and rejections is not None:
+            rejections.append({"field": "cpu.cores_threads", "value": (cpu.get("cores"), cpu.get("threads")), "rule": err_ct})
+        cpu["cores"] = v_cores
+        cpu["threads"] = v_threads
+
         # Limit Boundary Check: Trigger envelope if ANY CPU field is missing
         missing_cpu = []
         if not cpu["manufacturer"]:
@@ -1167,7 +1332,7 @@ class CompumartsExtractor:
             missing_cpu.append("cpu core count")
         if cpu["threads"] is None:
             missing_cpu.append("cpu thread count")
-        if not cpu["clock_speed"]:
+        if not cpu["clock_speed"] and not cpu.get("clock_base_ghz"):
             missing_cpu.append("cpu clock speed")
 
         if missing_cpu and (cpu_raw_rows or title):
@@ -1188,12 +1353,14 @@ class CompumartsExtractor:
         raw_specs: dict[str, Any],
         title: str,
         sibling_context: dict[str, Any] | None = None,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract discrete and integrated GPU hardware specifications."""
         envelopes: list[ContextEnvelope] = []
         gpu: dict[str, Any] = {
             "manufacturer": None,
             "model": None,
+            "secondary_model": None,
             "full_name": None,
             "vram_gb": None,
             "tdp_w": None,
@@ -1218,7 +1385,7 @@ class CompumartsExtractor:
                     gpu["tdp_w"] = int(m_w.group(1))
 
             if role in ("vram_gb", "graphics memory", "gpu memory") and gpu["vram_gb"] is None:
-                m_v = re.search(r"\b([2468]|12|16|24)\s*GB\b", v_str, re.I)
+                m_v = re.search(r"\b([2468]|12|16|20|24)\s*GB\b", v_str, re.I)
                 if m_v:
                     gpu["vram_gb"] = int(m_v.group(1))
 
@@ -1250,8 +1417,8 @@ class CompumartsExtractor:
             m_int = re.search(
                 r"\b(Adreno(?:\s+GPU)?|"
                 r"Radeon(?:\s+660M|\s+780M|\s+880M|\s+Graphics)?|"
-                r"Intel\s+(?:Iris\s+X[ee]|UHD|Graphics)|"
-                r"Iris\s+X[ee]|UHD\s+Graphics)\b",
+                r"Intel\s+(?:Iris\s+X[ee]|UHD|Graphics|Arc(?:\s+Graphics)?)|"
+                r"Arc\s+Graphics|Iris\s+X[ee]|UHD\s+Graphics)\b",
                 clean_gpu_text,
                 re.I,
             )
@@ -1290,7 +1457,7 @@ class CompumartsExtractor:
                 gpu["integrated"] = False
             else:
                 m_int_title = re.search(
-                    r"\b(Adreno(?:\s+GPU)?|Radeon(?:\s+Graphics)?|Intel\s+(?:Iris\s+X[ee]|UHD|Graphics))\b",
+                    r"\b(Adreno(?:\s+GPU)?|Radeon(?:\s+Graphics)?|Intel\s+(?:Iris\s+X[ee]|UHD|Graphics|Arc(?:\s+Graphics)?))\b",
                     clean_title,
                     re.I,
                 )
@@ -1298,7 +1465,7 @@ class CompumartsExtractor:
                     gpu["model"] = m_int_title.group(1).strip()
                     gpu["integrated"] = True
 
-        # Fallback: Infer integrated GPU from CPU / architecture if no discrete GPU exists
+        # Fallback: Infer integrated GPU from CPU / architecture if no GPU exists
         if not gpu["model"] and not gpu["integrated"]:
             cpu_ctx = (sibling_context or {}).get("cpu", "") or ""
             target_all = f"{cpu_ctx} {title}".upper()
@@ -1319,7 +1486,15 @@ class CompumartsExtractor:
                 gpu["manufacturer"] = "Intel"
                 gpu["integrated"] = True
 
-        # Extract VRAM fallback if still missing
+        # Determine integrated status strictly via validate_gpu_integrated
+        is_int, _ = validate_gpu_integrated(gpu["model"])
+        if is_int:
+            gpu["integrated"] = True
+            gpu["vram_gb"] = None
+        else:
+            gpu["integrated"] = False
+
+        # Extract VRAM fallback if discrete and still missing
         if gpu["vram_gb"] is None and not gpu["integrated"]:
             if gpu_raw_rows:
                 m_vr = re.search(r"\b([123468]|10|12|16|20|24)\s*GB\b", combined_text, re.I)
@@ -1330,17 +1505,20 @@ class CompumartsExtractor:
                 if m_vrt:
                     gpu["vram_gb"] = int(m_vrt.group(1))
 
-        # Standard discrete laptop GPU hardware architecture VRAM mapping
-        if gpu["vram_gb"] is None and not gpu["integrated"] and gpu["model"]:
-            model_up = gpu["model"].upper()
-            if any(m in model_up for m in ["5060", "4060", "5050", "4070", "5070"]):
-                gpu["vram_gb"] = 8
-            elif "4050" in model_up:
-                gpu["vram_gb"] = 6
-            elif "4080" in model_up:
-                gpu["vram_gb"] = 12
-            elif any(m in model_up for m in ["4090", "5090", "5080"]):
-                gpu["vram_gb"] = 16
+        # Validate VRAM with validate_gpu_vram
+        if gpu["vram_gb"] is not None:
+            v_vram, err_vram = validate_gpu_vram(gpu["vram_gb"], is_integrated=gpu["integrated"])
+            gpu["vram_gb"] = v_vram
+            if err_vram and rejections is not None:
+                rejections.append({"field": "gpu.vram_gb", "value": gpu.get("vram_gb"), "rule": err_vram})
+
+        # Check for secondary GPU (integrated GPU when primary is discrete)
+        if not gpu["integrated"]:
+            m_sec = INTEGRATED_GPU_PATTERNS.search(combined_text)
+            if m_sec:
+                cand_sec = m_sec.group(0).strip()
+                if cand_sec.lower() != (gpu["model"] or "").lower():
+                    gpu["secondary_model"] = cand_sec
 
         # Extract TDP/TGP fallback if still missing
         if gpu["tdp_w"] is None:
@@ -1380,6 +1558,7 @@ class CompumartsExtractor:
         raw_specs: dict[str, Any],
         title: str,
         sibling_context: dict[str, Any] | None = None,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract installed and maximum RAM configurations."""
         envelopes: list[ContextEnvelope] = []
@@ -1426,7 +1605,7 @@ class CompumartsExtractor:
 
             # Type
             if role in ("memory_type", "memory technology") and not mem["memory_type"]:
-                m_t = re.search(r"\b(LPDDR5X|LPDDR5|DDR5|DDR4)\b", v_str, re.I)
+                m_t = re.search(r"\b(LPDDR5X|LPDDR5|DDR5|DDR4|LPDDR4X|DDR3)\b", v_str, re.I)
                 if m_t:
                     mem["memory_type"] = m_t.group(1).upper()
 
@@ -1463,12 +1642,12 @@ class CompumartsExtractor:
                 mem["max_supported_gb"] = int(m_max_c.group(1))
 
         if not mem["memory_type"]:
-            m_t_c = re.search(r"\b(LPDDR5X|LPDDR5|DDR5|DDR4|LPDDR4X|LPDDR4)\b", all_specs_mem, re.I)
+            m_t_c = re.search(r"\b(LPDDR5X|LPDDR5|DDR5|DDR4|LPDDR4X|LPDDR4|DDR3)\b", all_specs_mem, re.I)
             if m_t_c:
                 mem["memory_type"] = m_t_c.group(1).upper()
 
         if mem["speed"] is None:
-            m_sp_c = re.search(r"\b(3200|4800|5200|5600|6400|7500|8533)\s*(?:MHz|MT/s)?\b", all_specs_mem, re.I)
+            m_sp_c = re.search(r"\b(3200|4800|5200|5600|6400|7467|7500|8000|8533)\s*(?:MHz|MT/s)?\b", all_specs_mem, re.I)
             if not m_sp_c:
                 m_sp_c = re.search(r"(?:DDR[45][-\s]*)?(\d{4})\s*(?:MHz|MT/s)?\b", all_specs_mem, re.I)
             if m_sp_c:
@@ -1478,6 +1657,37 @@ class CompumartsExtractor:
             m_s_c = re.search(r"\b([1234])\s*(?:x\s*Slots?|x\s*SO-?DIMM|SO-?DIMM\s*slots?|slots?)\b", combined_text, re.I)
             if m_s_c:
                 mem["slot_count"] = int(m_s_c.group(1))
+
+        # Field validation
+        if mem["capacity_gb"] is not None:
+            v_cap, err_cap = validate_ram_capacity(mem["capacity_gb"])
+            mem["capacity_gb"] = v_cap
+            if err_cap and rejections is not None:
+                rejections.append({"field": "memory.capacity_gb", "value": mem["capacity_gb"], "rule": err_cap})
+
+        if mem["memory_type"]:
+            v_type, err_type = validate_ram_type(mem["memory_type"])
+            mem["memory_type"] = v_type
+            if err_type and rejections is not None:
+                rejections.append({"field": "memory.memory_type", "value": mem["memory_type"], "rule": err_type})
+
+        if mem["speed"] is not None:
+            v_sp, err_sp = validate_ram_speed(mem["speed"])
+            mem["speed"] = v_sp
+            if err_sp and rejections is not None:
+                rejections.append({"field": "memory.speed", "value": mem["speed"], "rule": err_sp})
+
+        if mem["slot_count"] is not None:
+            v_sc, err_sc = validate_ram_slots(mem["slot_count"])
+            mem["slot_count"] = v_sc
+            if err_sc and rejections is not None:
+                rejections.append({"field": "memory.slot_count", "value": mem["slot_count"], "rule": err_sc})
+
+        if mem["max_supported_gb"] is not None:
+            if mem["capacity_gb"] and mem["max_supported_gb"] < mem["capacity_gb"]:
+                if rejections is not None:
+                    rejections.append({"field": "memory.max_supported_gb", "value": mem["max_supported_gb"], "rule": "max_supported_less_than_capacity"})
+                mem["max_supported_gb"] = None
 
         # Limit Boundary Check: Trigger envelope if ANY memory field is missing
         missing_mem = []
@@ -1510,6 +1720,7 @@ class CompumartsExtractor:
         raw_specs: dict[str, Any],
         title: str,
         sibling_context: dict[str, Any] | None = None,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract installed storage capacity, expansion ceilings, and slot configurations."""
         envelopes: list[ContextEnvelope] = []
@@ -1619,6 +1830,25 @@ class CompumartsExtractor:
             if m_sl_c:
                 storage["slot_count"] = int(m_sl_c.group(1))
 
+        # Field validation
+        if storage["capacity_gb"] is not None:
+            v_st, err_st = validate_storage_capacity(storage["capacity_gb"])
+            storage["capacity_gb"] = v_st
+            if err_st and rejections is not None:
+                rejections.append({"field": "storage.capacity_gb", "value": storage["capacity_gb"], "rule": err_st})
+
+        if storage["interface"]:
+            v_if, err_if = validate_storage_interface(storage["interface"])
+            storage["interface"] = v_if
+            if err_if and rejections is not None:
+                rejections.append({"field": "storage.interface", "value": storage["interface"], "rule": err_if})
+
+        if storage["form_factor"]:
+            v_ff, err_ff = validate_storage_form_factor(storage["form_factor"])
+            storage["form_factor"] = v_ff
+            if err_ff and rejections is not None:
+                rejections.append({"field": "storage.form_factor", "value": storage["form_factor"], "rule": err_ff})
+
         # Limit Boundary Check: Trigger envelope if ANY storage field is missing
         missing_st = []
         if storage["capacity_gb"] is None:
@@ -1652,6 +1882,7 @@ class CompumartsExtractor:
         raw_specs: dict[str, Any],
         title: str,
         sibling_context: dict[str, Any] | None = None,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract display dimensions, resolution, and refresh rate."""
         envelopes: list[ContextEnvelope] = []
@@ -1772,14 +2003,35 @@ class CompumartsExtractor:
             m_ar_c = re.search(r"\b(16:10|16:9|3:2|4:3)\b", combined_text)
             if m_ar_c:
                 disp["aspect_ratio"] = m_ar_c.group(1)
-            elif disp["resolution_width"] and disp["resolution_height"]:
-                ratio = disp["resolution_width"] / disp["resolution_height"]
-                if abs(ratio - 16 / 10) < 0.05:
-                    disp["aspect_ratio"] = "16:10"
-                elif abs(ratio - 16 / 9) < 0.05:
-                    disp["aspect_ratio"] = "16:9"
-                elif abs(ratio - 3 / 2) < 0.05:
-                    disp["aspect_ratio"] = "3:2"
+
+        # Field validation
+        if disp["size_inches"] is not None:
+            v_sz, err_sz = validate_display_size(disp["size_inches"])
+            disp["size_inches"] = v_sz
+            if err_sz and rejections is not None:
+                rejections.append({"field": "display.size_inches", "value": disp["size_inches"], "rule": err_sz})
+
+        if disp["resolution"]:
+            v_res, w, h, err_res = validate_resolution(disp["resolution"])
+            disp["resolution"] = v_res
+            disp["resolution_width"] = w
+            disp["resolution_height"] = h
+            if err_res and rejections is not None:
+                rejections.append({"field": "display.resolution", "value": disp["resolution"], "rule": err_res})
+
+        disp["aspect_ratio"] = compute_aspect_ratio(disp["resolution_width"], disp["resolution_height"]) or disp["aspect_ratio"]
+
+        if disp["refresh_rate_hz"] is not None:
+            v_rf, err_rf = validate_refresh_rate(disp["refresh_rate_hz"])
+            disp["refresh_rate_hz"] = v_rf
+            if err_rf and rejections is not None:
+                rejections.append({"field": "display.refresh_rate_hz", "value": disp["refresh_rate_hz"], "rule": err_rf})
+
+        if disp["panel_type"]:
+            v_pt, err_pt = validate_panel_type(disp["panel_type"])
+            disp["panel_type"] = v_pt
+            if err_pt and rejections is not None:
+                rejections.append({"field": "display.panel_type", "value": disp["panel_type"], "rule": err_pt})
 
         # Limit Boundary Check: Trigger envelope if ANY display field is missing
         missing_disp = []
@@ -1811,6 +2063,7 @@ class CompumartsExtractor:
         self,
         raw_specs: dict[str, Any],
         title: str,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract I/O ports, Wi-Fi standard, Bluetooth, and Ethernet."""
         envelopes: list[ContextEnvelope] = []
@@ -1845,9 +2098,9 @@ class CompumartsExtractor:
                 m_bt_net = re.search(r"(?:BT|Bluetooth)[®™\s\(\)R]*([0-9\.]+\+?)", v_str, re.I)
                 if m_bt_net and not conn["bluetooth"]:
                     conn["bluetooth"] = f"Bluetooth {m_bt_net.group(1)}"
-                m_eth_net = re.search(r"(\d+(?:\.\d+)?\s*Gigabit(?:\s*Ethernet)?|Gigabit(?:\s*Ethernet)?|RJ-?45)", v_str, re.I)
+                m_eth_net = re.search(r"(\d+(?:\.\d+)?)\s*Gigabit(?:\s*Ethernet)?|Gigabit(?:\s*Ethernet)?|RJ-?45", v_str, re.I)
                 if m_eth_net and not conn["ethernet"]:
-                    conn["ethernet"] = m_eth_net.group(1).strip()
+                    conn["ethernet"] = m_eth_net.group(0).strip()
             elif role == "wifi" and not conn["wifi"]:
                 conn["wifi"] = v_str
             elif role == "bluetooth" and not conn["bluetooth"]:
@@ -1888,6 +2141,25 @@ class CompumartsExtractor:
                 m_eth_spd = re.search(r"\b(2\.5Gbps|1Gbps|1000Mbps|Gigabit)\b", all_conn_text, re.I)
                 conn["ethernet"] = f"{m_eth_spd.group(1)} Ethernet (RJ-45)" if m_eth_spd else "Gigabit Ethernet (RJ-45)"
 
+        # Field validation
+        if conn["wifi"]:
+            v_wf, err_wf = validate_wifi(conn["wifi"])
+            conn["wifi"] = v_wf
+            if err_wf and rejections is not None:
+                rejections.append({"field": "connectivity.wifi", "value": conn["wifi"], "rule": err_wf})
+
+        if conn["bluetooth"]:
+            v_bt, err_bt = validate_bluetooth(conn["bluetooth"])
+            conn["bluetooth"] = v_bt
+            if err_bt and rejections is not None:
+                rejections.append({"field": "connectivity.bluetooth", "value": conn["bluetooth"], "rule": err_bt})
+
+        if conn["ethernet"]:
+            v_et, err_et = validate_ethernet(conn["ethernet"])
+            conn["ethernet"] = v_et
+            if err_et and rejections is not None:
+                rejections.append({"field": "connectivity.ethernet", "value": conn["ethernet"], "rule": err_et})
+
         missing_conn = []
         if not conn["wifi"]:
             missing_conn.append("wifi standard")
@@ -1913,6 +2185,7 @@ class CompumartsExtractor:
         self,
         raw_specs: dict[str, Any],
         title: str,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract battery capacity Wh, cell counts, and adapter wattage."""
         envelopes: list[ContextEnvelope] = []
@@ -1967,6 +2240,25 @@ class CompumartsExtractor:
             if m_c_c:
                 pwr["battery_cells"] = int(m_c_c.group(1))
 
+        # Field validation
+        if pwr["battery_capacity_wh"] is not None:
+            v_wh, err_wh = validate_battery_capacity(pwr["battery_capacity_wh"])
+            pwr["battery_capacity_wh"] = v_wh
+            if err_wh and rejections is not None:
+                rejections.append({"field": "power_battery.battery_capacity_wh", "value": pwr["battery_capacity_wh"], "rule": err_wh})
+
+        if pwr["power_adapter_w"] is not None:
+            v_ad, err_ad = validate_power_adapter(pwr["power_adapter_w"], battery_wh=pwr.get("battery_capacity_wh"))
+            pwr["power_adapter_w"] = v_ad
+            if err_ad and rejections is not None:
+                rejections.append({"field": "power_battery.power_adapter_w", "value": pwr["power_adapter_w"], "rule": err_ad})
+
+        if pwr["battery_cells"] is not None:
+            v_bc, err_bc = validate_battery_cells(pwr["battery_cells"])
+            pwr["battery_cells"] = v_bc
+            if err_bc and rejections is not None:
+                rejections.append({"field": "power_battery.battery_cells", "value": pwr["battery_cells"], "rule": err_bc})
+
         missing_power = []
         if pwr["battery_capacity_wh"] is None:
             missing_power.append("battery capacity wh")
@@ -1992,6 +2284,7 @@ class CompumartsExtractor:
         self,
         raw_specs: dict[str, Any],
         title: str,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract weight, dimensions, and chassis color."""
         envelopes: list[ContextEnvelope] = []
@@ -2027,25 +2320,27 @@ class CompumartsExtractor:
                 elif role == "color":
                     phys["color"] = v_str
 
+            # Single dimension rows (Height, Width, Depth)
             if (role == "height_mm" or "height" in k_clean) and phys["height_mm"] is None:
-                m_h = re.search(r"(\d+(?:\.\d+)?)\s*(?:mm|cm)\b", v_str, re.I)
+                m_h = re.search(r"(\d+(?:\.\d+)?)\s*(?:mm|cm)?\b", v_str, re.I)
                 if m_h:
                     val = float(m_h.group(1))
                     phys["height_mm"] = val * 10 if "cm" in v_str.lower() else val
 
             if (role == "width_mm" or "width" in k_clean) and phys["width_mm"] is None:
-                m_w = re.search(r"(\d+(?:\.\d+)?)\s*(?:mm|cm)\b", v_str, re.I)
+                m_w = re.search(r"(\d+(?:\.\d+)?)\s*(?:mm|cm)?\b", v_str, re.I)
                 if m_w:
                     val = float(m_w.group(1))
                     phys["width_mm"] = val * 10 if "cm" in v_str.lower() else val
 
             if (role == "depth_mm" or "depth" in k_clean) and phys["depth_mm"] is None:
-                m_d = re.search(r"(\d+(?:\.\d+)?)\s*(?:mm|cm)\b", v_str, re.I)
+                m_d = re.search(r"(\d+(?:\.\d+)?)\s*(?:mm|cm)?\b", v_str, re.I)
                 if m_d:
                     val = float(m_d.group(1))
                     phys["depth_mm"] = val * 10 if "cm" in v_str.lower() else val
 
-            if role in ("dimensions", "physical_characteristics"):
+            # Combined 3D dimensions
+            if role in ("dimensions", "physical_characteristics") or "dimension" in k_clean:
                 m_hwd = re.search(r"(\d+(?:\.\d+)?)\s*mm\s*\(H\)\s*[xX*×]\s*(\d+(?:\.\d+)?)\s*mm\s*\(W\)\s*[xX*×]\s*(\d+(?:\.\d+)?)\s*mm\s*\(D\)", v_str, re.I)
                 if m_hwd:
                     phys["height_mm"] = float(m_hwd.group(1))
@@ -2072,6 +2367,31 @@ class CompumartsExtractor:
                     if m_lb:
                         phys["weight_kg"] = round(float(m_lb.group(1)) * 0.45359237, 2)
                         break
+
+        # Fallback to Title for color if not found
+        if not phys["color"] and title:
+            m_col_t = re.search(r"\b(Black|White|Silver|Gray|Grey|Dark Shadow Gray|Eclipse Black|Mica Silver|Blue|Platinum)\b", title, re.I)
+            if m_col_t:
+                phys["color"] = m_col_t.group(1).strip()
+
+        # Field validation
+        if phys["weight_kg"] is not None:
+            v_wt, err_wt = validate_weight(phys["weight_kg"])
+            phys["weight_kg"] = v_wt
+            if err_wt and rejections is not None:
+                rejections.append({"field": "physical.weight_kg", "value": phys["weight_kg"], "rule": err_wt})
+
+        if phys["color"]:
+            v_col, err_col = validate_color(phys["color"], model_name=title)
+            phys["color"] = v_col
+            if err_col and rejections is not None:
+                rejections.append({"field": "physical.color", "value": phys["color"], "rule": err_col})
+
+        # Normalize dimensions (converts cm, ensures width >= depth >= height)
+        norm_w, norm_d, norm_h = normalize_dimensions(phys["width_mm"], phys["depth_mm"], phys["height_mm"])
+        phys["width_mm"] = norm_w
+        phys["depth_mm"] = norm_d
+        phys["height_mm"] = norm_h
 
         missing_phys = []
         if phys["weight_kg"] is None:
@@ -2103,6 +2423,7 @@ class CompumartsExtractor:
         self,
         raw_specs: dict[str, Any],
         title: str,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract operating system."""
         envelopes: list[ContextEnvelope] = []
@@ -2117,6 +2438,13 @@ class CompumartsExtractor:
                 # Skip nonsensical store typos like 'Up to 10 MHz'
                 if not re.search(r"MHz|GHz", v_str, re.I):
                     os_info["name"] = v_str
+
+        # Validate OS name
+        if os_info["name"]:
+            v_os, err_os = validate_os_name(os_info["name"])
+            os_info["name"] = v_os
+            if err_os and rejections is not None:
+                rejections.append({"field": "operating_system.name", "value": os_info["name"], "rule": err_os})
 
         os_rows = [(k, str(v)) for k, v in raw_specs.items() if self.OS_KEYWORDS.get(k.strip().lower()) or self.OS_KEYWORDS.get(self._normalize_key(k))]
         if not os_info["name"] and os_rows:
@@ -2136,6 +2464,7 @@ class CompumartsExtractor:
         self,
         raw_specs: dict[str, Any],
         title: str,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], list[ContextEnvelope]]:
         """Extract keyboard, backlight, and security hardware."""
         envelopes: list[ContextEnvelope] = []
@@ -2208,6 +2537,7 @@ class CompumartsExtractor:
         self,
         raw_specs: dict[str, Any],
         title: str,
+        rejections: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any], list[ContextEnvelope]]:
         """Extract audio tech, microphones, and camera specifications."""
         envelopes: list[ContextEnvelope] = []
@@ -2253,6 +2583,19 @@ class CompumartsExtractor:
                     elif re.search(r"\b(?:quad|four|4x)\b", v_s, re.I):
                         audio["speaker_count"] = 4
                         break
+
+        # Field validation
+        if webcam["resolution"]:
+            v_cam, err_cam = validate_webcam(webcam["resolution"])
+            webcam["resolution"] = v_cam
+            if err_cam and rejections is not None:
+                rejections.append({"field": "webcam.resolution", "value": webcam["resolution"], "rule": err_cam})
+
+        if audio["microphone"]:
+            v_mic, err_mic = validate_microphone(audio["microphone"])
+            audio["microphone"] = v_mic
+            if err_mic and rejections is not None:
+                rejections.append({"field": "audio.microphone", "value": audio["microphone"], "rule": err_mic})
 
         missing_audio = []
         if not webcam["resolution"]:
@@ -2429,53 +2772,54 @@ class CompumartsExtractor:
         clean_title = re.sub(r"[\u200e\u200f\u200b\xa0]", " ", title).strip() if title else ""
 
         all_envelopes: list[ContextEnvelope] = []
+        all_rejections: list[dict[str, Any]] = []
 
         # 1. Identity & Brand
-        ident, env_ident = self.extract_identity(clean_specs, clean_title, metadata)
+        ident, env_ident = self.extract_identity(clean_specs, clean_title, metadata, rejections=all_rejections)
         all_envelopes.extend(env_ident)
 
         # 2. CPU / Processor
-        cpu, env_cpu = self.extract_cpu(clean_specs, clean_title)
+        cpu, env_cpu = self.extract_cpu(clean_specs, clean_title, rejections=all_rejections)
         all_envelopes.extend(env_cpu)
 
         # 3. GPU / Graphics
-        gpu, env_gpu = self.extract_gpu(clean_specs, clean_title, sibling_context={"cpu": cpu.get("full_name")})
+        gpu, env_gpu = self.extract_gpu(clean_specs, clean_title, sibling_context={"cpu": cpu.get("full_name")}, rejections=all_rejections)
         all_envelopes.extend(env_gpu)
 
         # 4. Memory / RAM
-        mem, env_mem = self.extract_memory(clean_specs, clean_title, sibling_context={"gpu": gpu.get("model")})
+        mem, env_mem = self.extract_memory(clean_specs, clean_title, sibling_context={"gpu": gpu.get("model")}, rejections=all_rejections)
         all_envelopes.extend(env_mem)
 
         # 5. Storage / SSD
-        storage, env_storage = self.extract_storage(clean_specs, clean_title, sibling_context={"ram": mem.get("capacity_gb")})
+        storage, env_storage = self.extract_storage(clean_specs, clean_title, sibling_context={"ram": mem.get("capacity_gb")}, rejections=all_rejections)
         all_envelopes.extend(env_storage)
 
         # 6. Display / Screen
-        display, env_disp = self.extract_display(clean_specs, clean_title)
+        display, env_disp = self.extract_display(clean_specs, clean_title, rejections=all_rejections)
         all_envelopes.extend(env_disp)
 
         # 7. Connectivity & Ports
-        conn, env_conn = self.extract_connectivity(clean_specs, clean_title)
+        conn, env_conn = self.extract_connectivity(clean_specs, clean_title, rejections=all_rejections)
         all_envelopes.extend(env_conn)
 
         # 8. Power & Battery
-        power, env_power = self.extract_power_battery(clean_specs, clean_title)
+        power, env_power = self.extract_power_battery(clean_specs, clean_title, rejections=all_rejections)
         all_envelopes.extend(env_power)
 
         # 9. Physical Chassis
-        phys, env_phys = self.extract_physical(clean_specs, clean_title)
+        phys, env_phys = self.extract_physical(clean_specs, clean_title, rejections=all_rejections)
         all_envelopes.extend(env_phys)
 
         # 10. Operating System
-        os_info, env_os = self.extract_operating_system(clean_specs, clean_title)
+        os_info, env_os = self.extract_operating_system(clean_specs, clean_title, rejections=all_rejections)
         all_envelopes.extend(env_os)
 
         # 11. Build & Security
-        build, env_build = self.extract_build_security(clean_specs, clean_title)
+        build, env_build = self.extract_build_security(clean_specs, clean_title, rejections=all_rejections)
         all_envelopes.extend(env_build)
 
         # 12. Audio & Webcam
-        audio, webcam, env_audio = self.extract_audio_webcam(clean_specs, clean_title)
+        audio, webcam, env_audio = self.extract_audio_webcam(clean_specs, clean_title, rejections=all_rejections)
         all_envelopes.extend(env_audio)
 
         # 13. Unmapped Keys Catch-All Envelope
@@ -2522,21 +2866,79 @@ class CompumartsExtractor:
                     reason="unmapped_specs_chunk",
                 ))
 
-        structured: dict[str, Any] = {
-            "identity": ident,
-            "cpu": cpu,
-            "gpu": gpu,
-            "memory": mem,
-            "storage": storage,
-            "display": display,
-            "power_battery": power,
-            "connectivity": conn,
-            "operating_system": os_info,
-            "physical": phys,
-            "build": build,
-            "audio": audio,
-            "webcam": webcam,
-        }
+        # Title vs Table reconciliation
+        conflicts = []
+        m_t_ram = re.search(r"\b([48]|12|16|24|32|48|64|96|128)\s*(?:GB|G)\s*(?:RAM|DDR[45]|LPDDR\w*|Memory)?\b", clean_title, re.I)
+        if m_t_ram and mem.get("capacity_gb"):
+            t_ram_val = int(m_t_ram.group(1))
+            if t_ram_val != mem["capacity_gb"]:
+                conflicts.append({
+                    "field": "memory.capacity_gb",
+                    "title_value": t_ram_val,
+                    "table_value": mem["capacity_gb"],
+                    "chosen": mem["capacity_gb"],
+                    "reason": "table_priority",
+                })
+
+        m_t_st = re.search(r"\b(128|256|512|1024|2048|4096)\s*(?:GB|G)\b|\b([1248])\s*TB\b", clean_title, re.I)
+        if m_t_st and storage.get("capacity_gb"):
+            t_st_val = int(m_t_st.group(2)) * 1024 if m_t_st.group(2) else int(m_t_st.group(1))
+            if t_st_val != storage["capacity_gb"]:
+                conflicts.append({
+                    "field": "storage.capacity_gb",
+                    "title_value": t_st_val,
+                    "table_value": storage["capacity_gb"],
+                    "chosen": storage["capacity_gb"],
+                    "reason": "table_priority",
+                })
+
+        m_t_hz = re.search(r"\b(60|90|120|144|165|180|240|300|360)\s*Hz\b", clean_title, re.I)
+        if m_t_hz and display.get("refresh_rate_hz"):
+            t_hz_val = int(m_t_hz.group(1))
+            if t_hz_val != display["refresh_rate_hz"]:
+                conflicts.append({
+                    "field": "display.refresh_rate_hz",
+                    "title_value": t_hz_val,
+                    "table_value": display["refresh_rate_hz"],
+                    "chosen": display["refresh_rate_hz"],
+                    "reason": "table_priority",
+                })
+
+        structured: dict[str, Any] = empty_structured()
+        structured["identity"] = ident
+        structured["cpu"] = cpu
+        structured["gpu"] = gpu
+        structured["memory"] = mem
+        structured["storage"] = storage
+        structured["display"] = display
+        structured["power_battery"] = power
+        structured["connectivity"] = conn
+        structured["operating_system"] = os_info
+        structured["physical"] = phys
+        structured["build"] = build
+        structured["audio"] = audio
+        structured["webcam"] = webcam
+
+        structured["product_type"] = self.detect_product_type(clean_specs, clean_title)
+        structured["condition"] = self.detect_condition(clean_specs, clean_title)
+
+        if metadata:
+            if metadata.get("price") is not None:
+                try:
+                    structured["price_egp"] = float(metadata["price"])
+                except (ValueError, TypeError):
+                    pass
+            elif metadata.get("price_egp") is not None:
+                try:
+                    structured["price_egp"] = float(metadata["price_egp"])
+                except (ValueError, TypeError):
+                    pass
+            if metadata.get("in_stock") is not None:
+                structured["in_stock"] = bool(metadata["in_stock"])
+
+        structured["extraction_meta"]["rejected"] = all_rejections
+        structured["extraction_meta"]["conflicts"] = conflicts
+        structured["extraction_meta"]["status"] = "ok" if not all_rejections else "partial"
 
         # Layer 2: Hardware Physical Sanity Gate
         structured, all_envelopes = self.apply_sanity_gate(structured, all_envelopes, clean_specs, clean_title)
