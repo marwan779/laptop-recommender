@@ -145,3 +145,25 @@ Before returning a commit message, verify:
 * Breaking changes are explicitly marked
 * No `major`, `minor`, or `patch` labels
 * Message accurately reflects the actual diff
+
+---
+
+# Audit & Verification Rules
+
+## Mandatory Live Full-Catalog Full-Spec Audit Protocol
+
+* **Live Network Requirement**: Never run an audit against cached JSON files, local dictionary dumps, or pre-scraped files. An audit MUST fetch the raw live PDP HTML directly over the network from the actual store URLs.
+* **Full Catalog Scope**: Never limit an audit to a subset, sample, or partial batch of laptops unless explicitly instructed by the user. Every audit MUST evaluate 100% of the laptops in the catalog.
+* **All Specifications Scope**: Never restrict an audit to only "core" specifications (e.g., just CPU, RAM, GPU, Storage). The audit MUST verify every specification dimension across all 35+ fields:
+  1. **Identity**: `brand`, `laptop_family`, `laptop_model`, `manufacturer_part_number`
+  2. **CPU**: `manufacturer`, `line`, `model`, `cores`, `threads`, `clock_speed`
+  3. **GPU**: `manufacturer`, `model`, `vram_gb`, `tdp_w`, `integrated`
+  4. **Memory**: `capacity_gb`, `memory_type`, `speed`, `slot_count`, `max_supported_gb`
+  5. **Storage**: `capacity_gb`, `storage_type`, `interface`, `form_factor`, `slot_count`
+  6. **Display**: `size_inches`, `resolution`, `refresh_rate_hz`, `panel_type`, `aspect_ratio`, `touchscreen`
+  7. **Power & Battery**: `battery_capacity_wh`, `power_adapter_w`, `battery_cells`
+  8. **Physical**: `weight_kg`, `color`, `width_mm`, `depth_mm`, `height_mm`
+  9. **Build & Security**: `has_backlit_keyboard`, `has_fingerprint`, `pointing_device`, `security_features`
+  10. **Audio & Webcam**: `speaker_count`, `microphone`, `webcam.resolution`
+  11. **Connectivity**: `wifi`, `bluetooth`, `ethernet`, `ports`
+* **Raw Live DOM Ground Truth**: Compare extracted structured data directly against the raw un-sanitized HTML/DOM content of the live page (including raw attributes like `data-raw-spec`, dynamic scripts, and collapsible tab disclosures) to guarantee zero undetected misses or hallucinations.

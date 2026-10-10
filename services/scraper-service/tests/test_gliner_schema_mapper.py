@@ -172,3 +172,73 @@ def test_direct_key_matcher_fixes():
     assert struct7["gpu"]["integrated"] is True
 
 
+def test_compumarts_extractor_modular_methods():
+    """Test dedicated CompumartsExtractor modular methods and context envelopes."""
+    from gliner_extractor.compumarts_extractor import CompumartsExtractor, ContextEnvelope
+
+    ext = CompumartsExtractor()
+    title = "Lenovo Legion 5 15IRX10 Gaming Laptop Intel Core i7-13650HX RTX 5070 32GB DDR5 1TB SSD 15.3 Inch"
+    raw_specs = {
+        "Processor": "13th Gen Intel Core i7-13650HX, 14C (6P + 8E) / 20T",
+        "Chipset": "Intel HM770",
+        "Graphics": "NVIDIA GeForce RTX 5070 8GB GDDR7, TGP 115W",
+        "Memory (RAM)": "32GB SO-DIMM DDR5-5600 (2x 16GB)",
+        "Storage": "1TB SSD M.2 2280 PCIe 4.0x4 NVMe",
+        "Display": "15.3\" WUXGA (1920x1200) IPS 165Hz",
+        "Operating System": "Windows 11 Home",
+        "Battery": "80Wh",
+        "Power Adapter": "230W Slim Tip",
+        "Weight": "2.25 kg",
+        "Ports": "1x USB-C 3.2 Gen 2, 3x USB-A, 1x HDMI 2.1",
+    }
+
+    structured, envelopes = ext.extract(raw_specs, title)
+
+    # 1. Identity & Brand
+    assert structured["identity"]["brand"] == "Lenovo"
+    assert structured["identity"]["laptop_family"] == "Legion 5"
+
+    # 2. CPU (Chipset did not clobber processor)
+    assert structured["cpu"]["manufacturer"] == "Intel"
+    assert structured["cpu"]["model"] == "13650HX"
+    assert structured["cpu"]["line"] == "Core i7"
+
+    # 3. GPU
+    assert structured["gpu"]["manufacturer"] == "NVIDIA"
+    assert structured["gpu"]["model"] == "GeForce RTX 5070"
+    assert structured["gpu"]["vram_gb"] == 8
+    assert structured["gpu"]["tdp_w"] == 115
+
+    # 4. RAM
+    assert structured["memory"]["capacity_gb"] == 32
+
+    # 5. Storage
+    assert structured["storage"]["capacity_gb"] == 1024
+    assert structured["storage"]["interface"] == "PCIe 4.0 NVMe"
+
+    # 6. Display
+    assert structured["display"]["size_inches"] == 15.3
+    assert structured["display"]["resolution"] == "1920 x 1200"
+    assert structured["display"]["refresh_rate_hz"] == 165
+
+    # 7. Connectivity & Power
+    assert structured["power_battery"]["battery_capacity_wh"] == 80.0
+    assert structured["power_battery"]["power_adapter_w"] == 230
+    assert len(structured["connectivity"]["ports"]) >= 1
+
+    # 8. Test ContextEnvelope format
+    env = ContextEnvelope(
+        target_area="memory",
+        target_labels=["ram capacity", "ram type"],
+        raw_key="Special Memory",
+        raw_value="16GB LPDDR5X onboard",
+        product_title="ASUS Zenbook S 16",
+        sibling_context={"cpu": "Ryzen AI 9"},
+    )
+    prompt = env.format_gliner_text()
+    assert "ASUS Zenbook S 16" in prompt
+    assert "Special Memory: 16GB LPDDR5X onboard" in prompt
+    assert "Ryzen AI 9" in prompt
+
+
+

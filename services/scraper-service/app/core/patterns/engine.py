@@ -129,7 +129,8 @@ class PatternEngine:
                             if txt.startswith(prefix) and len(txt) > len(prefix) + 2:
                                 val = txt[len(prefix) :].strip()
                                 if 1 < len(val) < 150:
-                                    dom_specs[prefix] = val
+                                    if prefix not in dom_specs or len(val) > len(dom_specs[prefix]):
+                                        dom_specs[prefix] = val
 
                 # C. Parse HTML Tables (table tr with >= 2 cells)
                 for row in block.select("table tr"):
@@ -146,7 +147,8 @@ class PatternEngine:
                             and len(v) < 600
                             and k.lower() not in ("category", "specification", "specification details", "specifications")
                         ):
-                            dom_specs[k] = v
+                            if k not in dom_specs or len(v) > len(dom_specs[k]):
+                                dom_specs[k] = v
 
                 # D. Parse Headings with Sibling Lists/Paragraphs (h2, h3, h4 followed by ul, ol, p, div)
                 for h in block.select("h2, h3, h4"):
@@ -178,9 +180,11 @@ class PatternEngine:
                             next_l = lines[idx + 1]
                             if ":" not in next_l and 3 < len(next_l) < 120:
                                 if any(x in clean_lower for x in ["processor", "cpu"]) and any(x in next_l.lower() for x in ["intel", "amd", "core", "ryzen", "celeron", "athlon"]):
-                                    dom_specs["Processor"] = next_l
+                                    if "Processor" not in dom_specs or len(next_l) > len(dom_specs["Processor"]):
+                                        dom_specs["Processor"] = next_l
                                 elif any(x in clean_lower for x in ["graphics", "gpu"]) and any(x in next_l.lower() for x in ["nvidia", "geforce", "rtx", "gtx", "radeon", "intel", "arc", "iris"]):
-                                    dom_specs["Graphics"] = next_l
+                                    if "Graphics" not in dom_specs or len(next_l) > len(dom_specs["Graphics"]):
+                                        dom_specs["Graphics"] = next_l
                         continue
 
                     cls._parse_delimited_text(line_clean, pattern_cfg.delimiters, dom_specs, current_section=current_section)
