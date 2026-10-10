@@ -78,30 +78,25 @@ class ContextEnvelope:
     sibling_context: dict[str, Any] = field(default_factory=dict)
     reason: str = "complex_row"
 
-    def format_gliner_text(self, max_words: int = 180) -> str:
-        """Format the envelope into a brief, rich semantic prompt under 384 tokens."""
-        ctx_parts = []
-        if self.product_title:
-            title_words = self.product_title.strip().split()
-            short_title = " ".join(title_words[:16])
-            ctx_parts.append(f"Product: {short_title}")
-        if self.sibling_context:
-            siblings_str = ", ".join(f"{k}: {v}" for k, v in self.sibling_context.items() if v)
-            if siblings_str:
-                sib_words = siblings_str.split()
-                if len(sib_words) > 20:
-                    siblings_str = " ".join(sib_words[:20])
-                ctx_parts.append(f"Known: {siblings_str}")
+    def format_gliner_text(self) -> str:
+        """Format the envelope into a brief, rich semantic prompt strictly under 330 tokens."""
+        from gliner_extractor.token_budget import fit_to_budget
 
         clean_val = re.sub(r"\s+", " ", str(self.raw_value or "")).strip()
         row_str = f"Spec: {self.raw_key}: {clean_val}" if self.raw_key else clean_val
-        ctx_parts.append(row_str)
 
-        full_text = "\n".join(ctx_parts)
-        words = full_text.split()
-        if len(words) > max_words:
-            full_text = " ".join(words[:max_words])
-        return full_text
+        sibling_facts = []
+        if self.sibling_context:
+            for k, v in self.sibling_context.items():
+                if v:
+                    sibling_facts.append(f"{k}: {v}")
+
+        return fit_to_budget(
+            target_row=row_str,
+            sibling_facts=sibling_facts,
+            title=self.product_title,
+            labels=self.target_labels,
+        )
 
 
 class CompumartsExtractor:
@@ -2848,23 +2843,24 @@ class CompumartsExtractor:
 
         if unmapped_rows:
             chunk_size = 2
+            unmapped_label_groups = [
+                ["ram capacity", "max ram capacity", "storage capacity", "storage interface", "screen resolution", "refresh rate"],
+                ["panel type", "aspect ratio", "battery capacity wh", "power adapter wattage", "laptop weight", "laptop color"],
+                ["operating system name"],
+            ]
             for i in range(0, min(len(unmapped_rows), 6), chunk_size):
                 chunk = unmapped_rows[i:i + chunk_size]
                 chunk_str = " | ".join(f"{k}: {v}" for k, v in chunk)
-                all_envelopes.append(ContextEnvelope(
-                    target_area="unmapped_specs",
-                    target_labels=[
-                        "ram capacity", "max ram capacity", "storage capacity", "storage interface",
-                        "screen resolution", "refresh rate", "panel type", "aspect ratio",
-                        "battery capacity wh", "power adapter wattage", "laptop weight", "laptop color",
-                        "operating system name"
-                    ],
-                    raw_key=chunk[0][0],
-                    raw_value=chunk_str,
-                    product_title=clean_title,
-                    sibling_context={},
-                    reason="unmapped_specs_chunk",
-                ))
+                for lbl_group in unmapped_label_groups:
+                    all_envelopes.append(ContextEnvelope(
+                        target_area="unmapped_specs",
+                        target_labels=lbl_group,
+                        raw_key=chunk[0][0],
+                        raw_value=chunk_str,
+                        product_title=clean_title,
+                        sibling_context={},
+                        reason="unmapped_specs_chunk",
+                    ))
 
         # Title vs Table reconciliation
         conflicts = []

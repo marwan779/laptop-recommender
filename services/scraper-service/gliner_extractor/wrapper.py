@@ -1,7 +1,8 @@
-"""GLiNER Model Wrapper.
+"""GLiNER Model Wrapper with Strict Token Budget Enforcement.
 
 Provides an interface for loading and running GLiNER models
-(e.g., urchade/gliner_base-v2.1) for zero-shot named entity recognition.
+(e.g., urchade/gliner_base) for zero-shot named entity recognition,
+strictly enforcing token budgets (<= 384 tokens hard limit, <= 330 safe budget).
 """
 
 from __future__ import annotations
@@ -9,6 +10,14 @@ from __future__ import annotations
 import logging
 import time
 from typing import Any
+
+from gliner_extractor.token_budget import (
+    GLINER_MAX_TOKENS,
+    GLINER_SAFE_BUDGET,
+    MAX_LABELS_PER_CALL,
+    count_tokens,
+    fit_to_budget,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +34,15 @@ class GLiNERExtractor:
         """Initialize the GLiNER extractor.
 
         Args:
-            model_name: Hugging Face model identifier (e.g. urchade/gliner_base-v2.1).
+            model_name: Hugging Face model identifier (e.g. urchade/gliner_base).
             device: 'cuda', 'cpu', or None for auto-detection.
             lazy_load: If True, defer model loading until first extraction.
         """
         self.model_name = model_name
         self._device = device
         self._model = None
+        self.max_tokens_seen: int = 0
+        self.truncations_prevented: int = 0
 
         if not lazy_load:
             self._ensure_loaded()
@@ -69,7 +80,7 @@ class GLiNERExtractor:
         threshold: float = 0.35,
         flat_ner: bool = True,
     ) -> list[dict[str, Any]]:
-        """Extract entity spans from text.
+        """Extract entity spans from text while strictly respecting token budget.
 
         Args:
             text: Input plain text.
@@ -83,12 +94,51 @@ class GLiNERExtractor:
         if not text or not labels:
             return []
 
+        # If labels exceed MAX_LABELS_PER_CALL (6), chunk them into batches
+        if len(labels) > MAX_LABELS_PER_CALL:
+            all_ents: list[dict[str, Any]] = []
+            seen_spans: set[tuple[str, str]] = set()
+            for i in range(0, len(labels), MAX_LABELS_PER_CALL):
+                batch_labels = labels[i : i + MAX_LABELS_PER_CALL]
+                ents = self.extract_entities(
+                    text,
+                    batch_labels,
+                    threshold=threshold,
+                    flat_ner=flat_ner,
+                )
+                for ent in ents:
+                    k = (ent.get("label", ""), ent.get("text", "").strip().lower())
+                    if k not in seen_spans:
+                        seen_spans.add(k)
+                        all_ents.append(ent)
+            return all_ents
+
+        # Token guard: check if prompt fits within hard budget (384 tokens)
+        cur_tokens = count_tokens(text, labels)
+        if cur_tokens > self.max_tokens_seen:
+            self.max_tokens_seen = cur_tokens
+
+        prompt_text = text
+        if cur_tokens > GLINER_SAFE_BUDGET:
+            # Fit prompt text to safe budget
+            prompt_text = fit_to_budget(
+                target_row=text,
+                labels=labels,
+                max_budget=GLINER_SAFE_BUDGET,
+            )
+            self.truncations_prevented += 1
+            new_tokens = count_tokens(prompt_text, labels)
+            logger.debug(
+                "Prevented GLiNER truncation: reduced tokens from %d to %d",
+                cur_tokens,
+                new_tokens,
+            )
+
         self._ensure_loaded()
 
         try:
-            # GLiNER predict_entities
             entities = self._model.predict_entities(
-                text,
+                prompt_text,
                 labels,
                 threshold=threshold,
                 flat_ner=flat_ner,
@@ -104,20 +154,19 @@ class GLiNERExtractor:
         specs: dict[str, str],
         labels: list[str],
         threshold: float = 0.35,
-        max_chunk_chars: int = 1800,
+        max_chunk_tokens: int = GLINER_SAFE_BUDGET,
     ) -> list[dict[str, Any]]:
-        """Extract entities from full specification table and title.
+        """Extract entities from full specification table and title using token chunking.
 
-        Builds structured text blocks. If total content is large, chunks it
-        intelligently by spec sections to prevent DeBERTa token truncation,
-        then merges all extracted spans.
+        Builds structured text blocks. Chunks strictly by subword token budget
+        to eliminate silent DeBERTa token truncation.
 
         Args:
             title: Product title.
             specs: Dictionary of scraped raw spec table key-values.
             labels: Target entity labels.
             threshold: Confidence threshold.
-            max_chunk_chars: Max characters per chunk before splitting.
+            max_chunk_tokens: Max subword tokens per chunk (default: 330).
 
         Returns:
             Merged list of extracted entity dictionaries.
@@ -127,40 +176,39 @@ class GLiNERExtractor:
             if v and str(v).strip():
                 lines.append(f"{k}: {v}")
 
-        # If total lines are under threshold, run in one single forward pass
-        full_text = "\n".join(lines)
-        if len(full_text) <= max_chunk_chars:
-            return self.extract_entities(full_text, labels, threshold=threshold)
+        if not lines:
+            return []
 
-        # Chunk lines preserving section context
+        title_header = lines[0] if title else ""
+        spec_lines = lines[1:] if title else lines
+
+        # Chunk lines strictly enforcing token budget
         chunks: list[str] = []
-        current_chunk_lines: list[str] = [lines[0]] if lines else []
-        current_len = len(lines[0]) if lines else 0
+        current_lines: list[str] = [title_header] if title_header else []
 
-        for line in lines[1:]:
-            if current_len + len(line) + 1 > max_chunk_chars and current_chunk_lines:
-                chunks.append("\n".join(current_chunk_lines))
-                # Add title context to subsequent chunks for entity disambiguation
-                current_chunk_lines = [lines[0], line] if lines else [line]
-                current_len = len(lines[0]) + len(line) + 1 if lines else len(line)
+        for line in spec_lines:
+            test_lines = current_lines + [line]
+            test_text = "\n".join(test_lines)
+            if count_tokens(test_text, labels[:MAX_LABELS_PER_CALL]) > max_chunk_tokens and current_lines:
+                chunks.append("\n".join(current_lines))
+                # Add title context to subsequent chunk
+                current_lines = [title_header, line] if title_header else [line]
             else:
-                current_chunk_lines.append(line)
-                current_len += len(line) + 1
+                current_lines.append(line)
 
-        if current_chunk_lines:
-            chunks.append("\n".join(current_chunk_lines))
+        if current_lines:
+            chunks.append("\n".join(current_lines))
 
-        # Run extraction on all chunks and combine
+        # Run extraction across all chunks
         all_entities: list[dict[str, Any]] = []
         seen_spans: set[tuple[str, str]] = set()
 
         for chunk in chunks:
             chunk_ents = self.extract_entities(chunk, labels, threshold=threshold)
             for ent in chunk_ents:
-                span_key = (ent["label"], ent["text"].strip().lower())
+                span_key = (ent.get("label", ""), ent.get("text", "").strip().lower())
                 if span_key not in seen_spans:
                     seen_spans.add(span_key)
                     all_entities.append(ent)
 
         return all_entities
-

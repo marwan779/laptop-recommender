@@ -252,6 +252,11 @@ class HybridLaptopExtractor:
             else:
                 structured["extraction_meta"]["status"] = "partial"
 
+        structured["extraction_meta"]["tokens"] = {
+            "max": self.gliner.max_tokens_seen,
+            "truncations_prevented": self.gliner.truncations_prevented,
+        }
+
         total_time_ms = (time.perf_counter() - start_total) * 1000
 
         metadata_res = {
