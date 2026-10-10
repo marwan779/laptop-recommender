@@ -67,6 +67,8 @@ class SpecExtractionResult(BaseModel):
     price_str: str | None = None
 
     # Spec Extraction Metadata & OCR Support
+    title_specs: dict[str, str] = Field(default_factory=dict)
+    field_sources: dict[str, str] = Field(default_factory=dict)
     has_text_specs: bool = True
     specs_extraction_source: str = "dom"  # "dom", "title_fallback", or "hybrid"
     specs_fallback_reason: str | None = None
@@ -79,15 +81,17 @@ class SpecExtractionResult(BaseModel):
     is_anomaly: bool = False
     anomaly_reason: str | None = None
 
-    def __iter__(self) -> Iterator[Any]:
+    def to_legacy_tuple(self) -> tuple[Any, ...]:
         """Support legacy 6-tuple unpacking: (specs, raw_desc, mpn, model_code, price_val, price_str)."""
-        return iter(
-            (
-                self.specs,
-                self.raw_description,
-                self.mpn,
-                self.model_code,
-                self.price_val,
-                self.price_str,
-            )
+        return (
+            self.specs,
+            self.raw_description,
+            self.mpn,
+            self.model_code,
+            self.price_val,
+            self.price_str,
         )
+
+    def __iter__(self) -> Iterator[Any]:
+        """Support legacy 6-tuple unpacking."""
+        return iter(self.to_legacy_tuple())

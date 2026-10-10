@@ -3,22 +3,88 @@ import re
 
 class TitleSpecExtractor:
     """Deterministic entity regex extractor that extracts core laptop hardware specifications
-
     directly from product titles.
     Acts as a zero-rate-limit safety net when DOM specifications are missing or image-only.
     """
+
+    SUB_BRAND_MAP: dict[str, str] = {
+        # ASUS
+        "rog strix": "ASUS",
+        "rog zephyrus": "ASUS",
+        "rog flow": "ASUS",
+        "rog": "ASUS",
+        "tuf gaming": "ASUS",
+        "tuf": "ASUS",
+        "zenbook": "ASUS",
+        "vivobook": "ASUS",
+        "proart": "ASUS",
+        "expertbook": "ASUS",
+        # Dell
+        "alienware": "DELL",
+        "xps": "DELL",
+        "inspiron": "DELL",
+        "vostro": "DELL",
+        "latitude": "DELL",
+        "precision": "DELL",
+        "g15": "DELL",
+        "g16": "DELL",
+        # Lenovo
+        "legion": "Lenovo",
+        "loq": "Lenovo",
+        "ideapad": "Lenovo",
+        "thinkpad": "Lenovo",
+        "thinkbook": "Lenovo",
+        "yoga": "Lenovo",
+        "slim": "Lenovo",
+        # Acer
+        "predator helios": "Acer",
+        "predator triton": "Acer",
+        "predator": "Acer",
+        "nitro": "Acer",
+        "aspire": "Acer",
+        "swift": "Acer",
+        "travelmate": "Acer",
+        "extensa": "Acer",
+        # HP
+        "victus": "HP",
+        "omen": "HP",
+        "pavilion": "HP",
+        "envy": "HP",
+        "spectre": "HP",
+        "probook": "HP",
+        "elitebook": "HP",
+        "zbook": "HP",
+        # Gigabyte
+        "aorus": "Gigabyte",
+        "aero": "Gigabyte",
+        # MSI
+        "cyborg": "MSI",
+        "katana": "MSI",
+        "sword": "MSI",
+        "thin": "MSI",
+        "vector": "MSI",
+        "stealth": "MSI",
+        "titan": "MSI",
+        "raider": "MSI",
+        "crosshair": "MSI",
+        "modern": "MSI",
+        "prestige": "MSI",
+    }
 
     @classmethod
     def extract(cls, title: str, specs_image_url: str | None = None) -> dict[str, str]:
         """Extract hardware specs from a laptop title.
 
         Returns dictionary with standardized keys:
+          - Brand
           - Processor
           - Memory
           - Storage
           - Graphics
           - Display
           - Operating System
+          - Warranty
+          - Certification
         """
         if not title:
             return {}
@@ -26,85 +92,44 @@ class TitleSpecExtractor:
         specs: dict[str, str] = {}
 
         # 0. Brand (supports direct brands and sub-brands like ROG Strix -> ASUS, Alienware -> DELL)
-        sub_brand_map = {
-            "rog strix": "ASUS",
-            "rog zephyrus": "ASUS",
-            "rog flow": "ASUS",
-            "rog": "ASUS",
-            "tuf": "ASUS",
-            "zenbook": "ASUS",
-            "vivobook": "ASUS",
-            "proart": "ASUS",
-            "alienware": "DELL",
-            "xps": "DELL",
-            "inspiron": "DELL",
-            "vostro": "DELL",
-            "latitude": "DELL",
-            "legion": "Lenovo",
-            "loq": "Lenovo",
-            "ideapad": "Lenovo",
-            "thinkpad": "Lenovo",
-            "thinkbook": "Lenovo",
-            "yoga": "Lenovo",
-            "predator": "Acer",
-            "nitro": "Acer",
-            "aspire": "Acer",
-            "swift": "Acer",
-            "travelmate": "Acer",
-            "victus": "HP",
-            "omen": "HP",
-            "pavilion": "HP",
-            "envy": "HP",
-            "spectre": "HP",
-            "probook": "HP",
-            "elitebook": "HP",
-            "aorus": "Gigabyte",
-            "aero": "Gigabyte",
-            "cyborg": "MSI",
-            "katana": "MSI",
-            "sword": "MSI",
-            "thin": "MSI",
-            "vector": "MSI",
-            "stealth": "MSI",
-            "titan": "MSI",
-            "raider": "MSI",
-            "crosshair": "MSI",
-            "modern": "MSI",
-            "prestige": "MSI",
-        }
         for b in ["acer", "asus", "lenovo", "hp", "dell", "msi", "apple", "samsung", "huawei", "gigabyte", "razer", "microsoft"]:
             if re.search(rf"\b{b}\b", title, re.I):
                 specs["Brand"] = b.upper() if b in ("hp", "msi", "dell", "asus") else b.capitalize()
                 break
         if "Brand" not in specs:
             t_low = title.lower()
-            for sub, parent in sub_brand_map.items():
+            for sub, parent in cls.SUB_BRAND_MAP.items():
                 if re.search(rf"\b{re.escape(sub)}\b", t_low):
                     specs["Brand"] = parent
                     break
 
         # 1. GPU (Extracted first to capture VRAM so system RAM doesn't accidentally match VRAM)
         gpu_m = re.search(
-            r"(RTX\s*\d{4}(?:\s*Ti)?(?:\s*\d{1,2}GB(?:\s*GDDR[67])?)?|"
-            r"GTX\s*\d{4}(?:\s*Ti)?(?:\s*\d{1,2}GB)?|"
-            r"GeForce\s*RTX\s*\d{4}(?:\s*Ti)?(?:\s*\d{1,2}GB(?:\s*GDDR[67])?)?|"
-            r"MX\s*\d{3}(?:\s*\d{1,2}GB)?|"
-            r"Intel\s*(?:Iris\s*Xe|Arc\s*\w+|Graphics)|"
-            r"Iris\s*Xe|"
-            r"Radeon\s*\w+)",
+            r"((?:GeForce\s*)?RTX\s*(?:5090|5080|5070\s*Ti|5070|5060|5050|4090|4080|4070\s*Ti|4070|4060|4050|3080\s*Ti|3080|3070\s*Ti|3070|3060|3050\s*Ti|3050|2080|2070|2060|2050)"
+            r"(?:\s*(?:Max-Q|Laptop\s*GPU))?(?:\s*\d{1,2}\s*GB(?:\s*GDDR[67])?)?|"
+            r"GTX\s*\d{4}(?:\s*Ti)?(?:\s*\d{1,2}\s*GB)?|"
+            r"MX\s*\d{3}(?:\s*\d{1,2}\s*GB)?|"
+            r"Intel\s*(?:Iris\s*Xe(?:\s*Graphics)?|Arc\s*(?:A\d{3}[A-Z]?|Graphics)?|Graphics)|"
+            r"Iris\s*Xe(?:\s*Graphics)?|"
+            r"Arc\s*(?:A\d{3}[A-Z]?|Graphics)|"
+            r"Radeon\s*(?:RX\s*\d{4}[A-Z]*|\w+)|"
+            r"Snapdragon\s*(?:Adreno|X)|"
+            r"Adreno\s*\d+|"
+            r"Apple\s*M\d+(?:\s*(?:Pro|Max))?)",
             title,
             re.I,
         )
         if gpu_m:
             specs["Graphics"] = gpu_m.group(0).strip()
 
-        # 2. CPU / Processor (supports Core iX, Ultra X, Core X, Ryzen with/without model, Celeron, Athlon)
+        # 2. CPU / Processor (supports Core iX, Ultra X, Core X, Ryzen with/without model, Snapdragon, Celeron, Athlon)
         cpu_m = re.search(
             r"(?:Intel\s*)?(?:Ci|Core\s*i|\bi)\s*([3579])[\s-]*(\d{4,5}[A-Z0-9]*)|"
             r"(?:Intel\s*)?(?:Core\s*)?Ultra\s*([579])\s*(\d{3,4}[A-Z0-9]*)|"
             r"(?:Intel\s*)?Core\s*([357])\s*-?(\d{3,4}[A-Z0-9]*)|"
             r"(?:AMD\s*)?Ryzen\s*(?:AI\s*[79]\s*(?:HX\s*)?|\d\s*|[3579]\s*)(\d{4}[A-Z0-9]*|\w+)?|"
             r"(?:AMD\s*)?R([79])\s*(\d{4}[A-Z0-9]*)|"
+            r"(?:Qualcomm\s*)?Snapdragon\s*X\s*(?:Elite|Plus)(?:\s*X\d[EP]-\d{2}-\d{3})?|"
             r"(?:Intel\s*)?(Celeron\s*[A-Z0-9]+)|"
             r"(?:AMD\s*)?(Athlon\s*[A-Z0-9]+)",
             title,
@@ -151,8 +176,8 @@ class TitleSpecExtractor:
 
         # 5. Display / Screen (handles size and features even when separated)
         disp_m = re.search(
-            r"(\b\d{2}(?:\.\d)?\s*(?:[\"'\u201c\u201d\u2018\u2019\ufffd]{1,2}|-?inch\b)\s*(?:(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|(?:60|120|144|165|240|360)\s*Hz)\b[^\s,–—()]*)*|"
-            r"\b\d{2}(?:\.\d)?\s*(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|(?:60|120|144|165|240|360)\s*Hz)\b(?:[^\s,–—()]+|\s+(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|\d+Hz|sRGB|G-SYNC|100%))*|"
+            r"(\b\d{2}(?:\.\d)?\s*(?:[\"'\u201c\u201d\u2018\u2019\ufffd]{1,2}|-?inch\b)(?:\s+(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|\d{2,3}\s*Hz|sRGB|G-SYNC|100%|[^\s,–—()]+))*\b|"
+            r"\b\d{2}(?:\.\d)?\s*(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|(?:60|120|144|165|180|240|300|360)\s*Hz)\b(?:[^\s,–—()]+|\s+(?:FHD\+?|QHD\+?|WUXGA|WQXGA|UHD|HD|2\.5K|4K|OLED|IPS|Touch|\d+Hz|sRGB|G-SYNC|100%))*|"
             r"\b\d{2}(?:\.\d)?\s*(?:[\"'\u201c\u201d\u2018\u2019\ufffd]{1,2}|-?inch\b)|"
             r"\b\d{2}(?:\.\d)?\s*HD\b|"
             r"\b(?:QHD\+?|WUXGA|WQXGA|FHD\+?)\s*(?:Display|Screen)\b|"
@@ -165,10 +190,13 @@ class TitleSpecExtractor:
             feat_m = re.search(r"\b(FHD(?:\s*Touch)?|QHD(?:\s*Touch)?|UHD(?:\s*Touch)?|WUXGA(?:\s*Touch)?|OLED(?:\s*Touch)?|Touch)\b", title, re.I)
             if feat_m and feat_m.group(0).lower() not in disp_val.lower():
                 disp_val = f"{disp_val} {feat_m.group(0).strip()}"
+            hz_m = re.search(r"\b(\d{2,3}\s*Hz)\b", title, re.I)
+            if hz_m and hz_m.group(0).lower() not in disp_val.lower():
+                disp_val = f"{disp_val} {hz_m.group(0).strip()}"
             specs["Display"] = disp_val
 
         # 6. Operating System
-        os_m = re.search(r"\b(Win(?:dows)?\s*(?:11|10)(?:\s*(?:Home|Pro))?|DOS)\b", title, re.I)
+        os_m = re.search(r"\b(Win(?:dows)?\s*(?:11|10)(?:\s*(?:Home|Pro))?|FreeDOS|DOS|Ubuntu|Linux|macOS)\b", title, re.I)
         if os_m:
             specs["Operating System"] = os_m.group(0).strip()
 
@@ -186,7 +214,7 @@ class TitleSpecExtractor:
         if cert_m:
             specs["Certification"] = cert_m.group(0).strip()
 
-        # 7. Integrated GPU fallback if no discrete GPU was present in title
+        # 9. Integrated GPU fallback if no discrete GPU was present in title
         if "Graphics" not in specs:
             proc = specs.get("Processor", "").lower()
             if any(w in proc for w in ["celeron", "pentium", "core", "ci", "intel"]):
@@ -300,5 +328,3 @@ class TitleSpecExtractor:
             "gpu": gpu,
             "display": display,
         }
-
-

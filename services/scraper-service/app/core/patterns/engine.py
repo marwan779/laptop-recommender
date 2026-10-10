@@ -305,25 +305,36 @@ class PatternEngine:
                 dom_specs["Display"] = disp_m.group(1).strip()
                 slots["display"] = dom_specs["Display"]
 
+        field_sources: dict[str, str] = {k: "dom" for k in dom_specs}
+
         # Backfill any missing core slots from Title
         if not slots["cpu"] and "Processor" in title_specs:
             dom_specs["Processor"] = title_specs["Processor"]
+            field_sources["Processor"] = "title"
         if not slots["ram"] and "Memory" in title_specs:
             dom_specs["Memory"] = title_specs["Memory"]
+            field_sources["Memory"] = "title"
         if not slots["storage"] and "Storage" in title_specs:
             dom_specs["Storage"] = title_specs["Storage"]
+            field_sources["Storage"] = "title"
         if not slots["gpu"] and "Graphics" in title_specs:
             dom_specs["Graphics"] = title_specs["Graphics"]
+            field_sources["Graphics"] = "title"
         if not slots["display"] and "Display" in title_specs:
             dom_specs["Display"] = title_specs["Display"]
+            field_sources["Display"] = "title"
         if "Operating System" not in dom_specs and "Operating System" in title_specs:
             dom_specs["Operating System"] = title_specs["Operating System"]
+            field_sources["Operating System"] = "title"
         if "Warranty" not in dom_specs and "Warranty" in title_specs:
             dom_specs["Warranty"] = title_specs["Warranty"]
+            field_sources["Warranty"] = "title"
         if "Certification" not in dom_specs and "Certification" in title_specs:
             dom_specs["Certification"] = title_specs["Certification"]
+            field_sources["Certification"] = "title"
         if "Cores" not in dom_specs and "Cores" in title_specs:
             dom_specs["Cores"] = title_specs["Cores"]
+            field_sources["Cores"] = "title"
 
         final_specs: dict[str, str] = {}
         specs_extraction_source = "dom"
@@ -337,6 +348,9 @@ class PatternEngine:
             specs_fallback_reason = None
         else:
             final_specs = {**dom_specs, **title_specs}
+            for k in title_specs:
+                if k not in field_sources:
+                    field_sources[k] = "title"
             has_text_specs = False
             specs_extraction_source = "title_fallback"
             if has_specs_image:
@@ -354,6 +368,8 @@ class PatternEngine:
 
         return SpecExtractionResult(
             specs=final_specs,
+            title_specs=title_specs,
+            field_sources=field_sources,
             raw_description=raw_desc,
             mpn=mpn,
             model_code=model_code,
