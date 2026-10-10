@@ -115,6 +115,7 @@ def empty_structured() -> dict[str, Any]:
             "rejected": [],  # list[{field, value, rule}]
             "conflicts": [],  # list[{field, title_value, table_value, chosen, reason}]
             "field_sources": {},  # {"cpu.model": "tier1"|"tier2"|"title"|"lookup"}
+            "unmapped_keys": [],
             "tokens": {
                 "max": 0,
                 "truncations_prevented": 0,

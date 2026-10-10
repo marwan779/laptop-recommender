@@ -2938,6 +2938,14 @@ class CompumartsExtractor:
 
         structured["extraction_meta"]["rejected"] = all_rejections
         structured["extraction_meta"]["conflicts"] = conflicts
+        structured["extraction_meta"]["unmapped_keys"] = [k for k, _ in unmapped_rows]
+        field_sources = {}
+        for section, sec_data in structured.items():
+            if isinstance(sec_data, dict) and section != "extraction_meta":
+                for k, v in sec_data.items():
+                    if v is not None and v != [] and v is not False:
+                        field_sources[f"{section}.{k}"] = "tier1"
+        structured["extraction_meta"]["field_sources"] = field_sources
         structured["extraction_meta"]["status"] = "ok" if not all_rejections else "partial"
 
         # Layer 2: Hardware Physical Sanity Gate
