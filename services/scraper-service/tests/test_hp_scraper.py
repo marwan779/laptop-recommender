@@ -148,6 +148,7 @@ def test_hp_get_laptop_summaries_watermark_limit_and_errors(monkeypatch):
 
 def test_hp_fetch_page_engine_and_session():
     from unittest.mock import MagicMock
+
     engine = MagicMock()
     doc = MagicMock()
     doc.html = "<html>" + "a" * 600 + "</html>"

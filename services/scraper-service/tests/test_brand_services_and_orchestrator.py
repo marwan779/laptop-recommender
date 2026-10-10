@@ -202,7 +202,9 @@ def test_lenovo_scraper_service_level1_and_level2(tmp_path):
     s = LaptopSummary(brand="lenovo", name="Legion 7", product_url="https://lenovo.com/1")
     service.scraper.get_laptop_summaries.return_value = [s]
 
-    d = LaptopDetail(brand="lenovo", name="Legion 7", product_url="https://lenovo.com/1", configurations=[{"sku": "L7"}])
+    d = LaptopDetail(
+        brand="lenovo", name="Legion 7", product_url="https://lenovo.com/1", configurations=[{"sku": "L7"}]
+    )
     service.scraper.get_laptop_detail.return_value = d
 
     out_file = tmp_path / "lenovo.json"
@@ -375,14 +377,18 @@ def test_orchestrator_execute_email_dispatch_exception_is_handled():
         laptops=[],
     )
 
-    with patch.object(orchestrator, "_scrape_brand", return_value=ScrapeTargetResult(
-        target_type="brand",
-        target_key="asus",
-        target_name="ASUS",
-        level=1,
-        items_scraped=1,
-        brand_result=mock_catalog,
-    )):
+    with patch.object(
+        orchestrator,
+        "_scrape_brand",
+        return_value=ScrapeTargetResult(
+            target_type="brand",
+            target_key="asus",
+            target_name="ASUS",
+            level=1,
+            items_scraped=1,
+            brand_result=mock_catalog,
+        ),
+    ):
         req = ScrapeRequest(target_type="brand", targets=["asus"], level=1, send_email=True)
         response = orchestrator.execute(req)
         assert len(response.results) == 1

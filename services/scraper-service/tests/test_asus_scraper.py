@@ -145,7 +145,7 @@ def test_extract_structured_specs_mapping():
         "Processor": "Intel Core Ultra 7 155H",
         "Operating System": "Windows 11 Home",
         "Graphics": "NVIDIA GeForce RTX 4060 8GB GDDR6",
-        "Display": '16.0-inch 3.2K OLED 120Hz',
+        "Display": "16.0-inch 3.2K OLED 120Hz",
         "Memory": "16GB LPDDR5X",
         "Storage": "1TB M.2 NVMe PCIe 4.0 SSD",
         "I/O Ports": "2x Thunderbolt 4, 1x USB 3.2 Gen 1",
@@ -157,7 +157,7 @@ def test_extract_structured_specs_mapping():
     assert structured["processor"] == "Intel Core Ultra 7 155H"
     assert structured["operating_system"] == "Windows 11 Home"
     assert structured["graphics"] == "NVIDIA GeForce RTX 4060 8GB GDDR6"
-    assert structured["display"] == '16.0-inch 3.2K OLED 120Hz'
+    assert structured["display"] == "16.0-inch 3.2K OLED 120Hz"
     assert structured["memory"] == "16GB LPDDR5X"
     assert structured["storage"] == "1TB M.2 NVMe PCIe 4.0 SSD"
     assert structured["io_ports"] == "2x Thunderbolt 4, 1x USB 3.2 Gen 1"
@@ -242,7 +242,10 @@ def test_asus_brand_scraper_family_and_model_extraction():
 
     # Model code extraction
     assert scraper._extract_model_code("Vivobook S 14 OLED", "https://asus.com/eg-en/store/laptops/s5452/") == "S5452"
-    assert scraper._extract_model_code("ASUS Zenbook 14 UX3405MA", "https://asus.com/eg-en/store/laptops/zenbook/") == "UX3405MA"
+    assert (
+        scraper._extract_model_code("ASUS Zenbook 14 UX3405MA", "https://asus.com/eg-en/store/laptops/zenbook/")
+        == "UX3405MA"
+    )
     assert scraper._extract_model_code("No Model In Title", "https://asus.com/eg-en/store/laptops/simple/") is None
 
 
@@ -353,9 +356,12 @@ def test_asus_get_laptop_summaries_odin_failure_fallback_to_html_dom():
     link_mock.attrib = {"href": "/eg-en/laptops/zenbook/zenbook-14-ux3405/"}
     link_mock.text = "ASUS Zenbook 14 OLED UX3405"
     card_mock.css.side_effect = lambda sel: (
-        [link_mock] if 'a[href*="/laptops/"]' in sel
-        else [MagicMock(text="65,000 EGP")] if "price" in sel.lower()
-        else [MagicMock(attrib={"src": "https://img.asus.com/zen.jpg"})] if "img" in sel
+        [link_mock]
+        if 'a[href*="/laptops/"]' in sel
+        else [MagicMock(text="65,000 EGP")]
+        if "price" in sel.lower()
+        else [MagicMock(attrib={"src": "https://img.asus.com/zen.jpg"})]
+        if "img" in sel
         else []
     )
 

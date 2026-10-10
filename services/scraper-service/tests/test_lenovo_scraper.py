@@ -42,11 +42,7 @@ def test_clean_html_text():
     assert clean_html_text("") == ""
 
     raw_html = (
-        "<p>Key Features:&reg;</p>"
-        "<ul>"
-        "<li>Intel Core Ultra 7 &amp; 16GB RAM</li>"
-        "<li>1TB SSD<br/>Fast storage</li>"
-        "</ul>"
+        "<p>Key Features:&reg;</p><ul><li>Intel Core Ultra 7 &amp; 16GB RAM</li><li>1TB SSD<br/>Fast storage</li></ul>"
     )
     cleaned = clean_html_text(raw_html)
     assert "Key Features:®" in cleaned

@@ -45,8 +45,8 @@ jobs:
             echo "Deploying version: ${TAG#scraper-service-v}"
           fi
 
-  promote_and_deploy:
-    name: Promote Image & Deploy
+  promote_image:
+    name: Promote Image
     needs: [meta]
     runs-on: ubuntu-latest
     steps:
@@ -72,16 +72,55 @@ jobs:
               --tag "${{ env.IMAGE }}:latest" \
               "${{ env.IMAGE }}:edge"
           fi
+  deploy:
+    name: Deploy New AWS Batch Job Definition Revision
+    runs-on: ubuntu-latest
+    needs: [meta, promote_image]
+    permissions:
+      contents: read
+      id-token: write
 
-      - name: Deploy to AWS Batch / Fargate
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::042513197445:role/GitHubActionsSAMDeployRole
+          aws-region: us-east-1
+
+      - name: Register Updated AWS Batch Job Definition
+        env:
+          IMAGE_TAG: ${{ needs.meta.outputs.version }}
+          IMAGE: ${{ env.IMAGE }}
         run: |
-          echo "Deploying ${{ env.IMAGE }}:${{ needs.meta.outputs.version }} to AWS Batch..."
-          # aws batch register-job-definition ...
-          echo "Successfully deployed version ${{ needs.meta.outputs.version }} to production!"
+          set -euo pipefail
+
+          IMAGE_URI="${IMAGE}:${IMAGE_TAG}"
+
+          aws batch describe-job-definitions \
+            --job-definition-name scraper-job-def \
+            --status ACTIVE \
+            --query 'jobDefinitions | sort_by(@, &revision) | [-1]' \
+            > current-job-definition.json
+
+          jq --arg image "$IMAGE_URI" '
+            .containerProperties.image = $image
+            | del(
+                .jobDefinitionArn,
+                .revision,
+                .status,
+                .registeredAt,
+                .registeredBy,
+                .deregisteredAt,
+                .containerOrchestrationType
+              )
+          ' current-job-definition.json > updated-job-definition.json
+
+          aws batch register-job-definition \
+            --cli-input-json file://updated-job-definition.json
 
   publish_release:
     name: Promote Pre-release to Official Latest Release
-    needs: [meta, promote_and_deploy]
+    needs: [deploy]
     runs-on: ubuntu-latest
     permissions:
       contents: write

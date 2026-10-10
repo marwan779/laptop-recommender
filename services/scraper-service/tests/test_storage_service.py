@@ -821,6 +821,7 @@ def test_s3_handle_error_auth_and_re_raise_storage_error(s3_service):
 
 def test_s3_upload_json_serialization_failure_raises(s3_service):
     """Verify upload_json raises StorageOperationError if JSON serialization fails."""
+
     class Unserializable:
         pass
 
@@ -868,4 +869,3 @@ def test_s3_generate_presigned_url_custom_method(s3_service, mock_s3_client):
         Params={"Bucket": "test-bucket", "Key": "upload.json"},
         ExpiresIn=1800,
     )
-

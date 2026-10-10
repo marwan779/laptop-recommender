@@ -205,8 +205,8 @@ def test_scraped_document_get_json_ld_parsing():
 
     script_obj = FakeElement(text='{"@type": "Product", "name": "ASUS ZenBook"}')
     script_arr = FakeElement(text='[{"@type": "Offer", "price": "1500"}, {"@type": "Offer", "price": "1600"}]')
-    script_invalid = FakeElement(text='{not valid json}')
-    script_empty = FakeElement(text='   ')
+    script_invalid = FakeElement(text="{not valid json}")
+    script_empty = FakeElement(text="   ")
 
     raw = FakeRawPage(css_map={ld_selector: [script_obj, script_arr, script_invalid, script_empty]})
     doc = ScrapedDocument(url="https://example.com", status_code=200, html="", raw=raw)
