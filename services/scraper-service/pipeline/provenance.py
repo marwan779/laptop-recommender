@@ -10,10 +10,18 @@ Tracks complete field-level data lineage and layer-by-layer diagnostic traces:
 from __future__ import annotations
 
 import copy
+import json
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 
-from pipeline.schema import EnvelopeResult, ExtractionEnvelope, RawScrapedProduct, empty_laptop_specifications
+from pipeline.schema import (
+    ComponentEnvelope,
+    ComponentEnvelopeResult,
+    EnvelopeResult,
+    ExtractionEnvelope,
+    RawScrapedProduct,
+    empty_laptop_specifications,
+)
 
 
 class ProvenanceTracker:
@@ -415,4 +423,186 @@ class ProvenanceTracker:
             "last_layer_attempted": "L4_Deterministic",
             "details": f"Source text contains general {cat} keywords, but specific {f_name} was not specified",
         }
+
+    @classmethod
+    def format_envelope_text_report(
+        cls,
+        raw_product: RawScrapedProduct,
+        envelopes: List[ExtractionEnvelope],
+        ai_results: List[EnvelopeResult],
+        validation_rejections: List[Dict[str, Any]],
+        final_specs: Dict[str, Any],
+        product_index: Optional[int] = None,
+        total_products: Optional[int] = None,
+    ) -> str:
+        """Format an exhaustive, human-readable audit text block for all envelopes of a laptop."""
+        lines: List[str] = []
+        idx_str = f" [{product_index}/{total_products}]" if product_index and total_products else ""
+        lines.append("=" * 80)
+        lines.append(f"LAPTOP{idx_str}: {raw_product.title}")
+        lines.append(f"URL: {raw_product.url}")
+        lines.append(f"STORE: {raw_product.store}")
+        if raw_product.price:
+            lines.append(f"PRICE: {raw_product.price:,.2f} {raw_product.currency or 'EGP'}")
+        lines.append(f"TOTAL ENVELOPES: {len(envelopes)}")
+        lines.append("=" * 80)
+
+        if not envelopes:
+            lines.append("No unresolved envelopes were generated for this product.")
+            lines.append("All canonical hardware fields were deterministically resolved or confirmed absent.")
+            lines.append("=" * 80)
+            return "\n".join(lines)
+
+        ai_map = {r.field_path: r for r in ai_results}
+        gate2_rej_map = {r["field_path"]: r for r in validation_rejections if r.get("gate") == 2}
+
+        for i, env in enumerate(envelopes, 1):
+            lines.append("")
+            lines.append("-" * 80)
+            lines.append(f"[ENVELOPE {i}/{len(envelopes)}] TARGET FIELD: {env.field_path}")
+            lines.append("-" * 80)
+            parts = env.field_path.split(".", 1)
+            cat = parts[0] if len(parts) == 2 else "general"
+            f_name = parts[1] if len(parts) == 2 else env.field_path
+
+            lines.append(f"Target Category     : {cat}")
+            lines.append(f"Field Name          : {f_name}")
+            lines.append(f"Field Description   : {env.field_description}")
+            lines.append(f"Expected Type       : {env.expected_type}")
+            lines.append(f"Failure Reason      : {env.failure_reason}")
+            lines.append(f"Section Name        : {env.section_name or 'N/A'}")
+            lines.append(f"Allowed Values      : {env.allowed_values if env.allowed_values else 'None (unconstrained)'}")
+            if env.cpu_context:
+                cpu_info = ", ".join(f"{k}={v}" for k, v in env.cpu_context.items() if v is not None)
+                lines.append(f"CPU Constraints     : {cpu_info}")
+            else:
+                lines.append("CPU Constraints     : N/A")
+
+            lines.append("")
+            lines.append("--- [FULL RAW CONTEXT PROVIDED TO AI] ---")
+            raw_ctx = env.raw_context.strip() if env.raw_context else "<EMPTY CONTEXT>"
+            lines.append(raw_ctx)
+            lines.append("-----------------------------------------")
+
+            ai_res = ai_map.get(env.field_path)
+            lines.append("")
+            lines.append("--- [AI FALLBACK RESOLUTION] ---")
+            if ai_res:
+                lines.append(f"AI Model            : {ai_res.model_name}")
+                lines.append(f"Extracted Value     : {ai_res.extracted_value!r}")
+                lines.append(f"Extracted Raw Span  : {ai_res.raw_span!r}")
+                lines.append(f"Confidence Score    : {ai_res.confidence:.3f}")
+                if ai_res.metadata:
+                    lines.append(f"Model Metadata      : {json.dumps(ai_res.metadata)}")
+            else:
+                lines.append("AI Fallback         : SKIPPED / NOT CONFIGURED")
+
+            lines.append("")
+            lines.append("--- [GATE 2 PHYSICAL VALIDATION] ---")
+            if env.field_path in gate2_rej_map:
+                rej = gate2_rej_map[env.field_path]
+                lines.append("Validation Status   : REJECTED")
+                lines.append(f"Rejected Candidate  : {rej.get('rejected_value')!r}")
+                lines.append(f"Rejection Reason    : {rej.get('reason')}")
+                lines.append("Final Schema Value  : null (rejection prevented invalid data)")
+            elif ai_res and ai_res.extracted_value is not None:
+                final_val = final_specs.get(cat, {}).get(f_name)
+                lines.append("Validation Status   : ACCEPTED")
+                lines.append(f"Cleaned Value       : {final_val!r}")
+                lines.append(f"Final Schema Value  : {final_val!r}")
+            else:
+                lines.append("Validation Status   : UNRESOLVED")
+                lines.append("Final Schema Value  : null (model returned no extraction)")
+
+        lines.append("")
+        lines.append("=" * 80)
+        return "\n".join(lines)
+
+    @classmethod
+    def format_component_envelope_text_report(
+        cls,
+        raw_product: RawScrapedProduct,
+        component_envelopes: List[ComponentEnvelope],
+        component_results: List[ComponentEnvelopeResult],
+        validation_rejections: List[Dict[str, Any]],
+        final_specs: Dict[str, Any],
+        product_index: Optional[int] = None,
+        total_products: Optional[int] = None,
+    ) -> str:
+        """Format an exhaustive audit text block for all component-level envelopes of a laptop."""
+        lines: List[str] = []
+        idx_str = f" [{product_index}/{total_products}]" if product_index and total_products else ""
+        lines.append("=" * 80)
+        lines.append(f"LAPTOP{idx_str}: {raw_product.title}")
+        lines.append(f"URL: {raw_product.url}")
+        lines.append(f"STORE: {raw_product.store}")
+        if raw_product.price:
+            lines.append(f"PRICE: {raw_product.price:,.2f} {raw_product.currency or 'EGP'}")
+        lines.append(f"TOTAL COMPONENT ENVELOPES: {len(component_envelopes)}")
+        lines.append("=" * 80)
+
+        if not component_envelopes:
+            lines.append("No component envelopes were generated for this product.")
+            lines.append("All canonical hardware fields were deterministically resolved or confirmed absent.")
+            lines.append("=" * 80)
+            return "\n".join(lines)
+
+        comp_res_map = {r.component_name: r for r in component_results}
+        gate2_rej_map = {r["field_path"]: r for r in validation_rejections if r.get("gate") == 2}
+
+        for i, env in enumerate(component_envelopes, 1):
+            lines.append("")
+            lines.append("-" * 80)
+            lines.append(f"[COMPONENT ENVELOPE {i}/{len(component_envelopes)}] SUBSYSTEM: {env.component_name.upper()}")
+            lines.append("-" * 80)
+            lines.append(f"Subsystem Category : {env.component_name}")
+
+            locked_strs = [f"{k}={env.sub_schema[k]!r}" for k in env.locked_fields]
+            unresolved_strs = [k for k, v in env.sub_schema.items() if v is None]
+
+            lines.append(f"Pre-filled Anchors : {', '.join(locked_strs) if locked_strs else 'None'}")
+            lines.append(f"Unresolved Targets : {', '.join(unresolved_strs) if unresolved_strs else 'None'}")
+            if env.cpu_context:
+                cpu_info = ", ".join(f"{k}={v}" for k, v in env.cpu_context.items() if v is not None)
+                lines.append(f"CPU Constraints    : {cpu_info}")
+
+            lines.append("")
+            lines.append("--- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---")
+            raw_ctx = env.raw_spec.strip() if env.raw_spec else "<EMPTY CONTEXT>"
+            lines.append(raw_ctx)
+            lines.append("--------------------------------------------------")
+
+            lines.append("")
+            lines.append("--- [SUB-SCHEMA TEMPLATE SENT TO AI] ---")
+            template_repr = json.dumps({env.component_name: env.sub_schema}, indent=2)
+            lines.append(template_repr)
+            lines.append("----------------------------------------")
+
+            c_res = comp_res_map.get(env.component_name)
+            lines.append("")
+            lines.append("--- [AI MODEL RESOLUTION] ---")
+            if c_res:
+                lines.append(f"AI Model           : {c_res.model_name}")
+                if c_res.raw_output:
+                    lines.append(f"Raw Model Output   : {c_res.raw_output.strip()}")
+                lines.append(f"Extracted Fields   : {json.dumps(c_res.extracted_fields)}")
+            else:
+                lines.append("AI Fallback        : SKIPPED / NOT CONFIGURED")
+
+            lines.append("")
+            lines.append("--- [GATE 2 PHYSICAL VALIDATION] ---")
+            for target_field in unresolved_strs:
+                full_path = f"{env.component_name}.{target_field}"
+                if full_path in gate2_rej_map:
+                    rej = gate2_rej_map[full_path]
+                    lines.append(f"  * {full_path}: REJECTED candidate={rej.get('rejected_value')!r} (reason: {rej.get('reason')}) -> Final: null")
+                elif c_res and target_field in c_res.extracted_fields and c_res.extracted_fields[target_field] is not None:
+                    final_val = final_specs.get(env.component_name, {}).get(target_field)
+                    lines.append(f"  * {full_path}: ACCEPTED candidate={c_res.extracted_fields[target_field]!r} -> Final: {final_val!r}")
+                else:
+                    lines.append(f"  * {full_path}: UNRESOLVED / null (model returned no extraction)")
+
+        lines.append("")
+        lines.append("=" * 80)
+        return "\n".join(lines)
 

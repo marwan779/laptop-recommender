@@ -360,3 +360,91 @@ def test_numpad_extraction(extractor: DeterministicExtractor, sanitizer: TextSan
     )
     assert specs["build_security"]["has_numpad"] is True
     assert specs["build_security"]["has_backlit_keyboard"] is True
+
+
+# 19. Bluetooth 6.0 extraction
+def test_bluetooth_6_0_extraction(extractor: DeterministicExtractor, sanitizer: TextSanitizer):
+    raw_table = {
+        "Wireless": "Wi-Fi 7 (802.11be) Tri-Band + Bluetooth 6.0",
+    }
+    clean_table = sanitizer.sanitize_table(raw_table)
+    specs, _ = extractor.extract(
+        title="ASUS ROG Zephyrus Duo 16",
+        sanitized_table=clean_table,
+        sanitized_sections={},
+    )
+    assert specs["connectivity"]["bluetooth"] == "Bluetooth 6.0"
+    assert specs["connectivity"]["wifi"] == "Wi-Fi 7"
+
+
+# 20. Additional I/O routing and card reader extraction
+def test_additional_io_routing_and_card_reader(extractor: DeterministicExtractor, sanitizer: TextSanitizer):
+    raw_table = {
+        "Additional I/O": "1x HDMI 2.1, 1x 3.5mm Combo Audio Jack, 1x microSD UHS-II Card Reader",
+    }
+    clean_table = sanitizer.sanitize_table(raw_table)
+    specs, _ = extractor.extract(
+        title="ASUS ROG Zephyrus Duo 16",
+        sanitized_table=clean_table,
+        sanitized_sections={},
+    )
+    assert specs["connectivity"]["has_card_reader"] is True
+    assert specs["connectivity"]["card_reader_type"] == "MicroSD"
+    assert any("HDMI 2.1" in p for p in specs["connectivity"]["ports"])
+
+
+# 21. Touchscreen extraction
+def test_touchscreen_extraction(extractor: DeterministicExtractor, sanitizer: TextSanitizer):
+    specs, _ = extractor.extract(
+        title="ASUS ROG Zephyrus Duo 16 GX651AX Dual 16″ 3K OLED Touch 120Hz",
+        sanitized_table={},
+        sanitized_sections={},
+    )
+    assert specs["display"]["touchscreen"] is True
+
+
+# 22. Hyphenated speaker count extraction
+def test_hyphenated_speaker_count(extractor: DeterministicExtractor, sanitizer: TextSanitizer):
+    raw_table = {
+        "Audio": "4-Speaker System (dual-force woofer) with Smart Amplifier Technology",
+    }
+    clean_table = sanitizer.sanitize_table(raw_table)
+    specs, _ = extractor.extract(
+        title="ASUS ROG Zephyrus Duo 16",
+        sanitized_table=clean_table,
+        sanitized_sections={},
+    )
+    assert specs["audio_webcam"]["speaker_count"] == 4
+
+
+# 23. Connectivity component envelope dispatched when fields missing
+def test_connectivity_component_envelope_dispatched():
+    from pipeline.orchestrator import LaptopExtractionPipeline
+    from pipeline.schema import RawScrapedProduct
+
+    orchestrator = LaptopExtractionPipeline(log_envelopes=False)
+    product = RawScrapedProduct(
+        url="https://test.com/laptop",
+        store="test",
+        title="ASUS ROG Zephyrus Duo 16",
+        raw_html="<html></html>",
+        raw_tables={
+            "specs": {
+                "Processor": "AMD Ryzen 9 7945HX",
+                "Graphics": "RTX 4090 16GB GDDR6",
+                "Memory": "32GB DDR5",
+                "Storage": "2TB SSD",
+                "Display": "16 QHD+ 240Hz",
+                "Battery": "90Wh",
+                "Weight": "2.6 kg",
+                "Networking": "Wi-Fi 7",
+            }
+        },
+        raw_sections={"Connectivity": "Wi-Fi 7, no bluetooth details"},
+    )
+    result = orchestrator.process_raw_product(product)
+    conn_envelopes = [e for e in result.component_envelopes_generated if e.component_name == "connectivity"]
+    assert len(conn_envelopes) == 1
+    targets = [k for k, v in conn_envelopes[0].sub_schema.items() if v is None]
+    assert "bluetooth" in targets
+

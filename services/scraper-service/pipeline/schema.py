@@ -11,7 +11,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
+
+from gpu_specs import GPUFeatures, GPUSpecificationEntry, GPUTDPLimits
 
 
 @dataclass
@@ -42,6 +44,33 @@ class EnvelopeResult:
 
 
 @dataclass
+class ComponentEnvelope:
+    """An envelope containing a complete component sub-schema and raw context for AI extraction.
+    
+    Groups all fields of a hardware subsystem (e.g., 'display', 'memory', 'power_battery')
+    with pre-filled Layer 4 validated values and None for missing fields.
+    """
+    component_name: str                                  # 'display', 'memory', 'power_battery', etc.
+    raw_spec: str                                        # Full section/table text for this component
+    sub_schema: Dict[str, Any]                           # Dict of field_name -> value (pre-filled or None)
+    locked_fields: Set[str]                              # Immutable fields already validated in L4
+    field_descriptions: Dict[str, str] = field(default_factory=dict) # Field descriptions / hints
+    enum_constraints: Dict[str, List[str]] = field(default_factory=dict) # Allowed enums
+    cpu_context: Optional[Dict[str, Any]] = None         # Hardware constraints
+
+
+@dataclass
+class ComponentEnvelopeResult:
+    """The result produced by an AI fallback extractor for a component envelope."""
+    component_name: str
+    extracted_fields: Dict[str, Any]                     # Dict of field_name -> extracted value
+    model_name: str = "unknown"
+    confidence: float = 1.0
+    raw_output: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
 class RawScrapedProduct:
     """Raw scrape artifact captured from the retailer page."""
     url: str
@@ -53,6 +82,8 @@ class RawScrapedProduct:
     price: Optional[float] = None
     currency: Optional[str] = "EGP"
     in_stock: bool = True
+    retailer_sku: Optional[str] = None
+    mpn: Optional[str] = None
     scraped_at: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )

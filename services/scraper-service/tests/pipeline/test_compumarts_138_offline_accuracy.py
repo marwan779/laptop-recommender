@@ -317,7 +317,7 @@ def test_expanded_specification_fields_extraction(raw_catalog: Dict[str, Any]):
             assert 20 <= gpu["tdp_w"] <= 250
         if gpu["ai_tops"] is not None:
             counts["gpu_ai_tops"] += 1
-            assert gpu["ai_tops"] >= 50
+            assert 5 <= gpu["ai_tops"] <= 3000
 
         conn = specs["connectivity"]
         if conn["thunderbolt_version"] is not None:

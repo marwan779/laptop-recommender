@@ -255,7 +255,7 @@ def test_provenance_audit_trace_diagnoses_populated_and_empty_fields():
         store="compumarts",
         title="HP Victus 15 15-fa2082wm Gaming Laptop – Intel Core i5-13420H 13th Gen, 16GB RAM, 512GB SSD, RTX 4050",
         raw_html="",
-        raw_tables={"specs": {"Display": "Vibrant panel", "Color": "Mica Silver"}},
+        raw_tables={"specs": {"Display": "Vibrant panel", "Color": "Mica Silver", "Battery": "Fast charge battery"}},
         raw_sections={},
         price=52999.0,
     )
@@ -357,6 +357,110 @@ def test_dimensions_centimeter_conversion():
     assert specs["physical"]["width_mm"] == 369.0
     assert specs["physical"]["depth_mm"] == 259.4
     assert specs["physical"]["height_mm"] == 22.9
+
+
+def test_pipeline_log_envelopes_output(caplog):
+    """Verify that log_envelopes=True emits [ENVELOPE], [AI RESULT], and [GATE 2] records."""
+    import logging
+
+    mock_ai = MockAIExtractor(return_values={"display.refresh_rate_hz": 144})
+    pipeline = LaptopExtractionPipeline(ai_fallback=mock_ai, log_envelopes=True)
+
+    raw_product = RawScrapedProduct(
+        url="https://compumarts.com/test",
+        store="compumarts",
+        title="Dell Alienware m16 - Core i7-13700HX",
+        raw_html="",
+        raw_tables={
+            "specs": {
+                "Processor": "Intel Core i7-13700HX",
+                "Display": "16 inch FHD 144Hz IPS",
+            }
+        },
+    )
+
+    with caplog.at_level(logging.INFO):
+        res = pipeline.process_raw_product(raw_product)
+
+    log_text = caplog.text
+    # Should log dispatched envelopes or 0 envelopes
+    assert "[ENVELOPE]" in log_text
+    # Since refresh_rate_hz is extracted deterministically from "144Hz", let's check with an envelope
+    assert res is not None
+
+
+def test_pipeline_log_envelopes_with_unresolved_field(caplog):
+    """Verify detailed logs when an envelope is dispatched, resolved by AI, and validated."""
+    import logging
+
+    # Provide a value that triggers an envelope (e.g. unknown GPU model or unpopulated field)
+    mock_ai = MockAIExtractor(return_values={"display.panel_type": "OLED"})
+    pipeline = LaptopExtractionPipeline(ai_fallback=mock_ai, log_envelopes=True)
+
+    # Scraped product without panel type in display
+    raw_product = RawScrapedProduct(
+        url="https://compumarts.com/test-env",
+        store="compumarts",
+        title="ASUS Zenbook 14 - Intel Core i7-1360P",
+        raw_html="",
+        raw_tables={
+            "specs": {
+                "Processor": "Intel Core i7-1360P",
+                "Display": "14 inch 2.8K Glossy Screen",
+            }
+        },
+    )
+
+    with caplog.at_level(logging.INFO):
+        res = pipeline.process_raw_product(raw_product)
+
+    log_text = caplog.text
+    assert "[ENVELOPE]" in log_text
+    if res.envelopes_generated:
+        assert "[AI RESULT]" in log_text
+        assert "[GATE 2]" in log_text
+
+
+def test_provenance_format_envelope_text_report():
+    """Verify that format_envelope_text_report produces the full human-readable audit text block."""
+    from pipeline.provenance import ProvenanceTracker
+
+    mock_ai = MockAIExtractor(return_values={"display.panel_type": "IPS"})
+    pipeline = LaptopExtractionPipeline(ai_fallback=mock_ai)
+
+    raw_product = RawScrapedProduct(
+        url="https://compumarts.com/test-audit",
+        store="compumarts",
+        title="Dell Inspiron 15 3520",
+        raw_html="",
+        raw_tables={
+            "specs": {
+                "Processor": "Intel Core i5-1235U",
+                "Display": "15.6 inch FHD 120Hz Anti-glare",
+            }
+        },
+        price=22000.0,
+    )
+
+    res = pipeline.process_raw_product(raw_product)
+    report = ProvenanceTracker.format_envelope_text_report(
+        raw_product=raw_product,
+        envelopes=res.envelopes_generated,
+        ai_results=res.ai_results,
+        validation_rejections=res.validation_rejections,
+        final_specs=res.specs,
+        product_index=1,
+        total_products=1,
+    )
+
+    assert "LAPTOP [1/1]: Dell Inspiron 15 3520" in report
+    assert "https://compumarts.com/test-audit" in report
+    assert "TOTAL ENVELOPES:" in report
+    if res.envelopes_generated:
+        assert "--- [FULL RAW CONTEXT PROVIDED TO AI] ---" in report
+        assert "--- [AI FALLBACK RESOLUTION] ---" in report
+        assert "--- [GATE 2 PHYSICAL VALIDATION] ---" in report
+
 
 
 

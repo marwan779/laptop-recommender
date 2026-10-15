@@ -1,0 +1,44 @@
+{
+  "url": "https://www.compumarts.com/collections/laptop/products/msi-katana-15-hx-b14wgk-gaming-laptop-i7-14650hx-rtx-5070-egypt",
+  "store": "compumarts",
+  "title": "MSI Katana 15 HX B14WGK Gaming Laptop Intel Core i7-14650HX, 16GB DDR5, 1TB PCIe Gen4 SSD, RTX 5070 8GB, 15.6\" QHD 165Hz, Windows 11 Home, Black",
+  "html_file": "raw_scrapes\\compumarts\\20261015_190845_c0b33ca0dd9a.html",
+  "price": 85999.0,
+  "currency": "EGP",
+  "in_stock": true,
+  "scraped_at": "2026-10-15T19:08:45.974068+00:00",
+  "raw_tables": {
+    "specs": {
+      "Brand": "MSI",
+      "Model Name": "Katana 15 HX B14WGK",
+      "Model": "9S7-1587C1-1035",
+      "Processor": "Intel® Core™ i7-14650HX, 16Core (8P + 8E) / 24Threads, P-core 2.2 / 5.2GHz, E-core 1.6 / 3.7GHz, 30MB Cache",
+      "Memory": "16GB DDR5 5600MHz (Up to 96GB Supported)",
+      "Graphics": "NVIDIA® GeForce RTX™ 5070 Laptop GPU 8GB GDDR7 powers advanced AI with 798 AI TOPS 2347MHzx Up to Boost Clock 115W Maximum Graphics",
+      "Storage": "1TB NVMe SSD PCIe Gen4",
+      "Display": "15.6\" QHD(2560x1440), 165Hz Refresh Rate, IPS-Level, 100% DCI-P3(Typical)",
+      "Ports": "1x Type-C (USB3.2 Gen2 / DisplayPort / Power Delivery 3.0), 3x Type-A USB3.2 Gen2, 1x HDMI 2.1 (8K@60Hz / 4K@120Hz), 1x Mic-in/Headphone-out Combo Jack, 1x RJ45 LAN Port",
+      "Keyboard": "4-Zone RGB Gaming Keyboard with Copilot Key",
+      "Speaker": "2x 2W Speakers",
+      "Camera": "HD type (30fps@720p)",
+      "Network - Wireless": "Gb LAN, 802.11 ax Wi-Fi 6E + Bluetooth v5.3",
+      "Operating System": "Windows 11 home",
+      "Battery and Power": "Battery: 4-Cell, 75Wh",
+      "Power Adapter": "240W AC Adapter",
+      "Dimensions and Weight": "359 x 262 x 25.5 mm, 2.4 kg",
+      "Color": "Black",
+      "Warranty": "2 Years Warranty",
+      "CPU": "Intel® Core™ i7-14650HX, 16Core (8P + 8E) / 24Threads, P-core 2.2 / 5.2GHz, E-core 1.6 / 3.7GHz, 30MB Cache",
+      "GPU": "NVIDIA® GeForce RTX™ 5070 Laptop GPU 8GB GDDR7 powers advanced AI with 798 AI TOPS 2347MHzx Up to Boost Clock 115W Maximum Graphics",
+      "MEMORY": "16GB DDR5 5600MHz (Up to 96GB Supported)",
+      "STORAGE": "1TB NVMe SSD PCIe Gen4",
+      "DISPLAY": "15.6\" QHD(2560x1440), 165Hz Refresh Rate, IPS-Level, 100% DCI-P3(Typical)",
+      "OS": "Windows 11 home",
+      "SKU": "9S7-1587C1-1035",
+      "Part Number": "9S7-1587C1-1035"
+    }
+  },
+  "raw_sections": {
+    "Description": "MSI Katana 15 HX B14WGK Laptop is a gaming laptop featuring an Intel® Core™ i7-14650HX, 16Core (8P + 8E) / 24Threads, P-core 2.2 / 5.2GHz, E-core 1.6 / 3.7GHz, 30MB Cache processor, NVIDIA® GeForce RTX™ 5070 Laptop GPU 8GB GDDR7 graphics, 16GB DDR5 5600MHz (Up to 96GB Supported) memory, 1TB NVMe SSD PCIe Gen4 storage, and a 15.6\" QHD(2560x1440), 165Hz Refresh Rate, IPS-Level, 100% DCI-P3(Typical) display, making it a gaming laptop with RTX 5070 and QHD 165Hz display available in Egypt through Compumarts.\nKey specs\n\n\nCPU\nIntel® Core™ i7-14650HX, 16Core (8P + 8E) / 24Threads, P-core 2.2 / 5.2GHz, E-core 1.6 / 3.7GHz, 30MB Cache\n\n\nGPU\nNVIDIA® GeForce RTX™ 5070 Laptop GPU 8GB GDDR7 powers advanced AI with 798 AI TOPS 2347MHzx Up to Boost Clock 115W Maximum Graphics\n\n\nMEMORY\n16GB DDR5 5600MHz (Up to 96GB Supported)\n\n\nSTORAGE\n1TB NVMe SSD PCIe Gen4\n\n\nDISPLAY\n15.6\" QHD(2560x1440), 165Hz Refresh Rate, IPS-Level, 100% DCI-P3(Typical)\n\n\nOS\nWindows 11 home\n\nBrand\tMSI\nModel Name\tKatana 15 HX B14WGK\nModel\t9S7-1587C1-1035\nProcessor\tIntel® Core™ i7-14650HX, 16Core (8P + 8E) / 24Threads, P-core 2.2 / 5.2GHz, E-core 1.6 / 3.7GHz, 30MB Cache\nMemory\t16GB DDR5 5600MHz (Up to 96GB Supported)\nGraphics\tNVIDIA® GeForce RTX™ 5070 Laptop GPU 8GB GDDR7 powers advanced AI with 798 AI TOPS 2347MHzx Up to Boost Clock 115W Maximum Graphics\nStorage\t1TB NVMe SSD PCIe Gen4\nDisplay\t15.6\" QHD(2560x1440), 165Hz Refresh Rate, IPS-Level, 100% DCI-P3(Typical)\nPorts\t1x Type-C (USB3.2 Gen2 / DisplayPort / Power Delivery 3.0), 3x Type-A USB3.2 Gen2, 1x HDMI 2.1 (8K@60Hz / 4K@120Hz), 1x Mic-in/Headphone-out Combo Jack, 1x RJ45 LAN Port\nKeyboard\t4-Zone RGB Gaming Keyboard with Copilot Key\nSpeaker\t2x 2W Speakers\nCamera\tHD type (30fps@720p)\nNetwork - Wireless\tGb LAN, 802.11 ax Wi-Fi 6E + Bluetooth v5.3\nOperating System\tWindows 11 home\nBattery and Power\tBattery: 4-Cell, 75Wh\nPower Adapter\t240W AC Adapter\nDimensions and Weight\t359 x 262 x 25.5 mm, 2.4 kg\nColor\tBlack\nWarranty\t2 Years Warranty\n\nWelcome to our store.\nLearn more\n\nGet ready for some retail magic by offering local pickup or shipping all across Egypt!\n\nNO INSTALLMENT!\nLearn more\n\nFast delivery across Egypt\n\nNEW ARRIVALS 🔥\nFresh stock added weekly\n\nFresh stock added weekly\n\nOpen 7 days a week\nTalk to a real person\n\nTalk to a real person\n\nShipping\ncalculated at checkout.\n\nFast shipping to your doorstep! Get your order delivered within 1-5 days based on location.\n\nSign up for exclusive offers.\n\nMSI Katana 15 HX B14WGK Laptop is a gaming laptop featuring an\nIntel® Core™ i7-14650HX, 16Core (8P + 8E) / 24Threads, P-core 2.2 / 5.2GHz, E-core 1.6 / 3.7GHz, 30MB Cache\nprocessor,\nNVIDIA® GeForce RTX™ 5070 Laptop GPU 8GB GDDR7\ngraphics,\n16GB DDR5 5600MHz (Up to 96GB Supported)\nmemory,\n1TB NVMe SSD PCIe Gen4\nstorage, and a\n15.6\" QHD(2560x1440), 165Hz Refresh Rate, IPS-Level, 100% DCI-P3(Typical)\ndisplay, making it a gaming laptop with RTX 5070 and QHD 165Hz display available in Egypt through Compumarts.\nKey specs\nCPU\nIntel® Core™ i7-14650HX, 16Core (8P + 8E) / 24Threads, P-core 2.2 / 5.2GHz, E-core 1.6 / 3.7GHz, 30MB Cache\nGPU\nNVIDIA® GeForce RTX™ 5070 Laptop GPU 8GB GDDR7 powers advanced AI with 798 AI TOPS 2347MHzx Up to Boost Clock 115W Maximum Graphics\nMEMORY\n16GB DDR5 5600MHz (Up to 96GB Supported)\nSTORAGE\n1TB NVMe SSD PCIe Gen4\nDISPLAY\n15.6\" QHD(2560x1440), 165Hz Refresh Rate, IPS-Level, 100% DCI-P3(Typical)\nOS\nWindows 11 home\n\nCPU\nIntel® Core™ i7-14650HX, 16Core (8P + 8E) / 24Threads, P-core 2.2 / 5.2GHz, E-core 1.6 / 3.7GHz, 30MB Cache\nGPU\nNVIDIA® GeForce RTX™ 5070 Laptop GPU 8GB GDDR7 powers advanced AI with 798 AI TOPS 2347MHzx Up to Boost Clock 115W Maximum Graphics\nMEMORY\n16GB DDR5 5600MHz (Up to 96GB Supported)\nSTORAGE\n1TB NVMe SSD PCIe Gen4\nDISPLAY\n15.6\" QHD(2560x1440), 165Hz Refresh Rate, IPS-Level, 100% DCI-P3(Typical)\nOS\nWindows 11 home\n\nCategory\nSpecification Details\n\nBecome a memberWith more ways to unlock exciting perks, this is your all access pass to exclusive rewards.\n\nإشتري وإنت مطمن إحنا معاك\n\nAccess special offers, exclusive product updates, and event details delivered to your inbox."
+  }
+}

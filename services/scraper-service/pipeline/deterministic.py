@@ -13,6 +13,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from pipeline.gpu_anchor import GPUAnchorExtractor
 from pipeline.physical_validator import PhysicalValidator
 from pipeline.schema import ExtractionEnvelope, empty_laptop_specifications
 
@@ -48,7 +49,7 @@ CANONICAL_FAMILIES: Dict[str, List[str]] = {
         "Precision", "G15", "G16", "Pro 15"
     ],
     "ASUS": [
-        "ROG Strix SCAR", "ROG Strix", "ROG Zephyrus", "ROG Flow", "ROG Ally", "ROG",
+        "ROG Strix SCAR", "ROG Strix", "ROG Zephyrus Duo", "ROG Zephyrus", "ROG Flow", "ROG Ally", "ROG",
         "TUF Gaming", "TUF", "Zenbook Pro", "Zenbook Duo", "Zenbook S", "Zenbook",
         "Vivobook Pro", "Vivobook S", "Vivobook Go", "Vivobook", "ExpertBook", "ProArt", "V16"
     ],
@@ -141,6 +142,9 @@ class TableKeyRouter:
         "camera & audio": "camera_and_audio",
         # Ports & Card Reader
         "connectivity": "connectivity_and_ports",
+        "additional i/o": "ports",
+        "additional io": "ports",
+        "additional ports": "ports",
         "card reader": "card_reader",
         "memory card reader": "card_reader",
         # Display specific overrides
@@ -412,8 +416,13 @@ class TableKeyRouter:
 class DeterministicExtractor:
     """Extracts specs deterministically and creates envelopes for unresolved fields."""
 
-    def __init__(self, alias_dict_path: Optional[Path] = None) -> None:
+    def __init__(
+        self,
+        alias_dict_path: Optional[Path] = None,
+        gpu_anchor: Optional[GPUAnchorExtractor] = None,
+    ) -> None:
         self.router = TableKeyRouter(alias_dict_path)
+        self.gpu_anchor = gpu_anchor or GPUAnchorExtractor()
 
     def extract(
         self,
@@ -688,6 +697,31 @@ class DeterministicExtractor:
                         is_machine_type = False
                     break
 
+        # Check if table has a Model or SKU key containing a definitive OEM part number
+        if not table_mpn:
+            for k, v in table.items():
+                kl = k.lower()
+                if kl in {"model", "sku", "retailer sku", "model number", "product code"}:
+                    v_clean = v.strip()
+                    if re.match(
+                        r"^(?:9S7-[A-Za-z0-9]+-[A-Za-z0-9]+|90N[A-Za-z0-9]{5}-[A-Za-z0-9]+|NX\.[A-Za-z0-9]{5}\.[A-Za-z0-9]{3}|8[0-3][A-Za-z0-9]{8}|[A-Za-z0-9]{7}#[A-Za-z0-9]{3}|[A-Z]{2}\d{3}[A-Z]{2,4}-[A-Z0-9]+)$",
+                        v_clean,
+                        re.IGNORECASE,
+                    ):
+                        table_mpn = v_clean
+                        is_machine_type = False
+                        break
+
+        # Check retailer_sku if it matches standard OEM MPN signatures
+        if not table_mpn and specs["identity"].get("retailer_sku"):
+            r_sku = specs["identity"]["retailer_sku"].strip()
+            if re.match(
+                r"^(?:9S7-[A-Za-z0-9]+-[A-Za-z0-9]+|90N[A-Za-z0-9]{5}-[A-Za-z0-9]+|NX\.[A-Za-z0-9]{5}\.[A-Za-z0-9]{3}|8[0-3][A-Za-z0-9]{8}|[A-Za-z0-9]{7}#[A-Za-z0-9]{3}|[A-Z]{2}\d{3}[A-Z]{2,4}-[A-Z0-9]+)$",
+                r_sku,
+                re.IGNORECASE,
+            ):
+                table_mpn = r_sku
+
         # Check title and SKU for full Lenovo MPN (e.g. 83S000C2IN, 83DV00N8ED, 82X700BVPS)
         full_lenovo_match = re.search(
             r"\b(8[0-3][A-Za-z0-9]{8})\b",
@@ -745,14 +779,25 @@ class DeterministicExtractor:
                     break
 
         # 4. Laptop Model
-        # Check table first
+        # Check table first - prioritize descriptive model name over part code
         for k, v in table.items():
             kl = k.lower()
-            if any(term in kl for term in ["model / series", "model"]) and not any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
+            if kl in {"model name", "laptop model", "model / series", "product model"}:
                 v_clean = v.strip()
                 if v_clean and not any(bad in v_clean.lower() for bad in ["n/a", "none"]):
                     specs["identity"]["laptop_model"] = v_clean
                     break
+
+        if not specs["identity"]["laptop_model"]:
+            for k, v in table.items():
+                kl = k.lower()
+                if any(term in kl for term in ["model / series", "model"]) and not any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
+                    v_clean = v.strip()
+                    # Do not treat pure MPN codes (like 9S7-...) as the marketing laptop model
+                    if not re.match(r"^(?:9S7-[A-Za-z0-9]+-[A-Za-z0-9]+|90N[A-Za-z0-9]{5}-[A-Za-z0-9]+)$", v_clean, re.I):
+                        if v_clean and not any(bad in v_clean.lower() for bad in ["n/a", "none"]):
+                            specs["identity"]["laptop_model"] = v_clean
+                            break
 
         # If not in table, synthesize from family + size/qualifier in clean_name
         if not specs["identity"]["laptop_model"] and specs["identity"]["laptop_family"]:
@@ -985,7 +1030,34 @@ class DeterministicExtractor:
         # Prioritize specification table text first!
         full_search = f"{gpu_text} {context} {title}"
 
-        # 1. Check for discrete GPUs with strict architectural generations
+        # Collect spec text snippets for GPU anchor
+        spec_text_snippets = [gpu_text, context]
+        if routed_table:
+            spec_text_snippets.extend([v for _, v in routed_table.get("gpu_vram", [])])
+            spec_text_snippets.extend([v for _, v in routed_table.get("gpu_power", [])])
+            spec_text_snippets.extend([v for _, v in routed_table.get("gpu_boost", [])])
+
+        # Layer 3.5: GPU Anchor ground-truth extraction
+        gpu_anchored_specs, gpu_constraints, matched_key = self.gpu_anchor.extract(
+            title=title,
+            spec_texts=spec_text_snippets,
+            cpu_context=cpu_context,
+        )
+        if gpu_anchored_specs:
+            specs["gpu"]["manufacturer"] = gpu_anchored_specs["manufacturer"]
+            specs["gpu"]["model"] = gpu_anchored_specs["model"]
+            specs["gpu"]["variant"] = gpu_anchored_specs.get("variant")
+            specs["gpu"]["vram_gb"] = gpu_anchored_specs.get("vram_gb")
+            specs["gpu"]["integrated"] = gpu_anchored_specs["integrated"]
+            specs["gpu"]["tdp_w"] = gpu_anchored_specs.get("tdp_w")
+            specs["gpu"]["boost_clock_mhz"] = gpu_anchored_specs.get("boost_clock_mhz")
+            specs["gpu"]["ai_tops"] = gpu_anchored_specs.get("ai_tops")
+
+            # Extract additional details if not captured by anchor (e.g. boost clock or ai tops from other rows)
+            self._extract_gpu_details(gpu_text, full_search, routed_table, specs)
+            return
+
+        # 1. Fallback regex checks for discrete GPUs with strict architectural generations
         # NVIDIA GeForce RTX (20, 30, 40, and new 50 series)
         rtx_match = re.search(r"\brtx\s*([2-5]\d{3}(?:\s*(?:ti|super))?)\b", full_search, re.IGNORECASE)
         if rtx_match:
@@ -1113,7 +1185,7 @@ class DeterministicExtractor:
 
         boost_rows = routed_table.get("gpu_boost", [])
         boost_text = " ".join(v for _, v in boost_rows) + " " + gpu_text
-        m_boost = re.search(r"\b([12]\d{3})\s*mhz\b", boost_text, re.IGNORECASE)
+        m_boost = re.search(r"\b([12]\d{3})\s*mhzx?\b", boost_text, re.IGNORECASE)
         if m_boost:
             valid, clean_boost, _ = PhysicalValidator.validate_gpu_boost(m_boost.group(1))
             if valid:
@@ -1664,6 +1736,29 @@ class DeterministicExtractor:
                     specs["display"]["hdr"] = hvs
                     break
 
+        # Touchscreen
+        touch_targets = [primary_text, title, " ".join(table.values())]
+        for tt in touch_targets:
+            if not tt:
+                continue
+            if re.search(r"\b(?:touchscreen|touch\s*screen|multi-touch|touch\s+display|touch\s+\d+hz|dual\s+16[″\"]\s+3k\s+oled\s+touch)\b", tt, re.I):
+                if not re.search(r"\b(?:non-touch|no\s+touch)\b", tt, re.I):
+                    specs["display"]["touchscreen"] = True
+                    break
+            elif re.search(r"\btouch\b", tt, re.I) and not re.search(r"\b(?:touchpad|touch\s*pad|non-touch|no\s+touch)\b", tt, re.I):
+                specs["display"]["touchscreen"] = True
+                break
+
+        for k, v in table.items():
+            if "touch" in k.lower() and "pad" not in k.lower():
+                vl = v.lower()
+                if any(yes in vl for yes in ["yes", "true", "supported"]):
+                    specs["display"]["touchscreen"] = True
+                    break
+                elif any(no in vl for no in ["no", "false", "non-touch"]):
+                    specs["display"]["touchscreen"] = False
+                    break
+
         if not specs["display"]["panel_type"]:
             envelopes.append(
                 ExtractionEnvelope(
@@ -1807,7 +1902,7 @@ class DeterministicExtractor:
 
         specs["physical"]["raw_spec"] = self._collect_raw_spec(
             table=table,
-            target_buckets={"dimensions", "weight", "color", "build", "package_dimensions"},
+            target_buckets={"dimensions", "weight", "package_dimensions"},
             fallback_text=context,
         )
 
@@ -1947,12 +2042,18 @@ class DeterministicExtractor:
             specs["connectivity"]["wifi"] = "Wi-Fi 6"
 
         # 2. Bluetooth
-        bt_match = re.search(r"\bbluetooth\s*(?:v?|version)?\s*(5\.[0-4]|4\.[0-2])\b", full_search, re.IGNORECASE)
+        bt_match = re.search(r"\bbluetooth\s*(?:v?|version)?\s*([4-6](?:\.[0-4])?)\b", full_search, re.IGNORECASE)
         if bt_match:
-            specs["connectivity"]["bluetooth"] = f"Bluetooth {bt_match.group(1)}"
-        elif re.search(r"\bbt\s*(5\.[0-4]|4\.[0-2])\b", full_search, re.IGNORECASE):
-            m_bt = re.search(r"\bbt\s*(5\.[0-4]|4\.[0-2])\b", full_search, re.IGNORECASE)
-            specs["connectivity"]["bluetooth"] = f"Bluetooth {m_bt.group(1)}"
+            ver = bt_match.group(1)
+            if "." not in ver:
+                ver = f"{ver}.0"
+            specs["connectivity"]["bluetooth"] = f"Bluetooth {ver}"
+        elif re.search(r"\bbt\s*([4-6](?:\.[0-4])?)\b", full_search, re.IGNORECASE):
+            m_bt = re.search(r"\bbt\s*([4-6](?:\.[0-4])?)\b", full_search, re.IGNORECASE)
+            ver = m_bt.group(1)
+            if "." not in ver:
+                ver = f"{ver}.0"
+            specs["connectivity"]["bluetooth"] = f"Bluetooth {ver}"
 
         # 3. Ports: Collect from routed ports bucket and any unrouted rows
         port_rows = routed_table.get("ports", [])
@@ -1997,7 +2098,9 @@ class DeterministicExtractor:
         # 4. Ethernet
         for k, v in table.items():
             kl = k.lower()
-            if any(term in kl for term in ["ethernet", "lan", "rj-45", "rj45"]):
+            if "wlan" in kl or "wireless" in kl:
+                continue
+            if any(term in kl for term in ["ethernet", "rj-45", "rj45"]) or re.search(r"\b(?<!w)lan\b", kl):
                 vs = str(v).strip()
                 if not any(bad in vs.lower() for bad in ["none", "n/a", "no", "without"]):
                     specs["connectivity"]["ethernet"] = vs
@@ -2284,12 +2387,12 @@ class DeterministicExtractor:
                     specs["audio_webcam"]["microphone"] = clean_mic
 
             if specs["audio_webcam"]["speaker_count"] is None:
-                m_sp = re.search(r"(\d+)\s*(?:x\s*\d+(?:\.\d+)?\s*W|\s*speakers?)", vs, re.IGNORECASE)
+                m_sp = re.search(r"(\d+)[-\s]*(?:x\s*\d+(?:\.\d+)?\s*W|speakers?|speaker\s*system)", vs, re.IGNORECASE)
                 if m_sp:
                     specs["audio_webcam"]["speaker_count"] = int(m_sp.group(1))
-                elif re.search(r"\b(?:dual|stereo|two|2x)\b", vs, re.IGNORECASE):
-                    specs["audio_webcam"]["speaker_count"] = 2
                 elif re.search(r"\b(?:quad|four|4x)\b", vs, re.IGNORECASE):
                     specs["audio_webcam"]["speaker_count"] = 4
+                elif re.search(r"\b(?:dual|stereo|two|2x)\b", vs, re.IGNORECASE):
+                    specs["audio_webcam"]["speaker_count"] = 2
 
 

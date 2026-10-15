@@ -241,6 +241,65 @@ class PhysicalValidator:
         return True, round(norm_w, 1), round(norm_d, 1), round(norm_h, 1), None
 
     @classmethod
+    def validate_dimension(
+        cls, value: Any, dim_type: str = "width"
+    ) -> Tuple[bool, Optional[float], Optional[str]]:
+        """Validate individual chassis dimension in metric mm, converting cm if detected."""
+        if value is None:
+            return True, None, None
+        try:
+            val = float(value)
+        except (ValueError, TypeError):
+            return False, None, "type_error"
+
+        if dim_type == "height":
+            if 0.5 <= val < 6.0:
+                val *= 10.0
+            if 6.0 <= val <= 60.0:
+                return True, round(val, 2), None
+            return False, None, f"height_out_of_bounds_{val}"
+        elif dim_type == "width":
+            if 15.0 <= val < 60.0:
+                val *= 10.0
+            if 180.0 <= val <= 500.0:
+                return True, round(val, 2), None
+            return False, None, f"width_out_of_bounds_{val}"
+        elif dim_type == "depth":
+            if 10.0 <= val < 45.0:
+                val *= 10.0
+            if 140.0 <= val <= 400.0:
+                return True, round(val, 2), None
+            return False, None, f"depth_out_of_bounds_{val}"
+
+        return True, round(val, 2), None
+
+    @classmethod
+    def validate_panel_type(
+        cls, value: Any
+    ) -> Tuple[bool, Optional[str], Optional[str]]:
+        """Validate display panel technology (IPS, OLED, AMOLED, TN, VA, Mini-LED)."""
+        if not value or not isinstance(value, str):
+            return False, None, "type_error"
+        val = value.strip().upper()
+        valid_map = {
+            "IPS": "IPS",
+            "IPS-LEVEL": "IPS",
+            "IPS LEVEL": "IPS",
+            "OLED": "OLED",
+            "AMOLED": "AMOLED",
+            "TN": "TN",
+            "VA": "VA",
+            "WVA": "WVA",
+            "MINI-LED": "Mini-LED",
+            "MINI LED": "Mini-LED",
+            "MINILED": "Mini-LED",
+        }
+        for k, v in valid_map.items():
+            if re.search(r"\b" + re.escape(k) + r"\b", val):
+                return True, v, None
+        return False, None, f"invalid_panel_type_{value}"
+
+    @classmethod
     def validate_webcam(
         cls, value: Any
     ) -> Tuple[bool, Optional[str], Optional[str]]:
@@ -333,6 +392,35 @@ class PhysicalValidator:
         return False, None, f"gpu_power_{val}w_out_of_bounds"
 
     @classmethod
+    def validate_bluetooth(
+        cls, value: Any
+    ) -> Tuple[bool, Optional[str], Optional[str]]:
+        """Validate Bluetooth version specification."""
+        if not value or not isinstance(value, str):
+            return False, None, "type_error"
+        val = value.strip()
+        m = re.search(r"\b(?:Bluetooth|BT)?\s*v?([4-6](?:\.[0-4])?)\b", val, re.I)
+        if m:
+            ver = m.group(1)
+            if "." not in ver:
+                ver = f"{ver}.0"
+            return True, f"Bluetooth {ver}", None
+        return False, None, f"bluetooth_unrecognized_{val}"
+
+    @classmethod
+    def validate_warranty_years(
+        cls, value: Any
+    ) -> Tuple[bool, Optional[int], Optional[str]]:
+        """Validate warranty duration in years (typically 1 to 5 years)."""
+        try:
+            val = int(value)
+        except (ValueError, TypeError):
+            return False, None, "type_error"
+        if 1 <= val <= 5:
+            return True, val, None
+        return False, None, f"warranty_years_{val}_out_of_bounds"
+
+    @classmethod
     def validate_field(
         cls,
         field_path: str,
@@ -351,6 +439,8 @@ class PhysicalValidator:
             return cls.validate_display_size(value)
         elif field_path == "display.refresh_rate_hz":
             return cls.validate_refresh_rate(value)
+        elif field_path == "display.panel_type":
+            return cls.validate_panel_type(value)
         elif field_path == "display.brightness_nits":
             return cls.validate_brightness(value)
         elif field_path == "display.response_time_ms":
@@ -367,16 +457,67 @@ class PhysicalValidator:
             return cls.validate_power_adapter(value, cpu_context)
         elif field_path == "physical.weight_kg":
             return cls.validate_weight(value)
+        elif field_path == "physical.width_mm":
+            return cls.validate_dimension(value, "width")
+        elif field_path == "physical.depth_mm":
+            return cls.validate_dimension(value, "depth")
+        elif field_path == "physical.height_mm":
+            return cls.validate_dimension(value, "height")
         elif field_path == "gpu.vram_gb":
             return cls.validate_gpu_vram(value)
         elif field_path == "identity.manufacturer_part_number":
             return cls.validate_mpn(value)
         elif field_path == "identity.laptop_family":
             return cls.validate_family(value)
+        elif field_path == "identity.warranty_years":
+            return cls.validate_warranty_years(value)
         elif field_path == "audio_webcam.webcam_resolution":
             return cls.validate_webcam(value)
         elif field_path == "audio_webcam.speaker_count":
             return cls.validate_speaker_count(value)
+        elif field_path == "connectivity.bluetooth":
+            return cls.validate_bluetooth(value)
+        elif field_path in (
+            "connectivity.has_card_reader",
+            "build_security.has_backlit_keyboard",
+            "build_security.has_fingerprint",
+            "build_security.has_numpad",
+            "display.touchscreen",
+            "audio_webcam.has_privacy_shutter",
+            "audio_webcam.has_ir_camera",
+            "memory.is_soldered",
+        ):
+            if isinstance(value, bool):
+                return True, value, None
+            if str(value).lower() in ("true", "yes", "1"):
+                return True, True, None
+            if str(value).lower() in ("false", "no", "0"):
+                return True, False, None
+            return False, None, "invalid_boolean"
+        elif field_path == "connectivity.card_reader_type":
+            if not value or not isinstance(value, str):
+                return False, None, "type_error"
+            v = value.strip()
+            if any(term in v.lower() for term in ["sd", "microsd", "card reader"]):
+                return True, v, None
+            return False, None, f"invalid_card_reader_type_{v}"
+        elif field_path == "connectivity.wifi":
+            if not value or not isinstance(value, str):
+                return False, None, "type_error"
+            v = value.strip()
+            m = re.search(r"\bwi-?fi\s*([67](?:e)?)\b", v, re.I)
+            if m:
+                return True, f"Wi-Fi {m.group(1).upper()}", None
+            if any(t in v.lower() for t in ["wi-fi", "wifi", "802.11"]):
+                return True, v, None
+            return False, None, f"invalid_wifi_{v}"
+        elif field_path == "operating_system.name":
+            if not value or not isinstance(value, str):
+                return False, None, "type_error"
+            v = value.strip()
+            if any(term in v.lower() for term in ["windows", "dos", "freedos", "linux", "ubuntu", "macos", "chrome"]):
+                return True, v, None
+            return False, None, f"invalid_os_{v}"
 
         # Default pass-through for other fields
         return True, value, None
