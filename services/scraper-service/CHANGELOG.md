@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.6.1...scraper-service-v1.7.0) (2026-10-15)
+
+
+### Features
+
+* **pipeline:** implement 7-layer extraction pipeline with nuextract-v1.5 gpu fallback ([610e21a](https://github.com/marwan779/laptop-recommender/commit/610e21a86341a778ef2cb841d9ddfd9de33bebbc))
+* **pipeline:** implement 7-layer extraction with nuextract onnx and zero-defect routing ([040e22e](https://github.com/marwan779/laptop-recommender/commit/040e22e141fec3fe8bc230c167db9a1b5c8f4f03))
+
 ## [1.6.1](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.6.0...scraper-service-v1.6.1) (2026-10-10)
 
 
