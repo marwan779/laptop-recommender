@@ -129,6 +129,13 @@ class RetailerProduct(BaseModel):
     thumbnail_url: str | None = None
     specs: dict[str, str] = Field(default_factory=dict)
     raw_description: str | None = None
+    has_text_specs: bool = True
+    specs_extraction_source: str = "dom"  # "dom", "title_fallback", or "hybrid"
+    specs_fallback_reason: str | None = None
+    has_specs_image: bool = False
+    specs_image_url: str | None = None
+    pattern_learned: bool = False
+    learned_pattern_type: str | None = None
     scraped_at: str = Field(default_factory=utcnow_str)
 
 
@@ -143,6 +150,8 @@ class StoreCatalogResult(BaseModel):
     latest_pointers: list[str] = Field(default_factory=list)
     total_products: int = 0
     total_skipped: int = 0
+    patterns_learned: list[str] = Field(default_factory=list)
+    anomalies: list[dict[str, Any]] = Field(default_factory=list)
     scraped_at: str = Field(default_factory=utcnow_str)
     products: list[RetailerProduct] = Field(default_factory=list)
     skipped_laptops: list[SkippedLaptop] = Field(default_factory=list)

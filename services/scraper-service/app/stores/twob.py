@@ -138,12 +138,13 @@ class TwoBStoreScraper(BaseStoreScraper):
                 if not title or clean_url in seen_urls:
                     continue
 
-                # Filter out standalone accessories (backpacks, mice, etc.)
-                if self._is_standalone_accessory(title):
+                # Filter out standalone accessories and non-laptop/used items
+                is_valid, reason = self.is_valid_new_laptop(title=title, url=clean_url)
+                if not is_valid:
                     self.record_skipped(
                         name=title,
                         url=clean_url,
-                        reason="Filtered out as standalone accessory",
+                        reason=f"Filtered out as standalone accessory or non-laptop: {reason}",
                         stage="accessory_filter",
                     )
                     continue
@@ -231,6 +232,21 @@ class TwoBStoreScraper(BaseStoreScraper):
                 pdp_specs, pdp_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = self._extract_product_specs(
                     clean_url
                 )
+                pdp_valid, pdp_reason = self.is_valid_new_laptop(
+                    title=title,
+                    specs=pdp_specs,
+                    url=clean_url,
+                    description=pdp_desc,
+                )
+                if not pdp_valid:
+                    self.record_skipped(
+                        name=title,
+                        url=clean_url,
+                        reason=f"Filtered out after PDP inspection: {pdp_reason}",
+                        stage="pdp_filter",
+                    )
+                    continue
+
                 specs = pdp_specs
                 raw_desc = pdp_desc
                 if pdp_mpn:
@@ -330,6 +346,15 @@ class TwoBStoreScraper(BaseStoreScraper):
 
             # Deep spec extraction from product page
             specs, raw_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = self._extract_product_specs(clean_url)
+            pdp_valid, _ = self.is_valid_new_laptop(
+                title=title,
+                specs=specs,
+                url=clean_url,
+                description=raw_desc,
+            )
+            if not pdp_valid:
+                continue
+
             final_price_val = price_val if price_val is not None else pdp_pval
             final_price_str = price_str if price_str is not None else pdp_pstr
             if pdp_stock is not None:

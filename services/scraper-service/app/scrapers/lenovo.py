@@ -290,6 +290,16 @@ class LenovoBrandScraper(BaseBrandScraper):
                         rel_clean = rel_url if rel_url.startswith("/") else f"/{rel_url}"
                         full_url = f"https://www.lenovo.com/eg/en{rel_clean}"
 
+                    is_valid, reason = self.is_valid_new_laptop(name)
+                    if not is_valid:
+                        self.record_skipped(
+                            name=name,
+                            url=full_url,
+                            reason=f"Filtered out: {reason}",
+                            stage="catalog_filtering",
+                        )
+                        continue
+
                     model_code = self._extract_model_code(name, rel_url)
                     family = self._determine_family(name, rel_url)
 
@@ -554,6 +564,23 @@ class LenovoBrandScraper(BaseBrandScraper):
 
         base_model = clean_base or summary.family or "Lenovo Laptop"
         best_model = summary.model or product_number or "UNKNOWN"
+
+        # Validate against non-laptop or used indicators revealed in specs
+        is_valid, reason = self.is_valid_new_laptop(
+            title=summary.name,
+            specs=all_specs,
+            url=summary.product_url,
+            description=doc.markdown(),
+        )
+        if not is_valid:
+            print(f"[Lenovo Scraper] [!] '{summary.name}' rejected after deep specs inspection: {reason}")
+            self.record_skipped(
+                name=summary.name,
+                url=summary.product_url,
+                reason=f"Rejected after deep specs inspection: {reason}",
+                stage="level2_specs",
+            )
+            return None
 
         detail = LaptopDetail(
             brand=self.brand_name,

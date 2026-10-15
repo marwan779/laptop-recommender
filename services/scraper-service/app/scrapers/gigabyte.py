@@ -236,6 +236,16 @@ class GigabyteBrandScraper(BaseBrandScraper):
                 if not name:
                     continue
 
+                is_valid, reason = self.is_valid_new_laptop(name)
+                if not is_valid:
+                    self.record_skipped(
+                        name=name,
+                        url=full_url,
+                        reason=f"Filtered out: {reason}",
+                        stage="catalog_filtering",
+                    )
+                    continue
+
                 family = self._determine_family(name, full_url)
                 model_code = self._extract_model_code(name, full_url)
                 slug = full_url.rstrip("/").split("/")[-1]
@@ -403,6 +413,23 @@ class GigabyteBrandScraper(BaseBrandScraper):
                 c_clean = c.strip()
                 if c_clean and len(c_clean) >= 3 and not c_clean.startswith("*"):
                     colors.append(c_clean)
+
+        # Validate against non-laptop or used indicators revealed in specs
+        is_valid, reason = self.is_valid_new_laptop(
+            title=summary.name,
+            specs=all_specs,
+            url=summary.product_url,
+            description=html,
+        )
+        if not is_valid:
+            print(f"[{self.brand_name}] [!] '{summary.name}' rejected after deep specs inspection: {reason}")
+            self.record_skipped(
+                name=summary.name,
+                url=summary.product_url,
+                reason=f"Rejected after deep specs inspection: {reason}",
+                stage="level2_specs",
+            )
+            return None
 
         return LaptopDetail(
             brand=self.brand_name,

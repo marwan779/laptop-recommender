@@ -1,0 +1,2749 @@
+{
+  "store": "compumarts",
+  "base_url": "https://www.compumarts.com",
+  "collection_source_url": "https://www.compumarts.com/collections/laptop?sort_by=created-descending&filter.v.availability=1",
+  "total_pdps_visited": 126,
+  "total_unique_keys_collected": 259,
+  "collected_at": "2026-10-09 18:17:45",
+  "areas": {
+    "identity_general": {
+      "Category": {
+        "frequency": 122,
+        "sample_values": [
+          "Specification Details"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-aspire-go-16-ag16-71p-9142-intel-core-9-270h-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16s-anv16s-71-76pu-core-7-240h-rtx-5070-16gb-512gb-egypt"
+        ]
+      },
+      "Model": {
+        "frequency": 8,
+        "sample_values": [
+          "Legion 5 15IRX10",
+          "16-am0057ne",
+          "Cyborg 15 Max C13WF-020EG",
+          "Cyborg 15 Max C13WG-019EG",
+          "Predator Helios 16 AI PH16-73-92V4"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt"
+        ]
+      },
+      "MODEL": {
+        "frequency": 7,
+        "sample_values": [
+          "ANV15-52-786F",
+          "HP Victus 15-fa2352TX Gaming Laptop",
+          "83JE00XEED",
+          "Cyborg 15 Black Edition A13VE",
+          "Dell Alienware AC1620 (Black) - AXGON 3 in 1 Gaming Set AX1COM31"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa2352tx-gaming-laptop-core-i7-13620h-16gb-ddr5-512gb-ssd-rtx-5050-8gb-15-6-inch-fhd-144hz-dos-mica-silver-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-i7-rtx-5070-32gb-1tb-egypt"
+        ]
+      },
+      "Brand": {
+        "frequency": 6,
+        "sample_values": [
+          "Lenovo",
+          "HP",
+          "ASUS",
+          "MSI",
+          "‎Dell"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Part Number": {
+        "frequency": 5,
+        "sample_values": [
+          "83LY00R8ED",
+          "9S7-15T111-020",
+          "9S7-15T111-019",
+          "NH.QW2EM.001",
+          "90NR0NG1-M005W0"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "Series": {
+        "frequency": 3,
+        "sample_values": [
+          "Legion 5",
+          "OMEN 16",
+          "‎G15 5530 I7-13650HX 16G 512G RTX3050 6G 120Hz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Product Number": {
+        "frequency": 1,
+        "sample_values": [
+          "D13PQEA#ABV"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt"
+        ]
+      },
+      "Model Name": {
+        "frequency": 1,
+        "sample_values": [
+          "Vivobook S14 S3407AA-SF155W"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Model Number": {
+        "frequency": 1,
+        "sample_values": [
+          "90NB1762-M003S0"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Part No": {
+        "frequency": 1,
+        "sample_values": [
+          "90NR0N06-M00JB0"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Sales Model Name": {
+        "frequency": 1,
+        "sample_values": [
+          "FX607VU-RL167W"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Marketing Name": {
+        "frequency": 1,
+        "sample_values": [
+          "ASUS TUF Gaming F16"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Model / MTM": {
+        "frequency": 1,
+        "sample_values": [
+          "Legion 5 15IAX10 (83F0007HED)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-legion-5-15iax10-core-ultra-7-rtx-5060-egypt"
+        ]
+      },
+      "AI PC CATEGORY": {
+        "frequency": 1,
+        "sample_values": [
+          "AI-Powered Gaming PC"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "MACHINE TYPE": {
+        "frequency": 1,
+        "sample_values": [
+          "83JE"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "Manufacturer": {
+        "frequency": 1,
+        "sample_values": [
+          "‎DELL"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Product Name": {
+        "frequency": 1,
+        "sample_values": [
+          "Lenovo LOQ 15ARP9 Gaming Laptop - Ryzen 5 7235HS, RTX 3050 6GB, 12GB RAM, 512GB SSD, 15.6\" FHD 144Hz 100% sRGB"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15-6-gaming-laptop-fhd-amd-ryzen-5-7235hs-with-12gb-memory-nvidia-geforce-rtx-3050-6gb-512gb-ssd-luna-grey"
+        ]
+      }
+    },
+    "cpu": {
+      "CPU": {
+        "frequency": 89,
+        "sample_values": [
+          "Ryzen™ 7 170",
+          "Intel Core™ i7-13645HX, 14C (6P + 8E) / 20T, P-core up to 4.9GHz, E-core up to 3.5GHz, 24MB Intel® Smart Cache",
+          "AMD RyzenTM 5 7535U (up to 4.5 GHz max boost clock, 16 MB L3 cache, 6 cores, 12 threads) 1 2",
+          "1315U",
+          "Intel Core i7 13645HX (14C/20T)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-core-i7-rtx-4050-gaming-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt"
+        ]
+      },
+      "Processor": {
+        "frequency": 19,
+        "sample_values": [
+          "13th Gen Intel® Core™ i7-13650HX",
+          "Intel® Core™ Ultra 7 255H, up to 5.1GHz, 24MB L3 cache, 16 cores and 16 threads",
+          "13th Gen Intel Core i7-1355U (10 Cores, 12 Threads, up to 5.0GHz)",
+          "Intel® Core™ Ultra 7 255H, up to 5.1GHz",
+          "Intel® Core™ i7-13620H Processor"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt"
+        ]
+      },
+      "Processor Cores": {
+        "frequency": 3,
+        "sample_values": [
+          "14 cores: 6 Performance-cores + 8 Efficient-cores",
+          "10 Cores (6 Performance-cores + 4 Efficient-cores), 16 Threads"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "PROCESSOR": {
+        "frequency": 3,
+        "sample_values": [
+          "AMD Ryzen 7 7445HS, 6 Cores / 12 Threads",
+          "Intel® Core™ Ultra 9 Processor 285H 2.9 GHz (24MB Cache, up to 5.4 GHz, 16 cores, 16 Threads); Intel® AI Boost NPU",
+          "AMD Ryzen AI 7 350, 8 Cores / 16 Threads, Up to 5 GHz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/products-asus-vivobook-pro-15-oled-n6506cu-i9-4050-egypt",
+          "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-amd-ryzen-ai-7-350-16gb-1tb-rtx-5060-egypt"
+        ]
+      },
+      "AI Engine": {
+        "frequency": 3,
+        "sample_values": [
+          "Intel® AI Boost NPU, up to 13 TOPS",
+          "Intel NPU, Up to 50 TOPS",
+          "AMD XDNA NPU, Up to 50 TOPS"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ph16-73-92v4-gaming-laptop-ultra9-275hx-rtx5090-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-zenbook-duo-ux8407aa-copilot-plus-32gb-1tb-3k-oled",
+          "https://www.compumarts.com/collections/laptop/products/asus-proart-px13-hn7306eac-ryzen-ai-128gb-3k-oled-egypt"
+        ]
+      },
+      "AI Features": {
+        "frequency": 3,
+        "sample_values": [
+          "Lenovo LA1 AI Chip (AI Engine+ for real-time performance optimization)",
+          "AI-Powered Gaming PC with Lenovo LA1 AI Chip",
+          "Lenovo AI Chip: LA1"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i7-13650hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-4050-6gb-15-6-fhd-ips",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15-6-gaming-laptop-fhd-amd-ryzen-5-7235hs-with-12gb-memory-nvidia-geforce-rtx-3050-6gb-512gb-ssd-luna-grey",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-gaming-intel-core-i7-13650hx-16gb-ram-512gb-ssd-rtx-3050-6gb-15-6-fhd-144hz-eng-arb-dos-grey-83dv000eax"
+        ]
+      },
+      "Processor Cache": {
+        "frequency": 2,
+        "sample_values": [
+          "24MB Intel® Smart Cache",
+          "2.1 GHz (12MB Cache, up to 4.5 GHz, 8 cores, 8 Threads); Intel® NPU up to 47TOPS"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Maximum Turbo Frequency": {
+        "frequency": 2,
+        "sample_values": [
+          "Up to 4.90GHz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "NPU": {
+        "frequency": 2,
+        "sample_values": [
+          "Ryzen AI – 16 TOPS",
+          "Intel® AI Boost, up to 13 TOPS"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt",
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-legion-5-15iax10-core-ultra-7-rtx-5060-egypt"
+        ]
+      },
+      "Processor Threads": {
+        "frequency": 1,
+        "sample_values": [
+          "20 threads"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos"
+        ]
+      },
+      "Maximum Frequency": {
+        "frequency": 1,
+        "sample_values": [
+          "P-core up to 4.9GHz, E-core up to 3.6GHz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos"
+        ]
+      },
+      "AI Chip": {
+        "frequency": 1,
+        "sample_values": [
+          "Lenovo LA1 AI Chip"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos"
+        ]
+      },
+      "Processor Core": {
+        "frequency": 1,
+        "sample_values": [
+          "Intel® Core™ Ultra 5 Processor 325"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Audio & Input": {
+        "frequency": 1,
+        "sample_values": [
+          "2-speaker system with Dolby Atmos, 1-Zone RGB Backlit Keyboard with Copilot Key"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt"
+        ]
+      },
+      "Input & Audio": {
+        "frequency": 1,
+        "sample_values": [
+          "White Backlit Keyboard, TouchPad, 2 Speakers, Microphone"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-lite-16-nl16-71g-53a0-rtx-4050-16gb"
+        ]
+      },
+      "CPU Speed": {
+        "frequency": 1,
+        "sample_values": [
+          "Up to 4.30 GHz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "Cores / Threads": {
+        "frequency": 1,
+        "sample_values": [
+          "6 Cores / 12 Threads"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "Processor family": {
+        "frequency": 1,
+        "sample_values": [
+          "13th Generation Intel Core i5 processor"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "CPU CORES / THREADS": {
+        "frequency": 1,
+        "sample_values": [
+          "8 cores (4 Performance + 4 Efficient), 12 threads"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "MAX TURBO FREQUENCY": {
+        "frequency": 1,
+        "sample_values": [
+          "Up to 4.6 GHz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "RELEASE GENERATION": {
+        "frequency": 1,
+        "sample_values": [
+          "13th Gen Intel platform"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "Processor Brand": {
+        "frequency": 1,
+        "sample_values": [
+          "‎Intel"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Processor Type": {
+        "frequency": 1,
+        "sample_values": [
+          "‎Intel Core i7"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Processor Speed": {
+        "frequency": 1,
+        "sample_values": [
+          "‎2.6 GHz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Processor Count": {
+        "frequency": 1,
+        "sample_values": [
+          "‎14"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Graphics Coprocessor": {
+        "frequency": 1,
+        "sample_values": [
+          "‎NVIDIA GeForce RTX 3050 6GB"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      }
+    },
+    "gpu": {
+      "GPU": {
+        "frequency": 85,
+        "sample_values": [
+          "GeForce RTX™ 5060",
+          "NVIDIA GeForce RTX™ 4050 6GB GDDR6, Boost Clock 2370MHz, TGP 105W, 194 AI TOPS",
+          "Integrated, AMD RadeonTM 660M Graphics",
+          "UHD Graphics™",
+          "Nvidia GeForce RTX 4050 6GB"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-core-i7-rtx-4050-gaming-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt"
+        ]
+      },
+      "Graphics": {
+        "frequency": 18,
+        "sample_values": [
+          "NVIDIA® GeForce RTX™ 5070 Laptop GPU",
+          "Intel UHD Graphics",
+          "NVIDIA® GeForce RTX™ 5070 Laptop GPU, 8GB GDDR7",
+          "NVIDIA® GeForce RTX™ 5060 Laptop GPU",
+          "NVIDIA® GeForce RTX™ 5090 Laptop GPU, 24GB GDDR7"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt"
+        ]
+      },
+      "Graphics Memory": {
+        "frequency": 4,
+        "sample_values": [
+          "8GB GDDR7 dedicated VRAM",
+          "8GB GDDR7"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt"
+        ]
+      },
+      "Maximum Graphics Power": {
+        "frequency": 3,
+        "sample_values": [
+          "Up to 100W with Dynamic Boost",
+          "Up to 175W"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt",
+          "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ph16-73-92v4-gaming-laptop-ultra9-275hx-rtx5090-egypt"
+        ]
+      },
+      "GRAPHICS": {
+        "frequency": 2,
+        "sample_values": [
+          "NVIDIA GeForce RTX 3050 6GB GDDR6, 95W TGP",
+          "NVIDIA GeForce RTX 5060 Laptop GPU, 8GB GDDR7"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-amd-ryzen-ai-7-350-16gb-1tb-rtx-5060-egypt"
+        ]
+      },
+      "Graphics Card": {
+        "frequency": 2,
+        "sample_values": [
+          "Intel® Graphics",
+          "NVIDIA GeForce RTX™ 5050"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "Video Output": {
+        "frequency": 2,
+        "sample_values": [
+          "1 × HDMI™ 2.1 supporting up to 4K at 60Hz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "GPU Power": {
+        "frequency": 1,
+        "sample_values": [
+          "115W TGP, up to 2347MHz boost clock"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos"
+        ]
+      },
+      "Graphic Wattage": {
+        "frequency": 1,
+        "sample_values": [
+          "140W Max TGP (115W+25W Dynamic Boost)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Graphic Memory": {
+        "frequency": 1,
+        "sample_values": [
+          "6GB GDDR6"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Discrete/Optimus": {
+        "frequency": 1,
+        "sample_values": [
+          "MUX Switch + NVIDIA® Advanced Optimus"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Graphics Switch": {
+        "frequency": 1,
+        "sample_values": [
+          "MUX Switch + NVIDIA® Advanced Optimus"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt"
+        ]
+      },
+      "GPU Memory": {
+        "frequency": 1,
+        "sample_values": [
+          "8GB GDDR6 (Dedicated)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "Max Graphics Power": {
+        "frequency": 1,
+        "sample_values": [
+          "Up to 95W"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "GPU MEMORY": {
+        "frequency": 1,
+        "sample_values": [
+          "6 GB GDDR6 dedicated VRAM"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "INTEGRATED GRAPHICS": {
+        "frequency": 1,
+        "sample_values": [
+          "Intel® UHD Graphics"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "Graphics Card Description": {
+        "frequency": 1,
+        "sample_values": [
+          "‎Dedicated"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Graphics RAM Type": {
+        "frequency": 1,
+        "sample_values": [
+          "‎GDDR6"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Graphics Card Ram Size": {
+        "frequency": 1,
+        "sample_values": [
+          "‎6 GB"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Graphics Card Interface": {
+        "frequency": 1,
+        "sample_values": [
+          "‎AGP"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      }
+    },
+    "memory": {
+      "MEMORY": {
+        "frequency": 94,
+        "sample_values": [
+          "16 GB",
+          "1x 16GB SODIMM DDR5-4800",
+          "16 GB DDR5-4800 MT/s (1 x 16 GB)",
+          "16",
+          "16GB DDR5 4800MHz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-core-i7-rtx-4050-gaming-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt"
+        ]
+      },
+      "Memory": {
+        "frequency": 16,
+        "sample_values": [
+          "32GB DDR5-4800 (2 × 16GB)",
+          "16GB DDR5-5600 MT/s (2 × 8GB)",
+          "8GB DDR5-5200",
+          "16GB DDR5 RAM",
+          "16GB DDR5 6400MT/s, supports up to 64GB"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt"
+        ]
+      },
+      "MEMORY SLOTS": {
+        "frequency": 3,
+        "sample_values": [
+          "Two DDR5 slots",
+          "Two DDR5 SO-DIMM slots, dual-channel capable",
+          "2× SODIMM (upgradeable on most models)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty",
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "Memory (RAM)": {
+        "frequency": 3,
+        "sample_values": [
+          "16GB DDR5-5600MHz (2x SO-DIMM, supports up to 64GB)",
+          "24GB DDR5-4800MHz (2x 12GB Dual-Channel Config)",
+          "12GB SO-DIMM DDR5-4800 (Two slots total, Upgradable up to 32GB)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i7-13650hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-4050-6gb-15-6-fhd-ips",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15-6-gaming-laptop-fhd-amd-ryzen-5-7235hs-with-12gb-memory-nvidia-geforce-rtx-3050-6gb-512gb-ssd-luna-grey"
+        ]
+      },
+      "Memory Slots": {
+        "frequency": 2,
+        "sample_values": [
+          "2 × DDR5 SODIMM slots, dual-channel capable",
+          "2x SO-DIMM slots (Upgradable to 64GB)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "MAX MEMORY": {
+        "frequency": 2,
+        "sample_values": [
+          "Up to 32GB DDR5-5600",
+          "Up to 32GB DDR5-4800 offering"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "Memory Capability": {
+        "frequency": 2,
+        "sample_values": [
+          "2 RAM Slots, upgradeable up to 96GB DDR5-5200"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "RAM Memory": {
+        "frequency": 1,
+        "sample_values": [
+          "16GB DDR5 on board RAM"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "System Memory": {
+        "frequency": 1,
+        "sample_values": [
+          "16GB DDR5"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "MEMORY TYPE": {
+        "frequency": 1,
+        "sample_values": [
+          "DDR4-3200 MHz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "MAXIMUM MEMORY SUPPORTED": {
+        "frequency": 1,
+        "sample_values": [
+          "Up to 32 GB (varies by configuration)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "RAM Size": {
+        "frequency": 1,
+        "sample_values": [
+          "‎16"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Memory Technology": {
+        "frequency": 1,
+        "sample_values": [
+          "‎SODIMM DDR5"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Computer Memory Type": {
+        "frequency": 1,
+        "sample_values": [
+          "‎DDR5 RAM"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Maximum Memory Supported": {
+        "frequency": 1,
+        "sample_values": [
+          "‎32 GB"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      }
+    },
+    "storage": {
+      "STORAGE": {
+        "frequency": 93,
+        "sample_values": [
+          "512 GB",
+          "512GB SSD M.2 2242 PCIe® 4.0x4 NVMe®",
+          "512 GB PCIe® NVMeTM SSD",
+          "512",
+          "512GB Nvme GEN 4"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-core-i7-rtx-4050-gaming-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt"
+        ]
+      },
+      "Storage": {
+        "frequency": 19,
+        "sample_values": [
+          "1TB M.2 PCIe 4.0 ×4 NVMe SSD",
+          "512GB PCIe Gen4 NVMe M.2 SSD",
+          "512GB PCIe NVMe SSD",
+          "512GB NVMe PCIe Gen4 ×4 SSD",
+          "1TB PCIe Gen 5 NVMe M.2 SSD"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt"
+        ]
+      },
+      "Storage Slots": {
+        "frequency": 2,
+        "sample_values": [
+          "2 × M.2 2280 PCIe 4.0 ×4 slots",
+          "Two M.2 2280 PCIe® 4.0×4 slots"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-legion-5-15iax10-core-ultra-7-rtx-5060-egypt"
+        ]
+      },
+      "STORAGE SLOT": {
+        "frequency": 2,
+        "sample_values": [
+          "One M.2 2280 GEN 4 slot",
+          "Two M.2 2280 PCIe 4.0 x4 slots"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "Expansion Slots": {
+        "frequency": 2,
+        "sample_values": [
+          "2 × M.2 SSD slots",
+          "2x DDR5 SO-DIMM, 2x M.2 PCIe (Supports up to 2TB G4x4)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Storage Capability": {
+        "frequency": 2,
+        "sample_values": [
+          "2 × M.2 SSD Slots supporting NVMe PCIe Gen4"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "STORAGE SLOTS": {
+        "frequency": 1,
+        "sample_values": [
+          "2 × M.2 2280 PCIe 4.0 ×4"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt"
+        ]
+      },
+      "Hard Disk Capacity": {
+        "frequency": 1,
+        "sample_values": [
+          "512GB M.2 NVMe™ PCIe® 4.0 SSD"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "MAX STORAGE SUPPORT": {
+        "frequency": 1,
+        "sample_values": [
+          "Up to two drives, 2x M.2 SSD, M.2 2242 SSD up to 1TB each"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "CAPACITY": {
+        "frequency": 1,
+        "sample_values": [
+          "4 x 2.5\"/3.5\" Combo Bays"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-gt502-horizon-atx-mid-tower-gaming-case"
+        ]
+      },
+      "Internal Storage": {
+        "frequency": 1,
+        "sample_values": [
+          "512 GB PCIe Gen4 NVMe M.2 SSD"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Expansion slots": {
+        "frequency": 1,
+        "sample_values": [
+          "1 multi-format SD media card reader"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "STORAGE EXPANSION": {
+        "frequency": 1,
+        "sample_values": [
+          "Additional M.2 slot (model dependent)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "Hard Drive Size": {
+        "frequency": 1,
+        "sample_values": [
+          "‎512 GB"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Hard Disk Description": {
+        "frequency": 1,
+        "sample_values": [
+          "‎512GB M.2 PCIe NVMe SSD"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Hard Drive Interface": {
+        "frequency": 1,
+        "sample_values": [
+          "‎PCIE x 4"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Optical Drive Type": {
+        "frequency": 1,
+        "sample_values": [
+          "‎BD-R"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      }
+    },
+    "display": {
+      "DISPLAY": {
+        "frequency": 91,
+        "sample_values": [
+          "1920 x 1080",
+          "15.6\" FHD (1920x1080) IPS 300nits Anti-glare, 100% sRGB, 144Hz, G-SYNC®",
+          "15.6″ diagonal, FHD (1920 x 1080), SVA, narrow bezel, anti-glare, 250 nits, 45% NTSC 3 4 5 6",
+          "15.6-inch",
+          "15.6 Inch"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-core-i7-rtx-4050-gaming-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt"
+        ]
+      },
+      "Display": {
+        "frequency": 16,
+        "sample_values": [
+          "15.3-inch WUXGA (1920 × 1200) IPS, non-touch, anti-glare",
+          "16-inch 2K (1920 × 1200) IPS, micro-edge, anti-glare and Low Blue Light",
+          "15.6\" Full HD IPS, 120Hz, Anti-Glare, 250 nits",
+          "16-inch 2K (1920 × 1200) IPS",
+          "15.6-inch Full HD IPS-Level Display"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt"
+        ]
+      },
+      "REFRESH RATE": {
+        "frequency": 8,
+        "sample_values": [
+          "165 Hz",
+          "144Hz",
+          "165Hz",
+          "60Hz",
+          "144 Hz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv01hsed-i7-rtx-4050-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt"
+        ]
+      },
+      "Refresh Rate": {
+        "frequency": 7,
+        "sample_values": [
+          "165Hz with VRR",
+          "60–165Hz Variable Refresh Rate",
+          "144Hz",
+          "180 Hz"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-16-am0056ne-gaming-laptop-egypt"
+        ]
+      },
+      "RESOLUTION": {
+        "frequency": 5,
+        "sample_values": [
+          "FHD (1920x1080)",
+          "QHD (2560 x 1440)",
+          "1920 × 1080"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv01hsed-i7-rtx-4050-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt"
+        ]
+      },
+      "Resolution": {
+        "frequency": 5,
+        "sample_values": [
+          "1920 × 1080",
+          "FHD+ 16:10 (1920 x 1200, WUXGA) Value IPS-level",
+          "1920 × 1200 (FHD+)",
+          "‎1920x1080 Pixels"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Brightness": {
+        "frequency": 3,
+        "sample_values": [
+          "300 nits",
+          "400 nits",
+          "250 nits"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Display Features": {
+        "frequency": 3,
+        "sample_values": [
+          "Dolby Vision®, X-Rite® factory color calibration and TÜV Rheinland® Low Blue Light",
+          "100% DCI-P3, NVIDIA® G-SYNC™, Eyesafe®",
+          "300nits, 45% NTSC, Anti-glare, G-Sync"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ph16-73-92v4-gaming-laptop-ultra9-275hx-rtx5090-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "TOUCHSCREEN": {
+        "frequency": 3,
+        "sample_values": [
+          "Non-touch",
+          "None",
+          "No"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty",
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "Aspect Ratio": {
+        "frequency": 2,
+        "sample_values": [
+          "16:10"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "PANEL": {
+        "frequency": 2,
+        "sample_values": [
+          "IPS",
+          "IPS-Level"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt"
+        ]
+      },
+      "DISPLAY RESOLUTION": {
+        "frequency": 1,
+        "sample_values": [
+          "Full HD (1920 × 1080)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa2352tx-gaming-laptop-core-i7-13620h-16gb-ddr5-512gb-ssd-rtx-5050-8gb-15-6-inch-fhd-144hz-dos-mica-silver-egypt"
+        ]
+      },
+      "DISPLAY FEATURES": {
+        "frequency": 1,
+        "sample_values": [
+          "300 nits, Anti-glare, G-SYNC"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt"
+        ]
+      },
+      "Response Time": {
+        "frequency": 1,
+        "sample_values": [
+          "3ms"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt"
+        ]
+      },
+      "Display Resolution": {
+        "frequency": 1,
+        "sample_values": [
+          "14.0-inch WUXGA (1920 x 1200) OLED 16:10 aspect ratio 0.2ms response time 60Hz refresh rate Brightness:300nits 95% DCI-P3 color gamut Contrast ratio:1,000,000:1 1.07 billion colors Glossy display 70% less harmful blue light TÜV Rheinland-certified Screen-to-body ratio: 86%"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "TouchScreen": {
+        "frequency": 1,
+        "sample_values": [
+          "No"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "High Refresh Display": {
+        "frequency": 1,
+        "sample_values": [
+          "15.6-inch Full HD IPS Panel with 144Hz Refresh Rate"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15arp9-ryzen-5-7235hs-rtx-3050-16gb-512gb-83jc00p6ed"
+        ]
+      },
+      "Smooth Visuals": {
+        "frequency": 1,
+        "sample_values": [
+          "NVIDIA G-SYNC® Support for Reduced Screen Tearing"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15arp9-ryzen-5-7235hs-rtx-3050-16gb-512gb-83jc00p6ed"
+        ]
+      },
+      "Panel Size": {
+        "frequency": 1,
+        "sample_values": [
+          "16-inch"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Display Output": {
+        "frequency": 1,
+        "sample_values": [
+          "1x HDMI 2.1 FRL"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "USB & Display Ports": {
+        "frequency": 1,
+        "sample_values": [
+          "1x USB 3.2 Gen 2 Type-C (DP + PD), 3x USB 3.2 Gen 2 Type-A, 1x HDMI 2.1 FRL"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt"
+        ]
+      },
+      "Displays": {
+        "frequency": 1,
+        "sample_values": [
+          "Dual 14-inch 3K OLED Touch, 2880 × 1800, 144Hz, 100% DCI-P3,\n            1000 Nits HDR Peak, Stylus Support"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-zenbook-duo-ux8407aa-copilot-plus-32gb-1tb-3k-oled"
+        ]
+      },
+      "Display Size": {
+        "frequency": 1,
+        "sample_values": [
+          "16 Inch"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "Panel Type": {
+        "frequency": 1,
+        "sample_values": [
+          "IPS, ComfyView (Matte)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "SPEED": {
+        "frequency": 1,
+        "sample_values": [
+          "280Hz (Overclocked)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-32-1440p-usb-c-curved-hdr400-gaming-monitor-xg32wcms-qhd-2560x1440-280hz-1ms-fast-va-extreme-low-motion-blur-sync-displaywidget-tripod-socket-ai-gaming-3-yr-warranty"
+        ]
+      },
+      "Touchscreen": {
+        "frequency": 1,
+        "sample_values": [
+          "No"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Screen-to-body ratio (without speakers)": {
+        "frequency": 1,
+        "sample_values": [
+          "82.23% 4"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Flicker-free": {
+        "frequency": 1,
+        "sample_values": [
+          "Yes 5"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "DISPLAY SIZE": {
+        "frequency": 1,
+        "sample_values": [
+          "15.6 inches"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "DISPLAY TYPE": {
+        "frequency": 1,
+        "sample_values": [
+          "FHD IPS, Anti-glare"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "BRIGHTNESS": {
+        "frequency": 1,
+        "sample_values": [
+          "~250–300 nits (varies by model)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "ASPECT RATIO": {
+        "frequency": 1,
+        "sample_values": [
+          "16:9"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "Standing screen display size": {
+        "frequency": 1,
+        "sample_values": [
+          "‎15.6 Inches"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Screen Resolution": {
+        "frequency": 1,
+        "sample_values": [
+          "‎1920 x 1080 pixels"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      }
+    },
+    "power_battery": {
+      "BATTERY": {
+        "frequency": 17,
+        "sample_values": [
+          "76 Wh",
+          "HP Long Life 3-cell, 41 Wh Li-ion polymer",
+          "41",
+          "57Wh",
+          "60Wh"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-250-g10-core-i3-1315u-16gb-512gb-ssd-fhd-egypt"
+        ]
+      },
+      "Battery": {
+        "frequency": 12,
+        "sample_values": [
+          "80Wh rechargeable Li-ion battery with Super Rapid Charge",
+          "4-cell, 70Wh Li-ion polymer battery with fast charging support",
+          "70WHrs, 4S1P, 4-cell Li-ion",
+          "4-Cell 54Wh",
+          "3-Cell, 60Wh"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Power Adapter": {
+        "frequency": 7,
+        "sample_values": [
+          "245W Slim Tip AC power adapter",
+          "230W AC power adapter",
+          "180W",
+          "330W",
+          "135W"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt"
+        ]
+      },
+      "Battery & Power": {
+        "frequency": 6,
+        "sample_values": [
+          "90WHrs 4-cell Li-ion Battery, 280W AC Adapter",
+          "Up to 9.5 Hours Max Battery Run Time, 100 W Maximum Power Supply",
+          "60Wh Battery | 170W Slim Tip Adapter (Supports Super Rapid Charge Pro)",
+          "Integrated 57Wh Battery, 135W Slim Tip Power Adapter",
+          "Integrated 60Wh Battery; 170W Slim Tip AC Adapter"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-lite-16-nl16-71g-53a0-rtx-4050-16gb",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i7-13650hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-4050-6gb-15-6-fhd-ips"
+        ]
+      },
+      "Power Supply": {
+        "frequency": 2,
+        "sample_values": [
+          "TYPE-C, 68W AC Adapter, Output: 20V DC, 3.4A, 68W, Input: 100~240V AC 50/60Hz universal",
+          "240W AC Adapter"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "POWER": {
+        "frequency": 2,
+        "sample_values": [
+          "90WHrs Battery | 280W AC Adapter | 0-50% in 30 mins",
+          "170W Slim Tip (3-pin)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614fp-gr169w-gaming-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "POWER ADAPTER": {
+        "frequency": 1,
+        "sample_values": [
+          "120W"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt"
+        ]
+      },
+      "Adapter": {
+        "frequency": 1,
+        "sample_values": [
+          "100W USB Type-C Power Adapter"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-zenbook-duo-ux8407aa-copilot-plus-32gb-1tb-3k-oled"
+        ]
+      },
+      "Battery Life": {
+        "frequency": 1,
+        "sample_values": [
+          "Up to 6 Hours"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "Battery type": {
+        "frequency": 1,
+        "sample_values": [
+          "4-cell, 70 Wh Li-ion polymer"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Battery life": {
+        "frequency": 1,
+        "sample_values": [
+          "Up to 8 hours and 30 minutes"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Battery recharge time": {
+        "frequency": 1,
+        "sample_values": [
+          "Supports battery fast charge: approximately 50% in 30 minutes"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Power supply type": {
+        "frequency": 1,
+        "sample_values": [
+          "200 W Smart AC power adapter"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "BATTERY TYPE": {
+        "frequency": 1,
+        "sample_values": [
+          "3-cell / 4-cell Li-ion (≈ 52–70 Wh depending on model)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "FAST CHARGING": {
+        "frequency": 1,
+        "sample_values": [
+          "Supported"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "Batteries": {
+        "frequency": 1,
+        "sample_values": [
+          "‎1 Lithium Ion batteries required."
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Voltage": {
+        "frequency": 1,
+        "sample_values": [
+          "‎240 Volts"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      }
+    },
+    "connectivity": {
+      "WIRELESS": {
+        "frequency": 13,
+        "sample_values": [
+          "Realtek Wi-Fi 6 RTL8852BE-VT 802.11a/b/g/n/ax (2×2) and Bluetooth® 5.4 wireless card",
+          "Wi-Fi + Bluetooth",
+          "Wi-Fi 6, Bluetooth 5.2",
+          "Wi-Fi 6 and Bluetooth® 5.4 wireless connectivity",
+          "Killer Wi-Fi 6E AX1675i"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-250-g10-core-i3-1315u-16gb-512gb-ssd-fhd-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt"
+        ]
+      },
+      "Wireless": {
+        "frequency": 11,
+        "sample_values": [
+          "Wi-Fi 6, 802.11ax 2×2 and Bluetooth® 5.2",
+          "Realtek Wi-Fi 6 (2×2) and Bluetooth® 5.4",
+          "Wi-Fi 6 and Bluetooth",
+          "Killer™ Wi-Fi 7, Bluetooth® 5.4 or above",
+          "Wi-Fi 6(802.11ax) (Dual band) 2*2 + Bluetooth® 5.3"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt"
+        ]
+      },
+      "Ports": {
+        "frequency": 8,
+        "sample_values": [
+          "3 × USB-A 5Gbps, 1 × USB-C 10Gbps with DisplayPort 2.1 and USB Power Delivery, 1 × USB-C 10Gbps with DisplayPort 1.4, 1 × HDMI 2.1 up to 8K/60Hz, 1 × RJ-45 and 1 × 3.5mm audio combo jack",
+          "1 × USB-A 10Gbps, 2 × USB-A 5Gbps, 1 × USB-C 10Gbps with DisplayPort 1.4 and Power Delivery, 1 × HDMI 2.1, 1 × RJ-45 and 1 × headphone/microphone combo",
+          "USB-A, USB-C, HDMI 1.4, SD Card Reader, Audio Jack",
+          "2 × Thunderbolt 4, 1 × USB 3.2 Gen 2 Type-A,\n            1 × HDMI 2.1 FRL and Audio Combo Jack",
+          "2 × USB4 Type-C, USB 3.2 Gen 2 Type-A, HDMI 2.1 FRL,\n            MicroSD 4.0 and 3.5mm Audio"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt"
+        ]
+      },
+      "PORTS": {
+        "frequency": 7,
+        "sample_values": [
+          "Power + Display Connect + 10Gb/s Signal Transfer",
+          "1x Type-C (USB3.2 Gen1 / DisplayPort) 2x Type-A USB3.2 Gen1 1x HDMI 2.1 (4K @ 60Hz)",
+          "1x USB 2.0 Type-A, 1x USB 3.2 Gen 1 Type-C, 2x USB 3.2 Gen 1 Type-A, 1x HDMI 1.4, 1x 3.5mm Combo Audio Jack, 1x DC-in",
+          "1x USB 4.0 (40Gbps), 1x USB-C 3.2 Gen 2, 2x USB 3.2 Gen 2 Type-A, HDMI 2.1, MicroSD Reader",
+          "1x Thunderbolt™ 4, 1x USB 3.2 Gen 2 Type-C, 2x USB 3.2 Gen 1 Type-A, 1x HDMI 2.1 TMDS, SD 4.0 Card Reader, RJ45"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-15-fd1062ne-d41p1ea-laptop-intel-core-ultra-512gb-pcie-ssd-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-15-core5-8gb-512gb-90nb13y2"
+        ]
+      },
+      "CONNECTIVITY": {
+        "frequency": 7,
+        "sample_values": [
+          "Wi-Fi 6, 11ax 2x2 + BT5.2",
+          "WiFi 6E + Bluetooth 5.2, RJ-45",
+          "Wi-Fi 7 + Bluetooth",
+          "2x USB 4.0 Type-C (40Gbps), 2x USB 3.2 Gen 2 Type-A, RJ45 LAN",
+          "Wi-Fi 6E (802.11ax) + Bluetooth® 5.3"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-15-x1504va-bq857w-core-7-150u-512gb-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/gigabyte-a16-i7-rtx5050-16gb-1tb-gaming-laptop",
+          "https://www.compumarts.com/collections/laptop/products/dell-alienware-ac1620-core-9-270h-rtx-5070-32gb-dos-egypt"
+        ]
+      },
+      "Ethernet": {
+        "frequency": 5,
+        "sample_values": [
+          "Gigabit Ethernet RJ-45",
+          "Gigabit LAN",
+          "100/1000M (RJ-45)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "I/O Ports": {
+        "frequency": 4,
+        "sample_values": [
+          "2x USB 3.2 Gen 1 Type-A (data speed up to 5Gbps) 2x USB 3.2 Gen 1 Type-C with support for display / power delivery (data speed up to 5Gbps) 1x HDMI 2.1 TMDS 1x 3.5mm Combo Audio Jack",
+          "1x Thunderbolt™ 4, 1x USB 3.2 Gen 2 Type-C (DP/PD/G-SYNC), 2x USB 3.2 Gen 1 Type-A, 1x RJ45 LAN",
+          "1x USB-C (140W PD, DP 1.4), 3x USB-A 3.2 Gen 1, 1x HDMI 2.1 (8K/60Hz), RJ-45",
+          "1x USB-C (3.2 Gen 2, PD 140W & DP 1.4), 3x USB-A (3.2 Gen 1), 1x HDMI 2.1 (up to 8K/60Hz), 1x RJ-45, 1x Headphone combo jack"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i7-13650hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-4050-6gb-15-6-fhd-ips"
+        ]
+      },
+      "Connectivity": {
+        "frequency": 4,
+        "sample_values": [
+          "Wi-Fi 6, Bluetooth 5.2, USB-C with DisplayPort 1.4 and 140W Power Delivery",
+          "IEEE 802.11ax Wi-Fi, Gigabit Ethernet, Bluetooth 5.0",
+          "Wi-Fi 6 (802.11ax 2x2), Bluetooth 5.2, RJ-45 Ethernet",
+          "Wi-Fi 6 (802.11ax 2x2), Bluetooth 5.2, 100/1000M Ethernet"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15arp9-ryzen-5-7235hs-rtx-3050-16gb-512gb-83jc00p6ed",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-lite-16-nl16-71g-53a0-rtx-4050-16gb",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15iax9e-83lk0062ed-laptop-core-i5-12450hx-16gb-ddr5-512gb-ssd-rtx-2050-4gb-15-6-fhd-100-srgb-144hz-2y-warranty-mouse-gaming"
+        ]
+      },
+      "ETHERNET": {
+        "frequency": 3,
+        "sample_values": [
+          "100/1000M RJ-45",
+          "100/1000M (RJ-45)",
+          "RJ-45 LAN port available"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty",
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "HDMI": {
+        "frequency": 2,
+        "sample_values": [
+          "HDMI 2.1, up to 8K/60Hz",
+          "1 × HDMI"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "Wireless Connectivity": {
+        "frequency": 2,
+        "sample_values": [
+          "Wi-Fi 6E and Bluetooth 5.3"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "USB-C": {
+        "frequency": 2,
+        "sample_values": [
+          "1 × USB-C 3.2 Gen 2 with DisplayPort™ and Power Delivery 3.0"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "USB-A": {
+        "frequency": 2,
+        "sample_values": [
+          "2 × USB-A 3.2 Gen 2 and 1 × USB-A 3.2 Gen 1"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "Additional Ports": {
+        "frequency": 2,
+        "sample_values": [
+          "1 × RJ45 and 1 × Mic-in/Headphone-out Combo Jack"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "USB PORTS": {
+        "frequency": 1,
+        "sample_values": [
+          "3 × USB-A 5Gbps + 1 × USB-C 10Gbps"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt"
+        ]
+      },
+      "USB-C FEATURES": {
+        "frequency": 1,
+        "sample_values": [
+          "65–100W PD + DisplayPort 1.4"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt"
+        ]
+      },
+      "WLAN + BLUETOOTH": {
+        "frequency": 1,
+        "sample_values": [
+          "Wi-Fi 6 + BT5.2"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt"
+        ]
+      },
+      "Network": {
+        "frequency": 1,
+        "sample_values": [
+          "Integrated Gigabit Ethernet LAN"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt"
+        ]
+      },
+      "Network/Wireless": {
+        "frequency": 1,
+        "sample_values": [
+          "Wi-Fi 6(802.11ax) (Dual band) 2*2 + Bluetooth® 5.4 Wireless Card (*Bluetooth® version may change with OS version different.)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Wired Network": {
+        "frequency": 1,
+        "sample_values": [
+          "5 Gigabit Ethernet"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ph16-73-92v4-gaming-laptop-ultra9-275hx-rtx5090-egypt"
+        ]
+      },
+      "LAN": {
+        "frequency": 1,
+        "sample_values": [
+          "10/100/1000 Mbps"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Networking": {
+        "frequency": 1,
+        "sample_values": [
+          "Wi-Fi 6E (802.11ax) + Bluetooth 5.4 + Gigabit RJ45 LAN"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt"
+        ]
+      },
+      "Thunderbolt Port": {
+        "frequency": 1,
+        "sample_values": [
+          "1x Thunderbolt™ 4 (40Gbps, supports DisplayPort™ / G-SYNC)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt"
+        ]
+      },
+      "Ports & Interfaces": {
+        "frequency": 1,
+        "sample_values": [
+          "1x HDMI, 2x USB 3.2 Gen 1 Type-A, 1x USB 3.2 Gen 2 Type-C, Network (RJ-45)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-lite-16-nl16-71g-53a0-rtx-4050-16gb"
+        ]
+      },
+      "Card Reader": {
+        "frequency": 1,
+        "sample_values": [
+          "microSD"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "Bluetooth": {
+        "frequency": 1,
+        "sample_values": [
+          "Bluetooth 5.3"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "USB Ports": {
+        "frequency": 1,
+        "sample_values": [
+          "USB 3.2 Gen1 ×1, USB 3.2 Gen2 ×2, USB4 ×1"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "Standard Ports": {
+        "frequency": 1,
+        "sample_values": [
+          "1× Thunderbolt™ 4 (USB4® 40Gbps) with DP 2.1, 1× USB-C® 10Gbps with USB PD 95-100W and DP 2.1, 3× USB-A 5Gbps (1× Always On), 1× HDMI® 2.1 up to 8K/60Hz, 1× RJ-45, 1× audio combo jack"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-legion-5-15iax10-core-ultra-7-rtx-5060-egypt"
+        ]
+      },
+      "DOCKING": {
+        "frequency": 1,
+        "sample_values": [
+          "Various docking solutions supported via USB-C"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "INTERFACE": {
+        "frequency": 1,
+        "sample_values": [
+          "1x DisplayPort 1.4, 1x HDMI 2.1, 1x USB-C (DP Alt Mode & 15W PD)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-32-1440p-usb-c-curved-hdr400-gaming-monitor-xg32wcms-qhd-2560x1440-280hz-1ms-fast-va-extreme-low-motion-blur-sync-displaywidget-tripod-socket-ai-gaming-3-yr-warranty"
+        ]
+      },
+      "Network interface": {
+        "frequency": 1,
+        "sample_values": [
+          "Integrated 10/100/1000 GbE LAN"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Connectivity Type": {
+        "frequency": 1,
+        "sample_values": [
+          "‎Intel(R) Wi-Fi 6 AX201, 2x2, 8 02.11ax, Bluetooth(R) wireless card"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Wireless Type": {
+        "frequency": 1,
+        "sample_values": [
+          "‎802.11ax"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Number of USB 3.0 Ports": {
+        "frequency": 1,
+        "sample_values": [
+          "‎3"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      }
+    },
+    "physical": {
+      "Weight": {
+        "frequency": 14,
+        "sample_values": [
+          "Starting at 2.1kg",
+          "2.43kg",
+          "1.40 kg (3.09 lbs)",
+          "2kg",
+          "Approximately 2.65kg"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Color": {
+        "frequency": 13,
+        "sample_values": [
+          "Eclipse Black",
+          "Shadow Black",
+          "Matte Gray",
+          "Carbon Black",
+          "Platinum Gray"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "WEIGHT": {
+        "frequency": 10,
+        "sample_values": [
+          "Starting at 2.38 kg (5.25 lbs)",
+          "Starting at 2.4 kg (5.29 lbs)",
+          "Starting at 2.38 kg",
+          "1.70 kg (3.75 lbs)",
+          "1.28 kg (2.82 lbs)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-core-i7-rtx-4050-gaming-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-i7-rtx-5070-32gb-1tb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt"
+        ]
+      },
+      "COLOR": {
+        "frequency": 9,
+        "sample_values": [
+          "Obsidian black",
+          "Mica Silver",
+          "Luna Grey",
+          "Black Steel",
+          "Cool Silver"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa2352tx-gaming-laptop-core-i7-13620h-16gb-ddr5-512gb-ssd-rtx-5050-8gb-15-6-inch-fhd-144hz-dos-mica-silver-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt"
+        ]
+      },
+      "Dimensions": {
+        "frequency": 8,
+        "sample_values": [
+          "344.9 × 255.35 × 22.50–23.99mm",
+          "35.75 × 26.9 × 2.37cm front / 2.54cm rear",
+          "31.52 x 22.34 x 1.59 ~ 1.79 cm (12.41\" x 8.80\" x 0.63\" ~ 0.70\")",
+          "359 × 249 × 21–22.9mm",
+          "35.4 x 25.1 x 2.21 ~ 2.67 cm"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Color Gamut": {
+        "frequency": 5,
+        "sample_values": [
+          "100% sRGB"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-16-am0056ne-gaming-laptop-egypt"
+        ]
+      },
+      "DIMENSIONS": {
+        "frequency": 3,
+        "sample_values": [
+          "359.86 × 258.7 × 21.9–23.9 mm",
+          "35.57 x 23.53 x 1.99 cm",
+          "359.86 x 258.7 x 21.9-23.9 mm (14.17 x 10.19 x 0.86-0.94 inches)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/products-asus-vivobook-pro-15-oled-n6506cu-i9-4050-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "COLOR GAMUT": {
+        "frequency": 2,
+        "sample_values": [
+          "100% sRGB",
+          "95% DCI-P3"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-16-x1605va-i7-16gb-512gb-oled-egypt"
+        ]
+      },
+      "FORM FACTOR": {
+        "frequency": 2,
+        "sample_values": [
+          "Mid Tower",
+          "ATX"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-gt502-horizon-atx-mid-tower-gaming-case",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-b860-plus-wifi-intel-b860-ddr5-atx-motherboard"
+        ]
+      },
+      "MIL-SPEC": {
+        "frequency": 1,
+        "sample_values": [
+          "MIL-STD-810H Military Test Passed"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt"
+        ]
+      },
+      "COLOUR GAMUT": {
+        "frequency": 1,
+        "sample_values": [
+          "45% NTSC"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt"
+        ]
+      },
+      "Color Accuracy": {
+        "frequency": 1,
+        "sample_values": [
+          "100% sRGB Coverage and 300-Nit Brightness"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15arp9-ryzen-5-7235hs-rtx-3050-16gb-512gb-83jc00p6ed"
+        ]
+      },
+      "Design": {
+        "frequency": 1,
+        "sample_values": [
+          "Luna Grey Finish with White Backlit Arabic Keyboard"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15arp9-ryzen-5-7235hs-rtx-3050-16gb-512gb-83jc00p6ed"
+        ]
+      },
+      "Color & Build": {
+        "frequency": 1,
+        "sample_values": [
+          "Jaeger Gray (Aluminum Top / Plastic Body)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt"
+        ]
+      },
+      "Dimensions & Weight": {
+        "frequency": 1,
+        "sample_values": [
+          "35.4 x 26.9 x 1.79 ~ 2.73 cm, 2.20 Kg"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt"
+        ]
+      },
+      "Design & Color": {
+        "frequency": 1,
+        "sample_values": [
+          "Black, Weight: 1.95 kg"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-lite-16-nl16-71g-53a0-rtx-4050-16gb"
+        ]
+      },
+      "Case Color": {
+        "frequency": 1,
+        "sample_values": [
+          "Eclipse Black (24-Zone RGB Backlit Keyboard)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-legion-5-15iax10-core-ultra-7-rtx-5060-egypt"
+        ]
+      },
+      "Case Material": {
+        "frequency": 1,
+        "sample_values": [
+          "Aluminium (Top), PC-ABS (Bottom)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-legion-5-15iax10-core-ultra-7-rtx-5060-egypt"
+        ]
+      },
+      "BUILD & DURABILITY": {
+        "frequency": 1,
+        "sample_values": [
+          "Aluminum LCD Cover, US MIL-STD 810H military-grade standard"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-asus-vivobook-pro-15-oled-n6506cu-i9-4050-egypt"
+        ]
+      },
+      "MATERIAL": {
+        "frequency": 1,
+        "sample_values": [
+          "PC-ABS (Top), PC-ABS (Bottom)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "Build & Durability": {
+        "frequency": 1,
+        "sample_values": [
+          "MIL-STD-810H Military Grade Certified | Luna Grey Finish"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i7-13650hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-4050-6gb-15-6-fhd-ips"
+        ]
+      },
+      "Color gamut": {
+        "frequency": 1,
+        "sample_values": [
+          "45% NTSC"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Dimensions (W x D x H)": {
+        "frequency": 1,
+        "sample_values": [
+          "35.79 x 25.5 x 2.35 cm"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Product color": {
+        "frequency": 1,
+        "sample_values": [
+          "Mica silver, black chrome logo"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Color & Chassis": {
+        "frequency": 1,
+        "sample_values": [
+          "Luna Grey, PC-ABS Material, Dimensions: 359.3 x 236 x 19.9-22.95 mm"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15iax9e-83lk0062ed-laptop-core-i5-12450hx-16gb-ddr5-512gb-ssd-rtx-2050-4gb-15-6-fhd-100-srgb-144hz-2y-warranty-mouse-gaming"
+        ]
+      },
+      "Package Dimensions": {
+        "frequency": 1,
+        "sample_values": [
+          "‎55 x 25 x 7.8 cm; 2.6 kg"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Form Factor": {
+        "frequency": 1,
+        "sample_values": [
+          "‎Gaming Laptop"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      },
+      "Build Quality": {
+        "frequency": 1,
+        "sample_values": [
+          "MIL-STD-810H Military Grade Certified | Luna Grey"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-gaming-intel-core-i7-13650hx-16gb-ram-512gb-ssd-rtx-3050-6gb-15-6-fhd-144hz-eng-arb-dos-grey-83dv000eax"
+        ]
+      }
+    },
+    "operating_system": {
+      "OS": {
+        "frequency": 60,
+        "sample_values": [
+          "Windows 11 Home Single Language",
+          "FreeDOS 3.0",
+          "FreeDOS",
+          "DOS",
+          "Windows 11"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-250-g10-core-i3-1315u-16gb-512gb-ssd-fhd-egypt"
+        ]
+      },
+      "Operating System": {
+        "frequency": 13,
+        "sample_values": [
+          "DOS / No Preloaded Operating System",
+          "FreeDOS 3.0",
+          "Windows 11 Home",
+          "FreeDOS",
+          "No OS / Acer EShell"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "OPERATING SYSTEM": {
+        "frequency": 2,
+        "sample_values": [
+          "None",
+          "Windows 11 Home"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-amd-ryzen-ai-7-350-16gb-1tb-rtx-5060-egypt"
+        ]
+      },
+      "Antivirus": {
+        "frequency": 1,
+        "sample_values": [
+          "McAfee® 30 days free trial"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "BUNDLED SOFTWARE": {
+        "frequency": 1,
+        "sample_values": [
+          "Office Trial"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "Operating system": {
+        "frequency": 1,
+        "sample_values": [
+          "FreeDOS 3.0"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      }
+    },
+    "build_security": {
+      "Keyboard": {
+        "frequency": 14,
+        "sample_values": [
+          "White backlit Arabic keyboard with numeric keypad and Copilot key",
+          "Full-size 4-zone RGB backlit keyboard with numeric keypad and 26-key rollover anti-ghosting",
+          "Backlit Chiclet Keyboard",
+          "Single-Zone White Backlit Keyboard with Copilot Key",
+          "Per-key RGB backlit keyboard with PredatorSense™ and MagKey"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "KEYBOARD": {
+        "frequency": 7,
+        "sample_values": [
+          "White Backlit",
+          "White Backlit, English",
+          "Blue Backlit",
+          "Arabic, English, 1-Zone RGB Backlit Keyboard",
+          "1-Zone RGB Backlit, N-Key Support"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt"
+        ]
+      },
+      "Security": {
+        "frequency": 7,
+        "sample_values": [
+          "McAfee® BIOS Booting User Password Protection BIOS setup user password Trusted Platform Module (Firmware TPM)",
+          "Firmware TPM 2.0 and Kensington Lock",
+          "Firmware TPM 2.0 and Webcam Privacy E-Shutter",
+          "Firmware TPM, Kensington Security Slot™, BIOS Password",
+          "BIOS Passwords, Kensington Lock, MSFT Pluton TPM"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "Touchpad": {
+        "frequency": 2,
+        "sample_values": [
+          "Precision touchpad",
+          "Microsoft Precision Certified"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "FINGER PRINT": {
+        "frequency": 1,
+        "sample_values": [
+          "Non-touch"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt"
+        ]
+      },
+      "KEYBOARD & TOUCHPAD": {
+        "frequency": 1,
+        "sample_values": [
+          "Backlit Chiclet Keyboard with Num-key & Copilot key; Precision touchpad with DialPad support"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-asus-vivobook-pro-15-oled-n6506cu-i9-4050-egypt"
+        ]
+      },
+      "TOUCHPAD": {
+        "frequency": 1,
+        "sample_values": [
+          "Buttonless Mylar surface multi-touch touchpad, supports Precision TouchPad (PTP), 75 x 120 mm (2.95 x 4.72 inches)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "SECURITY": {
+        "frequency": 1,
+        "sample_values": [
+          "Firmware TPM 2.0 Enabled"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "OTHER SECURITY": {
+        "frequency": 1,
+        "sample_values": [
+          "E-shutter"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "Pointing device": {
+        "frequency": 1,
+        "sample_values": [
+          "HP Imagepad with multi-touch gesture support"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "Security management": {
+        "frequency": 1,
+        "sample_values": [
+          "Trusted Platform Module (Firmware TPM) support"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      }
+    },
+    "audio_webcam": {
+      "Audio": {
+        "frequency": 11,
+        "sample_values": [
+          "HARMAN stereo speakers, 2W × 2, optimized with Nahimic Audio",
+          "DTS:X® Ultra, dual speakers, HP Audio Boost and HyperX",
+          "Built-in speaker Built-in array microphone",
+          "2 × 2W Speakers and Array Microphone",
+          "Four built-in speakers"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Camera": {
+        "frequency": 9,
+        "sample_values": [
+          "HD 720p camera with electronic privacy shutter",
+          "HP True Vision 1080p FHD camera with privacy shutter, temporal noise reduction and dual-array microphones",
+          "720P HD camera",
+          "1080P FHD IR Camera with Windows Hello",
+          "FHD IR Camera with Windows Hello"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "CAMERA": {
+        "frequency": 4,
+        "sample_values": [
+          "720p HD with E-shutter",
+          "720p HD camera ; With privacy shutter",
+          "5.0M camera with privacy shutter; IR webcam for Windows Hello",
+          "5.0MP with E-shutter"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-15-core5-8gb-512gb-90nb13y2",
+          "https://www.compumarts.com/collections/laptop/products/products-asus-vivobook-pro-15-oled-n6506cu-i9-4050-egypt"
+        ]
+      },
+      "AUDIO": {
+        "frequency": 3,
+        "sample_values": [
+          "Stereo Gaming Speakers",
+          "Harman/Kardon (Mainstream) with Smart Amp Technology",
+          "Dual speakers, HP Audio tuning"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-alienware-ac1620-core-9-270h-rtx-5070-32gb-dos-egypt",
+          "https://www.compumarts.com/collections/laptop/products/products-asus-vivobook-pro-15-oled-n6506cu-i9-4050-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "Webcam": {
+        "frequency": 2,
+        "sample_values": [
+          "HD 720p Webcam with 3D Noise Reduction"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt"
+        ]
+      },
+      "Audio & Camera": {
+        "frequency": 2,
+        "sample_values": [
+          "FHD 1080p with E-shutter, Stereo speakers with Nahimic Audio",
+          "Stereo 2W x2 (Nahimic), FHD 1080p Camera with E-shutter"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i7-13650hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-4050-6gb-15-6-fhd-ips",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-gaming-intel-core-i7-13650hx-16gb-ram-512gb-ssd-rtx-3050-6gb-15-6-fhd-144hz-eng-arb-dos-grey-83dv000eax"
+        ]
+      },
+      "SPEAKER": {
+        "frequency": 1,
+        "sample_values": [
+          "Dual speakers"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt"
+        ]
+      },
+      "Front-facing camera": {
+        "frequency": 1,
+        "sample_values": [
+          "FHD camera with IR function to support Windows Hello ; With privacy shutter"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt"
+        ]
+      },
+      "Gaming Audio": {
+        "frequency": 1,
+        "sample_values": [
+          "Nahimic-Enhanced Stereo Speakers"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15arp9-ryzen-5-7235hs-rtx-3050-16gb-512gb-83jc00p6ed"
+        ]
+      },
+      "Audio Tech": {
+        "frequency": 1,
+        "sample_values": [
+          "Dolby Atmos, Hi-Res certification, AI noise-canceling"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "MICROPHONE": {
+        "frequency": 1,
+        "sample_values": [
+          "2x, Array"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "WEBCAM": {
+        "frequency": 1,
+        "sample_values": [
+          "720p or 1080p HD camera with dual microphones"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "Audio Details": {
+        "frequency": 1,
+        "sample_values": [
+          "‎Headphones"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      }
+    },
+    "chipset_motherboard": {
+      "Chipset": {
+        "frequency": 3,
+        "sample_values": [
+          "Intel® HM770",
+          "Intel® HM870",
+          "Intel integrated SoC"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-legion-5-15iax10-core-ultra-7-rtx-5060-egypt",
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      },
+      "CHIPSET": {
+        "frequency": 3,
+        "sample_values": [
+          "Intel HM770 Chipset",
+          "Intel® B860 Chipset",
+          "Intel® Integrated SoC"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-b860-plus-wifi-intel-b860-ddr5-atx-motherboard",
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      },
+      "SOCKET": {
+        "frequency": 2,
+        "sample_values": [
+          "AMD Socket AM5",
+          "Intel® LGA1851"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-b850-e-wifi-gaming-motherboard",
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-b860-plus-wifi-intel-b860-ddr5-atx-motherboard"
+        ]
+      },
+      "Graphics Chipset Brand": {
+        "frequency": 1,
+        "sample_values": [
+          "‎NVIDIA"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-g15-5530-gaming-laptop-13th-intel-core-i7-13650hx-14-cores-nvidia-geforce-rtx-3050-6gb-gddr6-graphics-16gb-ddr5-4800-mhz-ram-512gb-ssd-15-6-fhd-1920x1080-120hz-4z-rgb-backlit-ubuntu-copy"
+        ]
+      }
+    },
+    "packaging_accessories": {
+      "Warranty": {
+        "frequency": 8,
+        "sample_values": [
+          "2 Years Lenovo Warranty",
+          "1 Year Warranty",
+          "2 Years Warranty",
+          "3-Year Courier/Carry-in (upgraded from 1-year base)",
+          "🛡️ 1-Year Base Warranty (Includes 2Y Courier/Carry-in Upgrade)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+          "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt"
+        ]
+      },
+      "WARRANTY": {
+        "frequency": 5,
+        "sample_values": [
+          "2 Years",
+          "2-Year Courier or Carry-in with 1-Year Battery",
+          "1 Year",
+          "24 Months",
+          "1 Year Limited Warranty"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt",
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+          "https://www.compumarts.com/collections/laptop/products/msi-katana-15-hx-b14wgk-i7-14650hx-rtx-5070-512gb-ssd-dos-egypt"
+        ]
+      },
+      "CONDITION": {
+        "frequency": 1,
+        "sample_values": [
+          "Brand New"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa2352tx-gaming-laptop-core-i7-13620h-16gb-ddr5-512gb-ssd-rtx-5050-8gb-15-6-inch-fhd-144hz-dos-mica-silver-egypt"
+        ]
+      },
+      "ACCESSORIES": {
+        "frequency": 1,
+        "sample_values": [
+          "Glorious Gaming Mouse and Laptop Bag"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/gigabyte-a16-i7-rtx5050-16gb-1tb-gaming-laptop"
+        ]
+      },
+      "Reparability Index": {
+        "frequency": 1,
+        "sample_values": [
+          "9.9"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd"
+        ]
+      },
+      "Included Accessories": {
+        "frequency": 1,
+        "sample_values": [
+          "ASUS Pen SA205H with Wireless Charging Support and Sleeve"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-zenbook-duo-ux8407aa-copilot-plus-32gb-1tb-3k-oled"
+        ]
+      },
+      "Included": {
+        "frequency": 1,
+        "sample_values": [
+          "ASUS Pen SA205H and GoPro Edition Protective Sleeve"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/asus-proart-px13-hn7306eac-ryzen-ai-128gb-3k-oled-egypt"
+        ]
+      },
+      "Package Contents": {
+        "frequency": 1,
+        "sample_values": [
+          "Laptop, Battery, Power Adapter, Power Cord"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt"
+        ]
+      },
+      "BOX CONTENTS": {
+        "frequency": 1,
+        "sample_values": [
+          "AXGON 3 in 1 Gaming Set AX1COM31"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/dell-alienware-ac1620-core-9-270h-rtx-5070-32gb-dos-egypt"
+        ]
+      },
+      "BASE WARRANTY": {
+        "frequency": 1,
+        "sample_values": [
+          "1-year, Courier or Carry-in"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "WARRANTY UPGRADE": {
+        "frequency": 1,
+        "sample_values": [
+          "2Y Courier/Carry-in upgrade from 1Y Courier/Carry-in (2Y Warranty)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "GREEN CERTIFICATIONS": {
+        "frequency": 1,
+        "sample_values": [
+          "ErP Lot 6/26, RoHS compliant"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "OTHER CERTIFICATIONS": {
+        "frequency": 1,
+        "sample_values": [
+          "TÜV Rheinland Low Blue Light (Software Solution)"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty"
+        ]
+      },
+      "Warranty & Bundle": {
+        "frequency": 1,
+        "sample_values": [
+          "2-Year Warranty Upgrade (Courier/Carry-in), Bundled Lenovo LOQ M100 RGB Gaming Mouse"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15iax9e-83lk0062ed-laptop-core-i5-12450hx-16gb-ddr5-512gb-ssd-rtx-2050-4gb-15-6-fhd-100-srgb-144hz-2y-warranty-mouse-gaming"
+        ]
+      },
+      "COOLING SYSTEM": {
+        "frequency": 1,
+        "sample_values": [
+          "Dual-fan gaming thermal design"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz"
+        ]
+      }
+    },
+    "other_unclassified": {
+      "Gaming Performance": {
+        "frequency": 1,
+        "sample_values": [
+          "AMD Ryzen™ 5 7235HS Processor Paired with RTX™ 3050 6GB Graphics"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15arp9-ryzen-5-7235hs-rtx-3050-16gb-512gb-83jc00p6ed"
+        ]
+      },
+      "Sustainable impact specifications": {
+        "frequency": 1,
+        "sample_values": [
+          "Ocean-bound plastic in speaker enclosure(s) and bezel; Keyboard keycaps and scissors contain post-consumer recycled plastic"
+        ],
+        "sample_urls": [
+          "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz"
+        ]
+      }
+    }
+  }
+}

@@ -84,35 +84,26 @@ class ModelNormalizer:
         if clean.startswith("90") and len(clean) >= 12:
             return clean
         return None
+    COMPONENT_PREFIXES = (
+        "MX", "RTX", "GTX", "RX", "IRIS", "ARC", "UHD",
+        "DDR", "GDDR", "LPDDR", "SSD", "HDD", "NVME", "PCIE", "SATA",
+        "FHD", "QHD", "WUXGA", "WQXGA", "OLED", "IPS",
+        "WATT", "GEN", "CORE", "INTEL", "AMD",
+        "CELERON", "ATHLON", "RYZEN", "TI", "VRAM", "RAM",
+        "HM", "QM", "WM", "CM",
+    )
+
+    @classmethod
+    def is_component_token(cls, token: str) -> bool:
+        """Check if a token represents a hardware component (GPU, CPU, RAM) rather than a chassis model."""
+        t = token.upper()
+        return any(t.startswith(prefix) for prefix in cls.COMPONENT_PREFIXES)
 
     @classmethod
     def extract_base_model(cls, text: str | None) -> str | None:
         """Extract the root chassis model (e.g., 'S3407' from 'S3407CA-LY065W' or text)."""
-        if not text:
-            return None
-        # Try full SKU first
-        match_sku = cls.FULL_SKU_REGEX.search(text)
-        if match_sku:
-            token = match_sku.group(1)
-            prefix = token.split("-")[0]
-            m = cls.CHASSIS_PREFIX_REGEX.match(prefix)
-            if m:
-                return m.group(1).upper()
-
-        # Try sub-model
-        match_sub = cls.SUB_MODEL_REGEX.search(text)
-        if match_sub:
-            token = match_sub.group(1)
-            m = cls.CHASSIS_PREFIX_REGEX.match(token)
-            if m:
-                return m.group(1).upper()
-
-        # Try base model
-        match_bm = cls.BASE_MODEL_REGEX.search(text)
-        if match_bm:
-            return match_bm.group(1).upper()
-
-        return None
+        tokens = cls.extract_model_tokens(text)
+        return tokens.get("base_model")
 
     @classmethod
     def extract_model_tokens(cls, text: str | None) -> dict[str, str | None]:
@@ -144,26 +135,40 @@ class ModelNormalizer:
             prefix = sku.split("-")[0]
             result["sub_model"] = prefix
             bm = cls.CHASSIS_PREFIX_REGEX.match(prefix)
-            if bm:
+            if bm and not cls.is_component_token(bm.group(1)):
                 result["base_model"] = bm.group(1).upper()
+            return result
+
+        # Dell 4-digit model series (e.g. DELL 3510, DELL Vostro 3520)
+        dell_match = re.search(r"\bDELL\s+(?:(?:VOSTRO|INSPIRON|LATITUDE|PRECISION|XPS|G\d+)\s+)?([1-9]\d{3})\b", text, re.I)
+        if dell_match:
+            dell_code = dell_match.group(1)
+            fam_match = re.search(r"\bDELL\s+([A-Za-z]+)\s+" + dell_code, text, re.I)
+            fam = fam_match.group(1).title() if fam_match else ""
+            result["base_model"] = f"{fam} {dell_code}".strip() if fam else dell_code
+            result["sub_model"] = result["base_model"]
             return result
 
         # Sub-model (without hyphen)
         for match in cls.SUB_MODEL_REGEX.finditer(text):
             token = match.group(1).upper()
+            if cls.is_component_token(token):
+                continue
             # Ensure it has both letters and digits and is >= 5 chars
             if any(c.isalpha() for c in token) and any(c.isdigit() for c in token) and len(token) >= 5:
                 result["sub_model"] = token
                 bm = cls.CHASSIS_PREFIX_REGEX.match(token)
-                if bm:
+                if bm and not cls.is_component_token(bm.group(1)):
                     result["base_model"] = bm.group(1).upper()
                 return result
 
         # Base model
-        bm = cls.BASE_MODEL_REGEX.search(text)
-        if bm:
-            token = bm.group(1).upper()
+        for match in cls.BASE_MODEL_REGEX.finditer(text):
+            token = match.group(1).upper()
+            if cls.is_component_token(token):
+                continue
             if any(c.isalpha() for c in token) and any(c.isdigit() for c in token):
                 result["base_model"] = token
+                return result
 
         return result

@@ -98,3 +98,61 @@ def test_sigma_catalog_mock(monkeypatch):
     items_wm = scraper.scrape_catalog(level=1, until_model="SKU-2", max_pages=1)
     assert len(items_wm) == 1
     assert items_wm[0].retailer_sku == "SKU-1"
+
+
+def test_sigma_extract_pdp_html_table_fallback(monkeypatch):
+    """Verify that when Next.js RSC is absent, PatternEngine discovers HTML table specs."""
+    scraper = SigmaComputerStoreScraper()
+    mock_pdp_html = """
+    <html>
+      <head><title>Lenovo LOQ Gaming Laptop</title></head>
+      <body>
+        <table>
+          <tr><td>Processor</td><td>Intel Core i5-13450HX</td></tr>
+          <tr><td>Graphics</td><td>NVIDIA RTX 4050 6GB</td></tr>
+          <tr><td>Memory</td><td>16GB DDR5</td></tr>
+          <tr><td>Storage</td><td>512GB SSD</td></tr>
+        </table>
+      </body>
+    </html>
+    """
+    monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_pdp_html)
+    res = scraper._extract_product_specs("https://www.sigma-computer.com/en/item?id=test-loq", title="Lenovo LOQ")
+    assert res.has_text_specs is True
+    assert res.specs_extraction_source == "dom"
+    assert res.specs.get("Processor") == "Intel Core i5-13450HX"
+    assert res.specs.get("Graphics") == "NVIDIA RTX 4050 6GB"
+
+
+def test_sigma_extract_pdp_title_fallback(monkeypatch):
+    """Verify that when no DOM text specs exist, PatternEngine gracefully extracts core hardware from title."""
+    scraper = SigmaComputerStoreScraper()
+    mock_pdp_html = """
+    <html>
+      <head><title>ASUS TUF Gaming F15</title></head>
+      <body><div>Only flyer image here</div></body>
+    </html>
+    """
+    monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_pdp_html)
+    title = "ASUS TUF Gaming F15 FX507ZC4 - Intel Core i5-12500H - RTX 3050 4GB - 16GB RAM - 512GB SSD - 15.6 FHD 144Hz"
+    res = scraper._extract_product_specs("https://www.sigma-computer.com/en/item?id=test-tuf", title=title)
+    assert res.specs_extraction_source == "title_fallback"
+    assert "i5-12500H" in res.specs.get("Processor", "")
+    assert "RTX 3050" in res.specs.get("Graphics", "")
+
+
+def test_sigma_used_laptop_quarantine(monkeypatch):
+    """Verify that used / as-new laptops are quarantined into skipped_laptops during crawl."""
+    scraper = SigmaComputerStoreScraper()
+    mock_search_html = """
+    <html>
+      <script>self.__next_f.push([1,"1:{\\"products\\":[{\\"slug\\":\\"macbook-used\\",\\"name\\":\\"as new Apple MacBook Pro 2019 Touchbar i9 32GB 512GB\\",\\"sku\\":\\"MBP-2019\\",\\"price\\":{\\"current\\":39000},\\"is_stock\\":true}]}"])</script>
+    </html>
+    """
+    monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_search_html)
+    items = scraper.scrape_catalog(level=1, max_pages=1)
+    assert len(items) == 0
+    assert len(scraper.skipped_laptops) == 1
+    assert scraper.skipped_laptops[0].stage == "accessory_filter"
+    assert "used_or_refurbished" in scraper.skipped_laptops[0].reason
+

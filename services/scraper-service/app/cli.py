@@ -266,11 +266,13 @@ def _display_store_result(target_result, args) -> None:
         else:
             p = Path(args.save_json)
             dest_file = str(p.with_name(f"{p.stem}_{target_result.target_key}{p.suffix}"))
+        Path(dest_file).parent.mkdir(parents=True, exist_ok=True)
         with open(dest_file, "w", encoding="utf-8") as f:
             json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
         console.print(f"[green][+] Saved {catalog.total_products} raw store products to {dest_file}[/green]")
     elif not args.upload_to_bucket:
         dest_file = f"store_{target_result.target_key}.json"
+        Path(dest_file).parent.mkdir(parents=True, exist_ok=True)
         with open(dest_file, "w", encoding="utf-8") as f:
             json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
         console.print(f"[green][+] Saved {catalog.total_products} raw store products to {dest_file}[/green]")
@@ -366,11 +368,13 @@ def _display_brand_result(target_result, args) -> None:
         else:
             p = Path(args.save_json)
             dest_file = str(p.with_name(f"{p.stem}_{target_result.target_key}{p.suffix}"))
+        Path(dest_file).parent.mkdir(parents=True, exist_ok=True)
         with open(dest_file, "w", encoding="utf-8") as f:
             json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
         console.print(f"[green][+] Saved results to {dest_file}[/green]")
     elif not args.upload_to_bucket:
         dest_file = f"brand_{target_result.target_key}.json"
+        Path(dest_file).parent.mkdir(parents=True, exist_ok=True)
         with open(dest_file, "w", encoding="utf-8") as f:
             json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
         console.print(f"[green][+] Saved results to {dest_file}[/green]")

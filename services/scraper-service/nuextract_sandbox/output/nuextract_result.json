@@ -1,0 +1,92 @@
+{
+  "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-core-i9-13900h-rtx-5050-165hz-egypt",
+  "title": "Acer Nitro V 15 ANV15-52-9340 Gaming Laptop – Core i9-13900H, RTX 5050 8GB GDDR7, 16GB RAM, 512GB NVMe, 15.6\" FHD IPS 165Hz, Black",
+  "metadata": {
+    "sku": "NH.QZ9EM.002",
+    "price_egp": 62999.0,
+    "price_str": "62,999.00 EGP",
+    "in_stock": true
+  },
+  "extraction_method": "nuextract_sandbox",
+  "model_name": "numind/NuExtract-tiny",
+  "latency_seconds": 62.99,
+  "structured": {
+    "identity": {
+      "brand": "Acer",
+      "laptop_family": "Gaming Laptop",
+      "laptop_model": "Acer Nitro V 15 ANV15-52-9340",
+      "manufacturer_part_number": "NH.QZ9EM.002"
+    },
+    "cpu": {
+      "manufacturer": "Intel",
+      "line": "Core i9",
+      "model": "i9-13900H",
+      "cores": "14 Cores (Tetradeca-core)",
+      "threads": "20 Threads",
+      "clock_speed": "2.60 GHz"
+    },
+    "gpu": {
+      "manufacturer": "NVIDIA",
+      "model": "RTX 5050",
+      "vram_gb": "8GB",
+      "tdp_w": "16GB",
+      "integrated": "16GB DDR5"
+    },
+    "memory": {
+      "capacity_gb": "512GB",
+      "memory_type": "SSD",
+      "speed": "165Hz",
+      "slot_count": "1",
+      "max_supported_gb": "32GB"
+    },
+    "storage": {
+      "capacity_gb": "512GB SSD",
+      "storage_type": "PCIe NVMe Gen4",
+      "interface": "PCIe NVMe Gen4",
+      "form_factor": "M.2",
+      "slot_count": "1"
+    },
+    "display": {
+      "size_inches": "15.6",
+      "resolution": "165Hz",
+      "refresh_rate_hz": "165Hz",
+      "panel_type": "ComfyView Matte",
+      "aspect_ratio": "16:9",
+      "touchscreen": "Yes"
+    },
+    "power_battery": {
+      "battery_capacity_wh": "76Wh",
+      "power_adapter_w": "135W",
+      "battery_cells": "76Wh"
+    },
+    "physical": {
+      "weight_kg": "2.11 kg",
+      "color": "Black",
+      "width_mm": "362.3",
+      "depth_mm": "239.9",
+      "height_mm": "23.5"
+    },
+    "build_security": {
+      "has_backlit_keyboard": "Yes",
+      "has_fingerprint": "No"
+    },
+    "audio_webcam": {
+      "speaker_count": "2",
+      "microphone": "Yes",
+      "webcam_resolution": "165Hz",
+      "refresh_rate_hz": "165Hz"
+    },
+    "operating_system": {
+      "name": "Windows 11 Home Single Language"
+    },
+    "connectivity": {
+      "wifi": "Wi-Fi 6 (IEEE 802.11ax)",
+      "bluetooth": "Bluetooth 5.2 or Later",
+      "ethernet": "Gigabit Ethernet",
+      "ports": [
+        "2x2 AX Dummy"
+      ]
+    }
+  },
+  "raw_specs_count": 60
+}
