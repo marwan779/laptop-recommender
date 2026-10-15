@@ -20,6 +20,8 @@ def empty_structured() -> dict[str, Any]:
             "laptop_family": None,
             "laptop_model": None,
             "manufacturer_part_number": None,
+            "retailer_sku": None,
+            "is_bundle": False,
         },
         "cpu": {
             "manufacturer": None,
@@ -27,15 +29,18 @@ def empty_structured() -> dict[str, Any]:
             "model": None,
             "series": None,
             "full_name": None,
+            "full_name_raw": None,
             "cores": None,
             "threads": None,
             "clock_speed": None,
             "clock_base_ghz": None,
             "clock_boost_ghz": None,
+            "cache_mb": None,
         },
         "gpu": {
             "manufacturer": None,
             "model": None,
+            "variant": None,
             "secondary_model": None,
             "full_name": None,
             "vram_gb": None,
@@ -53,6 +58,7 @@ def empty_structured() -> dict[str, Any]:
             "capacity_gb": None,
             "storage_type": "SSD",
             "interface": None,
+            "interface_details": None,
             "form_factor": None,
             "slot_count": None,
             "max_supported_gb": None,
@@ -79,7 +85,9 @@ def empty_structured() -> dict[str, Any]:
             "wifi": None,
             "bluetooth": None,
             "ethernet": None,
+            "ethernet_speed": None,
             "ports": [],
+            "ports_summary": None,
         },
         "operating_system": {
             "name": None,
@@ -100,6 +108,8 @@ def empty_structured() -> dict[str, Any]:
         "audio": {
             "speaker_count": None,
             "microphone": None,
+            "has_microphone": None,
+            "tech": [],
         },
         "webcam": {
             "resolution": None,
@@ -109,8 +119,13 @@ def empty_structured() -> dict[str, Any]:
         "condition": "new",
         "price_egp": None,
         "in_stock": True,
+        "listing_in_stock": None,
+        "pdp_in_stock": None,
+        "completeness_score": 0.0,
+        "quality_flags": [],
         "extraction_meta": {
             "status": "ok",  # "ok" | "partial" | "failed"
+            "source_mismatch": False,
             "warnings": [],
             "rejected": [],  # list[{field, value, rule}]
             "conflicts": [],  # list[{field, title_value, table_value, chosen, reason}]

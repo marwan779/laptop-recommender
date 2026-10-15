@@ -1,0 +1,1143 @@
+{
+  "total_laptops_audited": 129,
+  "live_pdps_fetched": 129,
+  "fetch_errors_count": 0,
+  "total_mismatches_detected": 46,
+  "laptops_with_mismatches_count": 37,
+  "clean_laptops_count": 92,
+  "audit_results": [
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-gaming-laptop-16-r1011nia-a7kc2eabh5-i7-14700hx-rtx-4050-6gb-16gb-ddr5-512gb-nvme-16-1-inch-fhd-ips-144hz-freedos-egypt",
+      "title": "HP Victus Gaming Laptop 16-R1011NIA A7KC2EABH5, Intel Core i7-14700HX, RTX 4050 6GB, 16GB DDR5 5600MHz RAM, 512GB PCIe Gen4 NVMe SSD, 16.1-inch FHD IPS 144Hz Display, Backlit Keyboard, FreeDOS",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "physical.width_mm",
+          "extracted": null,
+          "ground_truth": "369 mm x 259.4 mm x 2.29 cm (front height), 2.39 cm (rear height)",
+          "type": "MISSED_POPULATION",
+          "source": "Table [DIMENSIONS]: '369 mm x 259.4 mm x 2.29 cm (front height), 2.39 cm (rear height)'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-essential-15arp10-83s000c2in-ryzen-7-rtx-4050-512gb-ssd-egypt",
+      "title": "Lenovo LOQ Essential 15ARP10 Gaming Laptop – Model 83S000C2IN, AMD Ryzen 7 170, NVIDIA GeForce RTX 4050 6GB GDDR6, 16GB DDR5-4800 RAM, 512GB PCIe 4.0 NVMe SSD, 15.6-inch FHD 144Hz IPS Display, Windows 11 Home, Luna Grey",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe® 4.0x4 NVMe®'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-essential-15arp10-ryzen-7-rtx-3050-egypt",
+      "title": "LENOVO LOQ 15ARP10E Gaming Laptop Ryzen 7 170 16GB RAM 512GB SSD RTX 3050 6GB 15.6\" FHD 144Hz Windows 11 – 83S000C3IN",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe® 4.0x4 NVMe®'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-aspire-go-16-ag16-71p-9142-intel-core-9-270h-16gb-512gb-egypt",
+      "title": "Acer Aspire Go 16 AG16-71P-96TX Laptop | Intel Core 9 270H | 16GB DDR5 | 512GB SSD | 16\" WUXGA IPS 120Hz | Intel Graphics | No OS | Silver",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "identity.brand",
+          "extracted": "Acer",
+          "ground_truth": "Intel®",
+          "type": "CORRUPTION",
+          "source": "Table [Processor Manufacturer]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+      "title": "Acer Nitro V 15 ANV15-A31-R8LA Gaming Laptop | AMD Ryzen 7 170 | RTX 5060 8GB GDDR7 | 16GB DDR5 | 512GB SSD | 15.6″ FHD IPS 165Hz | Windows 11 | NH.U3PEM.003",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "identity.brand",
+          "extracted": "Acer",
+          "ground_truth": "AMD",
+          "type": "CORRUPTION",
+          "source": "Table [Processor Manufacturer]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16s-anv16s-71-76pu-core-7-240h-rtx-5070-16gb-512gb-egypt",
+      "title": "Acer Nitro V 16S ANV16S-71-76PU Gaming Laptop | Intel Core 7 240H | RTX 5070 8GB GDDR7 | 16GB DDR5 | 512GB SSD | 16\" WQXGA 180Hz | Windows 11",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "identity.brand",
+          "extracted": "Acer",
+          "ground_truth": "Intel®",
+          "type": "CORRUPTION",
+          "source": "Table [Processor Manufacturer]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-core-i7-rtx-4050-gaming-laptop-egypt",
+      "title": "Lenovo LOQ 15IRX9 83DV01HRPS Gaming Laptop Intel Core i7-13645HX RTX 4050 6GB 16GB DDR5 512GB SSD 15.6 FHD 144Hz",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe® 4.0x4 NVMe®'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt",
+      "title": "HP 255 G10 B39STAT#A2N AMD Ryzen 5 7535U 16GB RAM 512GB SSD AMD Radeon 660M 15.6\" FHD",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-250-g10-core-i3-1315u-16gb-512gb-ssd-fhd-egypt",
+      "title": "HP 250 G10 Laptop Core i3-1315U 16GB RAM 512GB SSD 15.6\" FHD IPS FreeDOS",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "identity.manufacturer_part_number",
+          "extracted": null,
+          "ground_truth": "HP 250",
+          "type": "MISSED_POPULATION",
+          "source": "Table [Model]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
+      "title": "Lenovo Legion 5 15IRX10 83LY00R8ED Gaming Laptop Intel Core i7-13650HX RTX 5070 8GB 32GB DDR5 1TB SSD 15.3-inch WUXGA 165Hz DOS",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv01hsed-i7-rtx-4050-laptop-egypt",
+      "title": "LENOVO LOQ 15IRX9 83DV01HSED Laptop Intel Core i7-13645HX RTX 4050 16GB DDR5 512GB NVMe",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt",
+      "title": "ACER Nitro ANV15-52-786F Gaming Laptop - Intel Core i7-13620H - RTX 4050 6GB - 16GB DDR5 4800Hz - 512GB NVMe Gen 4 - 15.6-inch FHD IPS 165Hz - White Backlit - Windows 11 - Obsidian Black",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa2352tx-gaming-laptop-core-i7-13620h-16gb-ddr5-512gb-ssd-rtx-5050-8gb-15-6-inch-fhd-144hz-dos-mica-silver-egypt",
+      "title": "HP Victus 15-fa2352TX Gaming Laptop Core i7-13620H 16GB DDR5 512GB SSD RTX 5050 8GB 15.6-inch FHD 144Hz DOS Mica Silver",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-i7-rtx-5070-32gb-1tb-egypt",
+      "title": "Lenovo LOQ 15IRX10 83JE00XEED Gaming Laptop Intel Core i7-13650HX RTX 5070 16GB DDR5 1TB SSD",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "memory.capacity_gb",
+          "extracted": 16,
+          "ground_truth": 32,
+          "type": "CORRUPTION",
+          "source": "Table [Memory]: '2x 16GB SODIMM DDR5-4800'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je01ated-core-i7-13645hx-rtx-5060-8gb-egypt",
+      "title": "Lenovo LOQ 15IRX10 83JE01ATED Gaming Laptop – Core i7-13645HX, RTX 5060 8GB GDDR7 100W, 16GB DDR5, 512GB SSD, 15.6″ FHD 144Hz 100% sRGB, DOS",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
+      "title": "LENOVO LOQ 15AHP9 83DX00F1PB Ryzen 7 7445HS RTX 3050 6GB 16GB 512GB 15.6\" FHD 144Hz",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16adr10-83lt0031lk-ryzen-7-8745hx-rtx-5060-oled-egypt",
+      "title": "Lenovo Legion Pro 5 16ADR10 83LT0031LK Gaming Laptop – Ryzen 7 8745HX, RTX 5060 8GB 115W, 24GB DDR5, 1TB SSD, 16″ WQXGA OLED 165Hz",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-15-fd1062ne-d41p1ea-laptop-intel-core-ultra-512gb-pcie-ssd-egypt",
+      "title": "HP 15-fd1062ne Laptop, Intel Core Ultra 7 155H Processor, 15.6 Inch FHD Display, 512 GB SSD, 8 GB RAM DDR5, Intel ARC Graphics, Dos, Natural Silver - D41P1EA",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt",
+      "title": "MSI Cyborg 15 A13VE Gaming Laptop Intel Core i7-13620H 16GB DDR5 512GB NVMe SSD NVIDIA GeForce RTX 4050 15.6 Inch 144Hz Display",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-crosshair-16-hx-ai-d2xwgkg-9s7-15p421-271-intel-core-ultra-9-275hx-rtx-5070-8gb-gddr7-32gb-ddr5-2tb-ssd-16-inch-qhd-plus-240hz-windows-11-home-cosmos-gray-egypt",
+      "title": "MSI Crosshair 16 HX AI D2XWGKG-271NG Gaming Laptop Core Ultra 9 275HX RTX 5070 8GB 32GB DDR5 2TB SSD 16-inch QHD+ 240Hz Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-katana-15-hx-b14wgk-i7-14650hx-rtx-5070-512gb-ssd-dos-egypt",
+      "title": "MSI Katana 15 HX B14WGK Gaming Laptop Intel Core i7-14650HX RTX 5070 8GB 16GB DDR5 512GB SSD 15.6\" QHD 165Hz DOS 1 Year Warranty",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-vector-16-hx-ai-a2xwig-core-ultra-9-rtx-5080",
+      "title": "MSI Vector 16 HX AI A2XWIG-693XJO Gaming Laptop Intel Core Ultra 9 275HX RTX 5080 16GB 16GB DDR5 1TB SSD 16-inch QHD+ 240Hz FreeDOS",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+      "title": "HP OMEN 16-am0057ne D13PQEA Gaming Laptop Intel Core Ultra 7 255H RTX 5070 8GB 16GB DDR5 512GB SSD 16-inch 2K 165Hz FreeDOS",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "identity.brand",
+          "extracted": "HP",
+          "ground_truth": "1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply.",
+          "type": "CORRUPTION",
+          "source": "Table [Manufacturer Warranty]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt",
+      "title": "ASUS Vivobook S14 S3407AA-SF155W Laptop Intel Core Ultra 5 325 14 Inch WUXGA OLED 16GB RAM 512GB SSD Windows 11 Home Matte Gray",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt",
+      "title": "DELL Pro 15 Essential PV15250 Laptop, Intel Core i7-1355U, 8GB DDR5, 512GB NVMe SSD, 15.6\" FHD 120Hz, Carbon Black",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-katana-15-hx-b14wgk-gaming-laptop-i7-14650hx-rtx-5070-egypt",
+      "title": "MSI Katana 15 HX B14WGK Gaming Laptop Intel Core i7-14650HX, 16GB DDR5, 1TB PCIe Gen4 SSD, RTX 5070 8GB, 15.6\" QHD 165Hz, Windows 11 Home, Black",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-fx608jhi-tu657w-gaming-laptop-i7-14650hx-rtx-5050-egypt",
+      "title": "ASUS TUF F16 FX608JHI-TU657W Gaming Laptop Intel Core i7-14650HX, GeForce RTX 5050 8GB, 16GB DDR5 5600Hz, 512GB NVMe Gen4, 16-inch WUXGA IPS 144Hz",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf157w-ultra-7-355-laptop-egypt",
+      "title": "ASUS Vivobook S14 S3407AA-SF157W Ultra 7 355 16GB DDR5 SSD 512GB -Intel Graphics 14\" OLED Win11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-yoga-7-2-in-1-intel-core-ultra-7-14-inch-laptop-egypt",
+      "title": "Lenovo Yoga 7 2-in-1 83TC001YED Intel Core Ultra 7 355 32GB RAM 1TB SSD 14 Inch OLED Touch Screen Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-15-x1504va-bq857w-core-7-150u-512gb-laptop-egypt",
+      "title": "ASUS Vivobook 15 X1504VA-BQ857W Laptop – Intel Core 7 150U, Intel Graphics, 8GB DDR5, 512GB PCIe 4.0 SSD, 15.6-Inch FHD IPS, Windows 11 Home",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-modern-15-f1mg-intel-core-5-120u-8gb-512gb-laptop-egypt",
+      "title": "MSI Modern 15 F1MG Laptop Intel Core 5 120U 8GB DDR4 512GB PCIe Gen4 SSD Intel Graphics 15.6-Inch FHD IPS  DOS Urban Silver",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-16-am0056ne-gaming-laptop-egypt",
+      "title": "HP OMEN 16-am0056ne D13PNEA Gaming Laptop Core Ultra 7 255H RTX 5070 8GB 16GB DDR5 512GB SSD 16-inch 2K 165Hz FreeDOS Ceramic White",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-max-16-ah0029ne-gaming-laptop-egypt",
+      "title": "HP OMEN MAX 16-ah0029ne D13PCEA Gaming Laptop Core Ultra 7 255HX RTX 5070 Ti 12GB 32GB DDR5 1TB SSD 16-inch WQXGA 240Hz Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15iph11-intel-core-ultra-7-16gb-512gb-rtx-5060-egypt",
+      "title": "Lenovo LOQ 15IPH11 Gaming Laptop Intel Core Ultra 7 356H 16GB RAM 512GB SSD RTX 5060 8GB 15.3 Inch WUXGA 165Hz Luna Grey",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-hp-15-fd0531nia-laptop-i3-1315u-4gb-256gb-ssd-egypt",
+      "title": "HP 15-FD0531NIA Laptop Intel Core i3-1315U 4GB RAM 256GB PCIe NVMe SSD 15.6 Inch FHD Intel UHD Graphics DOS Natural Silver",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-zenbook-a14-ux3407qa-qd155w-laptop-snapdragon-x-16gb-512gb-egypt",
+      "title": "ASUS Zenbook A14 UX3407QA-QD155W Laptop 14-inch WUXGA OLED Snapdragon X X1 26 100 16GB LPDDR5X 512GB PCIe 4.0 SSD Windows 11 Home Iceland Gray",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2we-gaming-laptop-i7-13620h-rtx-5050-16gb-egypt",
+      "title": "MSI Cyborg 15 Max C2WE Gaming Laptop Intel Core i7-13620H NVIDIA GeForce RTX 5050 8GB 16GB DDR5 512GB SSD 15.6\" FHD 144Hz Platinum Gray",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt",
+      "title": "MSI Cyborg 15 Max C13WG-019EG Gaming Laptop Intel Core i7-13620H RTX 5070 8GB 16GB DDR5 512GB SSD 15.6-inch FHD 144Hz",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ai-phn16-73-97bp-gaming-laptop-core-ultra-9-1tb-egypt",
+      "title": "Acer Predator Helios Neo 16 AI PHN16-73-97BP Gaming Laptop, 16\" WQXGA 180Hz IPS Display, Intel Core Ultra 9 275HX, 16GB DDR5 RAM, 1TB PCIe NVMe 4.0 SSD, RTX 5060 8GB",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "identity.brand",
+          "extracted": "Acer",
+          "ground_truth": "Intel®",
+          "type": "CORRUPTION",
+          "source": "Table [Processor Manufacturer]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ph16-73-92v4-gaming-laptop-ultra9-275hx-rtx5090-egypt",
+      "title": "Acer Predator Helios 16 AI PH16-73-92V4 16\" WQXGA OLED 240Hz Intel Core Ultra 9 275HX 32GB RAM 1TB SSD GeForce RTX 5090 24GB  Black NH.QW2EM.001",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "identity.brand",
+          "extracted": "Acer",
+          "ground_truth": "Intel®",
+          "type": "CORRUPTION",
+          "source": "Table [Processor Manufacturer]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15irx9-gaming-laptop-i7-13645hx-rtx4050-egypt",
+      "title": "Lenovo LOQ 15IRX9 Gaming Laptop Intel Core i7-13645HX, RTX 4050 6GB, 16GB DDR5, 512GB SSD, 15.6-inch FHD 144Hz IPS 83DV01HBAX",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-gaming-a16-cth-intel-core-i7-13620h-rtx-5050-8gb-16gb-ddr5-512gb-nvme-gen4-ssd-gaming-laptop",
+      "title": "Gigabyte Gaming A16 CTH Gaming Laptop Intel Core i7-13620H RTX 5050 8GB 16GB DDR5 5200MHz 512GB NVMe Gen4 SSD 16 Inch 165Hz IPS WUXGA Display WiFi 6E",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614ph-ryzen9-8940hx-rtx5050-8gb-16gb-512gb-ssd-16inch-165hz-laptop",
+      "title": "ASUS ROG Strix G16 G614PH-RV659W AMD Ryzen 9 8940HX RTX 5050 8GB 16GB DDR5 512GB SSD 16-inch FHD+ 165Hz Windows 11 Gaming Laptop Eclipse Gray",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB PCIe® 4.0 NVMe™ M.2 SSD'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-asus-rog-zephyrus-g16-gu606ar-tb321w-core-ultra-9-386h-rtx-5070-ti-32gb-1tb-oled-240hz-gaming-laptop",
+      "title": "ASUS ROG Zephyrus G16 GU606AR-TB321W Gaming Laptop Intel Core Ultra 9 386H RTX 5070 Ti 12GB 32GB LPDDR5X 1TB PCIe 4.0 SSD 16-inch 2.5K OLED 240Hz Windows 11 Home Eclipse Gray",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "memory.capacity_gb",
+          "extracted": 32,
+          "ground_truth": 160,
+          "type": "CORRUPTION",
+          "source": "Table [MEMORY]: 'LPDDR5X 32GB'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614pw-ts161w-ryzen-9-8940hx-rtx-5080-16gb-gddr7-1tb-pcie-4-0-nvme-ssd-16-inch-2-5k-300hz-gaming-laptop",
+      "title": "ASUS ROG Strix G16 G614PW-TS161W AMD Ryzen 9 8940HX NVIDIA GeForce RTX 5080 16GB GDDR7 16GB DDR5 1TB NVMe M.2 SSD 16-inch 2.5K 300Hz Windows 11 Home",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15arp9-ryzen-5-7235hs-rtx-3050-16gb-512gb-83jc00p6ed",
+      "title": "Lenovo LOQ 15ARP9  83JC00P6ED Gaming Laptop AMD Ryzen 5 7235HS 16GB DDR5 512GB SSD RTX 3050 6GB 15.6\" FHD 144Hz IPS Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-7i-16iax10h-83f500fbin-core-ultra-9-275hx-rtx-5090-24gb-64gb-ddr5-6400-gaming-laptop",
+      "title": "Lenovo Legion Pro 7i 16IAX10H 83F500FBIN Gaming Laptop Intel Core Ultra 9 275HX 64GB DDR5-6400 1TB PCIe 4.0 NVMe SSD RTX 5090 24GB GDDR7 16 Inch WQXGA OLED 240Hz Windows 11 Home Eclipse Black",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-hp-probook-460-g11-core-ultra-7-155u-16gb-512gb-rtx-2050-business-laptop",
+      "title": "HP ProBook 460 G11 Business Laptop Intel Core Ultra 7 155U 16GB DDR5 RAM 512GB NVMe SSD NVIDIA GeForce RTX 2050 4GB 16-Inch FHD+ Windows 11 Pro Pike Silver Plastic",
+      "mismatches_count": 2,
+      "mismatches": [
+        {
+          "field": "identity.manufacturer_part_number",
+          "extracted": null,
+          "ground_truth": "ProBook 460 G11",
+          "type": "MISSED_POPULATION",
+          "source": "Table [Model Name]"
+        },
+        {
+          "field": "gpu.integrated",
+          "extracted": false,
+          "ground_truth": true,
+          "type": "CORRUPTION",
+          "source": "Table [Graphics Description]: 'Integrated'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
+      "title": "GIGABYTE AERO X16 EG61H Gaming Laptop 16-inch QHD 165Hz AMD Ryzen AI 7 350 16GB RAM 1TB SSD GeForce RTX 5050 8GB Windows 11 Home",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-gigabyte-gaming-a16-ga63h-rtx5050-ryzen7-165hz-16inch-gaming-laptop",
+      "title": "Gigabyte Gaming A16 GA63TH RTX 5050 Laptop AMD Ryzen 7 260 16GB DDR5 16 Inch 165Hz IPS WUXGA Gaming Laptop",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-ideapad-slim-3-15irh10-i7-13620h-laptop-egypt",
+      "title": "Lenovo IdeaPad Slim 3 15IRH10 (83K100AXAD) Laptop – Intel Core i7-13620H, 8GB DDR5, 512GB SSD, 15.3\" WUXGA IPS - BAG - HEADSET",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe® 4.0x4 NVMe® (Supports 2x SSDs)'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15iax10-ultra-7-rtx-5060-oled-165hz-egypt",
+      "title": "Lenovo Legion 5 15IAX10 83F0006ELK Gaming Laptop – Ultra 7 255HX, RTX 5060, 32GB DDR5, 512GB SSD, 15.1\" OLED 165Hz 24-Zone RGB Backlit win 11",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "memory.capacity_gb",
+          "extracted": 16,
+          "ground_truth": 32,
+          "type": "CORRUPTION",
+          "source": "Table [Memory]: '2x 16GB SODIMM DDR5-5600 (Max 32GB)'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-a16-i7-rtx5050-16gb-1tb-gaming-laptop",
+      "title": "Gigabyte A16 CTH Gaming Laptop i7-13620H RTX 5050 8GB 16GB RAM 1TB SSD 16\" 165Hz WUXGA IPS DOS",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-15-core5-8gb-512gb-90nb13y2",
+      "title": "ASUS Vivobook 15 X1504VA-BQ4615W Laptop Intel Core 5 120U 8GB DDR5 512GB PCIe 4.0 SSD 15.6\" FHD IPS WiFi 6 Fingerprint Windows 11 Cool Silver - 90NB13Y2-M02EL0",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd",
+      "title": "Laptop ASUS TUF Gaming FX607VU-RL167W – Intel Core 7 240H, RTX 4050 6GB, 16GB RAM, 512GB SSD, 16” FHD+ 144Hz, Windows 11, 90NRON06-MOOJBO",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-zenbook-14-ryzen-ai7-16gb-512gb-oled-90nb17r2",
+      "title": "ASUS Zenbook 14 OLED UM3406GA-QL157W AMD Ryzen AI 7 445 16GB LPDDR5X 512GB SSD 14\" WUXGA Touch OLED Stylus WiFi 6E Windows 11 Jade Black",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-m3407ka-sf155w-ryzen-ai-5-egypt",
+      "title": "ASUS Vivobook S14 M3407KA-SF155W Ryzen AI 5 330 16GB RAM 512GB SSD Radeon Graphics 14\" OLED Windows 11 Copilot Key",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx608jmr-i7-rtx-5060-16gb-512gb-165hz-egypt",
+      "title": "ASUS TUF Gaming F16 FX608JMR-RV057W Laptop Intel Core i7-14650HX NVIDIA GeForce RTX 5060 16GB DDR5 512GB SSD 165Hz 16 Inch WUXGA Windows 11 Home",
+      "mismatches_count": 2,
+      "mismatches": [
+        {
+          "field": "gpu.integrated",
+          "extracted": false,
+          "ground_truth": true,
+          "type": "CORRUPTION",
+          "source": "Table [Integrated GPU]: 'Intel UHD Graphics'"
+        },
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB PCIe 4.0 NVMe SSD'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-16-x1607qa-mb155w-snapdragon-x-egypt",
+      "title": "ASUS Vivobook 16 X1607QA-MB155W Snapdragon X X1-26-100 / 16GB RAM / 512GB SSD / Adreno GPU / 16\" WUXGA / Windows 11 – Cool Silver",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-fx607vu-rl121-i7-rtx4050-16gb-1tb",
+      "title": "ASUS TUF Gaming F16 FX607VU-RL121 Laptop Intel Core i7-13620H RTX 4050 6GB 16GB DDR5 1TB SSD 16-inch FHD+ 144Hz Gaming Laptop Mecha Gray",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt",
+      "title": "ASUS TUF Gaming F16 TUF608JPR-RV084 Laptop – Intel Core i7-14650HX, RTX 5070 8GB GDDR7, 16GB RAM, 1TB SSD, 16\" FHD+ 165Hz",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-zephyrus-duo-16-rtx5090-oled-egypt",
+      "title": "ASUS ROG Zephyrus Duo 16 GX651AX-SR264W Dual-Screen Gaming Laptop – Core Ultra 9 386H, RTX 5090 24GB, 64GB RAM, 2TB SSD, Dual 16″ 3K OLED Touch 120Hz, Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-a15-fa506ncq-ryzen-7-rtx-3050-16gb-512gb-gaming-laptop",
+      "title": "ASUS TUF Gaming A15 FA506NCQ-HN167W Ryzen 7 170 RTX 3050 GB 16GB RAM 512GB SSD 144Hz",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-core7-rtx5050-gaming-laptop",
+      "title": "MSI Cyborg 15 B2RWEKG-895EG Gaming Laptop 15.6\" FHD IPS 144Hz Intel Core 7 240H RTX 5050 8GB GDDR7 16GB DDR5 (8GB×2) 512GB SSD Windows 11 Home 64-bit Arabic – 9S7-15Q342-895",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ai-rtx5070-ultra9-275hx-16gb-1tb-egypt",
+      "title": "Acer Predator Helios Neo 16 AI Gaming Laptop – Ultra 9 275HX, RTX 5070 8GB, 16GB RAM, 1TB SSD, 16\" QHD 240Hz",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-lite-16-nl16-71g-53a0-rtx-4050-16gb",
+      "title": "Acer Nitro Lite 16 Gaming Laptop NL16-71G-53A0 (NH.DAGEM.004) | Intel Core i5-13420H | NVIDIA RTX 4050 6GB | 16\" WUXGA 180HZ | 16GB DDR5 | 512GB Gen4 SSD | Win 11 - Black",
+      "mismatches_count": 2,
+      "mismatches": [
+        {
+          "field": "identity.brand",
+          "extracted": "Acer",
+          "ground_truth": "Intel®",
+          "type": "CORRUPTION",
+          "source": "Table [Processor Manufacturer]"
+        },
+        {
+          "field": "identity.manufacturer_part_number",
+          "extracted": null,
+          "ground_truth": "i5-13420H",
+          "type": "MISSED_POPULATION",
+          "source": "Table [Processor Model]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-core-i9-13900h-rtx-5050-165hz-egypt",
+      "title": "Acer Nitro V 15 ANV15-52-9340 Gaming Laptop – Core i9-13900H, RTX 5050 8GB GDDR7, 16GB RAM, 512GB NVMe, 15.6\" FHD IPS 165Hz, Black",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "identity.brand",
+          "extracted": "Acer",
+          "ground_truth": "Intel®",
+          "type": "CORRUPTION",
+          "source": "Table [Processor Manufacturer]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-zenbook-duo-ux8407aa-copilot-plus-32gb-1tb-3k-oled",
+      "title": "ASUS Zenbook DUO UX8407AA Copilot+ PC Laptop Intel Core Ultra X9 378H 32GB RAM 1TB SSD 14 Inch 3K OLED 144Hz Touch Windows 11 Home",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-proart-px13-hn7306eac-ryzen-ai-128gb-3k-oled-egypt",
+      "title": "ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W 2-in-1 Creator Laptop – Ryzen AI MAX+ 395, Radeon 8060S, 128GB LPDDR5X, 1TB SSD, 13.3″ 3K OLED Touch, Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-15-rtx-4050-i5-gaming-laptop",
+      "title": "HP Victus 15-fa1082wm Gaming Laptop – Intel i5-13420H, RTX 4050 6GB, 16GB RAM, 512GB SSD, 15.6\" FHD 144Hz, Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-ideapad-slim-3-83k100qned-i7-16gb-512gb",
+      "title": "Lenovo IdeaPad Slim 3 15IRH10 (83K100QNED) 15.3\" WUXGA Laptop Intel Core i7-13620H 16GB DDR5 512GB NVMe SSD Wi-Fi 6 Windows 11 Cosmic Blue",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe® 4.0x4 NVMe®'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vjb-core-5-210h-rtx-3050-egypt",
+      "title": "ASUS TUF Gaming F16 FX607VJB-RL165W - Intel Core 5-210H 16G DDR5 RAM 512GB SSD RTX 3050 6GB",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 2048,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB PCIe® 4.0 NVMe™ M.2 SSD'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-16-x1605va-i7-16gb-512gb-oled-egypt",
+      "title": "ASUS Vivobook 16 X1605VA-OACH007W – Intel Core i7-13620H, 16GB DDR4, 512GB SSD, 16\" FHD OLED 60Hz, 95% DCI-P3, Windows 11, Includes Mouse & Bag",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt",
+      "title": "Acer Nitro V 16 ANV16-42-R309 Gaming Laptop – Ryzen 5 240 16GB DDR5  512GB NVMe  RTX 5050 8GB  16\" FHD+ 180Hz  Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-16-r0028ne-i7-13700h-rtx-4070-gaming-laptop-egypt",
+      "title": "HP Victus 16-r0028ne Gaming Laptop Intel Core i7-13700H NVIDIA RTX 4070 16GB RAM 1TB SSD 16.1 Inch FHD 144Hz FreeDOS",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "gpu.integrated",
+          "extracted": false,
+          "ground_truth": true,
+          "type": "CORRUPTION",
+          "source": "Table [Graphics]: 'Integrated, Intel Iris X Graphics(Intel Iris X Graphics capabilities require system to be configured with Intel Core i5 or i7 processors and dual channel memory. Intel Iris X Graphics with Intel Core i5 or i7 processors and single channel memory will only function as Intel UHD Graphics.)'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-16-am0001nia-ultra-7-255h-rtx-5070-egypt",
+      "title": "HP OMEN 16-am0001nia Gaming Laptop – Intel Core Ultra 7 255H – 16GB DDR5 – 512GB SSD – RTX 5070 8GB – 16\" FHD – DOS",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/dell-alienware-ac1620-core-9-270h-rtx-5070-32gb-dos-egypt",
+      "title": "Dell Alienware AC1620 Gaming Laptop – Intel Core 9-270H – 32GB DDR5 – 1TB SSD – RTX 5070 8GB – 16\" WQXGA 120Hz – DOS",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/dell-alienware-ac1620-core-9-270h-rtx-5060-dos-egypt",
+      "title": "DELL Alienware AC1620 Gaming Laptop with Intel Core 9-270H Processor, 16GB DDR5 RAM, 1TB NVMe SSD, NVIDIA GeForce RTX 5060 8GB GDDR7, 16-Inch WQXGA 120Hz Display, DOS",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15-i5-12450hx-rtx-3050-gaming-laptop",
+      "title": "Lenovo LOQ 15IAX9E (83LK006AIN) Gaming Laptop – Intel Core i5-12450HX, RTX 3050 6GB, 15.6\" 144Hz IPS FHD, 12GB DDR5, 512GB NVMe, Windows 11",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe 4.0x4 NVMe'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-lenovo-legion-5-15iax10-core-ultra-7-rtx-5060-egypt",
+      "title": "Lenovo Legion 5 15IAX10 Gaming Laptop – Intel Core Ultra 7 255HX, RTX 5060 8GB, 32GB DDR5, 1TB SSD, 15.1” WQXGA OLED 165Hz-83F0007HED",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614ph-rv161w-ryzen-9-rtx-5050-egypt",
+      "title": "ASUS ROG Strix G16 G614PH-RV161W – Ryzen 9 8940HX 16GB RAM 1TB NVMe SSD RTX 5050 8GB – 16\" FHD+ 165Hz IPS – Win11",
+      "mismatches_count": 4,
+      "mismatches": [
+        {
+          "field": "cpu.cores",
+          "extracted": 24,
+          "ground_truth": 16,
+          "type": "CORRUPTION",
+          "source": "Table [Processor]: 'AMD Ryzen™ 9 8940HX (16 Cores, 32 Threads, up to 5.3GHz, 80MB Cache)'"
+        },
+        {
+          "field": "cpu.threads",
+          "extracted": 24,
+          "ground_truth": 32,
+          "type": "CORRUPTION",
+          "source": "Table [Processor]: 'AMD Ryzen™ 9 8940HX (16 Cores, 32 Threads, up to 5.3GHz, 80MB Cache)'"
+        },
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB NVMe SSD'"
+        },
+        {
+          "field": "display.size_inches",
+          "extracted": 16.0,
+          "ground_truth": 18.0,
+          "type": "CORRUPTION",
+          "source": "Table [Display]: '18 Inches'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-proart-p16-h7606ww-se926w-ryzen-ai-9-rtx-5080-16gb-egypt",
+      "title": "ASUS ProArt P16 H7606WW-SE926W – Ryzen AI 9 HX 370 RTX 5080 16GB 64GB 2TB SSD 16\" 4K OLED 120Hz Win 11 Home",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-i7-rtx-5070",
+      "title": "ASUS TUF Gaming (TUF608JPR-RV027W) F16 – i7-14650HX, RTX 5070, 16GB DDR5, 1TB SSD, 165Hz 16”, Win11 – Jaeger Gray- 007 First Light GeForce RTX 50 Series Bundle",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-v16-v3607vm-pl027w-core-7-rtx-5060-16-2k-144hz-egypt",
+      "title": "ASUS V16 V3607VM-PL027W Core 7 240H RTX 5060 8GB 32GB DDR5 1TB SSD 16.0\" 2.5K 144Hz Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-ideapad-slim-3-15iru8-82x700bvps-egypt",
+      "title": "Lenovo IdeaPad Slim 3 15IRU8 Laptop – Intel Core i3-1315U, 8GB LPDDR5, 256GB SSD, 15.6-inch FHD, Arctic Grey",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 256,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '256GB M.2 2242 PCIe 4.0 x4 NVMe SSD'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-51-767g-nh-qncem-00m-core-i7-13620h-10-cores-16gb-ddr5-rtx-3050-6gb-512-gb-ssd-15-6-fhd-ips-165hz-windows-11",
+      "title": "Acer Nitro V 15 ANV15-51-767G Core i7-13620H 10 Cores - 16GB DDR5 - RTX 3050 6GB - 512 GB SSD - 15.6 FHD IPS 165HZ - Windows 11",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "physical.weight_kg",
+          "extracted": null,
+          "ground_truth": 6.0,
+          "type": "MISSED_POPULATION",
+          "source": "Table [Weight]: '6.0 kg'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-rtx-5060-16-qhd165hz-egypt",
+      "title": "GIGABYTE AERO X16 Lunar White Ryzen AI 7 350  RTX 5060 8G 16″ QHD+ 165HZ 1TB SSD 16GB DDR5 Windows 11",
+      "mismatches_count": 3,
+      "mismatches": [
+        {
+          "field": "identity.manufacturer_part_number",
+          "extracted": null,
+          "ground_truth": "GIGABYTE AERO X16 (Lunar White)",
+          "type": "MISSED_POPULATION",
+          "source": "Table [Model]"
+        },
+        {
+          "field": "power_battery.battery_capacity_wh",
+          "extracted": null,
+          "ground_truth": 90.0,
+          "type": "MISSED_POPULATION",
+          "source": "Table [Battery]: 'Estimated 70-90Wh'"
+        },
+        {
+          "field": "connectivity.ports",
+          "extracted": [],
+          "ground_truth": "Multiple USB-C / USB-A / HDMI / Audio Combo Jack / microSD card reader (TBD)",
+          "type": "MISSED_POPULATION",
+          "source": "Table [Ports]"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/alienware-16-aurora-rtx5060-gaming-laptop",
+      "title": "DELL Alienware 16 Aurora Gaming Laptop – Core 7 240H, RTX 5060, 32GB RAM, 1TB SSD, 16” 120Hz– 3 Years Warranty",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-i5-rtx3050",
+      "title": "Lenovo LOQ 15IRX9 Intel Core i5-13450HX 16GB 512GB RTX 3050 15.6-inch FHD 144Hz Gaming Laptop",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-a16-cwh-i7-13620h-rtx-5070-32gb-1tb-165hz",
+      "title": "GIGABYTE Gaming A16 CWH Laptop – i7-13620H | RTX 5070 8GB | 32GB RAM | 1TB SSD | 165Hz | Black",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-i7-14700hx-rtx4060-16gb-512ssd",
+      "title": "Lenovo LOQ 15IRX9 Intel Core i7-14700HX 16GB 512GB RTX 4060 15.6\" FHD 144Hz Gaming Laptop",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp10-ryzen7-rtx5050-gaming-laptop",
+      "title": "Lenovo LOQ 15AHP10 AMD Ryzen 7 250 RTX 5050 16GB DDR5 512GB SSD 15.6\" FHD 144Hz Gaming Laptop",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16irx10-i9-14900hx-rtx5070",
+      "title": "Lenovo Legion Pro 5 83NN001XAX Intel Core i9-14900HX RTX 5070 32GB RAM 1TB SSD 16\" 240Hz Gaming Laptop",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-gigabyte-aorus-master-18-bzh-gaming-laptop-egypt",
+      "title": "Gigabyte AORUS MASTER 18 BZH Gaming Laptop – Core Ultra 9 275HX | RTX 5090 24GB | 64GB RAM | 2TB SSD | 18” 240Hz Mini-LED",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aorus-master-18-byh-gaming-laptop-egypt",
+      "title": "Gigabyte AORUS MASTER 18 BYH Gaming Laptop – 18\" WQXGA Mini-LED 240Hz, Intel Core Ultra 9 275HX, 32GB DDR5 RAM, 2TB SSD, RTX 5080 16GB, Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-thin-15-b13ve-gaming-laptop-i7-13620h-rtx-4050-16gb-1tb-144hz-cosmos-grey-egypt",
+      "title": "MSI Thin 15 B13VE Gaming Laptop Intel Core i7-13620H RTX 4050 16GB RAM 1TB SSD 15.6 FHD COMPUMARTS WARRANTY",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-ultra9-rtx5080-gaming-laptop",
+      "title": "ASUS ROG Strix G16 G615LW-G321W Gaming Laptop – Intel Core Ultra 9 275HX, RTX 5080 16GB, 32GB DDR5, 1TB SSD, 16” FHD+ 165Hz, Windows 11 Hom",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-scar-16-g635lx-rw036w",
+      "title": "ASUS ROG Strix SCAR 16 G635LX-RW036W – Intel Core Ultra 9 275HX, NVIDIA GeForce RTX 5090 24GB GDDR7, 16″ 2.5K 240Hz Mini LED Nebula HDR Display, 64GB DDR5, 2TB PCIe 4.0 SSD, Win11 Home, Wi-Fi 7,  - 007 First Light GeForce RTX 50 Series Bundle",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-v16-v3607vh-eg005w-intel-core-5-rtx-5050",
+      "title": "ASUS V16 V3607VH-EG005W – Intel Core 5 210H RTX 5050 8GB 16GB DDR5 1TB SSD 16” WUXGA 144Hz Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/dell-alienware-16x-aurora-gaming-laptop-ultra9-275hx-rtx5070-32gb-1tb-240hz-wqxga-win11-egypt",
+      "title": "DELL Alienware 16X Aurora Gaming Laptop | Intel Core Ultra 9 275HX | RTX 5070 8GB | 32GB RAM | 1TB SSD | 240Hz WQXGA Display | Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-i5-13450hx-rtx3050-24gb-512gb-144hz",
+      "title": "Lenovo LOQ 15IRX9 Intel Core i5-13450HX RTX 3050 16GB DDR5 512GB SSD 15.6 Inch FHD 144Hz Gaming Laptop Luna Grey",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614fp-gr169w-gaming-laptop-egypt",
+      "title": "ASUS ROG Strix G16 G614FP-GR169W– AMD Ryzen 9 9955HX, RTX 5070, 16-inch FHD+ 165Hz, 16GB DDR5, 1TB SSD, Windows 11 Home – Eclipse Gray",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-a15-fa506ncg-ryzen-7-rtx-3050-egypt",
+      "title": "ASUS TUF Gaming A15 FA506NCG-HN807W 15.6 Inch IPS FHD 144Hz AMD Ryzen 7-7445HS 8GB DDR5 RAM 512GB SSD Nvidia GeForce RTX 3050 4GB Windows 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-msi-vector-17-hx-ai-a2xwjg-rtx-5090-24gb",
+      "title": "MSI Vector 17 HX AI A2XWJG Intel Core Ultra 9 275HX RTX 5090 32GB RAM 1TB SSD 17\" QHD+ 240Hz Gaming Laptop",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16irx10-i7-14650hx-rtx-5050-16gb-512gb",
+      "title": "Lenovo Legion Pro 5 16IRX10 83NN001SED – Core i7-14650HX – RTX 5050 8GB GDDR7 16 WQXGA 240Hz 16GB DDR5 512GB SSD Eclipse Black – Windows 11",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe 4.0x4 NVMe'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-victor-16-hx-ai-a2xwhg-gaming-laptop-core-ultra-7-rtx-5070",
+      "title": "MSI Vector 16 HX AI (A2XWHG) 16 QHD+ 240 Hz  Core Ultra 7 255HX / RTX 5070 Ti 12GB  16 GB DDR5-5600 1TB SSD  Cosmos Gray",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g615lm-275hx-rtx5060-16gb-1tb-165hz",
+      "title": "ASUS ROG Strix G16 G615LM‑RV009W Intel Core Ultra 9 275HX - RTX 5060 - 16GB RAM- 1TB SSD - 16″ 165HZ WUXGA - WIN 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-a14-ryzen-ai-rtx5060-2-5k-165hz-laptop-egypt",
+      "title": "ASUS TUF Gaming A14 FA401KM-RG014W Ryzen AI 7 350  RTX 5060 16GB RAM 1TB SSD 14″ 2.5K 165Hz",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-asus-tuf-a16-fa608pm-ryzen9-rtx5060",
+      "title": "ASUS TUF Gaming A16 FA608PM-RV169W  Ryzen 9 8940HX - RTX 5060 - 16GB DDR5 - 1TB SSD - 16\" WUXGA 165Hz - Win11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/laptops-gaming-gigabyte-a16-cvh-egypt",
+      "title": "GIGABYTE Gaming A16 Laptop  Intel i7-13620H RTX 5060 8GB 16GB RAM 1TB SSD 16\" 165Hz SRGB 100% WIN 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/products-asus-vivobook-pro-15-oled-n6506cu-i9-4050-egypt",
+      "title": "ASUS Vivobook Pro 15 OLED N6506CU-MA014W Intel Core Ultra 9 285H 24GB DDR5 2TB PCIe 4.0 SSD RTX 4050 6GB 15.6-Inch 3K 120Hz OLED Laptop",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16iax10-ultra7-rtx5070",
+      "title": "Lenovo Legion Pro 5 16IAX10 83F3004FED Core Ultra 7 255HX 16GB 512GB SSD RTX 5070 8 GB 16″ WQXGA 165Hz OLED – Eclipse Black",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/rog-strix-g16-2025-r9-9955hx-rtx5060-16gb-1tb",
+      "title": "ASUS ROG Strix G16 G614FM-RV169W (2025)  R9 9955HX 16GB DDR5 1TB SSD  RTX 5060 8GB 16” FHD 165Hz  Win 11 Eclipse Gray",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa2013dx-gaming-laptop-intel-core-i5-13420h-8gb-ram-512gb-ssd-nvidia-geforce-rtx-3050-6gb-15-6-fhd-144hz-windows-11",
+      "title": "HP Victus 15-fa2013dx Gaming Laptop INTEL CORE I5-13420H 8GB RAM 512GB SSD NVIDIA GeForce RTX 3050 6GB  15.6″ FHD 144Hz Windows 11",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "physical.width_mm",
+          "extracted": null,
+          "ground_truth": "304 x 519 x 68.8 mm",
+          "type": "MISSED_POPULATION",
+          "source": "Table [Dimensions (WxDxH)]: '304 x 519 x 68.8 mm'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-amd-ryzen-ai-7-350-16gb-1tb-rtx-5060-egypt",
+      "title": "GIGABYTE AERO X16 AMD Ryzen AI 7 350 16GB DDR5 RAM 1TB SSD RTX 5060 16 Inch 165Hz WQXGA Windows 11 Home Gray",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty",
+      "title": "LENOVO LOQ 15IRX10 83JE00DAED Core i7-14700HX 20 Cores – 24GB DDR5 5600  512GB SSD  RTX 5050 8GB GDDR7 15.6 FHD IPS 100% sRGB 144Hz WIN 11 2Y Warranty",
+      "mismatches_count": 2,
+      "mismatches": [
+        {
+          "field": "memory.capacity_gb",
+          "extracted": 12,
+          "ground_truth": 24,
+          "type": "CORRUPTION",
+          "source": "Table [Memory]: '2x 12GB SO-DIMM DDR5-4800'"
+        },
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe 4.0x4 NVMe'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv00urps-gaming-laptop-intel-core-i7-14700hx-2x-8gb-ram-512gb-ssd-nvidia-geforce-rtx-4060-8gb-15-6-fhd-ips-144hz",
+      "title": "LENOVO LOQ 15IRX9 83DV00URPS GAMING LAPTOP INTEL CORE I7-14700HX 16GB RAM 512GB SSD NVIDIA GeForce RTX 4060 8GB 15.6\" FHD IPS 144HZ SRGB 100% Dos",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe 4.0x4 NVMe'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i7-13650hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-4050-6gb-15-6-fhd-ips",
+      "title": "LENOVO LOQ 15IRX9 83DV0129ED Intel Core i7-13650HX 14 Cores - 24GB RAM DDR5 - 512GB SSD - RTX 4050 6GB - 15.6 FHD IPS 300nits 100% sRGB 144HZ - DOS - 2Y Warranty",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-16-x1607qa-mb054w-copilot-pc-laptop-snapdragon-x-x1-26-100-16gb-1-tb-ssd-qualcomm-adreno-16-wuxga-win-11",
+      "title": "ASUS Vivobook 16 X1607QA-MB054W Snapdragon X X1 26 100 16GB 1 TB SSD Qualcomm Adreno 16 WUXGA WIN 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/rog-strix-scar-18-2025-gaming-laptop-g835lw-ai642w-intel-core-ultra-9-processor-275hx-nvidia-geforce-rtx-5080-16gb-32gb-ddr5-ssd-2tb-18-inch-wqxga",
+      "title": "ROG Strix SCAR 18 (2025) GAMING LAPTOP G835LW-AI642W Intel Core Ultra 9 Processor 275HX NVIDIA GeForce RTX 5080 16GB 64GB DDR5 SSD 2TB 18-inch",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "memory.capacity_gb",
+          "extracted": 32,
+          "ground_truth": 64,
+          "type": "CORRUPTION",
+          "source": "Table [MEMORY]: 'DDR5 64GB (2 x 32GB DDR5-5600 SO-DIMM)'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-gaming-a16-ga6h-16-0-fhd-165hz-mb2-x2-rtx-5050-intel-core-i7-13620h-8gb-gddr7-16gb-ddr5-ram-512gb-gen4-ssd-wifi-6e-windows-11-home",
+      "title": "GIGABYTE GAMING A16 GA6H 16 Inch FHD+ IPS 165Hz RTX 5050 8GB GDDR7 Intel Core i7-13620H 16GB DDR5 1TB WiFi 6E",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa1018nia-gaming-13th-intel-i5-13500h-12-core-nvidia-rtx-4050-6gb-gddr6-16gb-ram-512gb-ssd-15-6-fhd-144hz",
+      "title": "Hp Victus 15-fa1018nia Gaming - 13th Intel i5-13500H 12-Core, NVIDIA RTX 4050 6GB GDDR6-16GB RAM, 512GB SSD,15.6\" FHD-144Hz",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "gpu.integrated",
+          "extracted": false,
+          "ground_truth": true,
+          "type": "CORRUPTION",
+          "source": "Table [Graphics]: 'Integrated, Intel Iris Xᵉ Graphics (Intel Iris Xᵉ Graphics capabilities require system to be configured with Intel Core i5 or i7 processors and dual channel memory. Intel Iris Xᵉ Graphics with Intel Core i5 or i7 processors and single channel memory will only function as Intel UHD Graphics.)'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15iax9e-83lk0062ed-laptop-core-i5-12450hx-16gb-ddr5-512gb-ssd-rtx-2050-4gb-15-6-fhd-100-srgb-144hz-2y-warranty-mouse-gaming",
+      "title": "Lenovo LOQ 15IAX9E 83LK0062ED Laptop Core i5-12450HX - 16GB DDR5 - 512GB SSD - RTX 2050 4GB - 15.6 FHD 100% sRGB 144Hz - 2Y Warranty - Mouse Gaming",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Supports up to 2x M.2 SSDs)'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-victu-gaming-laptop-intel-core-i5-13420h-ram-16gb-512-gb-nvidia-geforce-rtx-4050-6gb-15-6-inch-144hz",
+      "title": "HP Victus 15 15-fa2082wm Gaming Laptop – Intel Core i5-13420H 13th Gen, 16GB RAM, 512GB SSD, RTX 4050, 15.6″ FHD 144Hz IPS, Windows 11 Home – Mica Silver",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "power_battery.battery_capacity_wh",
+          "extracted": null,
+          "ground_truth": 70.0,
+          "type": "MISSED_POPULATION",
+          "source": "Table [Battery Type]: '3-cell / 4-cell Li-ion (≈ 52–70 Wh depending on model)'"
+        }
+      ]
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15-6-gaming-laptop-fhd-amd-ryzen-5-7235hs-with-12gb-memory-nvidia-geforce-rtx-3050-6gb-512gb-ssd-luna-grey",
+      "title": "Lenovo LOQ 15ARP9 Ryzen 5 7235HS, AI Chip: LA1, RTX 3050 6GB , 12GB DDR5 RAM, 512GB SSD, FHD (1920x1080) IPS 300nits 100% sRGB 144Hz G-SYNC, Win 11",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-travelmate-p2-tmp214-53g-79xg-i7-1165g7-8gb-1000gb-mx330-2gb-ded-14-fhd-dos-shale-black",
+      "title": "ACER TravelMate P2 TMP214-53G-79XG I7-1165G7 8GB 1000GB MX330 2GB 14″FHD DOS SHALE BLACK",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-ideapad-5-pro-16imh9-laptop-intel-core-ultra-5-125h-16gb-512gb-ssd-nvidia-geforce-rtx-3050-6gb-16-2k-oled-win11-arctic-grey",
+      "title": "LAPTOP LENOVO IDEAPAD PRO 5 161MH9 INTEL CORE ULTRA 5-125H RAM 16G SSD 512G RTX 3050 6G OLED 16.0 WIN 11 GREY  2WARRANTY",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-gaming-intel-core-i7-13650hx-16gb-ram-512gb-ssd-rtx-3050-6gb-15-6-fhd-144hz-eng-arb-dos-grey-83dv000eax",
+      "title": "Lenovo LOQ 15IRX9 Gaming (Intel Core i7-13650HX, 16GB RAM, 512GB SSD, RTX 3050 6GB,15.6\" FHD 144Hz ENG/ARB DOS, Grey | 83DV000EAX",
+      "mismatches_count": 0,
+      "mismatches": []
+    },
+    {
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv008qed-core-i7-13650hx-14-cores-rtx-3050-6gb-16gb-ddr5-4800-512gb-ssd-m-2-15-6-fhd-100-srgb-ips-144hz",
+      "title": "LENOVO LOQ 15IRX9 (83DV008QED)  CORE I7-13650HX 14 CORES – RTX 3050 6GB – 16GB DDR5 4800 – 512GB SSD M.2 – 15.6 FHD 100% SRGB IPS 144HZ",
+      "mismatches_count": 1,
+      "mismatches": [
+        {
+          "field": "storage.capacity_gb",
+          "extracted": 1024,
+          "ground_truth": 512,
+          "type": "CORRUPTION",
+          "source": "Table [Storage]: '512GB SSD M.2 2242 PCIe® 4.0x4 NVMe®'"
+        }
+      ]
+    }
+  ]
+}

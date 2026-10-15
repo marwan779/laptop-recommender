@@ -2,8 +2,15 @@ import html
 import itertools
 import json
 import re
+import sys
 import time
 from urllib.parse import quote_plus, urljoin
+
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests

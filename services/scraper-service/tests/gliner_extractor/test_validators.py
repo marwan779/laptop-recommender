@@ -14,6 +14,7 @@ from gliner_extractor.validators import (
     validate_bluetooth,
     validate_brand,
     validate_color,
+    validate_cpu_cache,
     validate_cpu_cores_threads,
     validate_display_size,
     validate_ethernet,
@@ -288,3 +289,40 @@ def test_validate_structured_violations():
     assert len(violations) == 1
     assert violations[0].field == "memory.speed"
     assert violations[0].rule == "ram_speed_not_in_whitelist"
+
+
+def test_validate_cpu_cache():
+    # Valid formats
+    assert validate_cpu_cache("24MB")[0] == 24
+    assert validate_cpu_cache("24 MB")[0] == 24
+    assert validate_cpu_cache("36MB Intel Smart Cache")[0] == 36
+    assert validate_cpu_cache("24M Cache")[0] == 24
+    assert validate_cpu_cache("80MB Cache")[0] == 80
+    assert validate_cpu_cache(12)[0] == 12
+    assert validate_cpu_cache("12")[0] == 12
+
+    # Placeholders
+    assert validate_cpu_cache(None) == (None, None)
+    assert validate_cpu_cache("N/A") == (None, None)
+
+    # Contaminations & bounds
+    assert validate_cpu_cache("16GB RAM")[1] == "cache_in_gb_rejected"
+    assert validate_cpu_cache("256MB")[1] == "cache_out_of_bounds_256mb"
+    assert validate_cpu_cache("0MB")[1] == "cache_out_of_bounds_0mb"
+
+
+def test_validate_webcam_5m_suffix():
+    assert validate_webcam("5.0M Camera, with privacy shutter")[0] == "5.0M Camera, with privacy shutter"
+    assert validate_webcam("FHD 1080p")[0] == "FHD 1080p"
+    assert validate_webcam("720p HD")[0] == "720p HD"
+
+
+def test_validate_microphone_descriptors():
+    assert validate_microphone("2x, Array")[0] == "2x, Array"
+    assert validate_microphone("Dual Array")[0] == "Dual Array"
+    assert validate_microphone("Integrated dual array digital microphone")[0] == "Integrated dual array digital microphone"
+    # Reject pure speaker noise
+    assert validate_microphone("Dual stereo speakers")[1] == "mic_speaker_noise"
+
+
+

@@ -30,6 +30,8 @@ from typing import Any
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+
 # Ensure project root is in sys.path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
@@ -259,16 +261,30 @@ def main():
                     line_s = line.strip()
                     if line_s:
                         record = json.loads(line_s)
+                        rec_status = record.get("structured", {}).get("extraction_meta", {}).get("status")
+                        if rec_status == "failed":
+                            # Skip failed records so they are re-processed
+                            continue
                         results.append(record)
                         if record.get("product_url"):
                             processed_urls.add(record["product_url"])
-            print(f"[OK] Loaded {len(results)} previously processed records from checkpoint.")
+            # Rewrite checkpoint to exclude failed records
+            with open(checkpoint_path, "w", encoding="utf-8") as f:
+                for r in results:
+                    f.write(json.dumps(r, ensure_ascii=False) + "\n")
+            print(f"[OK] Loaded {len(results)} valid previously processed records from checkpoint (failed records queued for retry).")
         except Exception as e:
             logger.warning("Error reading checkpoint file: %s", e)
 
     # 4. Initialize Hybrid Extractor
     print("[*] Initializing Hybrid Laptop Extractor (CompumartsExtractor + GLiNER)...")
     extractor = HybridLaptopExtractor(model_name=args.model)
+    print("[*] Warming up GLiNER model...")
+    try:
+        extractor.gliner.extract_entities("Warmup CPU Intel Core i7 16GB RAM", ["processor model", "ram capacity"], threshold=0.35)
+        print("[OK] GLiNER warmed up successfully.")
+    except Exception as w_exc:
+        logger.warning("GLiNER warmup warning: %s", w_exc)
 
     # 5. Extraction Loop
     latencies: list[float] = []
@@ -276,118 +292,131 @@ def main():
     total_gliner_calls = 0
     status_counts = {"ok": 0, "partial": 0, "failed": 0}
 
+    # Count statuses from previously loaded results
+    for r in results:
+        r_st = r.get("structured", {}).get("extraction_meta", {}).get("status", "ok")
+        status_counts[r_st] = status_counts.get(r_st, 0) + 1
+
     print(f"\n[*] Processing laptops through 2-Tier Pipeline...")
     t_start = time.perf_counter()
 
-    # Open checkpoint in append mode
-    with open(checkpoint_path, "a", encoding="utf-8") as checkpoint_f:
-        for idx, laptop in enumerate(valid_laptops):
-            url = laptop.get("product_url", "")
-            title = laptop.get("title", "")
-            specs = laptop.get("specs", {})
+    def flush_and_save_final() -> tuple[float, float]:
+        t_dur = time.perf_counter() - t_start
+        avg_lat = sum(latencies) / len(latencies) if latencies else 0.0
 
-            if url in processed_urls:
-                continue
+        # Atomic File Replace on Write for hybrid_results.json
+        temp_output_path = f"{output_path}.tmp"
+        with open(temp_output_path, "w", encoding="utf-8") as out_f:
+            json.dump(results, out_f, indent=2, ensure_ascii=False)
+        os.replace(temp_output_path, output_path)
 
-            try:
-                structured, meta = extractor.extract(
-                    title=title,
-                    specs=specs,
-                    metadata=laptop.get("metadata", laptop),
-                    store="compumarts",
-                )
-            except Exception as exc:
-                logger.exception("Catastrophic error in laptop extraction for %s: %s", url, exc)
-                from gliner_extractor.schema import empty_structured
-                structured = empty_structured()
-                structured["extraction_meta"]["status"] = "failed"
-                structured["extraction_meta"]["warnings"].append(f"fatal_loop_error: {str(exc)}")
-                meta = {
-                    "total_time_ms": 0.0,
-                    "layer1_time_ms": 0.0,
-                    "gliner_time_ms": 0.0,
-                    "gliner_calls_count": 0,
-                    "envelopes_count": 0,
+        # Write run_summary.json
+        run_summary = {
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "total_catalog_discovered": len(laptops),
+            "valid_laptops_count": len(valid_laptops),
+            "skipped_items_count": len(skipped_items),
+            "processed_results_count": len(results),
+            "status_breakdown": status_counts,
+            "runtime_seconds": round(t_dur, 2),
+            "average_latency_ms": round(avg_lat, 2),
+            "min_latency_ms": round(min(latencies), 2) if latencies else 0.0,
+            "max_latency_ms": round(max(latencies), 2) if latencies else 0.0,
+            "total_envelopes_created": total_envelopes,
+            "total_gliner_calls": total_gliner_calls,
+            "gliner_tokens": {
+                "max_tokens_seen": extractor.gliner.max_tokens_seen,
+                "truncations_prevented": extractor.gliner.truncations_prevented,
+            },
+            "skipped_items": skipped_items,
+        }
+        with open(summary_path, "w", encoding="utf-8") as sum_f:
+            json.dump(run_summary, sum_f, indent=2, ensure_ascii=False)
+
+        return t_dur, avg_lat
+
+    try:
+        # Open checkpoint in append mode
+        with open(checkpoint_path, "a", encoding="utf-8") as checkpoint_f:
+            for idx, laptop in enumerate(valid_laptops):
+                url = laptop.get("product_url", "")
+                title = laptop.get("title", "")
+                specs = laptop.get("specs", {})
+
+                if url in processed_urls:
+                    continue
+
+                try:
+                    structured, meta = extractor.extract(
+                        title=title,
+                        specs=specs,
+                        metadata=laptop.get("metadata", laptop),
+                        store="compumarts",
+                    )
+                except Exception as exc:
+                    logger.exception("Catastrophic error in laptop extraction for %s: %s", url, exc)
+                    from gliner_extractor.schema import empty_structured
+                    structured = empty_structured()
+                    structured["extraction_meta"]["status"] = "failed"
+                    structured["extraction_meta"]["warnings"].append(f"fatal_loop_error: {str(exc)}")
+                    meta = {
+                        "total_time_ms": 0.0,
+                        "layer1_time_ms": 0.0,
+                        "gliner_time_ms": 0.0,
+                        "gliner_calls_count": 0,
+                        "envelopes_count": 0,
+                    }
+
+                dur_ms = meta["total_time_ms"]
+                latencies.append(dur_ms)
+                total_envelopes += meta.get("envelopes_count", 0)
+                total_gliner_calls += meta.get("gliner_calls_count", 0)
+                rec_status = structured.get("extraction_meta", {}).get("status", "ok")
+                status_counts[rec_status] = status_counts.get(rec_status, 0) + 1
+
+                record = {
+                    "index": len(results),
+                    "title": title,
+                    "product_url": url,
+                    "latency_ms": round(dur_ms, 2),
+                    "structured": structured,
                 }
+                results.append(record)
+                processed_urls.add(url)
 
-            dur_ms = meta["total_time_ms"]
-            latencies.append(dur_ms)
-            total_envelopes += meta.get("envelopes_count", 0)
-            total_gliner_calls += meta.get("gliner_calls_count", 0)
-            rec_status = structured.get("extraction_meta", {}).get("status", "ok")
-            status_counts[rec_status] = status_counts.get(rec_status, 0) + 1
+                # Stream immediately to checkpoint
+                checkpoint_f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                checkpoint_f.flush()
 
-            record = {
-                "index": len(results),
-                "title": title,
-                "product_url": url,
-                "latency_ms": round(dur_ms, 2),
-                "structured": structured,
-            }
-            results.append(record)
-            processed_urls.add(url)
+                # Compact progress log
+                brand = structured["identity"].get("brand") or "N/A"
+                cpu_name = (
+                    structured["cpu"].get("full_name")
+                    or f"{structured['cpu'].get('line') or ''} {structured['cpu'].get('model') or ''}".strip()
+                    or "N/A"
+                )
+                gpu_name = structured["gpu"].get("model") or "N/A"
+                ram_cap = structured["memory"].get("capacity_gb")
+                st_cap = structured["storage"].get("capacity_gb")
+                res_str = (
+                    structured["display"].get("resolution")
+                    or (f"{structured['display'].get('size_inches')}\"" if structured['display'].get('size_inches') else "N/A")
+                )
 
-            # Stream immediately to checkpoint
-            checkpoint_f.write(json.dumps(record, ensure_ascii=False) + "\n")
-            checkpoint_f.flush()
-
-            # Compact progress log
-            brand = structured["identity"].get("brand") or "N/A"
-            cpu_name = (
-                structured["cpu"].get("full_name")
-                or f"{structured['cpu'].get('line') or ''} {structured['cpu'].get('model') or ''}".strip()
-                or "N/A"
-            )
-            gpu_name = structured["gpu"].get("model") or "N/A"
-            ram_cap = structured["memory"].get("capacity_gb")
-            st_cap = structured["storage"].get("capacity_gb")
-            res_str = (
-                structured["display"].get("resolution")
-                or (f"{structured['display'].get('size_inches')}\"" if structured['display'].get('size_inches') else "N/A")
-            )
-
-            print(
-                f"  [{len(results):03d}/{len(valid_laptops):03d}] {dur_ms:6.1f}ms | "
-                f"Status: {rec_status.upper():<7} | "
-                f"Brand: {brand[:8]:<8} | "
-                f"CPU: {cpu_name[:24]:<24} | "
-                f"GPU: {gpu_name[:18]:<18} | "
-                f"RAM: {ram_cap}GB | "
-                f"SSD: {st_cap}GB | "
-                f"Disp: {res_str[:11]}"
-            )
-
-    total_time_s = time.perf_counter() - t_start
-    avg_latency = sum(latencies) / len(latencies) if latencies else 0
-
-    # 6. Atomic File Replace on Write for hybrid_results.json
-    temp_output_path = f"{output_path}.tmp"
-    with open(temp_output_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
-    os.replace(temp_output_path, output_path)
-
-    # 7. Write run_summary.json
-    run_summary = {
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "total_catalog_discovered": len(laptops),
-        "valid_laptops_count": len(valid_laptops),
-        "skipped_items_count": len(skipped_items),
-        "processed_results_count": len(results),
-        "status_breakdown": status_counts,
-        "runtime_seconds": round(total_time_s, 2),
-        "average_latency_ms": round(avg_latency, 2),
-        "min_latency_ms": round(min(latencies), 2) if latencies else 0.0,
-        "max_latency_ms": round(max(latencies), 2) if latencies else 0.0,
-        "total_envelopes_created": total_envelopes,
-        "total_gliner_calls": total_gliner_calls,
-        "gliner_tokens": {
-            "max_tokens_seen": extractor.gliner.max_tokens_seen,
-            "truncations_prevented": extractor.gliner.truncations_prevented,
-        },
-        "skipped_items": skipped_items,
-    }
-    with open(summary_path, "w", encoding="utf-8") as f:
-        json.dump(run_summary, f, indent=2, ensure_ascii=False)
+                print(
+                    f"  [{len(results):03d}/{len(valid_laptops):03d}] {dur_ms:6.1f}ms | "
+                    f"Status: {rec_status.upper():<7} | "
+                    f"Brand: {brand[:8]:<8} | "
+                    f"CPU: {cpu_name[:24]:<24} | "
+                    f"GPU: {gpu_name[:18]:<18} | "
+                    f"RAM: {ram_cap}GB | "
+                    f"SSD: {st_cap}GB | "
+                    f"Disp: {res_str[:11]}"
+                )
+    except KeyboardInterrupt:
+        print("\n[!] KeyboardInterrupt caught: flushing checkpoint and saving final results...")
+    finally:
+        total_time_s, avg_latency = flush_and_save_final()
 
     print("\n" + "=" * 80)
     print("🎯 FULL PIPELINE EXECUTION SUMMARY:")

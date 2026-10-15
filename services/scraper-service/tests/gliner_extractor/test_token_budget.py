@@ -96,3 +96,4 @@ def test_gliner_wrapper_spec_blocks_token_chunking():
 
     # Should have split into multiple chunks
     assert mock_model.predict_entities.call_count > 1
+

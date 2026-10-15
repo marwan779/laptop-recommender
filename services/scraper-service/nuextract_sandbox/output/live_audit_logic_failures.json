@@ -1,0 +1,803 @@
+{
+  "total_laptops_audited": 113,
+  "laptops_with_failures_count": 45,
+  "total_field_failures": 80,
+  "elapsed_seconds": 52.75,
+  "failures_by_laptop": [
+    {
+      "index": 8,
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv01hsed-i7-rtx-4050-laptop-egypt",
+      "title": "LENOVO LOQ 15IRX9 83DV01HSED Laptop Intel Core i7-13645HX RTX 4050 16GB DDR5 512GB NVMe",
+      "logic_failures": [
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: ports: 3x USB-A (USB 5Gbps / USB 3.2 Gen 1) 1x USB-C® (USB 10Gbps / USB 3.2 Gen 2), with USB PD 65-100W and DisplayPort™ 1.4 1x HDMI® 2.1, up to 8K/60Hz 1x Headphone / microphone combo jack (3.5mm) 1x Ethernet (RJ-45) 1x Slim tip Power connector",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 18,
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
+      "title": "HP OMEN 16-am0057ne D13PQEA Gaming Laptop Intel Core Ultra 7 255H RTX 5070 8GB 16GB DDR5 512GB SSD 16-inch 2K 165Hz FreeDOS",
+      "logic_failures": [
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Ports: 1 USB Type-A 10Gbps signaling rate; 2 USB Type-A 5Gbps signaling rate; 1 AC smart pin; 1 HDMI 2.1; 1 headphone/microphone combo; 1 RJ-45; 1 USB Type-C® 10Gbps signaling rate (USB Power Delivery 3.0, DisplayPort™ 1.4, HP Sleep and Charge) 14 15",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "url": "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt",
+      "title": "DELL Pro 15 Essential PV15250 Laptop, Intel Core i7-1355U, 8GB DDR5, 512GB NVMe SSD, 15.6\" FHD 120Hz, Carbon Black",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio: 2 Tuned Speakers",
+          "failure_type": "speaker_count_missed"
+        }
+      ]
+    },
+    {
+      "index": 25,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-15-x1504va-bq857w-core-7-150u-512gb-laptop-egypt",
+      "title": "ASUS Vivobook 15 X1504VA-BQ857W Laptop – Intel Core 7 150U, Intel Graphics, 8GB DDR5, 512GB PCIe 4.0 SSD, 15.6-Inch FHD IPS, Windows 11 Home",
+      "logic_failures": [
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Audio: SonicMaster Built-in speaker Built-in array microphone with Cortana voice-recognition support",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 31,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-zenbook-a14-ux3407qa-qd155w-laptop-snapdragon-x-16gb-512gb-egypt",
+      "title": "ASUS Zenbook A14 UX3407QA-QD155W Laptop 14-inch WUXGA OLED Snapdragon X X1 26 100 16GB LPDDR5X 512GB PCIe 4.0 SSD Windows 11 Home Iceland Gray",
+      "logic_failures": [
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Audio: Smart Amp Technology; Built-in speaker; Built-in array microphone",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 41,
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-7i-16iax10h-83f500fbin-core-ultra-9-275hx-rtx-5090-24gb-64gb-ddr5-6400-gaming-laptop",
+      "title": "Lenovo Legion Pro 7i 16IAX10H 83F500FBIN Gaming Laptop Intel Core Ultra 9 275HX 64GB DDR5-6400 1TB PCIe 4.0 NVMe SSD RTX 5090 24GB GDDR7 16 Inch WQXGA OLED 240Hz Windows 11 Home Eclipse Black",
+      "logic_failures": [
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Microphone: 2x, Array",
+          "failure_type": "microphone_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 5.0MP with E-shutter",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 42,
+      "url": "https://www.compumarts.com/collections/laptop/products/products-hp-probook-460-g11-core-ultra-7-155u-16gb-512gb-rtx-2050-business-laptop",
+      "title": "HP ProBook 460 G11 Business Laptop Intel Core Ultra 7 155U 16GB DDR5 RAM 512GB NVMe SSD NVIDIA GeForce RTX 2050 4GB 16-Inch FHD+ Windows 11 Pro Pike Silver Plastic",
+      "logic_failures": [
+        {
+          "field": "memory.memory_type",
+          "extracted": null,
+          "expected_source": "Live text: 'DDR5'",
+          "failure_type": "ram_type_missed"
+        }
+      ]
+    },
+    {
+      "index": 43,
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
+      "title": "GIGABYTE AERO X16 EG61H Gaming Laptop 16-inch QHD 165Hz AMD Ryzen AI 7 350 16GB RAM 1TB SSD GeForce RTX 5050 8GB Windows 11 Home",
+      "logic_failures": [
+        {
+          "field": "identity.manufacturer_part_number",
+          "extracted": null,
+          "expected_source": "Table: Part Number - Space Gray: 1TH93EEC94AH",
+          "failure_type": "table_mpn_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Audio: 2× 2W speakers, microphone, Dolby Atmos®",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 45,
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-a16-i7-rtx5050-16gb-1tb-gaming-laptop",
+      "title": "Gigabyte A16 CTH Gaming Laptop i7-13620H RTX 5050 8GB 16GB RAM 1TB SSD 16\" 165Hz WUXGA IPS DOS",
+      "logic_failures": [
+        {
+          "field": "identity.laptop_model",
+          "extracted": null,
+          "expected_source": "Table explicitly states: Model Number: Gigabyte A16 CTH",
+          "failure_type": "table_model_missed"
+        }
+      ]
+    },
+    {
+      "index": 49,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-m3407ka-sf155w-ryzen-ai-5-egypt",
+      "title": "ASUS Vivobook S14 M3407KA-SF155W Ryzen AI 5 330 16GB RAM 512GB SSD Radeon Graphics 14\" OLED Windows 11 Copilot Key",
+      "logic_failures": [
+        {
+          "field": "display.refresh_rate_hz",
+          "extracted": null,
+          "expected_source": "Live text: '60Hz'",
+          "failure_type": "refresh_rate_missed"
+        }
+      ]
+    },
+    {
+      "index": 50,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx608jmr-i7-rtx-5060-16gb-512gb-165hz-egypt",
+      "title": "ASUS TUF Gaming F16 FX608JMR-RV057W Laptop Intel Core i7-14650HX NVIDIA GeForce RTX 5060 16GB DDR5 512GB SSD 165Hz 16 Inch WUXGA Windows 11 Home",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Speakers: Dual speakers",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Microphone: Built-in array microphone",
+          "failure_type": "microphone_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 1080P FHD IR (Windows Hello)",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 52,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-fx607vu-rl121-i7-rtx4050-16gb-1tb",
+      "title": "ASUS TUF Gaming F16 FX607VU-RL121 Laptop Intel Core i7-13620H RTX 4050 6GB 16GB DDR5 1TB SSD 16-inch FHD+ 144Hz Gaming Laptop Mecha Gray",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Camera & Audio: 720P HD Camera | 2-speaker system | Dolby Atmos | AI noise-canceling",
+          "failure_type": "speaker_count_missed"
+        }
+      ]
+    },
+    {
+      "index": 54,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-zephyrus-duo-16-rtx5090-oled-egypt",
+      "title": "ASUS ROG Zephyrus Duo 16 (2026) GX651AX-SR264W 3K OLED 120Hz – Core Ultra 9 386H – RTX 5090 24GB – 64GB RAM – 2TB SSD",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Speakers: 4-Speaker System (Dual-force Woofer + 2 Tweeters)",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Microphone: Built-in Dual Array Microphone",
+          "failure_type": "microphone_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 1080P FHD IR Camera (Supports Windows Hello)",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 55,
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-core7-rtx5050-gaming-laptop",
+      "title": "MSI Cyborg 15 B2RWEKG-895EG Gaming Laptop 15.6\" FHD IPS 144Hz Intel Core 7 240H RTX 5050 8GB GDDR7 16GB DDR5 (8GB×2) 512GB SSD Windows 11 Home 64-bit Arabic – 9S7-15Q342-895",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio & Camera: 2 × 2W Speakers | 720p HD Camera",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Audio & Camera: 2 × 2W Speakers | 720p HD Camera",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 56,
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ai-rtx5070-ultra9-275hx-16gb-1tb-egypt",
+      "title": "Acer Predator Helios Neo 16 AI Gaming Laptop – Ultra 9 275HX, RTX 5070 8GB, 16GB RAM, 1TB SSD, 16\" QHD 240Hz",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Built-in Devices: Microphone, 2 Speakers, No Fingerprint Reader",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Built-in Devices: Microphone, 2 Speakers, No Fingerprint Reader",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 57,
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-lite-16-nl16-71g-53a0-rtx-4050-16gb",
+      "title": "Acer Nitro Lite 16 Gaming Laptop NL16-71G-53A0 (NH.DAGEM.004) | Intel Core i5-13420H | NVIDIA RTX 4050 6GB | 16\" WUXGA 180HZ | 16GB DDR5 | 512GB Gen4 SSD | Win 11 - Black",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Number of Speakers: 2",
+          "failure_type": "speaker_count_missed"
+        }
+      ]
+    },
+    {
+      "index": 59,
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-i9-rtx5060-gaming-laptop",
+      "title": "Acer Nitro V ANV15-52-9703  Gaming Laptop | 15.6\" 165Hz | Intel Core i9-13900H | 16GB RAM | 512GB SSD | 8GB RTX 5060 GDDR7 | Backlit KB | Win11",
+      "logic_failures": [
+        {
+          "field": "memory.memory_type",
+          "extracted": null,
+          "expected_source": "Live text: 'DDR4'",
+          "failure_type": "ram_type_missed"
+        },
+        {
+          "field": "storage.interface",
+          "extracted": null,
+          "expected_source": "Live text: 'NVMe'",
+          "failure_type": "storage_interface_missed"
+        },
+        {
+          "field": "display.resolution",
+          "extracted": null,
+          "expected_source": "Live text: '1920 x 1080'",
+          "failure_type": "display_resolution_missed"
+        },
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Built-in Devices: Microphone, 2 Speakers",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Built-in Devices: Microphone, 2 Speakers",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 60,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-zenbook-duo-ux8407aa-copilot-plus-32gb-1tb-3k-oled",
+      "title": "ASUS Zenbook DUO UX8407AA Copilot+ PC Laptop Intel Core Ultra X9 378H 32GB RAM 1TB SSD 14 Inch 3K OLED 144Hz Touch Windows 11 Home",
+      "logic_failures": [
+        {
+          "field": "cpu.threads",
+          "extracted": null,
+          "expected_source": "Table: Processor: Intel® Core™ Ultra X9 Processor 378H 2.1 GHz (18MB Cache, up to 5.0 GHz, 16 cores, 16 Threads); Intel® NPU up to 50TOPS",
+          "failure_type": "cpu_threads_missed"
+        },
+        {
+          "field": "cpu.cache_mb",
+          "extracted": null,
+          "expected_source": "Live text states: '18MB Cache'",
+          "failure_type": "cpu_cache_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Audio: Smart Amp Technology, Built-in speaker, Built-in array microphone, with Cortana support",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 61,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-proart-px13-hn7306eac-ryzen-ai-128gb-3k-oled-egypt",
+      "title": "ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W 2-in-1 Creator Laptop – Ryzen AI MAX+ 395, Radeon 8060S, 128GB LPDDR5X, 1TB SSD, 13.3″ 3K OLED Touch, Windows 11",
+      "logic_failures": [
+        {
+          "field": "cpu.cache_mb",
+          "extracted": null,
+          "expected_source": "Live text states: '80MB Cache'",
+          "failure_type": "cpu_cache_missed"
+        }
+      ]
+    },
+    {
+      "index": 66,
+      "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-16-am0001nia-ultra-7-255h-rtx-5070-egypt",
+      "title": "HP OMEN 16-am0001nia Gaming Laptop – Intel Core Ultra 7 255H – 16GB DDR5 – 512GB SSD – RTX 5070 8GB – 16\" FHD – DOS",
+      "logic_failures": [
+        {
+          "field": "memory.speed",
+          "extracted": null,
+          "expected_source": "Live text: '5600MHz'",
+          "failure_type": "ram_speed_missed"
+        },
+        {
+          "field": "storage.interface",
+          "extracted": null,
+          "expected_source": "Live text: 'PCIe'",
+          "failure_type": "storage_interface_missed"
+        },
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio: Dual Speakers with DTS:X® Ultra",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Webcam: 1080p True Vision FHD with Privacy Shutter",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 67,
+      "url": "https://www.compumarts.com/collections/laptop/products/dell-alienware-ac1620-core-9-270h-rtx-5070-32gb-dos-egypt",
+      "title": "Dell Alienware AC1620 Gaming Laptop – Intel Core 9-270H – 32GB DDR5 – 1TB SSD – RTX 5070 8GB – 16\" WQXGA 120Hz – DOS",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio: Stereo Gaming Speakers",
+          "failure_type": "speaker_count_missed"
+        }
+      ]
+    },
+    {
+      "index": 68,
+      "url": "https://www.compumarts.com/collections/laptop/products/dell-alienware-ac1620-core-9-270h-rtx-5060-dos-egypt",
+      "title": "DELL Alienware AC1620 Gaming Laptop with Intel Core 9-270H Processor, 16GB DDR5 RAM, 1TB NVMe SSD, NVIDIA GeForce RTX 5060 8GB GDDR7, 16-Inch WQXGA 120Hz Display, DOS",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio: Integrated Stereo Speakers",
+          "failure_type": "speaker_count_missed"
+        }
+      ]
+    },
+    {
+      "index": 72,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-proart-p16-h7606ww-se926w-ryzen-ai-9-rtx-5080-16gb-egypt",
+      "title": "ASUS ProArt P16 H7606WW-SE926W – Ryzen AI 9 HX 370 RTX 5080 16GB 64GB 2TB SSD 16\" 4K OLED 120Hz Win 11 Home",
+      "logic_failures": [
+        {
+          "field": "memory.memory_type",
+          "extracted": null,
+          "expected_source": "Live text: 'LPDDR5X'",
+          "failure_type": "ram_type_missed"
+        },
+        {
+          "field": "storage.interface",
+          "extracted": null,
+          "expected_source": "Live text: 'NVMe'",
+          "failure_type": "storage_interface_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Audio: Smart Amp Technology with Built-in speakers/microphone",
+          "failure_type": "microphone_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Front-facing camera: FHD camera with IR function for Windows Hello",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 73,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-i7-rtx-5070",
+      "title": "ASUS TUF Gaming (TUF608JPR-RV027W) F16 – i7-14650HX, RTX 5070, 16GB DDR5, 1TB SSD, 165Hz 16”, Win11 – Jaeger Gray- 007 First Light GeForce RTX 50 Series Bundle",
+      "logic_failures": [
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 1080P FHD IR Camera for Windows Hello",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 74,
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-51-767g-nh-qncem-00m-core-i7-13620h-10-cores-16gb-ddr5-rtx-3050-6gb-512-gb-ssd-15-6-fhd-ips-165hz-windows-11",
+      "title": "Acer Nitro V 15 ANV15-51-767G Core i7-13620H 10 Cores - 16GB DDR5 - RTX 3050 6GB - 512 GB SSD - 15.6 FHD IPS 165HZ - Windows 11",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio: Stereo Speakers",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Ports: USB Type-C, USB 3.2, HDMI, RJ-45 Ethernet, Headphone/Microphone Combo Jack",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 75,
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-rtx-5060-16-qhd165hz-egypt",
+      "title": "GIGABYTE AERO X16 Lunar White Ryzen AI 7 350  RTX 5060 8G 16″ QHD+ 165HZ 1TB SSD 16GB DDR5 Windows 11",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio: Dual speakers, DTS:X Ultra",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: Full HD webcam with Windows Hello",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 76,
+      "url": "https://www.compumarts.com/collections/laptop/products/alienware-16-aurora-rtx5060-gaming-laptop",
+      "title": "DELL Alienware 16 Aurora Gaming Laptop – Core 7 240H, RTX 5060, 32GB RAM, 1TB SSD, 16” 120Hz– 3 Years Warranty",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio: Stereo speakers — 4W total (2W × 2) — Realtek AL3204",
+          "failure_type": "speaker_count_missed"
+        }
+      ]
+    },
+    {
+      "index": 78,
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-a16-cwh-i7-13620h-rtx-5070-32gb-1tb-165hz",
+      "title": "GIGABYTE Gaming A16 CWH Laptop – i7-13620H | RTX 5070 8GB | 32GB RAM | 1TB SSD | 165Hz | Black",
+      "logic_failures": [
+        {
+          "field": "identity.laptop_model",
+          "extracted": null,
+          "expected_source": "Table explicitly states: Model Number: Gigabyte A16 CWH",
+          "failure_type": "table_model_missed"
+        }
+      ]
+    },
+    {
+      "index": 79,
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-i7-14700hx-rtx4060-16gb-512ssd",
+      "title": "Lenovo LOQ 15IRX9 Intel Core i7-14700HX 16GB 512GB RTX 4060 15.6\" FHD 144Hz Gaming Laptop",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio: Stereo Speakers (2W x2), Optimized with Nahimic Audio",
+          "failure_type": "speaker_count_missed"
+        }
+      ]
+    },
+    {
+      "index": 81,
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16irx10-i9-14900hx-rtx5070",
+      "title": "Lenovo Legion Pro 5 83NN001XAX Intel Core i9-14900HX RTX 5070 32GB RAM 1TB SSD 16\" 240Hz Gaming Laptop",
+      "logic_failures": [
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Microphone: 2x, Array",
+          "failure_type": "microphone_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 5.0MP with E-shutter",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 83,
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aorus-master-18-byh-gaming-laptop-egypt",
+      "title": "Gigabyte AORUS MASTER 18 BYH Gaming Laptop – 18\" WQXGA Mini-LED 240Hz, Intel Core Ultra 9 275HX, 32GB DDR5 RAM, 2TB SSD, RTX 5080 16GB, Windows 11",
+      "logic_failures": [
+        {
+          "field": "identity.laptop_model",
+          "extracted": null,
+          "expected_source": "Title code: 'Mini-LED'",
+          "failure_type": "title_model_missed"
+        },
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio: DTS:X Ultra with dual 2W speakers",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Webcam: Full HD IR Camera with Windows Hello support",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 85,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-ultra9-rtx5080-gaming-laptop",
+      "title": "ASUS ROG Strix G16 G615LW-G321W Gaming Laptop – Intel Core Ultra 9 275HX, RTX 5080 16GB, 32GB DDR5, 1TB SSD, 16” FHD+ 165Hz, Windows 11 Hom",
+      "logic_failures": [
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 1080P FHD IR Camera for Windows Hello",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 87,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-v16-v3607vh-eg005w-intel-core-5-rtx-5050",
+      "title": "ASUS V16 V3607VH-EG005W – Intel Core 5 210H RTX 5050 8GB 16GB DDR5 1TB SSD 16” WUXGA 144Hz Windows 11",
+      "logic_failures": [
+        {
+          "field": "cpu.cores",
+          "extracted": null,
+          "expected_source": "Table: Processor: Intel® Core™ 5 210H (8 Cores / 12 Threads, up to 4.8 GHz)",
+          "failure_type": "cpu_cores_missed"
+        },
+        {
+          "field": "cpu.threads",
+          "extracted": null,
+          "expected_source": "Table: Processor: Intel® Core™ 5 210H (8 Cores / 12 Threads, up to 4.8 GHz)",
+          "failure_type": "cpu_threads_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 1080p FHD with Privacy Shutter",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 90,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s16-s3607ca-ultra7-16gb-1tb-oled-egypt",
+      "title": "ASUS Vivobook S16 S3607CA-SH070W – Intel Core Ultra 7 255H – 16GB RAM – 1TB SSD Intel Arc Graphics –16 OLED – Windows 11 – Silve",
+      "logic_failures": [
+        {
+          "field": "display.refresh_rate_hz",
+          "extracted": null,
+          "expected_source": "Live text: '60Hz'",
+          "failure_type": "refresh_rate_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Audio: Built-in speaker & Array Microphone (AI Noise Canceling)",
+          "failure_type": "microphone_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: FHD camera with IR (Windows Hello) & Privacy Shutter",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 91,
+      "url": "https://www.compumarts.com/collections/laptop/products/products-msi-vector-17-hx-ai-a2xwjg-rtx-5090-24gb",
+      "title": "MSI Vector 17 HX AI A2XWJG Intel Core Ultra 9 275HX RTX 5090 32GB RAM 1TB SSD 17\" QHD+ 240Hz Gaming Laptop",
+      "logic_failures": [
+        {
+          "field": "memory.speed",
+          "extracted": null,
+          "expected_source": "Live text: '6400MHz'",
+          "failure_type": "ram_speed_missed"
+        }
+      ]
+    },
+    {
+      "index": 92,
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16irx10-i7-14650hx-rtx-5050-16gb-512gb",
+      "title": "Lenovo Legion Pro 5 16IRX10 83NN001SED – Core i7-14650HX – RTX 5050 8GB GDDR7 16 WQXGA 240Hz 16GB DDR5 512GB SSD Eclipse Black – Windows 11",
+      "logic_failures": [
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 5.0MP with E-shutter",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 93,
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-victor-16-hx-ai-a2xwhg-gaming-laptop-core-ultra-7-rtx-5070",
+      "title": "MSI Vector 16 HX AI (A2XWHG) 16 QHD+ 240 Hz  Core Ultra 7 255HX / RTX 5070 Ti 12GB  16 GB DDR5-5600 1TB SSD  Cosmos Gray",
+      "logic_failures": [
+        {
+          "field": "identity.manufacturer_part_number",
+          "extracted": null,
+          "expected_source": "Table: Part Number: 9S7-15M352-676",
+          "failure_type": "table_mpn_missed"
+        }
+      ]
+    },
+    {
+      "index": 95,
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-a14-ryzen-ai-rtx5060-2-5k-165hz-laptop-egypt",
+      "title": "ASUS TUF Gaming A14 FA401KM-RG014W Ryzen AI 7 350  RTX 5060 16GB RAM 1TB SSD 14″ 2.5K 165Hz",
+      "logic_failures": [
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 1080P FHD IR Camera with Windows Hello support",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 96,
+      "url": "https://www.compumarts.com/collections/laptop/products/products-asus-tuf-a16-fa608pm-ryzen9-rtx5060",
+      "title": "ASUS TUF Gaming A16 FA608PM-RV169W  Ryzen 9 8940HX - RTX 5060 - 16GB DDR5 - 1TB SSD - 16\" WUXGA 165Hz - Win11",
+      "logic_failures": [
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 1080P FHD IR Camera with Windows Hello",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 97,
+      "url": "https://www.compumarts.com/collections/laptop/products/laptops-gaming-gigabyte-a16-cvh-egypt",
+      "title": "GIGABYTE Gaming A16 Laptop  Intel i7-13620H RTX 5060 8GB 16GB RAM 1TB SSD 16\" 165Hz SRGB 100% WIN 11",
+      "logic_failures": [
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Audio: 2x 2W speakers, Dolby Atmos, Build-in array Microphone",
+          "failure_type": "microphone_missed"
+        }
+      ]
+    },
+    {
+      "index": 99,
+      "url": "https://www.compumarts.com/collections/laptop/products/rog-strix-g16-2025-r9-9955hx-rtx5060-16gb-1tb",
+      "title": "ASUS ROG Strix G16 G614FM-RV169W (2025)  R9 9955HX 16GB DDR5 1TB SSD  RTX 5060 8GB 16” FHD 165Hz  Win 11 Eclipse Gray",
+      "logic_failures": [
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 1080P FHD camera",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 102,
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv00urps-gaming-laptop-intel-core-i7-14700hx-2x-8gb-ram-512gb-ssd-nvidia-geforce-rtx-4060-8gb-15-6-fhd-ips-144hz",
+      "title": "LENOVO LOQ 15IRX9 83DV00URPS GAMING LAPTOP INTEL CORE I7-14700HX 16GB RAM 512GB SSD NVIDIA GeForce RTX 4060 8GB 15.6\" FHD IPS 144HZ SRGB 100% Dos",
+      "logic_failures": [
+        {
+          "field": "memory.memory_type",
+          "extracted": null,
+          "expected_source": "Live text: 'DDR5'",
+          "failure_type": "ram_type_missed"
+        },
+        {
+          "field": "storage.interface",
+          "extracted": null,
+          "expected_source": "Live text: 'PCIe '",
+          "failure_type": "storage_interface_missed"
+        },
+        {
+          "field": "audio.microphone",
+          "extracted": null,
+          "expected_source": "Table: Microphone: 2x, Array",
+          "failure_type": "microphone_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: FHD 1080p with E-shutter",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 103,
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i7-13650hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-4050-6gb-15-6-fhd-ips",
+      "title": "LENOVO LOQ 15IRX9 83DV0129ED Intel Core i7-13650HX 14 Cores - 24GB RAM DDR5 - 512GB SSD - RTX 4050 6GB - 15.6 FHD IPS 300nits 100% sRGB 144HZ - DOS - 2Y Warranty",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio & Camera: FHD 1080p with E-shutter, Stereo speakers with Nahimic Audio",
+          "failure_type": "speaker_count_missed"
+        }
+      ]
+    },
+    {
+      "index": 105,
+      "url": "https://www.compumarts.com/collections/laptop/products/rog-strix-scar-18-2025-gaming-laptop-g835lw-ai642w-intel-core-ultra-9-processor-275hx-nvidia-geforce-rtx-5080-16gb-32gb-ddr5-ssd-2tb-18-inch-wqxga",
+      "title": "ROG Strix SCAR 18 (2025) GAMING LAPTOP G835LW-AI642W Intel Core Ultra 9 Processor 275HX NVIDIA GeForce RTX 5080 16GB 64GB DDR5 SSD 2TB 18-inch",
+      "logic_failures": [
+        {
+          "field": "display.resolution",
+          "extracted": null,
+          "expected_source": "Live text: '2.5K'",
+          "failure_type": "display_resolution_missed"
+        },
+        {
+          "field": "display.refresh_rate_hz",
+          "extracted": null,
+          "expected_source": "Live text: '240Hz'",
+          "failure_type": "refresh_rate_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Camera: 1080P FHD IR Camera for Windows Hello",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    },
+    {
+      "index": 111,
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-ideapad-5-pro-16imh9-laptop-intel-core-ultra-5-125h-16gb-512gb-ssd-nvidia-geforce-rtx-3050-6gb-16-2k-oled-win11-arctic-grey",
+      "title": "LAPTOP LENOVO IDEAPAD PRO 5 161MH9 INTEL CORE ULTRA 5-125H RAM 16G SSD 512G RTX 3050 6G OLED 16.0 WIN 11 GREY  2WARRANTY",
+      "logic_failures": [
+        {
+          "field": "audio.speaker_count",
+          "extracted": null,
+          "expected_source": "Table: Audio & Camera: Dolby Atmos Speakers (2W x2) | FHD 1080p + IR Camera with Privacy Shutter",
+          "failure_type": "speaker_count_missed"
+        },
+        {
+          "field": "webcam.resolution",
+          "extracted": null,
+          "expected_source": "Table: Audio & Camera: Dolby Atmos Speakers (2W x2) | FHD 1080p + IR Camera with Privacy Shutter",
+          "failure_type": "webcam_resolution_missed"
+        }
+      ]
+    }
+  ]
+}

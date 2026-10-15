@@ -7,9 +7,11 @@ Every validator function has the signature:
 
 from __future__ import annotations
 
+import json
 import math
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 # =============================================================================
@@ -181,11 +183,27 @@ def validate_brand(value: Any, context: dict | None = None) -> tuple[str | None,
     return val.capitalize(), None
 
 
-def validate_mpn(value: Any, context: dict | None = None) -> tuple[str | None, str | None]:
+def validate_mpn(
+    value: Any,
+    context: dict | None = None,
+    title: str | None = None,
+    brand: str | None = None,
+) -> tuple[str | None, str | None]:
     """Validate manufacturer part number / SKU."""
     if is_placeholder(value):
         return None, "mpn_placeholder"
     val = clean_text(value).strip()
+
+    # Rule: Barcode rejection (12-13 digit all-numeric barcodes e.g. EAN/UPC)
+    if val.isdigit() and len(val) in (12, 13, 14):
+        return None, "mpn_barcode_not_allowed"
+
+    # Rule: URL slug rejection (e.g. acer-nitro-v-15-rtx-5050-egypt)
+    slug_parts = val.split("-")
+    if len(slug_parts) >= 4 and all((p.islower() or p.isdigit()) for p in slug_parts):
+        return None, "mpn_url_slug_rejected"
+    if re.search(r"-(?:egypt|laptop|gaming|intel|rtx|geforce|black|gray|silver)\b", val.lower()):
+        return None, "mpn_url_slug_rejected"
 
     # Rule: 5-30 chars
     if len(val) < 5 or len(val) > 30:
@@ -217,7 +235,68 @@ def validate_mpn(value: Any, context: dict | None = None) -> tuple[str | None, s
     if re.search(r"\b(?:Core\s+i\d|Ryzen\s+\d|RTX\s*\d{4}|GTX\s*\d{4})\b", val, re.I):
         return None, "mpn_cpu_gpu_name"
 
+    # Rule: Brand consistency check
+    resolved_brand = brand or (context.get("brand") if context else None)
+    if not resolved_brand and title:
+        t_low = title.lower()
+        for b_cand, b_canon in CANONICAL_BRANDS.items():
+            if re.search(rf"\b{b_cand}\b", t_low):
+                resolved_brand = b_canon
+                break
+
+    if resolved_brand:
+        b_upper = resolved_brand.upper()
+        # Acer part numbers (NH.xxxxx.xxx, NX.xxxxx.xxx, ANVxx-xx-xxxx)
+        if (re.match(r"^N[HX]\.[A-Z0-9]{5}\.[A-Z0-9]{3}$", val, re.I) or re.match(r"^AN[A-Z0-9\-]+$", val, re.I)) and b_upper != "ACER":
+            return None, "mpn_brand_mismatch"
+        # Lenovo part numbers (80-84 or 20-21 + 8 alphanumeric)
+        if re.match(r"^(?:8[0-4]|2[01])[A-Z0-9]{8}$", val, re.I) and b_upper != "LENOVO":
+            return None, "mpn_brand_mismatch"
+        # HP part numbers with #
+        if "#" in val and b_upper not in ("HP", "HEWLETT PACKARD"):
+            return None, "mpn_brand_mismatch"
+        # MSI part numbers (9S7-xxxxxx-xxx)
+        if re.match(r"^9S7-[A-Z0-9]{6}-[A-Z0-9]{3,4}$", val, re.I) and b_upper != "MSI":
+            return None, "mpn_brand_mismatch"
+        # ASUS part numbers (90Nxxxx-Mxxxxx)
+        if re.match(r"^90N[A-Z0-9]{3,5}-M[A-Z0-9]{5,6}$", val, re.I) and b_upper != "ASUS":
+            return None, "mpn_brand_mismatch"
+
+        # Fix letter-O / zero typo for ASUS MPNs (e.g. 90NRON06-MOOJBO -> 90NR0N06-M00JB0)
+        if b_upper == "ASUS" and re.match(r"^90N", val, re.I):
+            val = re.sub(r"^90NR[oO]", "90NR0", val)
+            val = re.sub(r"-M[oO]{2}", "-M00", val)
+
     return val, None
+
+
+def is_brand_mpn(code: str | None, brand: str | None) -> bool:
+    """Return True if code matches the authoritative manufacturer part number pattern."""
+    if not code or not brand:
+        return False
+    c = str(code).strip()
+    b = brand.strip().upper()
+    if b == "ASUS":
+        return bool(re.match(r"^90N[A-Z0-9]{3,5}-M[A-Z0-9]{5,6}$", c, re.I))
+    if b == "ACER":
+        return bool(re.match(r"^N[HX]\.[A-Z0-9]{5}\.[A-Z0-9]{3}$", c, re.I))
+    if b == "LENOVO":
+        return bool(re.match(r"^(?:8[0-4]|2[01])[A-Z0-9]{8}$", c, re.I))
+    if b in ("HP", "HEWLETT PACKARD"):
+        return bool(re.match(r"^[A-Z0-9]{5,7}#[A-Z0-9]{3}$", c, re.I))
+    if b == "MSI":
+        return bool(re.match(r"^9S7-[A-Z0-9]{6}-[A-Z0-9]{3,4}$", c, re.I))
+    return False
+
+
+def is_retailer_sku(code: str | None) -> bool:
+    """Return True if code looks like an internal retailer SKU rather than an OEM MPN."""
+    if not code:
+        return False
+    c = str(code).strip()
+    if re.search(r"XXDXX|NAFAMZ|^TBC|^GGU|^DE014|16GXDX|8GXDX|[A-Z0-9]{15,}", c, re.I):
+        return True
+    return False
 
 
 # =============================================================================
@@ -277,6 +356,50 @@ def normalize_cpu_line(line_str: Any) -> str | None:
     if m:
         return m.group(1).strip()
     return val or None
+
+
+def validate_cpu_cache(value: Any, context: dict | None = None) -> tuple[int | None, str | None]:
+    """Validate and normalize CPU cache capacity in Megabytes (MB).
+
+    Accepts:
+        - int / float: 24 -> 24
+        - str: "24MB", "24 MB", "36MB Intel Smart Cache", "24M Cache", "24"
+    Rejects:
+        - Out of sane bounds (valid: 1 to 128 MB for laptop CPUs)
+        - Values in GB or KB (e.g. "24GB" is RAM/VRAM, "512KB" is L1/L2)
+    """
+    if is_placeholder(value):
+        return None, None
+
+    val_str = clean_text(str(value))
+
+    # Guard: If explicit GB unit, reject as likely RAM or storage contamination
+    if re.search(r"\b\d+\s*GB\b", val_str, re.I):
+        return None, "cache_in_gb_rejected"
+
+    # Match number preceding MB or M Cache or standalone number
+    m = re.search(r"\b(\d{1,3})\s*(?:MB|M\b|\s*Megabytes?)\b", val_str, re.I)
+    if not m:
+        # Check for standalone integer if input is short or pure number
+        m_pure = re.match(r"^(\d{1,3})$", val_str.strip())
+        if m_pure:
+            m = m_pure
+        else:
+            # Check pattern like "Cache: 24" or "Smart Cache 24"
+            m_c = re.search(r"cache\D*(\d{1,3})\b", val_str, re.I)
+            if m_c:
+                m = m_c
+
+    if not m:
+        return None, "no_valid_cache_digits"
+
+    cache_num = int(m.group(1))
+
+    # Sane range check for laptop CPUs: 1 MB to 128 MB
+    if cache_num < 1 or cache_num > 128:
+        return None, f"cache_out_of_bounds_{cache_num}mb"
+
+    return cache_num, None
 
 
 # =============================================================================
@@ -370,12 +493,20 @@ def validate_ram_speed(value: Any, context: dict | None = None) -> tuple[int | N
         return None, "ram_speed_invalid_format"
 
 
-def validate_ram_capacity(value: Any, context: dict | None = None) -> tuple[int | None, str | None]:
-    """Validate installed system memory capacity."""
+def validate_ram_capacity(
+    value: Any,
+    context: dict | None = None,
+    is_max: bool = False,
+) -> tuple[int | None, str | None]:
+    """Validate installed or maximum system memory capacity."""
     if is_placeholder(value):
         return None, "ram_capacity_placeholder"
     try:
         val = int(value)
+        if is_max:
+            if val in VALID_RAM_CAPACITIES and val >= 8:
+                return val, None
+            return None, "max_ram_capacity_not_in_whitelist"
         if val in VALID_RAM_CAPACITIES:
             return val, None
         return None, "ram_capacity_not_in_whitelist"
@@ -383,9 +514,18 @@ def validate_ram_capacity(value: Any, context: dict | None = None) -> tuple[int 
         m = re.search(r"\b(\d{1,3})\s*(?:GB|G)\b", str(value), re.I)
         if m:
             val = int(m.group(1))
+            if is_max:
+                if val in VALID_RAM_CAPACITIES and val >= 8:
+                    return val, None
+                return None, "max_ram_capacity_not_in_whitelist"
             if val in VALID_RAM_CAPACITIES:
                 return val, None
         return None, "ram_capacity_invalid_format"
+
+
+def validate_max_ram_capacity(value: Any, context: dict | None = None) -> tuple[int | None, str | None]:
+    """Validate maximum supported RAM capacity."""
+    return validate_ram_capacity(value, context=context, is_max=True)
 
 
 def validate_ram_type(value: Any, context: dict | None = None) -> tuple[str | None, str | None]:
@@ -489,8 +629,8 @@ NAMED_RESOLUTIONS: dict[str, str] = {
     "2k": "2560 x 1440",
     "2.5k": "2560 x 1600",
     "wqxga": "2560 x 1600",
+    "qhd+": "2560 x 1600",
     "3k": "2880 x 1800",
-    "qhd+": "3200 x 2000",
     "3.2k": "3200 x 2000",
     "uhd": "3840 x 2160",
     "4k": "3840 x 2160",
@@ -595,11 +735,11 @@ def validate_panel_type(value: Any, context: dict | None = None) -> tuple[str | 
     # Reject memory leakage (e.g. "16GB")
     if any(bad in val.upper() for bad in ["GB", "RAM", "TB", "DDR"]):
         return None, "panel_type_ram_leakage"
-    m = re.search(r"\b(IPS|OLED|AMOLED|MINI-?LED|VA|TN|WVA)\b", val, re.I)
+    m = re.search(r"\b(IPS|OLED|AMOLED|MINI[- ]?LED|VA|TN|WVA)\b", val, re.I)
     if m:
         norm = m.group(1).upper()
         if "MINI" in norm:
-            norm = "Mini-LED"
+            return "Mini-LED", None
         elif norm in VALID_PANEL_TYPES:
             return norm, None
         return norm, None
@@ -614,13 +754,16 @@ def validate_battery_capacity(value: Any, context: dict | None = None) -> tuple[
     """Validate battery energy capacity in Watt-hours (20.0 to 140.0 Wh)."""
     if is_placeholder(value):
         return None, "battery_wh_placeholder"
+    val_str = str(value).strip()
+    if re.search(r"\b(?:estimated|approx|expected|depending|tbd|varies)\b", val_str, re.I) or re.search(r"\d+\s*[-–~]\s*\d+", val_str):
+        return None, "battery_wh_range_or_estimate_rejected"
     try:
         val = float(value)
         if 20.0 <= val <= 140.0:
             return round(val, 1), None
         return None, "battery_wh_out_of_range"
     except (ValueError, TypeError):
-        m = re.search(r"\b(\d{2,3}(?:\.\d+)?)\s*Wh\b", str(value), re.I)
+        m = re.search(r"\b(\d{2,3}(?:\.\d+)?)\s*Wh\b", val_str, re.I)
         if m:
             val = float(m.group(1))
             if 20.0 <= val <= 140.0:
@@ -655,13 +798,16 @@ def validate_battery_cells(value: Any, context: dict | None = None) -> tuple[int
     """Validate battery cell count (2-8 cells)."""
     if is_placeholder(value):
         return None, "battery_cells_placeholder"
+    val_str = str(value).strip()
+    if re.search(r"\/|\bto\b|\bor\b|\b[-–]\b", val_str):
+        return None, "battery_cells_ambiguous_range"
     try:
         val = int(value)
         if 2 <= val <= 8:
             return val, None
         return None, "battery_cells_out_of_range"
     except (ValueError, TypeError):
-        m = re.search(r"\b([2-8])\s*-?cells?\b", str(value), re.I)
+        m = re.search(r"\b([2-8])\s*-?cells?\b", val_str, re.I)
         if m:
             return int(m.group(1)), None
         return None, "battery_cells_invalid_format"
@@ -817,10 +963,84 @@ def validate_ethernet(value: Any, context: dict | None = None) -> tuple[str | No
     val = clean_text(value)
     if re.search(r"\b(?:no|n/a|none|without)\b", val, re.I):
         return None, "ethernet_explicitly_absent"
-    m = re.search(r"\b(Gigabit(?:\s*LAN|\s*Ethernet)?|GbE|RJ-?45|10/100/1000(?:\s*Mbps)?|Ethernet)\b", val, re.I)
+    m = re.search(r"\b(\d+(?:\.\d+)?\s*Gigabit(?:\s*LAN|\s*Ethernet)?|Gigabit(?:\s*LAN|\s*Ethernet)?|GbE|RJ-?45|10/100/1000(?:\s*Mbps)?|Ethernet)\b", val, re.I)
     if m:
         return m.group(0).strip(), None
     return None, "ethernet_unrecognized"
+
+
+def parse_ethernet_speed(text: str | None) -> str | None:
+    """Parse canonical ethernet speed (100M|1G|2.5G|5G|10G|null) from connectivity text."""
+    if not text:
+        return None
+    t = str(text).lower()
+    if re.search(r"\b10\s*g(?:igabit)?\b", t):
+        return "10G"
+    if re.search(r"(?<![\d\.])5\s*g(?:igabit)?\b", t):
+        return "5G"
+    if re.search(r"\b2\.5\s*g(?:igabit)?\b", t):
+        return "2.5G"
+    if re.search(r"\b(?:1\s*g(?:igabit)?|gigabit|1000m|10\/100\/1000|100\/1000m|rj-?45|gbe)\b", t):
+        return "1G"
+    if re.search(r"\b(?:100m|10\/100|fast\s+ethernet)\b", t):
+        return "100M"
+    return None
+
+
+def clean_ports_list(ports: list[str]) -> list[str]:
+    """Clean footnote numbers, whitespace, marketing sentences, and duplicates from ports."""
+    cleaned: list[str] = []
+    seen: set[str] = set()
+    for p in ports:
+        if not p:
+            continue
+        s = str(p)
+        # Remove footnote clusters (e.g., " 14 15", " 7 8", "( 14)")
+        s = re.sub(r"\(\s*\d+\s*\)", "", s)
+        s = re.sub(r"\b(?:\d{1,2}\s+){1,4}\d{1,2}$", "", s.strip())
+        # Remove marketing sentences
+        if any(bad in s.lower() for bad in ["all the ports you need", "built to dominate", "connect with ease", "versatile connectivity", "let's duo it"]):
+            continue
+        # Remove placeholders like (TBD)
+        s = re.sub(r"\(TBD\)", "", s, flags=re.I)
+        s = re.sub(r"\s+", " ", s).strip()
+        if not s or s.lower() in ("no", "0", "none"):
+            continue
+        s_norm = s.lower()
+        if s_norm not in seen:
+            seen.add(s_norm)
+            cleaned.append(s)
+    return cleaned
+
+
+def parse_ports_summary(all_ports_text: str | None) -> dict[str, Any]:
+    """Parse ports_summary ({usb_a, usb_c, thunderbolt, hdmi, ethernet, sd_card, audio_jack})."""
+    if not all_ports_text:
+        return {
+            "usb_a": 0,
+            "usb_c": 0,
+            "thunderbolt": False,
+            "hdmi": False,
+            "ethernet": False,
+            "sd_card": False,
+            "audio_jack": False,
+        }
+    t = str(all_ports_text).lower()
+    m_usba = re.findall(r"(\d+)\s*(?:x|[×*])?\s*(?:usb\s*3|usb-a|type-a|usb\s*type-a)", t)
+    usb_a = sum(int(x) for x in m_usba) if m_usba else (1 if ("type-a" in t or "usb-a" in t) else 0)
+
+    m_usbc = re.findall(r"(\d+)\s*(?:x|[×*])?\s*(?:usb-c|type-c|usb\s*type-c|thunderbolt)", t)
+    usb_c = sum(int(x) for x in m_usbc) if m_usbc else (1 if ("type-c" in t or "usb-c" in t) else 0)
+
+    return {
+        "usb_a": usb_a,
+        "usb_c": usb_c,
+        "thunderbolt": bool(re.search(r"thunderbolt", t)),
+        "hdmi": bool(re.search(r"hdmi", t)),
+        "ethernet": bool(re.search(r"rj-?45|ethernet|lan", t)),
+        "sd_card": bool(re.search(r"sd|card\s*reader|microsd", t)),
+        "audio_jack": bool(re.search(r"audio|headphone|3\.5mm|combo\s*jack", t)),
+    }
 
 
 # =============================================================================
@@ -829,27 +1049,33 @@ def validate_ethernet(value: Any, context: dict | None = None) -> tuple[str | No
 
 def validate_os_name(value: Any, context: dict | None = None) -> tuple[str | None, str | None]:
     """Validate and normalize operating system name."""
+    if value is None:
+        return None, "os_placeholder"
+    raw_str = clean_text(value).strip()
+    val_low = raw_str.lower()
+
+    if val_low in ("none", "no os", "without os"):
+        return "No OS", None
+    if any(k in val_low for k in ["freedos", "free dos", "dos"]):
+        return "FreeDOS", None
+
     if is_placeholder(value):
         return None, "os_placeholder"
-    val = clean_text(value).strip()
-    val_low = val.lower()
 
     # Reject military durability or firmware tokens
     if any(bad in val_low for bad in ["mil-std", "uefi", "shell", "810h"]):
         return None, "os_noise_rejected"
 
-    if any(k in val_low for k in ["freedos", "free dos", "dos"]):
-        return "FreeDOS", None
-    if any(k in val_low for k in ["no os", "without os"]):
-        return "No OS", None
-    if "win 11 pro" in val_low or "windows 11 pro" in val_low:
-        return "Windows 11 Pro", None
-    if "win 11 home" in val_low or "windows 11 home" in val_low:
+    if re.search(r"\bwin(?:dows)?\s*11\b|\bwindows11\b|\bwin11\b", val_low):
+        if "pro" in val_low:
+            return "Windows 11 Pro", None
         return "Windows 11 Home", None
-    if "win 11" in val_low or "windows 11" in val_low:
-        return "Windows 11", None
-    if "win 10" in val_low or "windows 10" in val_low:
-        return "Windows 10", None
+
+    if re.search(r"\bwin(?:dows)?\s*10\b|\bwindows10\b|\bwin10\b", val_low):
+        if "pro" in val_low:
+            return "Windows 10 Pro", None
+        return "Windows 10 Home", None
+
     if "ubuntu" in val_low or "linux" in val_low:
         return "Ubuntu/Linux", None
     if "macos" in val_low or "mac os" in val_low:
@@ -862,6 +1088,19 @@ def validate_os_name(value: Any, context: dict | None = None) -> tuple[str | Non
 # 11. Audio & Webcam Validators
 # =============================================================================
 
+AUDIO_TECH_BRANDS: tuple[str, ...] = (
+    "nahimic",
+    "harman",
+    "sonicmaster",
+    "dolby",
+    "dts",
+    "bang & olufsen",
+    "b&o",
+    "waves",
+    "maxx",
+)
+
+
 def validate_webcam(value: Any, context: dict | None = None) -> tuple[str | None, str | None]:
     """Validate webcam resolution string."""
     if is_placeholder(value):
@@ -870,7 +1109,7 @@ def validate_webcam(value: Any, context: dict | None = None) -> tuple[str | None
     # Reject Hz, WQXGA, microphone noise
     if any(bad in val.lower() for bad in ["hz", "wqxga", "microphone", "speaker"]):
         return None, "webcam_noise_rejected"
-    m = re.search(r"\b(\d{3,4}\s*p|HD|FHD|QHD|\d+(?:\.\d+)?\s*MP)\b", val, re.I)
+    m = re.search(r"\b(\d{3,4}\s*p|HD|FHD|QHD|\d+(?:\.\d+)?\s*(?:MP|M\b))\b", val, re.I)
     if m:
         return val, None
     return None, "webcam_unrecognized"
@@ -880,12 +1119,25 @@ def validate_microphone(value: Any, context: dict | None = None) -> tuple[str | 
     """Validate microphone description."""
     if is_placeholder(value):
         return None, "mic_placeholder"
-    val = clean_text(value)
-    if "mic" not in val.lower():
+    val = clean_text(value).strip()
+    val_low = val.lower()
+
+    # Reject audio brand names (e.g. Nahimic Audio) as microphone
+    if any(b in val_low for b in AUDIO_TECH_BRANDS):
+        return None, "mic_audio_brand_rejected"
+
+    # Normalize bare label or booleans to canonical description
+    if val_low in ("microphone", "built-in microphone", "yes", "true"):
+        return "Built-in Microphone", None
+
+    # Reject speaker noise if not explicitly also mentioning microphone
+    if "speaker" in val_low and "mic" not in val_low:
+        return None, "mic_speaker_noise"
+
+    mic_keywords = ("mic", "array", "dual", "stereo", "digital", "noise reduction")
+    if not any(k in val_low for k in mic_keywords):
         return None, "mic_missing_keyword"
-    if any(bad in val.lower() for bad in ["speaker", "webcam"]):
-        if "mic" not in val.lower():
-            return None, "mic_noise_rejected"
+
     return val, None
 
 
@@ -921,6 +1173,10 @@ def validate_structured(structured: dict[str, Any]) -> list[Violation]:
         c, t, err = validate_cpu_cores_threads(cpu.get("cores"), cpu.get("threads"))
         if err:
             violations.append(Violation("cpu.cores_threads", (cpu.get("cores"), cpu.get("threads")), err))
+    if cpu.get("cache_mb") is not None:
+        cache_val, err = validate_cpu_cache(cpu.get("cache_mb"))
+        if err:
+            violations.append(Violation("cpu.cache_mb", cpu.get("cache_mb"), err))
 
     # 3. GPU
     gpu = structured.get("gpu", {})
@@ -1015,3 +1271,364 @@ def validate_structured(structured: dict[str, Any]) -> list[Violation]:
             violations.append(Violation("operating_system.name", os_info["name"], err))
 
     return violations
+
+
+def validate_price_egp(value: Any) -> tuple[float | None, str | None]:
+    """Validate laptop price in EGP (sanity range: 5,000 to 500,000 EGP)."""
+    if is_placeholder(value) or value is None:
+        return None, "price_missing"
+    try:
+        val = float(value)
+        if 5000.0 <= val <= 500000.0:
+            return val, None
+        return None, f"price_out_of_sanity_range: {val:.2f} EGP"
+    except (ValueError, TypeError):
+        return None, "price_invalid_format"
+
+
+def validate_cpu_full_name(
+    value: Any,
+    manufacturer: str | None = None,
+    line: str | None = None,
+    model: str | None = None,
+) -> tuple[str | None, str | None]:
+    """Validate and clean CPU full name string."""
+    if is_placeholder(value) or not value:
+        return None, "cpu_full_name_empty"
+    val = clean_text(str(value)).strip()
+
+    # Reject prose / architectural descriptions
+    if re.search(r"^\s*Cores?\s+\d+\s*Cores?", val, re.I):
+        return None, "cpu_full_name_is_core_description"
+    if re.search(r"\b(?:Performance|Efficient)[- ]cores?\b", val, re.I):
+        return None, "cpu_full_name_is_core_description"
+    if re.search(r"\b(?:Raptor|Alder|Meteor|Arrow|Lunar|Tiger|Comet|Ice)\s+Lake\b", val, re.I):
+        return None, "cpu_full_name_contains_codename"
+
+    # Must contain recognized CPU identifier or manufacturer
+    if not any(w in val.lower() for w in ["intel", "amd", "core", "ryzen", "snapdragon", "ultra", "celeron", "athlon"]):
+        return None, "cpu_full_name_missing_cpu_brand"
+
+    return val, None
+
+
+# =============================================================================
+# Title Parsers for Cross-Field & Conflict Reconciliation
+# =============================================================================
+
+
+def extract_title_ram(title: str | None) -> int | None:
+    """Extract system RAM capacity in GB from title, avoiding GPU VRAM and screen sizes."""
+    if not title:
+        return None
+    # 1. Remove screen size spans like 16-inch, 16", 15.6", 14-inch
+    clean = re.sub(r'\b\d+(\.\d+)?\s*(?:-inch|["″\']|inch)\b', ' ', title, flags=re.I)
+
+    # 2. Remove GPU spans with optional VRAM (ensuring we don't strip if followed by DDR/LPDDR/RAM/Memory)
+    clean = re.sub(
+        r'\b(?:GeForce\s*)?(?:RTX|GTX|RX|Arc)\s+[0-9A-Za-z]+(?:\s*(?:Ti|Super))?(?:\s*Laptop\s+GPU)?(?:\s*\d{1,2}\s*GB(?!\s*(?:DDR|LPDDR|RAM|Memory|SO-DIMM))(?:\s*GDDR\d*X?)?)?',
+        ' ',
+        clean,
+        flags=re.I,
+    )
+    # Remove any remaining \d+GB GDDR...
+    clean = re.sub(r'\b\d{1,2}\s*GB\s*GDDR\d*X?\b', ' ', clean, flags=re.I)
+
+    # 3. Match explicit RAM: \d+\s*GB followed by DDR|LPDDR|RAM|Memory|on board
+    m_exp = re.search(r'\b([48]|12|16|24|32|48|64|96|128)\s*(?:GB|G)\s*(?:RAM|DDR[45]?|LPDDR[45]?X?|Memory|on board)\b', clean, re.I)
+    if m_exp:
+        return int(m_exp.group(1))
+
+    # 4. Single remaining \d+GB not followed by SSD|NVMe|HDD|TB|ROM
+    candidates = re.findall(r'\b([48]|12|16|24|32|48|64|96|128)\s*(?:GB|G)\b(?!\s*(?:SSD|NVMe|PCIe|HDD|TB|ROM))', clean, re.I)
+    if len(candidates) == 1:
+        return int(candidates[0])
+    return None
+
+
+def extract_title_storage(title: str | None) -> int | None:
+    """Extract storage capacity in GB from title, avoiding RAM and GPU VRAM."""
+    if not title:
+        return None
+    # Exclude \d+GB LPDDR/DDR/RAM/Memory
+    clean = re.sub(r'\b\d+\s*(?:GB|G)\s*(?:DDR[45]?|LPDDR[45]?X?|RAM|Memory|on board)\b', ' ', title, flags=re.I)
+    # Also exclude GPU VRAM
+    clean = re.sub(r'\b\d{1,2}\s*GB\s*GDDR\d*X?\b', ' ', clean, flags=re.I)
+
+    # Now find storage: TB first or GB followed by SSD|NVMe|HDD|storage
+    m_tb = re.search(r'\b([1248])\s*TB\b(?:\s*(?:SSD|NVMe|HDD|Storage|PCIe))?', clean, re.I)
+    m_gb_ssd = re.search(r'\b(128|256|512|1024|2048)\s*(?:GB|G)\s*(?:SSD|NVMe|HDD|PCIe|Storage|EMMC)\b', clean, re.I)
+
+    if m_tb:
+        return int(m_tb.group(1)) * 1024
+    if m_gb_ssd:
+        return int(m_gb_ssd.group(1))
+
+    # Fallback to single remaining storage-like size
+    m_any = re.search(r'\b(128|256|512|1024|2048)\s*(?:GB|G)\b', clean, re.I)
+    if m_any:
+        return int(m_any.group(1))
+    return None
+
+
+# =============================================================================
+# Authoritative Spec Databases & Cross-Field Consistency Validator
+# =============================================================================
+
+_DATA_DIR = Path(__file__).parent / "data"
+_CONSISTENCY_CPU_SPECS: dict[str, dict[str, Any]] = {}
+_CONSISTENCY_GPU_SPECS: dict[str, dict[str, Any]] = {}
+
+_cpu_file = _DATA_DIR / "cpu_specs.json"
+if _cpu_file.exists():
+    try:
+        with open(_cpu_file, "r", encoding="utf-8") as _f:
+            _CONSISTENCY_CPU_SPECS = json.load(_f)
+    except Exception:
+        pass
+
+_gpu_file = _DATA_DIR / "gpu_specs.json"
+if _gpu_file.exists():
+    try:
+        with open(_gpu_file, "r", encoding="utf-8") as _f:
+            _CONSISTENCY_GPU_SPECS = json.load(_f)
+    except Exception:
+        pass
+
+
+def _lookup_gpu_spec(model_name: str | None) -> dict[str, Any] | None:
+    if not model_name:
+        return None
+    m = model_name.strip()
+    if m in _CONSISTENCY_GPU_SPECS:
+        return _CONSISTENCY_GPU_SPECS[m]
+    if not m.lower().startswith("geforce") and f"GeForce {m}" in _CONSISTENCY_GPU_SPECS:
+        return _CONSISTENCY_GPU_SPECS[f"GeForce {m}"]
+    clean = re.sub(r"\s+Laptop\s+GPU\b", "", m, flags=re.I).strip()
+    if clean in _CONSISTENCY_GPU_SPECS:
+        return _CONSISTENCY_GPU_SPECS[clean]
+    if not clean.lower().startswith("geforce") and f"GeForce {clean}" in _CONSISTENCY_GPU_SPECS:
+        return _CONSISTENCY_GPU_SPECS[f"GeForce {clean}"]
+    return None
+
+
+def validate_consistency(structured: dict[str, Any], raw_specs: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """Validate cross-field consistency across all hardware components.
+
+    Rules that fail null the offending field and append to extraction_meta.rejected with
+    rule: "consistency:<name>".
+    """
+    rejections: list[dict[str, Any]] = []
+
+    # 1. CPU threads >= cores, threads/cores <= 2
+    cpu = structured.setdefault("cpu", {})
+    cores = cpu.get("cores")
+    threads = cpu.get("threads")
+    if cores is not None and threads is not None:
+        if threads < cores or (cores > 0 and (threads / cores) > 2.0):
+            val = threads
+            cpu["threads"] = None
+            rejections.append({
+                "field": "cpu.threads",
+                "value": val,
+                "rule": "consistency:threads_cores_ratio",
+            })
+
+    # 2. CPU manufacturer matches line family
+    mfg = cpu.get("manufacturer")
+    line = cpu.get("line")
+    if mfg and line:
+        mfg_lower = mfg.lower()
+        line_lower = line.lower()
+        mismatch = False
+        if "qualcomm" in mfg_lower:
+            if not ("snapdragon" in line_lower):
+                mismatch = True
+        elif "amd" in mfg_lower:
+            if any(x in line_lower for x in ["intel", "core", "snapdragon", "ultra", "xeon"]):
+                mismatch = True
+            elif not any(x in line_lower for x in ["ryzen", "athlon", "threadripper"]):
+                mismatch = True
+        elif "intel" in mfg_lower:
+            if any(x in line_lower for x in ["ryzen", "athlon", "snapdragon", "adreno"]):
+                mismatch = True
+            elif not any(x in line_lower for x in ["core", "ultra", "celeron", "pentium", "xeon", "atom", "processor", "n-series"]):
+                mismatch = True
+        if mismatch:
+            val = line
+            cpu["line"] = None
+            rejections.append({
+                "field": "cpu.line",
+                "value": val,
+                "rule": "consistency:cpu_mfg_line_mismatch",
+            })
+
+    # 8. Same cpu.model must always give the same cores/threads from spec DB
+    model = cpu.get("model")
+    if model:
+        m_str = str(model).strip()
+        spec = _CONSISTENCY_CPU_SPECS.get(m_str)
+        if spec:
+            db_cores = spec.get("cores")
+            db_threads = spec.get("threads")
+            if db_cores is not None:
+                if cpu.get("cores") is not None and cpu.get("cores") != db_cores:
+                    rejections.append({
+                        "field": "cpu.cores",
+                        "value": cpu.get("cores"),
+                        "rule": "consistency:cpu_cores_overridden_by_spec_db",
+                    })
+                cpu["cores"] = db_cores
+            if db_threads is not None:
+                if cpu.get("threads") is not None and cpu.get("threads") != db_threads:
+                    rejections.append({
+                        "field": "cpu.threads",
+                        "value": cpu.get("threads"),
+                        "rule": "consistency:cpu_threads_overridden_by_spec_db",
+                    })
+                cpu["threads"] = db_threads
+
+    # 3. aspect_ratio == reduced(width, height); never copied from text
+    disp = structured.setdefault("display", {})
+    res = disp.get("resolution")
+    if res:
+        m_res = re.search(r"(\d{3,4})\s*[xX*×]\s*(\d{3,4})", str(res))
+        if m_res:
+            w, h = int(m_res.group(1)), int(m_res.group(2))
+            g = math.gcd(w, h)
+            rw, rh = w // g, h // g
+            if (rw, rh) == (16, 9) or (rw, rh) == (64, 27) or (rw, rh) == (21, 9):
+                reduced_ar = f"{rw}:{rh}"
+            elif (rw, rh) in ((8, 5), (16, 10)):
+                reduced_ar = "16:10"
+            elif (rw, rh) == (3, 2):
+                reduced_ar = "3:2"
+            elif (rw, rh) == (4, 3):
+                reduced_ar = "4:3"
+            else:
+                ratio = w / h
+                if abs(ratio - 16 / 9) < 0.03:
+                    reduced_ar = "16:9"
+                elif abs(ratio - 16 / 10) < 0.03:
+                    reduced_ar = "16:10"
+                elif abs(ratio - 3 / 2) < 0.03:
+                    reduced_ar = "3:2"
+                else:
+                    reduced_ar = f"{rw}:{rh}"
+            curr_ar = disp.get("aspect_ratio")
+            if curr_ar and curr_ar != reduced_ar:
+                val = curr_ar
+                disp["aspect_ratio"] = reduced_ar
+                rejections.append({
+                    "field": "display.aspect_ratio",
+                    "value": val,
+                    "rule": "consistency:aspect_ratio_mismatch",
+                })
+            elif not curr_ar:
+                disp["aspect_ratio"] = reduced_ar
+
+    # 4. Storage form_factor 2.5 incompatible with NVMe/M.2 interface
+    stg = structured.setdefault("storage", {})
+    ff = stg.get("form_factor")
+    if ff and str(ff).strip() == "2.5":
+        iface = str(stg.get("interface") or "")
+        stg_type = str(stg.get("storage_type") or "")
+        if any(kw in iface.upper() or kw in stg_type.upper() for kw in ["NVME", "M.2", "PCIE"]):
+            val = ff
+            stg["form_factor"] = None
+            rejections.append({
+                "field": "storage.form_factor",
+                "value": val,
+                "rule": "consistency:form_factor_nvme_incompatible",
+            })
+
+    # 5. iGPU => vram_gb is null; dGPU vram in authoritative table
+    gpu = structured.setdefault("gpu", {})
+    is_int = gpu.get("integrated") is True
+    vram = gpu.get("vram_gb")
+    if is_int and vram is not None:
+        val = vram
+        gpu["vram_gb"] = None
+        rejections.append({
+            "field": "gpu.vram_gb",
+            "value": val,
+            "rule": "consistency:igpu_vram_not_allowed",
+        })
+    elif not is_int and vram is not None:
+        model_name = gpu.get("model") or ""
+        spec = _lookup_gpu_spec(model_name)
+        if spec:
+            allowed = spec.get("allowed_vram", [])
+            if vram not in allowed:
+                val = vram
+                if len(allowed) == 1:
+                    gpu["vram_gb"] = allowed[0]
+                else:
+                    gpu["vram_gb"] = None
+                rejections.append({
+                    "field": "gpu.vram_gb",
+                    "value": val,
+                    "rule": "consistency:dgpu_vram_invalid_for_model",
+                })
+
+    # 6. max_supported_gb >= capacity_gb; if equal and not LPDDR/soldered, treat as unverified
+    mem = structured.setdefault("memory", {})
+    cap = mem.get("capacity_gb")
+    max_ram = mem.get("max_supported_gb")
+    m_type = str(mem.get("memory_type") or "").upper()
+    is_soldered = "LPDDR" in m_type or "SOLDERED" in m_type or "ON BOARD" in m_type
+
+    if max_ram is not None:
+        if cap is not None and max_ram < cap:
+            val = max_ram
+            mem["max_supported_gb"] = None
+            rejections.append({
+                "field": "memory.max_supported_gb",
+                "value": val,
+                "rule": "consistency:max_ram_less_than_capacity",
+            })
+        elif cap is not None and max_ram == cap:
+            if not is_soldered:
+                row_has_max = False
+                if raw_specs:
+                    for k, v in raw_specs.items():
+                        if any(w in k.lower() for w in ["max", "maximum", "up to"]) and str(max_ram) in str(v):
+                            row_has_max = True
+                            break
+                if not row_has_max:
+                    val = max_ram
+                    mem["max_supported_gb"] = None
+                    rejections.append({
+                        "field": "memory.max_supported_gb",
+                        "value": val,
+                        "rule": "consistency:max_ram_equals_installed_unverified",
+                    })
+        elif max_ram > 128:
+            val = max_ram
+            mem["max_supported_gb"] = None
+            rejections.append({
+                "field": "memory.max_supported_gb",
+                "value": val,
+                "rule": "consistency:max_ram_exceeds_platform_limit",
+            })
+
+    # 7. battery Wh must not equal adapter W
+    pwr = structured.setdefault("power_battery", {})
+    adapter = pwr.get("power_adapter_w")
+    wh = pwr.get("battery_capacity_wh")
+    if adapter is not None and wh is not None:
+        if abs(float(adapter) - float(wh)) < 1e-3:
+            val = adapter
+            pwr["power_adapter_w"] = None
+            rejections.append({
+                "field": "power_battery.power_adapter_w",
+                "value": val,
+                "rule": "consistency:adapter_matches_battery_wh",
+            })
+
+    # Record all consistency rejections in metadata
+    meta = structured.setdefault("extraction_meta", {})
+    meta.setdefault("rejected", []).extend(rejections)
+    return rejections
+
+

@@ -135,3 +135,26 @@ def test_product_type_and_condition_detection():
     assert extractor.detect_condition({}, "Acer Nitro V 15 Brand New") == "new"
     assert extractor.detect_condition({}, "Dell Latitude 5420 Refurbished Laptop") == "refurbished"
     assert extractor.detect_condition({"Condition": "Open Box"}, "Lenovo ThinkPad X1") == "open_box"
+
+
+def test_title_model_and_resolution_and_storage_interface():
+    extractor = CompumartsExtractor()
+    # Test title model extraction fallback
+    t1 = "Acer Nitro V 15 ANV15-A31-R8LA Gaming Laptop | AMD Ryzen 7 170 | RTX 5060"
+    s1, _ = extractor.extract({}, t1)
+    assert s1["identity"]["laptop_model"] == "ANV15-A31-R8LA"
+
+    t2 = "HP ProBook 460 G11 Business Laptop Intel Core Ultra 7 155U 16GB DDR5 RAM 512GB NVMe SSD NVIDIA GeForce RTX 2050 4GB 16-Inch FHD+ Windows 11 Pro"
+    s2, _ = extractor.extract({"Display": "16-Inch"}, t2)
+    assert s2["identity"]["laptop_model"] == "460 G11"
+    assert s2["display"]["resolution"] == "1920 x 1200"
+    assert s2["storage"]["interface"] == "NVMe"
+
+    t3 = "HP 255 G10 AMD Ryzen 5 7535U 16GB RAM 512GB SSD"
+    s3, _ = extractor.extract({}, t3)
+    assert s3["identity"]["laptop_model"] == "255 G10"
+
+    t4 = "HP 15-fd1062ne Laptop Intel Core Ultra 7 155H"
+    s4, _ = extractor.extract({}, t4)
+    assert s4["identity"]["laptop_model"] == "15-fd1062ne"
+

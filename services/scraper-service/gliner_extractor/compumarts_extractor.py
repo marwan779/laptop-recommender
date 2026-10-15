@@ -30,7 +30,9 @@ from gliner_extractor.validators import (
     validate_bluetooth,
     validate_brand,
     validate_color,
+    validate_cpu_cache,
     validate_cpu_cores_threads,
+    validate_cpu_full_name,
     validate_display_size,
     validate_ethernet,
     validate_gpu_integrated,
@@ -40,6 +42,15 @@ from gliner_extractor.validators import (
     validate_os_name,
     validate_panel_type,
     validate_power_adapter,
+    validate_price_egp,
+    clean_ports_list,
+    extract_title_ram,
+    extract_title_storage,
+    is_brand_mpn,
+    is_retailer_sku,
+    parse_ethernet_speed,
+    parse_ports_summary,
+    validate_consistency,
     validate_ram_capacity,
     validate_ram_slots,
     validate_ram_speed,
@@ -106,6 +117,7 @@ class CompumartsExtractor:
     # 1. IDENTITY & BRAND KEYWORD REGISTRY
     # -------------------------------------------------------------------------
     IDENTITY_KEYWORDS: dict[str, str] = {
+        'acer part number': 'manufacturer_part_number',
         'base unit': 'manufacturer_part_number',
         'brand': 'brand',
         'brand & model': 'brand',
@@ -114,11 +126,12 @@ class CompumartsExtractor:
         'machine type': 'manufacturer_part_number',
         'marketing name': 'laptop_model',
         'model': 'laptop_model',
-        'model name': 'laptop_model',
-        'model number': 'manufacturer_part_number',
+        'model number': 'laptop_model',
         'part no': 'manufacturer_part_number',
         'part no.': 'manufacturer_part_number',
         'part number': 'manufacturer_part_number',
+        'part number space gray': 'manufacturer_part_number',
+        'part number space grey': 'manufacturer_part_number',
         'product name': 'laptop_model',
         'product number': 'manufacturer_part_number',
         'sales model name': 'laptop_model',
@@ -243,7 +256,10 @@ class CompumartsExtractor:
         'cpu type': 'line',
         'generation description': 'series',
         'graphics processor': 'full_name',
+        'intel smart cache': 'cache',
+        'l3 cache': 'cache',
         'laptop cpu family': 'line',
+        'level 3 cache': 'cache',
         'max turbo frequency': 'clock_speed',
         'maximum turbo frequency': 'clock_speed',
         'neural processor': 'npu',
@@ -254,6 +270,7 @@ class CompumartsExtractor:
         'processor': 'full_name',
         'processor (cpu)': 'full_name',
         'processor cache': 'cache',
+        'smart cache': 'cache',
         'processor clock speed ghz': 'clock_speed',
         'processor core': 'cores',
         'processor cores': 'cores',
@@ -334,9 +351,9 @@ class CompumartsExtractor:
         'graphics switch': 'switch',
         'graphics tech': 'model',
         'graphics tgp': 'tdp_w',
-        'integrated gpu': 'model',
-        'integrated graphics': 'model',
-        'intergrated gpu': 'model',
+        'integrated gpu': 'integrated_model',
+        'integrated graphics': 'integrated_model',
+        'intergrated gpu': 'integrated_model',
         'laptop gpu': 'model',
         'max graphics power': 'tdp_w',
         'max power': 'tdp_w',
@@ -345,10 +362,10 @@ class CompumartsExtractor:
         'maximum graphics power tgp': 'tdp_w',
         'maximum power': 'tdp_w',
         'mux switch': 'switch',
-        'video card integrated video card model': 'model',
+        'video card integrated video card model': 'integrated_model',
         'video card manufacturer': 'model',
         'video card type': 'model',
-        'video card, integrated video card model': 'model',
+        'video card, integrated video card model': 'integrated_model',
         'video card, manufacturer': 'model',
         'video card, type': 'model',
         'video graphics': 'model',
@@ -443,10 +460,12 @@ class CompumartsExtractor:
         'contrast ratio': 'features',
         'display': 'size_inches',
         'display features': 'features',
+        'display quality': 'features',
         'display resolution': 'resolution',
         'display screen technology': 'panel_type',
         'display screen type': 'panel_type',
         'display size': 'size_inches',
+        'display tech': 'panel_type',
         'display technology': 'panel_type',
         'display type': 'panel_type',
         'flicker free': 'features',
@@ -711,6 +730,7 @@ class CompumartsExtractor:
         'color of the product': 'color',
         'color options': 'color',
         'color range': 'color',
+        'colour': 'color',
         'colour gamut': 'color',
         'depth': 'dimensions',
         'design & material': 'material',
@@ -976,11 +996,12 @@ class CompumartsExtractor:
     ) -> str | None:
         """Find and validate manufacturer part number / SKU from metadata, table, or title."""
         # 1. Metadata candidate
+        resolved_brand = metadata.get("brand") if metadata else None
         if metadata:
             for k in ("mpn", "retailer_sku", "sku"):
                 cand = metadata.get(k)
                 if cand:
-                    v_mpn, err = validate_mpn(cand)
+                    v_mpn, err = validate_mpn(cand, title=title, brand=resolved_brand)
                     if v_mpn:
                         return v_mpn
                     elif err and rejections is not None:
@@ -994,7 +1015,7 @@ class CompumartsExtractor:
             role = self.IDENTITY_KEYWORDS.get(k_norm) or self.IDENTITY_KEYWORDS.get(raw_k.strip().lower())
             if role == "manufacturer_part_number":
                 cand = str(raw_v).strip()
-                v_mpn, err = validate_mpn(cand)
+                v_mpn, err = validate_mpn(cand, title=title, brand=resolved_brand)
                 if v_mpn:
                     return v_mpn
                 elif err and rejections is not None:
@@ -1011,7 +1032,7 @@ class CompumartsExtractor:
             m = re.search(pat, title, re.I)
             if m:
                 cand = m.group(1).strip()
-                v_mpn, err = validate_mpn(cand)
+                v_mpn, err = validate_mpn(cand, title=title, brand=resolved_brand)
                 if v_mpn:
                     return v_mpn
                 elif err and rejections is not None:
@@ -1043,6 +1064,58 @@ class CompumartsExtractor:
         if "used" in combined or "pre-owned" in combined:
             return "used"
         return "new"
+
+    @staticmethod
+    def _extract_model_from_title(title: str) -> str | None:
+        """Extract laptop model identifier from product title when omitted from specification table."""
+        if not title:
+            return None
+
+        # 1. HP G-series (e.g. "255 G10", "460 G11", "450 G10")
+        m_g = re.search(r"\b(\d{3}\s+G\d{1,2})\b", title, re.IGNORECASE)
+        if m_g:
+            return m_g.group(1)
+
+        # 2. HP fd/fc/da/am series (e.g. "15-fd1062ne", "16-am0001nia")
+        m_hp = re.search(r"\b(1[4567]-[a-z0-9]{6,10})\b", title, re.IGNORECASE)
+        if m_hp:
+            return m_hp.group(1)
+
+        # Blacklist common hardware specification tokens to avoid false positives
+        spec_blacklist = {
+            "2-in-1", "wi-fi", "type-c", "oled", "fhd", "wuxga", "wqxga", "qhd", "uhd",
+            "ips", "dos", "freedos", "windows", "win11", "win10", "gaming", "laptop",
+            "ddr4", "ddr5", "lpddr5", "lpddr5x", "ssd", "ram", "rom", "gddr6", "gddr7",
+            "mini-led", "amoled",
+        }
+
+        # 3. Model codes with hyphens: ANV15-A31-R8LA, X1504VA-BQ857W, PHN16-73-97BP, NL16-71G-53A0, GX651AX-SR264W
+        candidates = re.findall(r"\b([A-Za-z0-9]{3,8}-[A-Za-z0-9]{2,8}(?:-[A-Za-z0-9]{2,8})?)\b", title)
+        for c in candidates:
+            parts = [p.lower() for p in c.split("-")]
+            if any(p in spec_blacklist or any(b in p for b in ("ddr", "gddr", "oled", "ips")) for p in parts):
+                continue
+            # Skip CPU models like i7-14650HX, Ultra-7, Ryzen-7
+            if any(re.match(r"^(?:i[3579]|u\d+|r[3579]|core|ultra|ryzen|rtx|gtx)$", p, re.I) for p in parts):
+                continue
+            if re.search(r"\d", c) and re.search(r"[A-Za-z]", c):
+                return c
+
+        # 4. Standalone alphanumeric codes (e.g., B14WGK, EG61H, 83TC001YED, 83NN001XAX, 15IAX10, 15IRX9)
+        tokens = re.findall(r"\b([A-Z0-9]{5,12})\b", title)
+        for tok in tokens:
+            tok_low = tok.lower()
+            if tok_low in spec_blacklist:
+                continue
+            # Filter out CPU/GPU/RAM/Display specifications
+            if re.match(r"^(?:\d{3,5}[A-Z]{1,3}|\d{3}[A-Z]?|[A-Z]\d-\d+-\d+)$", tok, re.I):
+                continue
+            if re.match(r"^(?:\d+GB|\d+TB|DDR\d|LPDDR\d|GDDR\d|RTX\d+|GTX\d+|RX\d+|FHD|WUXGA|WQXGA|IPS|OLED|GEN\d+|WINDOWS\d+|PRO\d+|CORE\d+)$", tok, re.I):
+                continue
+            if re.search(r"\d", tok) and re.search(r"[A-Z]", tok):
+                return tok
+
+        return None
 
     def extract_identity(
         self,
@@ -1118,6 +1191,12 @@ class CompumartsExtractor:
             if err_b and rejections is not None:
                 rejections.append({"field": "identity.brand", "value": raw_brand, "rule": err_b})
 
+        # Fallback to product title for laptop_model if not found in table
+        if not ident["laptop_model"] and title:
+            m_model_t = self._extract_model_from_title(title)
+            if m_model_t:
+                ident["laptop_model"] = m_model_t
+
         missing_ident = []
         if not ident["brand"]:
             missing_ident.append("laptop brand")
@@ -1159,6 +1238,7 @@ class CompumartsExtractor:
             "cores": None,
             "threads": None,
             "clock_speed": None,
+            "cache_mb": None,
         }
 
         cpu_raw_rows: list[tuple[str, str, str]] = []  # (raw_k, raw_v, role)
@@ -1188,6 +1268,10 @@ class CompumartsExtractor:
                 cpu["model"] = v_str
             elif role == "line" and not cpu["line"]:
                 cpu["line"] = v_str
+            elif role == "cache" and cpu.get("cache_mb") is None:
+                v_c, _ = validate_cpu_cache(v_str)
+                if v_c:
+                    cpu["cache_mb"] = v_c
             elif role == "cores" and cpu["cores"] is None:
                 m = re.search(r"\b(\d+)\s*(?:Core|cores|\(P\+E\))\b", v_str, re.I)
                 if m:
@@ -1272,6 +1356,14 @@ class CompumartsExtractor:
                 m_clk = re.search(r"(?:up\s+to\s+)?(\d+(?:\.\d+)?\s*(?:GHz|MHz))\b", all_cpu_text, re.I)
                 if m_clk:
                     cpu["clock_speed"] = m_clk.group(0).strip()
+            if cpu.get("cache_mb") is None:
+                m_cache = re.search(r"\b(\d{1,3})\s*(?:MB|M\b)\s*(?:[A-Za-z0-9®\s]{0,20})?Cache\b", all_cpu_text, re.I)
+                if not m_cache:
+                    m_cache = re.search(r"\b(\d{1,3})\s*MB\s*L[23]\b", all_cpu_text, re.I)
+                if m_cache:
+                    v_c, _ = validate_cpu_cache(m_cache.group(1))
+                    if v_c:
+                        cpu["cache_mb"] = v_c
 
         # Lookup verified specs in _CPU_SPECS_DB
         lookup_spec = None
@@ -1306,6 +1398,18 @@ class CompumartsExtractor:
                 cpu["clock_base_ghz"] = lookup_spec.get("clock_base_ghz")
             if cpu.get("clock_boost_ghz") is None:
                 cpu["clock_boost_ghz"] = lookup_spec.get("clock_boost_ghz")
+            if cpu.get("cache_mb") is None:
+                cpu["cache_mb"] = lookup_spec.get("cache_mb")
+
+        # Validate cpu.cache_mb
+        if cpu.get("cache_mb") is not None:
+            v_cache, err_cache = validate_cpu_cache(cpu["cache_mb"])
+            if v_cache:
+                cpu["cache_mb"] = v_cache
+            else:
+                if rejections is not None and err_cache:
+                    rejections.append({"field": "cpu.cache_mb", "value": cpu["cache_mb"], "rule": err_cache})
+                cpu["cache_mb"] = None
 
         # Normalize line & validate cores/threads
         cpu["line"] = normalize_cpu_line(cpu["line"])
@@ -1314,6 +1418,20 @@ class CompumartsExtractor:
             rejections.append({"field": "cpu.cores_threads", "value": (cpu.get("cores"), cpu.get("threads")), "rule": err_ct})
         cpu["cores"] = v_cores
         cpu["threads"] = v_threads
+
+        # Validate and clean cpu["full_name"]
+        if cpu.get("full_name"):
+            valid_fn, fn_err = validate_cpu_full_name(cpu["full_name"])
+            if valid_fn:
+                cpu["full_name"] = valid_fn
+            else:
+                if rejections is not None and fn_err:
+                    rejections.append({"field": "cpu.full_name", "value": cpu["full_name"], "rule": fn_err})
+                parts = [p for p in [cpu.get("manufacturer"), cpu.get("line"), cpu.get("model")] if p]
+                cpu["full_name"] = " ".join(parts) if parts else None
+        elif cpu.get("model"):
+            parts = [p for p in [cpu.get("manufacturer"), cpu.get("line"), cpu.get("model")] if p]
+            cpu["full_name"] = " ".join(parts) if parts else None
 
         # Limit Boundary Check: Trigger envelope if ANY CPU field is missing
         missing_cpu = []
@@ -1386,82 +1504,75 @@ class CompumartsExtractor:
 
         # Clean symbols that break regex boundaries (e.g. RTX® 5060 -> RTX 5060)
         clean_gpu_text = re.sub(r"[®™\u200e\u200f]", "", combined_text).strip()
+        clean_title = re.sub(r"[®™\u200e\u200f]", "", title).strip() if title else ""
 
-        # Deterministic Discrete GPU Regex
-        m_disc = re.search(
+        # Priority 1: Check for Discrete GPU across table text AND title
+        # Strictly define discrete GPU patterns (never match 'Radeon Graphics')
+        DISC_PATTERN = (
             r"\b(GeForce\s+RTX\s+[0-9]{4}(?:\s*Ti|\s*Laptop\s+GPU)?|"
             r"RTX\s+[0-9]{4}(?:\s*Ti|\s*Laptop\s+GPU)?|"
-            r"Radeon\s+(?:RX\s+)?[0-9A-Za-z]+|"
+            r"GeForce\s+GTX\s+[0-9]{4}(?:\s*Ti)?|"
+            r"GTX\s+[0-9]{4}(?:\s*Ti)?|"
+            r"Radeon\s+(?:RX\s+|PRO\s+)?[0-9]{4}[A-Za-z]*|"
             r"(?:GeForce\s+)?MX[0-9]{3}|"
-            r"Intel\s+Arc\s+\w+)\b",
-            clean_gpu_text,
-            re.I,
+            r"Intel\s+Arc\s+(?:A\d{3}[A-Za-z]?|B\d{3}[A-Za-z]?|[A-Za-z0-9]+))\b"
         )
+        primary_rows_text = " ".join(v for _, v, r in gpu_raw_rows if r == "model")
+        m_disc = re.search(DISC_PATTERN, primary_rows_text, re.I)
+        if not m_disc:
+            m_disc = re.search(DISC_PATTERN, clean_gpu_text, re.I)
+        if not m_disc and clean_title:
+            m_disc = re.search(DISC_PATTERN, clean_title, re.I)
+
+        # Check for Integrated GPU candidate across table text and title
+        INT_PATTERN = (
+            r"\b(Adreno(?:\s+GPU)?|"
+            r"Radeon(?:\s+660M|\s+780M|\s+880M|\s+Graphics)?|"
+            r"Intel\s+(?:Iris\s+X[ee]|UHD|Graphics|Arc(?:\s+Graphics)?)|"
+            r"Arc\s+Graphics|Iris\s+X[ee]|UHD\s+Graphics)\b"
+        )
+        int_rows_text = " ".join(v for _, v, r in gpu_raw_rows if r == "integrated_model")
+        m_int = re.search(INT_PATTERN, int_rows_text, re.I)
+        if not m_int:
+            m_int = re.search(INT_PATTERN, clean_gpu_text, re.I)
+        if not m_int and clean_title:
+            m_int = re.search(INT_PATTERN, clean_title, re.I)
+
+        cand_int_model = None
+        if m_int:
+            int_val = m_int.group(1).strip()
+            if int_val.lower() == "adreno":
+                cand_int_model = "Adreno GPU"
+            elif int_val.lower() == "radeon":
+                cand_int_model = "Radeon Graphics"
+            else:
+                cand_int_model = int_val
+
         if m_disc:
+            # Discrete GPU takes priority
             gpu["model"] = m_disc.group(1).strip()
             up = m_disc.group(1).upper()
-            if "RTX" in up or "GEFORCE" in up or "MX" in up:
+            if "RTX" in up or "GEFORCE" in up or "GTX" in up or "MX" in up:
                 gpu["manufacturer"] = "NVIDIA"
             elif "RADEON" in up:
                 gpu["manufacturer"] = "AMD"
             elif "ARC" in up or "INTEL" in up:
                 gpu["manufacturer"] = "Intel"
             gpu["integrated"] = False
+            if cand_int_model and cand_int_model.lower() != gpu["model"].lower():
+                gpu["secondary_model"] = cand_int_model
+        elif cand_int_model:
+            gpu["model"] = cand_int_model
+            up_int = f"{clean_gpu_text} {clean_title}".upper()
+            if "QUALCOMM" in up_int or "ADRENO" in up_int:
+                gpu["manufacturer"] = "Qualcomm"
+            elif "AMD" in up_int or "RADEON" in up_int:
+                gpu["manufacturer"] = "AMD"
+            elif "INTEL" in up_int:
+                gpu["manufacturer"] = "Intel"
+            gpu["integrated"] = True
         else:
-            # Deterministic Integrated GPU Regex
-            m_int = re.search(
-                r"\b(Adreno(?:\s+GPU)?|"
-                r"Radeon(?:\s+660M|\s+780M|\s+880M|\s+Graphics)?|"
-                r"Intel\s+(?:Iris\s+X[ee]|UHD|Graphics|Arc(?:\s+Graphics)?)|"
-                r"Arc\s+Graphics|Iris\s+X[ee]|UHD\s+Graphics)\b",
-                clean_gpu_text,
-                re.I,
-            )
-            if m_int:
-                int_model = m_int.group(1).strip()
-                if int_model.lower() == "adreno":
-                    int_model = "Adreno GPU"
-                elif int_model.lower() == "radeon":
-                    int_model = "Radeon Graphics"
-                gpu["model"] = int_model
-                up_int = clean_gpu_text.upper()
-                if "QUALCOMM" in up_int or "ADRENO" in up_int:
-                    gpu["manufacturer"] = "Qualcomm"
-                elif "AMD" in up_int or "RADEON" in up_int:
-                    gpu["manufacturer"] = "AMD"
-                elif "INTEL" in up_int:
-                    gpu["manufacturer"] = "Intel"
-                gpu["integrated"] = True
-
-        # Fallback to Title if table did not match GPU
-        if not gpu["model"] and not gpu["integrated"] and title:
-            clean_title = re.sub(r"[®™\u200e\u200f]", "", title).strip()
-            m_disc_title = re.search(
-                r"\b(GeForce\s+RTX\s+[0-9]{4}(?:\s*Ti|\s*Laptop\s+GPU)?|"
-                r"RTX\s+[0-9]{4}(?:\s*Ti|\s*Laptop\s+GPU)?|"
-                r"Radeon\s+(?:RX\s+)?[0-9A-Za-z]+|"
-                r"(?:GeForce\s+)?MX[0-9]{3}|"
-                r"Intel\s+Arc\s+\w+)\b",
-                clean_title,
-                re.I,
-            )
-            if m_disc_title:
-                gpu["model"] = m_disc_title.group(1).strip()
-                up = m_disc_title.group(1).upper()
-                gpu["manufacturer"] = "NVIDIA" if "RTX" in up or "GEFORCE" in up or "MX" in up else "AMD"
-                gpu["integrated"] = False
-            else:
-                m_int_title = re.search(
-                    r"\b(Adreno(?:\s+GPU)?|Radeon(?:\s+Graphics)?|Intel\s+(?:Iris\s+X[ee]|UHD|Graphics|Arc(?:\s+Graphics)?))\b",
-                    clean_title,
-                    re.I,
-                )
-                if m_int_title:
-                    gpu["model"] = m_int_title.group(1).strip()
-                    gpu["integrated"] = True
-
-        # Fallback: Infer integrated GPU from CPU / architecture if no GPU exists
-        if not gpu["model"] and not gpu["integrated"]:
+            # Fallback: Infer integrated GPU from CPU / architecture if no GPU exists
             cpu_ctx = (sibling_context or {}).get("cpu", "") or ""
             target_all = f"{cpu_ctx} {title}".upper()
             if "QUALCOMM" in target_all or "SNAPDRAGON" in target_all or "ADRENO" in target_all:
@@ -1614,25 +1725,21 @@ class CompumartsExtractor:
         else:
             # 2. Direct capacity without "up to"
             clean_mem = re.sub(r"\b(?:up\s+to|supports?\s+up\s+to)\s+\d+\s*(?:GB|G)?\b", "", combined_text, flags=re.I)
-            m_cap = re.search(r"\b([48]|12|16|24|32|48|64|96|128)\s*(?:GB|G)?\s*(?:DDR|LPDDR|RAM|Memory|SO-DIMM)?\b", clean_mem, re.I)
+            clean_mem = re.sub(r'\b\d+(\.\d+)?\s*(?:-inch|["″\']|inch)\b', "", clean_mem, flags=re.I)
+            m_cap = re.search(r'\b([48]|12|16|24|32|48|64|96|128)\s*(?:GB|G)\b(?!\s*(?:-inch|["″\']|inch))', clean_mem, re.I)
             if m_cap:
                 mem["capacity_gb"] = int(m_cap.group(1))
 
         # Fallback to Title if table memory was missing
         if mem["capacity_gb"] is None and title:
-            clean_title = re.sub(r"\b(?:RTX|GTX|GeForce|Radeon|Arc)\s+[0-9A-Za-z\s]+?\s+(\d+)\s*GB(?!\s*(?:RAM|DDR|SO-DIMM|Memory))\b", "", title, flags=re.I)
-            m_ram_exp = re.search(r"\b([48]|12|16|24|32|48|64|96|128)\s*(?:GB|G)\s*(?:RAM|DDR[45]|LPDDR\w*|Memory|on board)\b", clean_title, re.I)
-            if m_ram_exp:
-                mem["capacity_gb"] = int(m_ram_exp.group(1))
-            else:
-                m_ram_t = re.search(r"\b([48]|12|16|24|32|64|128)\s*(?:GB|G)\s*(?:RAM|DDR[45]|LPDDR\w*|Memory|on board)?\b", clean_title, re.I)
-                if m_ram_t:
-                    mem["capacity_gb"] = int(m_ram_t.group(1))
+            mem["capacity_gb"] = extract_title_ram(title)
 
-        # Parse compound memory fields from all raw specs and title if still missing
-        all_specs_mem = " ".join(f"{k}: {v}" for k, v in raw_specs.items()) + " " + title
-        if mem["max_supported_gb"] is None:
-            m_max_c = re.search(r"(?:max(?:imum)?(?:\s+supported|\s+memory|\s+capacity)?|\bup\s+to|\bmax\b)\s*:?\s*(\d+)\s*(?:GB|G)\b", all_specs_mem, re.I)
+        # Parse compound memory fields from memory-specific raw specs and title if still missing
+        mem_specs_rows = [f"{k}: {v}" for k, v in raw_specs.items() if any(w in k.lower() for w in ["memory", "ram", "standard memory"])]
+        all_specs_mem = " ".join(mem_specs_rows) if mem_specs_rows else " ".join(f"{k}: {v}" for k, v in raw_specs.items()) + " " + title
+        if mem["max_supported_gb"] is None and mem_specs_rows:
+            mem_text = " ".join(mem_specs_rows)
+            m_max_c = re.search(r"(?:max(?:imum)?(?:\s+supported|\s+memory|\s+capacity)?|\bup\s+to)\s*:?\s*(\d+)\s*(?:GB|G)\b", mem_text, re.I)
             if m_max_c:
                 mem["max_supported_gb"] = int(m_max_c.group(1))
 
@@ -1804,14 +1911,21 @@ class CompumartsExtractor:
                         val = int(m_st_t.group(1))
                         storage["capacity_gb"] = val * 1024 if val in (1, 2, 4, 8) else val
 
-        # Interface & Form factor detection
+        # Interface & Form factor detection across combined_text and title
         if not storage["interface"]:
-            if re.search(r"PCIe\s*(?:Gen\s*)?4|Gen4|PCIe\s*4\.0", combined_text, re.I):
+            all_storage_text = f"{combined_text} {title}"
+            if re.search(r"PCIe\s*(?:Gen\s*)?5(?:\.0)?|Gen5|PCIe\s*5\.0", all_storage_text, re.I):
+                storage["interface"] = "PCIe 5.0 NVMe"
+            elif re.search(r"PCIe\s*(?:Gen\s*)?4(?:\.0)?|Gen4|PCIe\s*4\.0", all_storage_text, re.I):
                 storage["interface"] = "PCIe 4.0 NVMe"
-            elif re.search(r"PCIe\s*(?:Gen\s*)?3|Gen3", combined_text, re.I):
+            elif re.search(r"PCIe\s*(?:Gen\s*)?3(?:\.0)?|Gen3|PCIe\s*3\.0", all_storage_text, re.I):
                 storage["interface"] = "PCIe 3.0 NVMe"
-            elif re.search(r"NVMe", combined_text, re.I):
+            elif re.search(r"\bPCIe(?:\s*NVMe)?\b", all_storage_text, re.I):
+                storage["interface"] = "PCIe NVMe"
+            elif re.search(r"\bNVMe\b", all_storage_text, re.I):
                 storage["interface"] = "NVMe"
+            elif re.search(r"\bSATA\b", all_storage_text, re.I):
+                storage["interface"] = "SATA"
 
         if not storage["form_factor"]:
             m_ff_c = re.search(r"M\.2\s*(2230|2242|2280)", combined_text, re.I)
@@ -1967,18 +2081,63 @@ class CompumartsExtractor:
             disp["resolution"] = f"{w} x {h}"
             disp["resolution_width"] = w
             disp["resolution_height"] = h
+        elif re.search(r"\bWUXGA\b|\bFHD\+(?!\w)", combined_text, re.I):
+            disp["resolution"] = "1920 x 1200"
+            disp["resolution_width"] = 1920
+            disp["resolution_height"] = 1200
         elif re.search(r"\bFHD\b|Full\s+HD", combined_text, re.I):
             disp["resolution"] = "1920 x 1080"
             disp["resolution_width"] = 1920
             disp["resolution_height"] = 1080
-        elif re.search(r"\bWUXGA\b", combined_text, re.I):
-            disp["resolution"] = "1920 x 1200"
-            disp["resolution_width"] = 1920
-            disp["resolution_height"] = 1200
-        elif re.search(r"\bWQXGA\b|2\.5K|2K", combined_text, re.I):
+        elif re.search(r"\b(?:WQXGA|2\.5K)\b|\bQHD\+(?!\w)", combined_text, re.I):
             disp["resolution"] = "2560 x 1600"
             disp["resolution_width"] = 2560
             disp["resolution_height"] = 1600
+        elif re.search(r"\b(?:QHD|2K)\b", combined_text, re.I):
+            disp["resolution"] = "2560 x 1440"
+            disp["resolution_width"] = 2560
+            disp["resolution_height"] = 1440
+        elif re.search(r"\b3K\b", combined_text, re.I):
+            disp["resolution"] = "2880 x 1800"
+            disp["resolution_width"] = 2880
+            disp["resolution_height"] = 1800
+        elif re.search(r"\b(?:UHD|4K)\b", combined_text, re.I):
+            disp["resolution"] = "3840 x 2160"
+            disp["resolution_width"] = 3840
+            disp["resolution_height"] = 2160
+
+        # Title Resolution Fallback if not resolved from table
+        if disp["resolution"] is None and title:
+            m_res_t = re.search(r"(\d{3,4})\s*[xX*×]\s*(\d{3,4})", title)
+            if m_res_t:
+                w, h = int(m_res_t.group(1)), int(m_res_t.group(2))
+                disp["resolution"] = f"{w} x {h}"
+                disp["resolution_width"] = w
+                disp["resolution_height"] = h
+            elif re.search(r"\bWUXGA\b|\bFHD\+(?!\w)", title, re.I):
+                disp["resolution"] = "1920 x 1200"
+                disp["resolution_width"] = 1920
+                disp["resolution_height"] = 1200
+            elif re.search(r"\bFHD\b|Full\s+HD", title, re.I):
+                disp["resolution"] = "1920 x 1080"
+                disp["resolution_width"] = 1920
+                disp["resolution_height"] = 1080
+            elif re.search(r"\b(?:WQXGA|2\.5K)\b|\bQHD\+(?!\w)", title, re.I):
+                disp["resolution"] = "2560 x 1600"
+                disp["resolution_width"] = 2560
+                disp["resolution_height"] = 1600
+            elif re.search(r"\b(?:QHD|2K)\b", title, re.I):
+                disp["resolution"] = "2560 x 1440"
+                disp["resolution_width"] = 2560
+                disp["resolution_height"] = 1440
+            elif re.search(r"\b3K\b", title, re.I):
+                disp["resolution"] = "2880 x 1800"
+                disp["resolution_width"] = 2880
+                disp["resolution_height"] = 1800
+            elif re.search(r"\b(?:UHD|4K)\b", title, re.I):
+                disp["resolution"] = "3840 x 2160"
+                disp["resolution_width"] = 3840
+                disp["resolution_height"] = 2160
 
         # Refresh Rate Fallback
         if disp["refresh_rate_hz"] is None:
@@ -2558,37 +2717,50 @@ class CompumartsExtractor:
             role = self.AUDIO_WEBCAM_KEYWORDS.get(k_clean) or self.AUDIO_WEBCAM_KEYWORDS.get(k_norm)
             v_str = str(raw_v).strip()
 
-            if role == "webcam" and not webcam["resolution"]:
-                webcam["resolution"] = v_str
-            elif role in ("microphone", "built_in_devices") and not audio["microphone"]:
-                if re.search(r"\bmicrophone|mic\b", v_str, re.I):
-                    audio["microphone"] = "Built-in Microphone"
-                elif role == "microphone":
+            is_audio_cam_row = (
+                role is not None
+                or any(w in k_clean for w in ["audio", "sound", "speaker", "camera", "webcam", "microphone", "mic", "built-in devices", "built in devices"])
+            )
+            if not is_audio_cam_row:
+                continue
+
+            # 1. Webcam Resolution extraction
+            if not webcam["resolution"] and (
+                role in ("webcam", "built_in_devices")
+                or re.search(r"\b(camera|webcam)\b", k_clean + " " + v_str, re.I)
+            ):
+                m_cam = re.search(r"\b(\d{3,4}\s*p|HD|FHD|QHD|\d+(?:\.\d+)?\s*(?:MP|M\b))\b", v_str, re.I)
+                if m_cam:
+                    webcam["resolution"] = m_cam.group(0).strip()
+                elif role == "webcam" and not re.search(r"\bno\b|\bnone\b|\bn/a\b", v_str, re.I):
+                    webcam["resolution"] = v_str
+
+            # 2. Microphone extraction
+            if not audio["microphone"] and (
+                role in ("microphone", "speakers", "built_in_devices", "webcam")
+                or re.search(r"\b(microphone|mic)\b", k_clean + " " + v_str, re.I)
+            ):
+                if re.search(r"\b(array\s+microphone|built-in\s+(?:array\s+)?microphone|dual\s+(?:array\s+)?microphone|digital\s+microphone|integrated\s+microphone|microphone|mic)\b", v_str, re.I):
+                    m_mic_full = re.search(r"((?:Built-in\s+)?(?:array|dual|digital|stereo)?\s*microphones?(?:\s*with[^\.\,\|]+)?)", v_str, re.I)
+                    if m_mic_full:
+                        audio["microphone"] = m_mic_full.group(1).strip()
+                    else:
+                        audio["microphone"] = "Built-in Microphone"
+                elif role == "microphone" and not re.search(r"\bno\b|\bnone\b|\bn/a\b", v_str, re.I):
                     audio["microphone"] = v_str
 
-            if role in ("speakers", "built_in_devices") and audio["speaker_count"] is None:
-                m_sp = re.search(r"(\d+)\s*(?:x\s*\d+W|speakers?)", v_str, re.I)
+            # 3. Speakers extraction
+            if audio["speaker_count"] is None and (
+                role in ("speakers", "built_in_devices", "webcam")
+                or re.search(r"\b(speaker|sound|audio)\b", k_clean + " " + v_str, re.I)
+            ):
+                m_sp = re.search(r"(\d+)\s*(?:x\s*\d+(?:\.\d+)?\s*W|\s*(?:Tuned\s+)?speakers?)", v_str, re.I)
                 if m_sp:
                     audio["speaker_count"] = int(m_sp.group(1))
-                elif re.search(r"\b(?:dual|two|2x)\b", v_str, re.I):
+                elif re.search(r"\b(?:dual|two|2x|2\s+tuned)\b", v_str, re.I):
                     audio["speaker_count"] = 2
                 elif re.search(r"\b(?:quad|four|4x)\b", v_str, re.I):
                     audio["speaker_count"] = 4
-
-        if audio["speaker_count"] is None:
-            for k, v in raw_specs.items():
-                if v and any(w in k.lower() for w in ["audio", "sound", "speaker"]):
-                    v_s = str(v)
-                    m_sp = re.search(r"(\d+)\s*(?:x\s*\d+W|speakers?)", v_s, re.I)
-                    if m_sp:
-                        audio["speaker_count"] = int(m_sp.group(1))
-                        break
-                    elif re.search(r"\b(?:dual|two|2x)\b", v_s, re.I):
-                        audio["speaker_count"] = 2
-                        break
-                    elif re.search(r"\b(?:quad|four|4x)\b", v_s, re.I):
-                        audio["speaker_count"] = 4
-                        break
 
         # Field validation
         if webcam["resolution"]:
@@ -2875,21 +3047,33 @@ class CompumartsExtractor:
 
         # Title vs Table reconciliation
         conflicts = []
-        m_t_ram = re.search(r"\b([48]|12|16|24|32|48|64|96|128)\s*(?:GB|G)\s*(?:RAM|DDR[45]|LPDDR\w*|Memory)?\b", clean_title, re.I)
-        if m_t_ram and mem.get("capacity_gb"):
-            t_ram_val = int(m_t_ram.group(1))
+        t_ram_val = extract_title_ram(clean_title)
+        if t_ram_val and mem.get("capacity_gb"):
             if t_ram_val != mem["capacity_gb"]:
-                conflicts.append({
-                    "field": "memory.capacity_gb",
-                    "title_value": t_ram_val,
-                    "table_value": mem["capacity_gb"],
-                    "chosen": mem["capacity_gb"],
-                    "reason": "table_priority",
-                })
+                table_val = mem["capacity_gb"]
+                disp_size = display.get("size_inches")
+                if disp_size and (table_val == round(disp_size) or table_val == int(disp_size)):
+                    mem["capacity_gb"] = t_ram_val
+                    conflicts.append({
+                        "field": "memory.capacity_gb",
+                        "title_value": t_ram_val,
+                        "table_value": table_val,
+                        "chosen": t_ram_val,
+                        "reason": "table_value_looks_like_screen_size",
+                        "needs_review": True,
+                    })
+                else:
+                    conflicts.append({
+                        "field": "memory.capacity_gb",
+                        "title_value": t_ram_val,
+                        "table_value": table_val,
+                        "chosen": table_val,
+                        "reason": "table_priority",
+                        "needs_review": True,
+                    })
 
-        m_t_st = re.search(r"\b(128|256|512|1024|2048|4096)\s*(?:GB|G)\b|\b([1248])\s*TB\b", clean_title, re.I)
-        if m_t_st and storage.get("capacity_gb"):
-            t_st_val = int(m_t_st.group(2)) * 1024 if m_t_st.group(2) else int(m_t_st.group(1))
+        t_st_val = extract_title_storage(clean_title)
+        if t_st_val and storage.get("capacity_gb"):
             if t_st_val != storage["capacity_gb"]:
                 conflicts.append({
                     "field": "storage.capacity_gb",
@@ -2897,6 +3081,7 @@ class CompumartsExtractor:
                     "table_value": storage["capacity_gb"],
                     "chosen": storage["capacity_gb"],
                     "reason": "table_priority",
+                    "needs_review": True,
                 })
 
         m_t_hz = re.search(r"\b(60|90|120|144|165|180|240|300|360)\s*Hz\b", clean_title, re.I)
@@ -2909,6 +3094,33 @@ class CompumartsExtractor:
                     "table_value": display["refresh_rate_hz"],
                     "chosen": display["refresh_rate_hz"],
                     "reason": "table_priority",
+                    "needs_review": True,
+                })
+
+        # GPU conflict checking
+        m_t_gpu = re.search(
+            r"\b(GeForce\s+RTX\s+[0-9]{4}(?:\s*Ti|\s*Laptop\s+GPU)?|"
+            r"RTX\s+[0-9]{4}(?:\s*Ti|\s*Laptop\s+GPU)?|"
+            r"GeForce\s+GTX\s+[0-9]{4}(?:\s*Ti)?|"
+            r"GTX\s+[0-9]{4}(?:\s*Ti)?|"
+            r"Radeon\s+(?:RX\s+|PRO\s+)?[0-9]{4}[A-Za-z]*|"
+            r"(?:GeForce\s+)?MX[0-9]{3}|"
+            r"Intel\s+Arc\s+(?:A\d{3}[A-Za-z]?|B\d{3}[A-Za-z]?|[A-Za-z0-9]+))\b",
+            clean_title,
+            re.I,
+        )
+        if m_t_gpu and gpu.get("model"):
+            t_gpu_val = m_t_gpu.group(1).strip()
+            t_norm = re.sub(r"\s+", "", t_gpu_val.lower())
+            m_norm = re.sub(r"\s+", "", gpu["model"].lower())
+            if t_norm not in m_norm and m_norm not in t_norm:
+                conflicts.append({
+                    "field": "gpu.model",
+                    "title_value": t_gpu_val,
+                    "table_value": gpu["model"],
+                    "chosen": gpu["model"],
+                    "reason": "discrete_priority" if not gpu.get("integrated") else "table_priority",
+                    "needs_review": True,
                 })
 
         structured: dict[str, Any] = empty_structured()
@@ -2930,16 +3142,12 @@ class CompumartsExtractor:
         structured["condition"] = self.detect_condition(clean_specs, clean_title)
 
         if metadata:
-            if metadata.get("price") is not None:
-                try:
-                    structured["price_egp"] = float(metadata["price"])
-                except (ValueError, TypeError):
-                    pass
-            elif metadata.get("price_egp") is not None:
-                try:
-                    structured["price_egp"] = float(metadata["price_egp"])
-                except (ValueError, TypeError):
-                    pass
+            raw_p = metadata.get("price") if metadata.get("price") is not None else metadata.get("price_egp")
+            if raw_p is not None:
+                v_price, err_price = validate_price_egp(raw_p)
+                structured["price_egp"] = v_price
+                if err_price:
+                    all_rejections.append({"field": "price_egp", "value": raw_p, "rule": err_price})
             if metadata.get("in_stock") is not None:
                 structured["in_stock"] = bool(metadata["in_stock"])
 
@@ -2957,5 +3165,8 @@ class CompumartsExtractor:
 
         # Layer 2: Hardware Physical Sanity Gate
         structured, all_envelopes = self.apply_sanity_gate(structured, all_envelopes, clean_specs, clean_title)
+
+        # Layer 3: Cross-Field Consistency Validation
+        validate_consistency(structured, raw_specs=clean_specs)
 
         return structured, all_envelopes

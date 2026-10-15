@@ -114,8 +114,13 @@
   "X1P-64-100": {"manufacturer": "Qualcomm", "line": "Snapdragon X Plus", "model": "X1P-64-100", "cores": 10, "threads": 10, "clock_base_ghz": 3.4, "clock_boost_ghz": 3.4},
   "X1P-46-100": {"manufacturer": "Qualcomm", "line": "Snapdragon X Plus", "model": "X1P-46-100", "cores": 8, "threads": 8, "clock_base_ghz": 3.4, "clock_boost_ghz": 4.0},
   "X1P-42-100": {"manufacturer": "Qualcomm", "line": "Snapdragon X Plus", "model": "X1P-42-100", "cores": 8, "threads": 8, "clock_base_ghz": 3.2, "clock_boost_ghz": 3.4},
+  "X1-26-100": {"manufacturer": "Qualcomm", "line": "Snapdragon X", "model": "X1-26-100", "cores": 8, "threads": 8, "clock_base_ghz": 2.97, "clock_boost_ghz": 2.97},
+  "240H": {"manufacturer": "Intel", "line": "Core 7", "model": "240H", "cores": 10, "threads": 16, "clock_base_ghz": 2.5, "clock_boost_ghz": 5.2},
+  "270H": {"manufacturer": "Intel", "line": "Core 9", "model": "270H", "cores": 14, "threads": 20, "clock_base_ghz": 2.7, "clock_boost_ghz": 5.8},
+  "170": {"manufacturer": "AMD", "line": "Ryzen 7", "model": "170", "cores": 8, "threads": 16, "clock_base_ghz": 3.2, "clock_boost_ghz": 4.75},
   "M4": {"manufacturer": "Apple", "line": "Apple M4", "model": "M4", "cores": 10, "threads": 10, "clock_base_ghz": 4.4, "clock_boost_ghz": 4.4},
   "M3": {"manufacturer": "Apple", "line": "Apple M3", "model": "M3", "cores": 8, "threads": 8, "clock_base_ghz": 4.05, "clock_boost_ghz": 4.05},
   "M2": {"manufacturer": "Apple", "line": "Apple M2", "model": "M2", "cores": 8, "threads": 8, "clock_base_ghz": 3.5, "clock_boost_ghz": 3.5},
   "M1": {"manufacturer": "Apple", "line": "Apple M1", "model": "M1", "cores": 8, "threads": 8, "clock_base_ghz": 3.2, "clock_boost_ghz": 3.2}
 }
+

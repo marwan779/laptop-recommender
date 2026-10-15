@@ -60,3 +60,4 @@ def test_atomic_file_write(tmp_path):
     with open(target_file, "r", encoding="utf-8") as f:
         loaded = json.load(f)
     assert loaded == [{"test": 123}]
+

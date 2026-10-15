@@ -81,3 +81,4 @@ def test_hybrid_extractor_status_determination():
     
     structured, _ = extractor.extract("Acer Nitro 5", {}, store="compumarts")
     assert structured["extraction_meta"]["status"] == "ok"
+

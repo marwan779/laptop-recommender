@@ -133,3 +133,4 @@ def test_token_budget_never_exceeded_on_complex_envelopes():
         prompt_text = env.format_gliner_text()
         tokens = count_tokens(prompt_text, env.target_labels)
         assert tokens <= GLINER_MAX_TOKENS, f"Envelope {env.target_area} exceeded budget: {tokens} tokens > {GLINER_MAX_TOKENS}"
+

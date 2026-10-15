@@ -1,0 +1,206 @@
+{
+  "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-core-i9-13900h-rtx-5050-165hz-egypt",
+  "title": "Acer Nitro V 15 ANV15-52-9340 Gaming Laptop – Core i9-13900H, RTX 5050 8GB GDDR7, 16GB RAM, 512GB NVMe, 15.6\" FHD IPS 165Hz, Black",
+  "metadata": {
+    "sku": "NH.QZ9EM.002",
+    "price_egp": 62999.0,
+    "price_str": "62,999.00 EGP",
+    "in_stock": true
+  },
+  "metrics": {
+    "total_latency_seconds": 10.64,
+    "tier1_latency_seconds": 0.0135,
+    "nuextract_latency_seconds": 10.62,
+    "nuextract_calls_count": 4,
+    "missing_areas_targeted": [
+      "audio_webcam",
+      "power_battery",
+      "storage",
+      "memory"
+    ]
+  },
+  "structured": {
+    "identity": {
+      "brand": "Acer",
+      "laptop_family": "Nitro V 15",
+      "laptop_model": null,
+      "manufacturer_part_number": "NH.QZ9EM.002"
+    },
+    "cpu": {
+      "manufacturer": "Intel",
+      "line": "Core i9",
+      "model": "Intel Core i9-13900H",
+      "series": null,
+      "full_name": "Intel Core i9 Intel Core i9-13900H",
+      "cores": 14,
+      "threads": 20,
+      "clock_speed": "2.60 GHz",
+      "clock_base_ghz": 2.6,
+      "clock_boost_ghz": 5.4
+    },
+    "gpu": {
+      "manufacturer": "NVIDIA",
+      "model": "GeForce RTX 5050",
+      "secondary_model": null,
+      "full_name": null,
+      "vram_gb": 8,
+      "tdp_w": 75,
+      "integrated": false
+    },
+    "memory": {
+      "capacity_gb": 16,
+      "memory_type": "DDR5",
+      "speed": 5600,
+      "slot_count": null,
+      "max_supported_gb": 32
+    },
+    "storage": {
+      "capacity_gb": 512,
+      "storage_type": "SSD",
+      "interface": "PCIe NVMe",
+      "form_factor": "M.2",
+      "slot_count": null,
+      "max_supported_gb": null,
+      "summary": null
+    },
+    "display": {
+      "size_inches": 15.6,
+      "resolution": "1920 x 1080",
+      "resolution_width": 1920,
+      "resolution_height": 1080,
+      "panel_type": null,
+      "refresh_rate_hz": 165,
+      "touchscreen": false,
+      "aspect_ratio": "16:9",
+      "summary": null
+    },
+    "power_battery": {
+      "battery_capacity_wh": 76.0,
+      "battery_cells": null,
+      "power_adapter_w": 135,
+      "summary": "76Wh"
+    },
+    "connectivity": {
+      "wifi": "Wi-Fi 6",
+      "bluetooth": "Bluetooth 5.2",
+      "ethernet": "Gigabit Ethernet",
+      "ports": [
+        "Ethernet: Gigabit Ethernet",
+        "HDMI Port: 1 x HDMI",
+        "USB 3.2 Gen 1 Type-A: 3 Ports",
+        "USB 3.2 Gen 2 Type-C: 1 Port",
+        "Thunderbolt: 1 Port",
+        "Total USB Ports: 4 Ports",
+        "RJ-45 Ethernet Port: Yes"
+      ]
+    },
+    "operating_system": {
+      "name": "Windows 11 Home"
+    },
+    "physical": {
+      "weight_kg": 2.11,
+      "color": "Black",
+      "width_mm": 362.3,
+      "depth_mm": 239.9,
+      "height_mm": 23.5
+    },
+    "build": {
+      "has_backlit_keyboard": true,
+      "has_fingerprint": false,
+      "pointing_device": null,
+      "security_features": "Kensington Lock Slot, Firmware TPM, BIOS User Password, BIOS Supervisor Password"
+    },
+    "audio": {
+      "speaker_count": 2,
+      "microphone": "Built-in Microphone"
+    },
+    "webcam": {
+      "resolution": null
+    },
+    "product_type": "laptop",
+    "condition": "new",
+    "price_egp": 62999.0,
+    "in_stock": true,
+    "listing_in_stock": null,
+    "pdp_in_stock": null,
+    "completeness_score": 0.0,
+    "quality_flags": [],
+    "extraction_meta": {
+      "status": "ok",
+      "source_mismatch": false,
+      "warnings": [],
+      "rejected": [
+        {
+          "field": "power_battery.battery_cells",
+          "value": [
+            "Lithium-Ion (Li-Ion)",
+            "Battery Capacity: 76Wh",
+            "Battery Runtime: Up to 9.5 Hours",
+            "Video Playback Battery Life: Up to 9.5 Hours",
+            "Web Browsing Battery Life: Up to 7.5 Hours"
+          ],
+          "rule": "battery_cells_ambiguous_range"
+        }
+      ],
+      "conflicts": [],
+      "field_sources": {
+        "identity.brand": "tier1",
+        "identity.laptop_family": "tier1",
+        "identity.manufacturer_part_number": "tier1",
+        "cpu.manufacturer": "tier1",
+        "cpu.line": "tier1",
+        "cpu.model": "tier1",
+        "cpu.full_name": "tier1",
+        "cpu.cores": "tier1",
+        "cpu.threads": "tier1",
+        "cpu.clock_speed": "tier1",
+        "cpu.clock_base_ghz": "tier1",
+        "cpu.clock_boost_ghz": "tier1",
+        "gpu.manufacturer": "tier1",
+        "gpu.model": "tier1",
+        "gpu.vram_gb": "tier1",
+        "gpu.tdp_w": "tier1",
+        "memory.capacity_gb": "tier1",
+        "memory.memory_type": "tier1",
+        "memory.speed": "tier1",
+        "memory.max_supported_gb": "tier1",
+        "storage.capacity_gb": "tier1",
+        "storage.storage_type": "tier1",
+        "storage.interface": "tier1",
+        "storage.form_factor": "tier1",
+        "display.size_inches": "tier1",
+        "display.resolution": "tier1",
+        "display.resolution_width": "tier1",
+        "display.resolution_height": "tier1",
+        "display.refresh_rate_hz": "tier1",
+        "display.aspect_ratio": "tier1",
+        "power_battery.battery_capacity_wh": "tier1",
+        "power_battery.power_adapter_w": "tier1",
+        "power_battery.summary": "tier1",
+        "connectivity.wifi": "tier1",
+        "connectivity.bluetooth": "tier1",
+        "connectivity.ethernet": "tier1",
+        "connectivity.ports": "tier1",
+        "operating_system.name": "tier1",
+        "physical.weight_kg": "tier1",
+        "physical.color": "tier1",
+        "physical.width_mm": "tier1",
+        "physical.depth_mm": "tier1",
+        "physical.height_mm": "tier1",
+        "build.has_backlit_keyboard": "tier1",
+        "build.security_features": "tier1",
+        "audio.speaker_count": "tier1",
+        "audio.microphone": "tier1"
+      },
+      "unmapped_keys": [
+        "Panel Technology",
+        "Screen Finish",
+        "Acer Nitro V 15 ANV15-52-9340 Gaming Laptop"
+      ],
+      "tokens": {
+        "max": 0,
+        "truncations_prevented": 0
+      }
+    }
+  }
+}

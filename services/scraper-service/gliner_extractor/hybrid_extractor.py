@@ -21,6 +21,7 @@ from gliner_extractor.validators import (
     normalize_cpu_line,
     validate_battery_capacity,
     validate_battery_cells,
+    validate_consistency,
     validate_bluetooth,
     validate_brand,
     validate_color,
@@ -33,6 +34,7 @@ from gliner_extractor.validators import (
     validate_os_name,
     validate_panel_type,
     validate_power_adapter,
+    validate_price_egp,
     validate_ram_capacity,
     validate_ram_slots,
     validate_ram_speed,
@@ -119,7 +121,7 @@ class HybridLaptopExtractor:
 
             cand_mpn = metadata.get("mpn") or metadata.get("retailer_sku") or metadata.get("sku")
             if cand_mpn and not structured["identity"].get("manufacturer_part_number"):
-                v_mpn, err = validate_mpn(cand_mpn)
+                v_mpn, err = validate_mpn(cand_mpn, title=title, brand=structured["identity"].get("brand") or metadata.get("brand"))
                 if v_mpn:
                     structured["identity"]["manufacturer_part_number"] = v_mpn
                     sources["identity.manufacturer_part_number"] = "metadata"
@@ -134,16 +136,13 @@ class HybridLaptopExtractor:
                 elif err:
                     rejections.append({"field": "identity.brand", "value": metadata["brand"], "rule": err})
 
-            if metadata.get("price") is not None and structured.get("price_egp") is None:
-                try:
-                    structured["price_egp"] = float(metadata["price"])
-                except (ValueError, TypeError):
-                    pass
-            elif metadata.get("price_egp") is not None and structured.get("price_egp") is None:
-                try:
-                    structured["price_egp"] = float(metadata["price_egp"])
-                except (ValueError, TypeError):
-                    pass
+            if structured.get("price_egp") is None:
+                cand_p = metadata.get("price") if metadata.get("price") is not None else metadata.get("price_egp")
+                if cand_p is not None:
+                    v_price, err_p = validate_price_egp(cand_p)
+                    structured["price_egp"] = v_price
+                    if err_p:
+                        rejections.append({"field": "price_egp", "value": cand_p, "rule": err_p})
 
             if metadata.get("in_stock") is not None and "in_stock" in structured:
                 structured["in_stock"] = bool(metadata["in_stock"])
@@ -197,7 +196,11 @@ class HybridLaptopExtractor:
                 txt = ent.get("text", "").strip()
                 if not txt:
                     continue
-                self._apply_entity(structured, lbl, txt)
+                try:
+                    self._apply_entity(structured, lbl, txt)
+                except Exception as exc:
+                    logger.warning("Error applying GLiNER entity '%s' (%s): %s", lbl, txt, exc)
+                    structured["extraction_meta"]["warnings"].append(f"apply_entity_error_{lbl}: {str(exc)}")
 
         # Tier 2.5: Identity resolution (Model/Family from Title) if still missing
         needs_model = not structured["identity"].get("laptop_model")
@@ -207,7 +210,7 @@ class HybridLaptopExtractor:
             m_code = re.search(r"\b([A-Z0-9]{3,8}-[A-Z0-9]{2,6}(?:-[A-Z0-9]{2,6})?|[0-9]{2}[A-Z0-9]{6,10})\b", title)
             if m_code:
                 code_str = m_code.group(1)
-                v_mpn, _ = validate_mpn(code_str)
+                v_mpn, _ = validate_mpn(code_str, title=title, brand=structured["identity"].get("brand"))
                 if v_mpn and not structured["identity"].get("manufacturer_part_number"):
                     structured["identity"]["manufacturer_part_number"] = v_mpn
                     structured["extraction_meta"]["field_sources"]["identity.manufacturer_part_number"] = "title"
@@ -238,6 +241,9 @@ class HybridLaptopExtractor:
                     logger.warning("Tier 2.5 GLiNER extraction failed: %s", exc)
                     structured["extraction_meta"]["warnings"].append(f"tier2.5_gliner_error: {str(exc)}")
 
+        # Cross-field consistency validation
+        validate_consistency(structured, raw_specs=specs)
+
         # Determine extraction_meta status
         if structured["extraction_meta"].get("status") != "failed":
             has_core = (
@@ -247,7 +253,8 @@ class HybridLaptopExtractor:
                 and structured["storage"].get("capacity_gb") is not None
             )
             has_rejections = bool(structured["extraction_meta"].get("rejected"))
-            if has_core and not has_rejections:
+            has_conflicts = any(c.get("needs_review") for c in structured["extraction_meta"].get("conflicts", []))
+            if has_core and not has_rejections and not has_conflicts:
                 structured["extraction_meta"]["status"] = "ok"
             else:
                 structured["extraction_meta"]["status"] = "partial"

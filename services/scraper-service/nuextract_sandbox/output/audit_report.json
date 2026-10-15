@@ -1,0 +1,360 @@
+{
+  "total_laptops": 113,
+  "status_distribution": {
+    "partial": 45,
+    "ok": 68
+  },
+  "field_statistics": {
+    "identity.brand": {
+      "populated": 113,
+      "tier1": 113,
+      "nuextract": 0,
+      "null": 0
+    },
+    "identity.laptop_family": {
+      "populated": 104,
+      "tier1": 104,
+      "nuextract": 0,
+      "null": 9
+    },
+    "identity.laptop_model": {
+      "populated": 105,
+      "tier1": 105,
+      "nuextract": 0,
+      "null": 8
+    },
+    "identity.manufacturer_part_number": {
+      "populated": 106,
+      "tier1": 106,
+      "nuextract": 0,
+      "null": 7
+    },
+    "cpu.manufacturer": {
+      "populated": 113,
+      "tier1": 113,
+      "nuextract": 0,
+      "null": 0
+    },
+    "cpu.line": {
+      "populated": 111,
+      "tier1": 111,
+      "nuextract": 0,
+      "null": 2
+    },
+    "cpu.model": {
+      "populated": 113,
+      "tier1": 113,
+      "nuextract": 0,
+      "null": 0
+    },
+    "cpu.cores": {
+      "populated": 109,
+      "tier1": 109,
+      "nuextract": 0,
+      "null": 4
+    },
+    "cpu.threads": {
+      "populated": 108,
+      "tier1": 108,
+      "nuextract": 0,
+      "null": 5
+    },
+    "cpu.clock_speed": {
+      "populated": 83,
+      "tier1": 83,
+      "nuextract": 0,
+      "null": 30
+    },
+    "cpu.cache_mb": {
+      "populated": 56,
+      "tier1": 56,
+      "nuextract": 0,
+      "null": 57
+    },
+    "gpu.manufacturer": {
+      "populated": 113,
+      "tier1": 113,
+      "nuextract": 0,
+      "null": 0
+    },
+    "gpu.model": {
+      "populated": 113,
+      "tier1": 113,
+      "nuextract": 0,
+      "null": 0
+    },
+    "gpu.vram_gb": {
+      "populated": 90,
+      "tier1": 90,
+      "nuextract": 0,
+      "null": 23
+    },
+    "gpu.tdp_w": {
+      "populated": 43,
+      "tier1": 43,
+      "nuextract": 0,
+      "null": 70
+    },
+    "gpu.integrated": {
+      "populated": 113,
+      "tier1": 21,
+      "nuextract": 0,
+      "null": 0
+    },
+    "memory.capacity_gb": {
+      "populated": 113,
+      "tier1": 113,
+      "nuextract": 0,
+      "null": 0
+    },
+    "memory.memory_type": {
+      "populated": 108,
+      "tier1": 108,
+      "nuextract": 0,
+      "null": 5
+    },
+    "memory.speed": {
+      "populated": 72,
+      "tier1": 72,
+      "nuextract": 0,
+      "null": 41
+    },
+    "memory.slot_count": {
+      "populated": 18,
+      "tier1": 18,
+      "nuextract": 0,
+      "null": 95
+    },
+    "memory.max_supported_gb": {
+      "populated": 43,
+      "tier1": 43,
+      "nuextract": 0,
+      "null": 70
+    },
+    "storage.capacity_gb": {
+      "populated": 113,
+      "tier1": 113,
+      "nuextract": 0,
+      "null": 0
+    },
+    "storage.storage_type": {
+      "populated": 113,
+      "tier1": 113,
+      "nuextract": 0,
+      "null": 0
+    },
+    "storage.interface": {
+      "populated": 104,
+      "tier1": 104,
+      "nuextract": 0,
+      "null": 9
+    },
+    "storage.form_factor": {
+      "populated": 87,
+      "tier1": 87,
+      "nuextract": 0,
+      "null": 26
+    },
+    "storage.slot_count": {
+      "populated": 26,
+      "tier1": 26,
+      "nuextract": 0,
+      "null": 87
+    },
+    "display.size_inches": {
+      "populated": 113,
+      "tier1": 113,
+      "nuextract": 0,
+      "null": 0
+    },
+    "display.resolution": {
+      "populated": 111,
+      "tier1": 111,
+      "nuextract": 0,
+      "null": 2
+    },
+    "display.refresh_rate_hz": {
+      "populated": 102,
+      "tier1": 102,
+      "nuextract": 0,
+      "null": 11
+    },
+    "display.panel_type": {
+      "populated": 87,
+      "tier1": 87,
+      "nuextract": 0,
+      "null": 26
+    },
+    "display.aspect_ratio": {
+      "populated": 111,
+      "tier1": 111,
+      "nuextract": 0,
+      "null": 2
+    },
+    "display.touchscreen": {
+      "populated": 113,
+      "tier1": 2,
+      "nuextract": 0,
+      "null": 0
+    },
+    "power_battery.battery_capacity_wh": {
+      "populated": 78,
+      "tier1": 77,
+      "nuextract": 1,
+      "null": 35
+    },
+    "power_battery.power_adapter_w": {
+      "populated": 74,
+      "tier1": 74,
+      "nuextract": 0,
+      "null": 39
+    },
+    "power_battery.battery_cells": {
+      "populated": 36,
+      "tier1": 36,
+      "nuextract": 0,
+      "null": 77
+    },
+    "physical.weight_kg": {
+      "populated": 63,
+      "tier1": 62,
+      "nuextract": 1,
+      "null": 50
+    },
+    "physical.color": {
+      "populated": 83,
+      "tier1": 79,
+      "nuextract": 4,
+      "null": 30
+    },
+    "physical.width_mm": {
+      "populated": 52,
+      "tier1": 49,
+      "nuextract": 3,
+      "null": 61
+    },
+    "physical.depth_mm": {
+      "populated": 52,
+      "tier1": 49,
+      "nuextract": 3,
+      "null": 61
+    },
+    "physical.height_mm": {
+      "populated": 57,
+      "tier1": 50,
+      "nuextract": 7,
+      "null": 56
+    },
+    "build.has_backlit_keyboard": {
+      "populated": 78,
+      "tier1": 76,
+      "nuextract": 1,
+      "null": 35
+    },
+    "build.has_fingerprint": {
+      "populated": 13,
+      "tier1": 1,
+      "nuextract": 0,
+      "null": 100
+    },
+    "build.pointing_device": {
+      "populated": 0,
+      "tier1": 0,
+      "nuextract": 0,
+      "null": 113
+    },
+    "build.security_features": {
+      "populated": 44,
+      "tier1": 44,
+      "nuextract": 0,
+      "null": 69
+    },
+    "audio.speaker_count": {
+      "populated": 61,
+      "tier1": 19,
+      "nuextract": 42,
+      "null": 52
+    },
+    "audio.microphone": {
+      "populated": 40,
+      "tier1": 22,
+      "nuextract": 18,
+      "null": 73
+    },
+    "webcam.resolution": {
+      "populated": 66,
+      "tier1": 53,
+      "nuextract": 13,
+      "null": 47
+    },
+    "connectivity.wifi": {
+      "populated": 55,
+      "tier1": 55,
+      "nuextract": 0,
+      "null": 58
+    },
+    "connectivity.bluetooth": {
+      "populated": 70,
+      "tier1": 70,
+      "nuextract": 0,
+      "null": 43
+    },
+    "connectivity.ethernet": {
+      "populated": 54,
+      "tier1": 54,
+      "nuextract": 0,
+      "null": 59
+    },
+    "connectivity.ports": {
+      "populated": 73,
+      "tier1": 73,
+      "nuextract": 0,
+      "null": 40
+    }
+  },
+  "rejections": {
+    "os_noise_rejected": 6,
+    "battery_cells_ambiguous_range": 12,
+    "cache_in_gb_rejected": 48,
+    "battery_cells_invalid_format": 40,
+    "color_display_token_rejected": 7,
+    "cpu_full_name_missing_cpu_brand": 1,
+    "wifi_unrecognized": 1,
+    "bluetooth_unrecognized": 10,
+    "ethernet_explicitly_absent": 2,
+    "adapter_w_placeholder": 2,
+    "battery_cells_placeholder": 4,
+    "mic_audio_brand_rejected": 8,
+    "mic_missing_keyword": 8,
+    "invalid_speaker_count": 4,
+    "ethernet_unrecognized": 2,
+    "mpn_invalid_whitespace": 5,
+    "no_valid_cache_digits": 3,
+    "adapter_w_out_of_range": 6,
+    "consistency:cpu_mfg_line_mismatch": 1,
+    "cpu_full_name_contains_codename": 2,
+    "cpu_full_name_is_core_description": 1,
+    "webcam_noise_rejected": 4,
+    "ethernet_placeholder": 1,
+    "color_too_long": 2,
+    "consistency:max_ram_equals_installed_unverified": 1,
+    "consistency:dgpu_vram_invalid_for_model": 1,
+    "os_unrecognized": 2,
+    "battery_wh_invalid_format": 2,
+    "adapter_w_battery_duplicate_rejected": 1,
+    "weight_out_of_range": 1,
+    "battery_wh_placeholder": 2,
+    "wifi_placeholder": 1,
+    "color_unrecognized": 2,
+    "mpn_missing_alphanumeric": 1,
+    "mpn_barcode_not_allowed": 1,
+    "consistency:form_factor_nvme_incompatible": 1,
+    "mpn_brand_mismatch": 1,
+    "price_out_of_sanity_range: 1.00 EGP": 1
+  },
+  "conflicts": {
+    "memory.capacity_gb": 4,
+    "gpu.model": 2,
+    "display.refresh_rate_hz": 1
+  }
+}

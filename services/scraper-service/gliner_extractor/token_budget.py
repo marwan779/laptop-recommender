@@ -195,3 +195,4 @@ def fit_to_budget(
         active_parts[1] = _cut_at_clause_boundary(target_text, max_budget, labels)
 
     return build_text(active_parts)
+

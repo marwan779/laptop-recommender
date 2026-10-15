@@ -69,3 +69,4 @@ def test_pattern_engine_field_sources():
     assert res.field_sources.get("Processor") == "dom"
     # RAM was missing in table, so backfilled from title
     assert res.field_sources.get("Memory") == "title"
+
