@@ -1,0 +1,159 @@
+{
+  "total_laptops": 124,
+  "contradiction_free_laptops": 115,
+  "laptops_with_contradictions": 9,
+  "details": [
+    {
+      "laptop_index": 4,
+      "title": "Acer Aspire Go 16 AG16-71P-96TX Laptop | Intel Core 9 270H | 16GB DDR5 | 512GB SSD | 16\" WUXGA IPS 120Hz | Intel Graphics | No OS | Silver",
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-aspire-go-16-ag16-71p-9142-intel-core-9-270h-16gb-512gb-egypt",
+      "contradiction_count": 1,
+      "contradictions": [
+        {
+          "subsystem": "Memory",
+          "field": "speed",
+          "type": "MALFORMED_VALUE",
+          "extracted": 2.93,
+          "raw_expected": "e.g. 5600 MHz",
+          "raw_evidence": "RAM speed value '2.93' appears to be GT/s transfer rate or invalid MHz"
+        }
+      ]
+    },
+    {
+      "laptop_index": 5,
+      "title": "Acer Nitro V 15 ANV15-A31-R8LA Gaming Laptop | AMD Ryzen 7 170 | RTX 5060 8GB GDDR7 | 16GB DDR5 | 512GB SSD | 15.6\u2033 FHD IPS 165Hz | Windows 11 | NH.U3PEM.003",
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
+      "contradiction_count": 1,
+      "contradictions": [
+        {
+          "subsystem": "Memory",
+          "field": "speed",
+          "type": "MALFORMED_VALUE",
+          "extracted": 4.8,
+          "raw_expected": "e.g. 5600 MHz",
+          "raw_evidence": "RAM speed value '4.8' appears to be GT/s transfer rate or invalid MHz"
+        }
+      ]
+    },
+    {
+      "laptop_index": 6,
+      "title": "Acer Nitro V 16S ANV16S-71-76PU Gaming Laptop | Intel Core 7 240H | RTX 5070 8GB GDDR7 | 16GB DDR5 | 512GB SSD | 16\" WQXGA 180Hz | Windows 11",
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16s-anv16s-71-76pu-core-7-240h-rtx-5070-16gb-512gb-egypt",
+      "contradiction_count": 1,
+      "contradictions": [
+        {
+          "subsystem": "Memory",
+          "field": "speed",
+          "type": "MALFORMED_VALUE",
+          "extracted": 5.6,
+          "raw_expected": "e.g. 5600 MHz",
+          "raw_evidence": "RAM speed value '5.6' appears to be GT/s transfer rate or invalid MHz"
+        }
+      ]
+    },
+    {
+      "laptop_index": 39,
+      "title": "MSI Cyborg 15 Max C13WG-019EG Gaming Laptop Intel Core i7-13620H RTX 5070 8GB 16GB DDR5 512GB SSD 15.6-inch FHD 144Hz",
+      "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt",
+      "contradiction_count": 1,
+      "contradictions": [
+        {
+          "subsystem": "GPU",
+          "field": "model",
+          "type": "STORE_INTERNAL_CONFLICT",
+          "extracted": "GeForce RTX 5070",
+          "raw_expected": "Conflict between ['3050', '5070']",
+          "raw_evidence": "Store table contains conflicting GPU rows: ['3050', '5070']"
+        }
+      ]
+    },
+    {
+      "laptop_index": 41,
+      "title": "Acer Predator Helios 16 AI PH16-73-92V4 16\" WQXGA OLED 240Hz Intel Core Ultra 9 275HX 32GB RAM 1TB SSD GeForce RTX 5090 24GB  Black NH.QW2EM.001",
+      "url": "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ph16-73-92v4-gaming-laptop-ultra9-275hx-rtx5090-egypt",
+      "contradiction_count": 1,
+      "contradictions": [
+        {
+          "subsystem": "Memory",
+          "field": "capacity_gb",
+          "type": "CONTRADICTION",
+          "extracted": 16,
+          "raw_expected": 32,
+          "raw_evidence": "Title states 32GB RAM: '32GB RAM'"
+        }
+      ]
+    },
+    {
+      "laptop_index": 43,
+      "title": "Gigabyte Gaming A16 CTH Gaming Laptop Intel Core i7-13620H RTX 5050 8GB 16GB DDR5 5200MHz 512GB NVMe Gen4 SSD 16 Inch 165Hz IPS WUXGA Display WiFi 6E",
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-gaming-a16-cth-intel-core-i7-13620h-rtx-5050-8gb-16gb-ddr5-512gb-nvme-gen4-ssd-gaming-laptop",
+      "contradiction_count": 1,
+      "contradictions": [
+        {
+          "subsystem": "Storage",
+          "field": "capacity_gb",
+          "type": "CONTRADICTION",
+          "extracted": 4096,
+          "raw_expected": 512,
+          "raw_evidence": "Title states storage: '512GB NVMe'"
+        }
+      ]
+    },
+    {
+      "laptop_index": 70,
+      "title": "Lenovo IdeaPad Slim 3 15IRH10 (83K100QNED) 15.3\" WUXGA Laptop Intel Core i7-13620H 16GB DDR5 512GB NVMe SSD Wi-Fi 6 Windows 11 Cosmic Blue",
+      "url": "https://www.compumarts.com/collections/laptop/products/lenovo-ideapad-slim-3-83k100qned-i7-16gb-512gb",
+      "contradiction_count": 1,
+      "contradictions": [
+        {
+          "subsystem": "Memory",
+          "field": "capacity_gb",
+          "type": "PARTIAL_EXTRACTION_CONTRADICTION",
+          "extracted": 8,
+          "raw_expected": 16,
+          "raw_evidence": "Raw table states: '8GB Soldered DDR5-4800 + 8GB SODIMM' (Total: 16GB)"
+        }
+      ]
+    },
+    {
+      "laptop_index": 79,
+      "title": "ASUS ROG Strix G16 G614PH-RV161W \u2013 Ryzen 9 8940HX 16GB RAM 1TB NVMe SSD RTX 5050 8GB \u2013 16\" FHD+ 165Hz IPS \u2013 Win11",
+      "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614ph-rv161w-ryzen-9-rtx-5050-egypt",
+      "contradiction_count": 2,
+      "contradictions": [
+        {
+          "subsystem": "CPU",
+          "field": "manufacturer",
+          "type": "CONTRADICTION",
+          "extracted": "Intel",
+          "raw_expected": "AMD",
+          "raw_evidence": "ASUS ROG Strix G16 G614PH-RV161W \u2013 Ryzen 9 8940HX 16GB RAM 1TB NVMe SSD RTX 5050 8GB \u2013 16\" FHD+ 165Hz IPS \u2013 Win11"
+        },
+        {
+          "subsystem": "CPU",
+          "field": "model",
+          "type": "CRITICAL_CONTRADICTION",
+          "extracted": "Intel Core Ultra 9 275HX",
+          "raw_expected": "AMD Ryzen 9 8940HX",
+          "raw_evidence": "Title/Table specifies AMD Ryzen: Ryzen 9 8940HX"
+        }
+      ]
+    },
+    {
+      "laptop_index": 112,
+      "title": "GIGABYTE AERO X16 AMD Ryzen AI 7 350 16GB DDR5 RAM 1TB SSD RTX 5060 16 Inch 165Hz WQXGA Windows 11 Home Gray",
+      "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-amd-ryzen-ai-7-350-16gb-1tb-rtx-5060-egypt",
+      "contradiction_count": 1,
+      "contradictions": [
+        {
+          "subsystem": "Storage",
+          "field": "capacity_gb",
+          "type": "CONTRADICTION",
+          "extracted": 4096,
+          "raw_expected": 1024,
+          "raw_evidence": "Title states storage: '1TB SSD'"
+        }
+      ]
+    }
+  ]
+}
