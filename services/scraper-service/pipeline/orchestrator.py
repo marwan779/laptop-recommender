@@ -117,9 +117,26 @@ class LaptopExtractionPipeline:
         # Merge CPU ground-truth specs (Option A: absolute ground truth)
         if cpu_specs:
             cpu_raw_spec = specs.get("cpu", {}).get("raw_spec")
-            specs["cpu"] = cpu_specs
+            specs["cpu"] = copy.deepcopy(cpu_specs)
             if cpu_raw_spec:
                 specs["cpu"]["raw_spec"] = cpu_raw_spec
+
+                # Align with explicit OEM cache specification if declared in raw spec
+                m_cache = re.search(r"\b(\d+)\s*MB\s*Cache\b|Cache:\s*(\d+)\s*MB\b", cpu_raw_spec, re.IGNORECASE)
+                if m_cache:
+                    specs["cpu"]["cache_mb"] = int(m_cache.group(1) or m_cache.group(2))
+
+                # Align with explicit OEM boost clock specification if declared in raw spec
+                m_boost = re.search(
+                    r"\b(?:up\s+to|max\s+boost\s+clock|turbo\s+boost\s+up\s+to|boost\s+clock)\s*:?\s*(\d+(?:\.\d+)?)\s*GHz\b",
+                    cpu_raw_spec,
+                    re.IGNORECASE,
+                )
+                if m_boost:
+                    b_ghz = float(m_boost.group(1))
+                    specs["cpu"]["clock_boost_ghz"] = b_ghz
+                    if isinstance(specs["cpu"].get("performance_cores"), dict) and specs["cpu"]["performance_cores"] is not None:
+                        specs["cpu"]["performance_cores"]["boost_clock_ghz"] = b_ghz
 
         deterministic_specs = copy.deepcopy(specs)
 

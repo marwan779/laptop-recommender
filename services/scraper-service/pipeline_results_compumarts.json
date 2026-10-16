@@ -100,9 +100,9 @@
       },
       "physical": {
         "weight_kg": 2.33,
-        "width_mm": 369.0,
-        "depth_mm": 259.4,
-        "height_mm": 22.9,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
         "raw_spec": "Weight: 2.33 kg | Width: 369 mm | Depth: 259.4 mm | Height (Front): 2.29 cm | Height (Rear): 2.39 cm | DIMENSIONS: 369 mm x 259.4 mm x 2.29 cm (front height), 2.39 cm (rear height)"
       },
       "build_security": {
@@ -116,16 +116,16 @@
         "raw_spec": "Keyboard: Full-size, backlit, numeric keypad | Keyboard Layout: English | Pointing Device: Touchpad"
       },
       "audio_webcam": {
-        "speaker_count": 2,
-        "microphone": true,
-        "webcam_resolution": "720p",
+        "speaker_count": null,
+        "microphone": null,
+        "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
         "raw_spec": "Headphone/Mic Combo Jack: Yes | Built-in Speakers: 2 | Built-in Microphones: 2 | Microphone: Yes | Front Camera: Yes | CAMERA: Full HD front camera"
       },
       "connectivity": {
         "wifi": "Wi-Fi 6E",
-        "bluetooth": "Bluetooth 5.3",
+        "bluetooth": null,
         "ethernet": "Yes, 10/100/1000 Mbit/s",
         "ports": [
           "1 x USB 3.2 Gen 1 (with DisplayPort Alternate Mode, USB PD, Sleep-and-Charge)",
@@ -267,12 +267,12 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq Essential",
+        "laptop_family": "LOQ Essential",
         "laptop_model": "83S000C2IN",
         "manufacturer_part_number": "83S000C2IN",
         "retailer_sku": "83S000C2IN",
         "color": "Luna Grey",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": "1-year, Courier or Carry-in",
         "warranty_years": 1,
         "condition": null,
@@ -312,7 +312,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 16,
         "is_soldered": false,
@@ -477,12 +477,12 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "15ARP10E",
         "manufacturer_part_number": "83S000C3IN",
         "retailer_sku": "83S000C3IN",
         "color": "Luna Grey",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": "1-year, Courier or Carry-in",
         "warranty_years": 1,
         "condition": null,
@@ -522,7 +522,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 16,
         "is_soldered": false,
@@ -682,8 +682,8 @@
       "identity": {
         "brand": "Acer",
         "laptop_family": "Aspire Go",
-        "laptop_model": "WIFI 6 2X2 AX+BT",
-        "manufacturer_part_number": "NX.JV0EM.007",
+        "laptop_model": "Aspire Go 16 AG16-71P-96TX",
+        "manufacturer_part_number": "NX.JV0EM.006",
         "retailer_sku": "NX.JV0EM.006",
         "color": "Silver",
         "is_bundle": false,
@@ -734,7 +734,7 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR5",
-        "speed": 2.93,
+        "speed": "2930 MHz",
         "slot_count": null,
         "max_supported_gb": 32,
         "is_soldered": null,
@@ -774,14 +774,14 @@
       },
       "physical": {
         "weight_kg": 1.65,
-        "width_mm": 357.4,
-        "depth_mm": 253.9,
-        "height_mm": 17.9,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
         "raw_spec": "Height: 17.90 mm | Height (Front): 12.20 mm | Height (Rear): 17.90 mm | Width: 357.4 mm | Depth: 253.9 mm | Weight (Approximate): 1.65 kg"
       },
       "build_security": {
-        "has_backlit_keyboard": false,
-        "keyboard_backlight_type": null,
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "Backlit",
         "has_fingerprint": false,
         "has_numpad": null,
         "pointing_device": "TouchPad",
@@ -793,9 +793,9 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | TouchPad Features: Microsoft Precision Touchpad Certification | Keyboard Features: Programmable Key | Security Features: BIOS user, supervisor, HDD passwords"
       },
       "audio_webcam": {
-        "speaker_count": 2,
-        "microphone": true,
-        "webcam_resolution": "720p",
+        "speaker_count": null,
+        "microphone": null,
+        "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
         "raw_spec": "Microphone: Yes | Number of Speakers: 2 | Camera: Full HD webcam"
@@ -818,7 +818,7 @@
         "raw_spec": "Memory Card Reader: No | Wireless LAN Standard: IEEE 802.11ax | Ethernet Technology: Gigabit Ethernet | Bluetooth Standard: Bluetooth 5.1 or above | HDMI: Yes | Number of HDMI Outputs: 1 | Number of USB 3.2 Gen 1 Type-A Ports: 2 | Number of USB 3.2 Gen 2 Type-C Ports: 1 | Total Number of USB Ports: 3 | USB Type-C: Yes | Network (RJ-45): No | Wireless: Wi-Fi 6 and Bluetooth"
       },
       "operating_system": {
-        "name": "FreeDOS",
+        "name": "No OS",
         "raw_spec": "Operating System: EShell | Operating system: No operating system pre-installed (boot-up only)"
       }
     },
@@ -959,7 +959,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 4.8,
+        "speed": "4800 MHz",
         "slot_count": null,
         "max_supported_gb": 32,
         "is_soldered": null,
@@ -999,14 +999,14 @@
       },
       "physical": {
         "weight_kg": 2.1,
-        "width_mm": 362.3,
-        "depth_mm": 239.9,
-        "height_mm": 23.5,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
         "raw_spec": "Height: 23.50 mm | Height (Rear): 23.50 mm | Width: 362.3 mm | Depth: 239.9 mm | Weight (Approximate): 2.10 kg"
       },
       "build_security": {
-        "has_backlit_keyboard": false,
-        "keyboard_backlight_type": null,
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "Backlit",
         "has_fingerprint": false,
         "has_numpad": null,
         "pointing_device": "TouchPad",
@@ -1018,8 +1018,8 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | TouchPad Features: Microsoft Precision Touchpad Certification | Keyboard Features: NitroSense | Security Features: Firmware Trusted Platform Module (TPM) solution"
       },
       "audio_webcam": {
-        "speaker_count": 2,
-        "microphone": true,
+        "speaker_count": null,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -1127,7 +1127,7 @@
       "identity": {
         "brand": "Acer",
         "laptop_family": "Nitro V",
-        "laptop_model": "Killer Wi-Fi 6 AX1650i",
+        "laptop_model": "Nitro V 16S ANV16S-71-76PU",
         "manufacturer_part_number": "NH.QXDEM.003",
         "retailer_sku": "NH.QXDEM.003",
         "color": "Black",
@@ -1179,7 +1179,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5.6,
+        "speed": "5600 MHz",
         "slot_count": null,
         "max_supported_gb": 32,
         "is_soldered": null,
@@ -1219,14 +1219,14 @@
       },
       "physical": {
         "weight_kg": 2.1,
-        "width_mm": 357.7,
-        "depth_mm": 264.0,
-        "height_mm": 19.95,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
         "raw_spec": "Height: 19.95 mm | Height (Front): 13.90 mm | Height (Rear): 19.95 mm | Width: 357.7 mm | Depth: 264 mm | Weight (Approximate): 2.10 kg"
       },
       "build_security": {
-        "has_backlit_keyboard": false,
-        "keyboard_backlight_type": null,
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "Backlit",
         "has_fingerprint": false,
         "has_numpad": null,
         "pointing_device": "TouchPad",
@@ -1238,8 +1238,8 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | TouchPad Features: Microsoft Precision Touchpad Certification | Keyboard Features: NitroSense | Security Features: MSFT Pluton Security Processor as Firmware TPM solution"
       },
       "audio_webcam": {
-        "speaker_count": 2,
-        "microphone": true,
+        "speaker_count": null,
+        "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -1368,9 +1368,9 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83DV01HRPS",
-        "manufacturer_part_number": "83DV01HRPS",
+        "manufacturer_part_number": "198154823109",
         "retailer_sku": "198154823109",
         "color": "Luna Grey",
         "is_bundle": false,
@@ -1421,7 +1421,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -1588,7 +1588,7 @@
         "brand": "HP",
         "laptop_family": "255",
         "laptop_model": "255",
-        "manufacturer_part_number": "B39STAT#A2N",
+        "manufacturer_part_number": "LAPTOP HP 255 G10 R5",
         "retailer_sku": "LAPTOP HP 255 G10 R5",
         "color": "Dark Ash silver",
         "is_bundle": false,
@@ -1606,7 +1606,7 @@
         "cores": 6,
         "threads": 12,
         "clock_base_ghz": 2.9,
-        "clock_boost_ghz": 4.55,
+        "clock_boost_ghz": 4.5,
         "cache_mb": 16,
         "microarchitecture": "Zen 3+",
         "microarchitecture_code": "Rembrandt R",
@@ -1632,7 +1632,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "4800 MHz",
-        "slot_count": 1,
+        "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16 GB DDR5-4800 MT/s (1 x 16 GB) | Memory slots: 2 SODIMM"
@@ -1640,7 +1640,7 @@
       "storage": {
         "capacity_gb": 512,
         "storage_type": "SSD",
-        "interface": "PCIe",
+        "interface": null,
         "form_factor": null,
         "slot_count": null,
         "max_supported_gb": null,
@@ -1761,7 +1761,7 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "Hp",
+        "laptop_family": "HP",
         "laptop_model": "HP 250",
         "manufacturer_part_number": "AL0B9AT#BH5",
         "retailer_sku": "AL0B9AT#BH5",
@@ -1815,8 +1815,8 @@
         "capacity_gb": 16,
         "memory_type": "DDR4",
         "speed": null,
-        "slot_count": 2,
-        "max_supported_gb": 32,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "RAM, Memory Capacity, GB: 16 | RAM, Maximum Capacity, GB: 32 | RAM, Number of Slots: 2 | RAM, Memory Type: DDR4 | MEMORY: 16"
       },
@@ -1846,16 +1846,16 @@
         "raw_spec": "Screen, Diagonal, inches: 15.6 | Screen, Resolution: 1920 x 1080 | Screen, Matrix Type: IPS | Screen, Brightness, cd/m2: 250 | Screen, Refresh Rate: 60 Hz | Screen, Dynamic Screen Refresh Technology: No | Screen, Touch Screen: No | Screen, Screen Covering: Matte | Screen, Privacy Filter: No | Interfaces, DISPLAYPORT: No | Interfaces, MINI DISPLAYPORT: No | DISPLAY: 1920 x 1080"
       },
       "power_battery": {
-        "battery_capacity_wh": 41.0,
+        "battery_capacity_wh": null,
         "battery_cells": null,
         "power_adapter_w": null,
         "fast_charging": null,
         "raw_spec": "Battery Capacity, W/h: 41 | BATTERY: 41"
       },
       "physical": {
-        "weight_kg": 2.44,
+        "weight_kg": 1.52,
         "width_mm": null,
-        "depth_mm": 305.0,
+        "depth_mm": null,
         "height_mm": null,
         "raw_spec": "Package Size (W x D x H), mm: 67 x 550 x 305 | Device Weight, kg: 1.52 | Weight in Packaging, kg: 2.435"
       },
@@ -1882,13 +1882,13 @@
       "connectivity": {
         "wifi": null,
         "bluetooth": null,
-        "ethernet": false,
+        "ethernet": null,
         "ports": [
           "2",
           "1",
           "Eat"
         ],
-        "has_card_reader": false,
+        "has_card_reader": null,
         "card_reader_type": null,
         "thunderbolt_version": null,
         "raw_spec": "Interfaces, USB 2.0: No | Interfaces, USB 3.0: 2 | Interfaces, USB Type-C: 1 | Interfaces, THUNDERBOLT: No | Interfaces, Docking Station Connector: No | Interfaces, SD Card Slot: No | Interfaces, Ethernet Network Interface: No | Interfaces, Ethernet Network Interface Type: No | Interfaces, HDMI: Eat | Interfaces, VGA: No | Wireless Communication: Wi-Fi + Bluetooth | Keyboard Language: Russian | LTE Modem: No | WIRELESS: Wi-Fi + Bluetooth"
@@ -1984,7 +1984,7 @@
         "laptop_model": "Legion 5 15IRX10",
         "manufacturer_part_number": "83LY00R8ED",
         "retailer_sku": "83LY00R8ED",
-        "color": "Gamut 100% sRGB",
+        "color": null,
         "is_bundle": false,
         "warranty": "2Y Premium Care with Onsite (upgrade from 1Y Courier/Carry-in)",
         "warranty_years": 2,
@@ -2033,7 +2033,7 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -2113,7 +2113,7 @@
         "raw_spec": "Wireless: Wi-Fi 6, 802.11ax 2×2 and Bluetooth 5.2 | Ethernet: Gigabit Ethernet RJ-45 | Ports: 3 × USB-A 5Gbps, 1 × USB-C 10Gbps with DisplayPort 2.1 and USB Power Delivery, 1 × USB-C 10Gbps with DisplayPort 1.4, 1 × HDMI 2.1 up to 8K/60Hz, 1 × RJ-45 and 1 × 3.5mm audio combo jack"
       },
       "operating_system": {
-        "name": "FreeDOS",
+        "name": "No OS",
         "raw_spec": "Operating System: DOS / No Preloaded Operating System"
       }
     },
@@ -2174,7 +2174,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83DV01HSED",
         "manufacturer_part_number": "83DV01HSED",
         "retailer_sku": "83DV01HSED",
@@ -2237,7 +2237,7 @@
         "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "NVMe",
-        "form_factor": "M.2 2280 PCIe 4.0 x4",
+        "form_factor": null,
         "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB Nvme GEN 4 | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots"
@@ -2410,7 +2410,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": null,
@@ -2707,7 +2707,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83JE00XEED",
         "manufacturer_part_number": "83JE00XEED",
         "retailer_sku": "83JE00XEED",
@@ -2760,7 +2760,7 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -2926,7 +2926,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq 15Irx10",
+        "laptop_family": "LOQ 15IRX10",
         "laptop_model": "83JE01ATED",
         "manufacturer_part_number": "83JE01ATED",
         "retailer_sku": "83JE01ATED",
@@ -2979,8 +2979,8 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
+        "speed": null,
+        "slot_count": null,
         "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SODIMM | Memory Configuration: 1 × 16GB | Memory Slots: 2 × DDR5 SODIMM | Maximum Memory: Up to 32GB DDR5-5600 | MEMORY: 16GB DDR5-5600 SODIMM (1 × 16GB)"
@@ -3062,7 +3062,7 @@
         "raw_spec": "Card Reader: No | WLAN: Wi-Fi 6, 802.11ax 2×2 | Bluetooth: Bluetooth 5.2 | Ethernet: 100/1000M RJ-45 | USB-A: 3 × USB 5Gbps / USB 3.2 Gen 1 | USB-C: 1 × USB 10Gbps / USB 3.2 Gen 2 with PD 65-100W and DP 1.4 | HDMI: HDMI 2.1 up to 8K/60Hz | Audio Jack: 3.5mm Headphone / Microphone Combo | WWAN: Not Supported"
       },
       "operating_system": {
-        "name": "FreeDOS",
+        "name": "No OS",
         "raw_spec": "OS: DOS / No Preinstalled Operating System"
       }
     },
@@ -3153,7 +3153,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq 15Ahp9",
+        "laptop_family": "LOQ 15AHP9",
         "laptop_model": "83DX00F1PB",
         "manufacturer_part_number": "83DX00F1PB",
         "retailer_sku": "83DX00F1PB",
@@ -3174,7 +3174,7 @@
         "threads": 12,
         "clock_base_ghz": 3.2,
         "clock_boost_ghz": 4.7,
-        "cache_mb": 16,
+        "cache_mb": 6,
         "microarchitecture": "Zen 4 / Zen 4c",
         "microarchitecture_code": "Phoenix",
         "low_power_cores": null,
@@ -3206,8 +3206,8 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
+        "speed": null,
+        "slot_count": null,
         "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SODIMM | Memory Configuration: 1 × 16GB | Memory Slots: 2 × DDR5 SODIMM | Maximum Memory: Up to 32GB DDR5-5600 | MAX MEMORY: Up to 32GB DDR5-5600"
@@ -3401,7 +3401,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Legion Pro 5 16Adr10",
+        "laptop_family": "Legion Pro 5 16ADR10",
         "laptop_model": "Lenovo Legion Pro 5 16ADR10 - 83LT0031LK",
         "manufacturer_part_number": "83LT0031LK",
         "retailer_sku": "83LT0031LK",
@@ -3446,8 +3446,8 @@
       "memory": {
         "capacity_gb": 24,
         "memory_type": "DDR5",
-        "speed": 5200,
-        "slot_count": 2,
+        "speed": null,
+        "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 24GB DDR5-5200, dual-channel capable, 2 × SODIMM slots | Memory Slots: 2 × DDR5"
@@ -3456,7 +3456,7 @@
         "capacity_gb": 1024,
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
-        "form_factor": "M.2 2280 PCIe Gen 4",
+        "form_factor": null,
         "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe SSD | Storage Slots: 2 × M.2 2280 PCIe Gen 4 | Storage Expansion: 2 × M.2 2280 PCIe 4.0 x4 slots"
@@ -3502,7 +3502,7 @@
         "raw_spec": "Keyboard: English RGB backlit keyboard with numeric keypad"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": null,
         "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
@@ -3512,7 +3512,7 @@
       "connectivity": {
         "wifi": null,
         "bluetooth": null,
-        "ethernet": "Gigabit Ethernet RJ-45",
+        "ethernet": null,
         "ports": [
           "2 × USB-A 5Gbps",
           "1 × USB-A 10Gbps Always On",
@@ -3601,7 +3601,7 @@
       "identity": {
         "brand": "HP",
         "laptop_family": null,
-        "laptop_model": "15-fd1062ne",
+        "laptop_model": null,
         "manufacturer_part_number": "D41P1EA",
         "retailer_sku": "D41P1EA",
         "color": "Natural Silver",
@@ -3662,7 +3662,7 @@
       "storage": {
         "capacity_gb": 512,
         "storage_type": "SSD",
-        "interface": "PCIe",
+        "interface": null,
         "form_factor": null,
         "slot_count": null,
         "max_supported_gb": null,
@@ -3832,7 +3832,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5200,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -3842,8 +3842,8 @@
         "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "NVMe",
-        "form_factor": "M.2 2280",
-        "slot_count": 4,
+        "form_factor": null,
+        "slot_count": 1,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB Nvme GEN 4 | Storage Slot: One M.2 2280 GEN 4 slot"
       },
@@ -4015,9 +4015,9 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": "6400",
-        "slot_count": 2,
-        "max_supported_gb": 96,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "Memory: 32GB DDR5 RAM (2 × 16GB) | Memory Capability: 2 RAM Slots, supports up to 96GB DDR5-6400"
       },
@@ -4026,7 +4026,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "M.2",
-        "slot_count": 1,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 2TB M.2 NVMe PCIe SSD | Storage Capability: 1 × M.2 NVMe PCIe Gen4 Slot and 1 × M.2 NVMe PCIe Gen5 Compatible Slot"
       },
@@ -4073,7 +4073,7 @@
         "raw_spec": "Keyboard: 24-Zone RGB Gaming Keyboard with Copilot Key | Security: Firmware TPM 2.0, Kensington Lock and Webcam Privacy Shutter"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": null,
         "microphone": "2 × 2W Speakers, Array Microphone, Nahimic 3 and Hi-Res Audio Ready",
         "webcam_resolution": "720p",
         "has_privacy_shutter": true,
@@ -4208,7 +4208,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 96,
         "is_soldered": false,
@@ -4264,7 +4264,7 @@
         "raw_spec": "Keyboard: 4-Zone RGB Gaming Keyboard with Copilot Key"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": null,
         "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
@@ -4350,7 +4350,7 @@
     "specs": {
       "identity": {
         "brand": "MSI",
-        "laptop_family": "Vector 16 Hx Ai",
+        "laptop_family": "Vector 16 HX AI",
         "laptop_model": "A2XWIG",
         "manufacturer_part_number": "9S7-15M352-693",
         "retailer_sku": "GGU9275X16GXXDXX",
@@ -4404,7 +4404,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": 96,
         "is_soldered": null,
         "raw_spec": "RAM: 16GB DDR5 | RAM Slots: 2 | Maximum RAM: Up to 96GB | MEMORY: 16GB DDR5"
@@ -4463,7 +4463,7 @@
         "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
-        "has_ir_camera": true,
+        "has_ir_camera": null,
         "raw_spec": "Webcam: FHD IR, 1080p @ 30fps, HDR | Audio: 2 x 2W Speakers, Nahimic 3, Hi-Res Audio Ready"
       },
       "connectivity": {
@@ -4545,13 +4545,13 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "Omen 16",
+        "laptop_family": "OMEN 16",
         "laptop_model": "16-am0057ne",
         "manufacturer_part_number": "D13PQEA#ABV",
         "retailer_sku": "D13PQEA#ABV",
         "color": "Shadow black, black chrome logo",
         "is_bundle": false,
-        "warranty": "100 GB Dropbox storage for 3 months",
+        "warranty": "1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply.",
         "warranty_years": 1,
         "condition": null,
         "raw_spec": "Title: HP OMEN 16-am0057ne D13PQEA Gaming Laptop Intel Core Ultra 7 255H RTX 5070 8GB 16GB DDR5 512GB SSD 16-inch 2K 165Hz FreeDOS | Cloud service: 100 GB Dropbox storage for 3 months | Product color: Shadow black, black chrome logo | Manufacturer Warranty: 1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply. | Color: Gamut 100% sRGB | Brand: HP | Series: OMEN 16 | Model: 16-am0057ne | Product Number: D13PQEA#ABV | SKU: D13PQEA#ABV | Part Number: D13PQEA#ABV"
@@ -4657,7 +4657,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "dual array digital microphones",
+        "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -4804,7 +4804,7 @@
         "speed": null,
         "slot_count": null,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "RAM Memory: 16GB DDR5 on board RAM"
       },
       "storage": {
@@ -4859,7 +4859,7 @@
         "raw_spec": "Keyboard: Backlit Chiclet Keyboard | Touchpad: Precision touchpad | Security: McAfee BIOS Booting User Password Protection BIOS setup user password Trusted Platform Module (Firmware TPM)"
       },
       "audio_webcam": {
-        "speaker_count": 1,
+        "speaker_count": null,
         "microphone": "Built-in speaker Built-in array microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -4981,7 +4981,7 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR5",
-        "speed": 5200,
+        "speed": null,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -5027,8 +5027,8 @@
         "raw_spec": "Dimensions: 358.5 × 235.56 × 16.96-18.99 mm | Weight: Starting from 1.62 kg"
       },
       "build_security": {
-        "has_backlit_keyboard": true,
-        "keyboard_backlight_type": "Backlit",
+        "has_backlit_keyboard": false,
+        "keyboard_backlight_type": null,
         "has_fingerprint": false,
         "has_numpad": null,
         "pointing_device": null,
@@ -5037,8 +5037,8 @@
         "raw_spec": "Keyboard: English US Non-Backlit"
       },
       "audio_webcam": {
-        "speaker_count": 2,
-        "microphone": true,
+        "speaker_count": null,
+        "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -5177,7 +5177,7 @@
         "memory_type": "DDR5",
         "speed": "5600 MHz",
         "slot_count": null,
-        "max_supported_gb": 96,
+        "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "Memory: 16GB DDR5 5600MHz (Up to 96GB Supported)"
       },
@@ -5349,8 +5349,8 @@
         "memory_type": "DDR5",
         "speed": null,
         "slot_count": null,
-        "max_supported_gb": 32,
-        "is_soldered": null,
+        "max_supported_gb": null,
+        "is_soldered": true,
         "raw_spec": "Memory: 16GB DDR5 on board RAM | Max Total System Memory: up to:32GB"
       },
       "storage": {
@@ -5472,7 +5472,7 @@
         "brand": "Lenovo",
         "laptop_family": "Yoga",
         "laptop_model": "Yoga 7",
-        "manufacturer_part_number": "83TC001YED",
+        "manufacturer_part_number": "Lenovo Yoga 7 2-in-114IPH11",
         "retailer_sku": "Lenovo Yoga 7 2-in-114IPH11",
         "color": "Luna Grey",
         "is_bundle": false,
@@ -5520,7 +5520,7 @@
         "capacity_gb": 32,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": 0,
+        "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": true,
         "raw_spec": "Ram: 32GB | Ram Info: 32GB Soldered LPDDR5X-7467 | Ram Slots: Memory soldered to systemboard, no slots, dual-channel | MEMORY: 32GB"
@@ -5575,11 +5575,11 @@
         "raw_spec": "Keyboard: White Backlit, Arabic-English"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": 4,
         "microphone": null,
         "webcam_resolution": "5.0MP",
         "has_privacy_shutter": true,
-        "has_ir_camera": true,
+        "has_ir_camera": null,
         "raw_spec": "Camera: 5.0MP + IR with Privacy Shutter | Audio: 4 stereo speakers, 2W x2 (woofers), 2W x2 (tweeters), optimized with Dolby Atmos, Smart Amplifier (AMP)"
       },
       "connectivity": {
@@ -5710,7 +5710,7 @@
         "speed": null,
         "slot_count": 0,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "RAM: 8GB | RAM Info: 8GB DDR5 on board | RAM Slots: not upgradable | MEMORY: 8GB DDR5 on board"
       },
       "storage": {
@@ -5718,7 +5718,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": 1,
         "max_supported_gb": null,
         "raw_spec": "Internal: 512GB | Storage: 512GB PCIe 4.0 NVMe M.2 SSD | Storage Support: supports only one M.2 slot"
       },
@@ -5755,7 +5755,7 @@
       "build_security": {
         "has_backlit_keyboard": true,
         "keyboard_backlight_type": "Backlit",
-        "has_fingerprint": false,
+        "has_fingerprint": true,
         "has_numpad": true,
         "pointing_device": null,
         "chassis_material": "Plastic",
@@ -5765,7 +5765,7 @@
         "raw_spec": "FingerPrint: Available | Keyboard: Backlit Chiclet Keyboard with Num-key"
       },
       "audio_webcam": {
-        "speaker_count": 1,
+        "speaker_count": null,
         "microphone": "SonicMaster Built-in speaker Built-in array microphone with Cortana voice-recognition support",
         "webcam_resolution": "720p",
         "has_privacy_shutter": true,
@@ -5847,7 +5847,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "FA506NCG-HN857W",
         "retailer_sku": "FA506NCG-HN857W",
@@ -5892,7 +5892,7 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": null,
@@ -6055,8 +6055,8 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR4",
-        "speed": 3200,
-        "slot_count": 2,
+        "speed": null,
+        "slot_count": null,
         "max_supported_gb": 64,
         "is_soldered": null,
         "raw_spec": "Memory: 8GB DDR4 3200MHz | Memory Slots: 2 | Maximum Memory: 64GB"
@@ -6113,7 +6113,7 @@
         "raw_spec": "Keyboard: Single Backlit Keyboard (White) with Copilot Key | Security: fTPM 2.0, Webcam Shutter, Kensington Lock"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": null,
         "microphone": "Array Microphone",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
@@ -6193,7 +6193,7 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "Omen 16",
+        "laptop_family": "OMEN 16",
         "laptop_model": "16-am0056ne",
         "manufacturer_part_number": "D13PNEA#ABV",
         "retailer_sku": "D13PNEA#ABV",
@@ -6247,7 +6247,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5600 MHz",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "Memory: 16GB DDR5-5600 MT/s (2 × 8GB)"
@@ -6305,7 +6305,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "dual-array microphones",
+        "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
         "has_ir_camera": null,
@@ -6495,7 +6495,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 7",
         "bluetooth": "Bluetooth 5.4",
-        "ethernet": "Integrated 10/100/1000/2500 GbE LAN",
+        "ethernet": null,
         "ports": [],
         "has_card_reader": null,
         "card_reader_type": null,
@@ -6542,7 +6542,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83SL001MED",
         "manufacturer_part_number": "83SL001MED",
         "retailer_sku": "83SL001MED",
@@ -6595,7 +6595,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -6659,7 +6659,7 @@
         "microphone": "2x, Array",
         "webcam_resolution": "5.0MP",
         "has_privacy_shutter": true,
-        "has_ir_camera": true,
+        "has_ir_camera": null,
         "raw_spec": "Audio Chip: High Definition (HD) Audio, Realtek ALC3287 codec | Speakers: Stereo speakers, 2W x2, optimized with Nahimic Audio | Microphone: 2x, Array | Camera: 5.0MP + IR with E-shutter"
       },
       "connectivity": {
@@ -6764,7 +6764,7 @@
       "identity": {
         "brand": "HP",
         "laptop_family": null,
-        "laptop_model": "15-FD0531NIA",
+        "laptop_model": null,
         "manufacturer_part_number": "B82HWEA",
         "retailer_sku": "B82HWEA",
         "color": "Natural silver",
@@ -6816,7 +6816,7 @@
       "memory": {
         "capacity_gb": 4,
         "memory_type": "DDR4",
-        "speed": "3200 MT/s",
+        "speed": null,
         "slot_count": 1,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -6873,7 +6873,7 @@
       },
       "audio_webcam": {
         "speaker_count": null,
-        "microphone": "dual array digital microphones",
+        "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -6959,8 +6959,8 @@
         "cores": 8,
         "threads": 8,
         "clock_base_ghz": null,
-        "clock_boost_ghz": 2.976,
-        "cache_mb": null,
+        "clock_boost_ghz": 2.97,
+        "cache_mb": 30,
         "microarchitecture": "Qualcomm Oryon",
         "microarchitecture_code": null,
         "low_power_cores": null,
@@ -7243,7 +7243,7 @@
         "raw_spec": "Display: 15.6\" FHD (1920*1080), 144Hz 100%sRGB IPS-Level"
       },
       "power_battery": {
-        "battery_capacity_wh": 60.0,
+        "battery_capacity_wh": null,
         "battery_cells": null,
         "power_adapter_w": 180,
         "fast_charging": null,
@@ -7269,7 +7269,7 @@
         "raw_spec": "Keyboard: Single white Gaming Keyboard | Security: Firmware TPM 2.0, Kensington Lock"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": null,
         "microphone": "2×2W Speakers, Array Microphone",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
@@ -7404,7 +7404,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": null,
-        "slot_count": 4,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB NVMe PCIe SSD Gen4x4 w/o DRAM | STORAGE: 512GB NVMe PCIe Gen4 ×4 SSD"
       },
@@ -7425,7 +7425,7 @@
         "raw_spec": "Display: 15.6\" FHD (1920*1080), 144Hz 100%sRGB IPS-Level | DISPLAY: 15.6-inch Full HD IPS-Level Display | REFRESH RATE: 144Hz"
       },
       "power_battery": {
-        "battery_capacity_wh": 60.0,
+        "battery_capacity_wh": null,
         "battery_cells": null,
         "power_adapter_w": null,
         "fast_charging": null,
@@ -7559,7 +7559,7 @@
         "memory_type": "DDR5",
         "speed": "5200 MHz",
         "slot_count": 2,
-        "max_supported_gb": 96,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5 5200MHz | Memory Slots: 2 x DDR5 Slots | Memory Capability: 2 RAM Slots, upgradeable up to 96GB DDR5-5200"
       },
@@ -7567,7 +7567,7 @@
         "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "NVMe",
-        "form_factor": "M.2 2280",
+        "form_factor": null,
         "slot_count": 1,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB NVMe PCIe Gen4 ×4 SSD | Storage Slot: 1 x M.2 2280 PCIe Gen4 Slot | Storage Capability: 2 × M.2 SSD Slots supporting NVMe PCIe Gen4"
@@ -7709,7 +7709,7 @@
       "identity": {
         "brand": "Acer",
         "laptop_family": "Predator Helios Neo",
-        "laptop_model": "Killer Wi-Fi 6E AX1675i",
+        "laptop_model": "Predator Helios Neo 16",
         "manufacturer_part_number": "NH.QVUEM.002",
         "retailer_sku": "NH.QVUEM.002",
         "color": "Black",
@@ -7801,9 +7801,9 @@
       },
       "physical": {
         "weight_kg": 2.7,
-        "width_mm": 356.8,
-        "depth_mm": 275.5,
-        "height_mm": 23.9,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
         "raw_spec": "Height: 23.90 mm | Width: 356.8 mm | Depth: 275.5 mm | Weight (Approximate): 2.70 kg"
       },
       "build_security": {
@@ -7821,8 +7821,8 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | Keyboard Features: RGB 4 Zones Backlight | Keyboard Feature: Microphone Mute Indicator | Security Features: Kensington lock | Security Feature: Firmware Trusted Platform Module (TPM) solution"
       },
       "audio_webcam": {
-        "speaker_count": 2,
-        "microphone": true,
+        "speaker_count": null,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -7934,7 +7934,7 @@
       "identity": {
         "brand": "Acer",
         "laptop_family": "Predator Helios",
-        "laptop_model": "Killer 1750x",
+        "laptop_model": "Predator Helios 16 AI PH16-73-92V4",
         "manufacturer_part_number": "NH.QW2EM.001",
         "retailer_sku": "NH.QW2EM.001",
         "color": "Black",
@@ -8045,7 +8045,7 @@
       },
       "audio_webcam": {
         "speaker_count": 4,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -8069,7 +8069,7 @@
         "raw_spec": "Memory Card Reader: Yes | Memory Card Supported: microSD | Wireless LAN Standard: IEEE 802.11be | Ethernet Technology: 5 Gigabit Ethernet | Bluetooth Standard: Bluetooth 5.4 or above | HDMI: Yes | Number of HDMI Outputs: 1 | Number of USB 3.2 Gen 1 Type-A Ports: 1 | Number of USB 3.2 Gen 2 Type-A Ports: 2 | Total Number of USB Ports: 5 | Network (RJ-45): Yes | Number of USB 3.2 Gen 2x2 Type-C Ports: 2 | Wireless: Killer Wi-Fi 7, Bluetooth 5.4 or above | Wired Network: 5 Gigabit Ethernet"
       },
       "operating_system": {
-        "name": "FreeDOS",
+        "name": "No OS",
         "raw_spec": "Operating System: No OS / Acer EShell"
       }
     },
@@ -8170,7 +8170,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83DV01HBAX",
         "manufacturer_part_number": "83DV01HBAX",
         "retailer_sku": "83DV01HBAX",
@@ -8223,7 +8223,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -8449,7 +8449,7 @@
         "raw_spec": "System Memory: Up to 64GB DDR5 5200MHz | MEMORY: Up to 64GB DDR5 5200MHz"
       },
       "storage": {
-        "capacity_gb": 4096,
+        "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "M.2",
@@ -8501,7 +8501,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "Dolby Atmos",
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -8562,7 +8562,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Strix",
+        "laptop_family": "ROG Strix",
         "laptop_model": "G614PH-RV659W",
         "manufacturer_part_number": "90NR0KX7-M00740",
         "retailer_sku": "90NR0KX7-M00740",
@@ -8583,7 +8583,7 @@
         "threads": 32,
         "clock_base_ghz": 2.4,
         "clock_boost_ghz": 5.3,
-        "cache_mb": 64,
+        "cache_mb": 80,
         "microarchitecture": "Zen 4",
         "microarchitecture_code": "Dragon Range",
         "low_power_cores": null,
@@ -8607,7 +8607,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": "5200",
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 64,
         "is_soldered": false,
@@ -8776,7 +8776,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Zephyrus",
+        "laptop_family": "ROG Zephyrus",
         "laptop_model": "GU606AR-TB321W",
         "manufacturer_part_number": "90NR0PC2-M00310",
         "retailer_sku": "90NR0PC2-M00310",
@@ -9001,9 +9001,9 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Strix",
+        "laptop_family": "ROG Strix",
         "laptop_model": "G614PW-TS161W",
-        "manufacturer_part_number": "VSNR0QK7-BU3000",
+        "manufacturer_part_number": "g614pw-ts161w",
         "retailer_sku": "g614pw-ts161w",
         "color": "Eclipse Gray",
         "is_bundle": false,
@@ -9022,7 +9022,7 @@
         "threads": 32,
         "clock_base_ghz": 2.4,
         "clock_boost_ghz": 5.3,
-        "cache_mb": 64,
+        "cache_mb": 80,
         "microarchitecture": "Zen 4",
         "microarchitecture_code": "Dragon Range",
         "low_power_cores": null,
@@ -9046,7 +9046,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5200,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 64,
         "is_soldered": false,
@@ -9217,11 +9217,11 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83JC00P6ED",
         "manufacturer_part_number": "83JC00P6ED",
         "retailer_sku": "83JC00P6ED",
-        "color": "Accuracy 100% sRGB Coverage and 300-Nit Brightness",
+        "color": null,
         "is_bundle": false,
         "warranty": "2 Years Courier/Carry-in",
         "warranty_years": 2,
@@ -9264,7 +9264,7 @@
         "memory_type": "DDR5",
         "speed": null,
         "slot_count": 2,
-        "max_supported_gb": 32,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5 Dual-Channel Memory for Fast Multitasking | Memory Slots: 2x DDR5 SODIMM Slots, Up to 32GB"
       },
@@ -9273,7 +9273,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": null,
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB PCIe 4.0 NVMe SSD with Expansion Support | Storage Expansion: Dual M.2 PCIe 4.0 SSD Slots"
       },
@@ -9392,7 +9392,7 @@
         "manufacturer_part_number": "83F500FBIN",
         "retailer_sku": "83F500FBIN",
         "color": "Eclipse Black",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": "1-year, Courier or Carry-in",
         "warranty_years": 1,
         "condition": null,
@@ -9440,7 +9440,7 @@
       "memory": {
         "capacity_gb": 64,
         "memory_type": "DDR5",
-        "speed": "6400",
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 64,
         "is_soldered": false,
@@ -9451,7 +9451,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": 2,
+        "slot_count": 1,
         "max_supported_gb": 1024,
         "raw_spec": "Storage: 1TB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 slots • One M.2 2280 PCIe 5.0 x4 slot • One M.2 2280 PCIe 4.0 x4 slot | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB • M.2 2280 SSD up to 2TB"
       },
@@ -9500,7 +9500,7 @@
         "raw_spec": "Keyboard: Per-key RGB Backlit, English | Touchpad: Buttonless Mylar surface multi-touch touchpad, 75 x 120 mm (2.95 x 4.72 inches) | Security Chip: Firmware TPM 2.0 Enabled | Fingerprint Reader: No Fingerprint Reader | Other Security: E-shutter"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": 4,
         "microphone": "2x, Array",
         "webcam_resolution": "5.0MP",
         "has_privacy_shutter": true,
@@ -9610,7 +9610,7 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "Probook",
+        "laptop_family": "ProBook",
         "laptop_model": "ProBook 460 G11",
         "manufacturer_part_number": "B9ZM1ET#BH5",
         "retailer_sku": "B9ZM1ET#BH5",
@@ -9772,9 +9772,9 @@
     "specs": {
       "identity": {
         "brand": "Gigabyte",
-        "laptop_family": "Aero",
+        "laptop_family": "AERO",
         "laptop_model": "AERO",
-        "manufacturer_part_number": "1TH93EEC94AH",
+        "manufacturer_part_number": "gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
         "retailer_sku": "gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
         "color": "Space Gray / Lunar White",
         "is_bundle": false,
@@ -9850,7 +9850,7 @@
         "aspect_ratio": "16:10",
         "touchscreen": false,
         "brightness_nits": 400,
-        "color_gamut": "sRGB",
+        "color_gamut": null,
         "response_time_ms": 3.0,
         "surface_treatment": null,
         "hdr": null,
@@ -9881,7 +9881,7 @@
         "raw_spec": "Keyboard: 1-zone RGB Backlit, up to 1.7mm key travel, N-Key rollover"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": null,
         "microphone": "2× 2W speakers, microphone, Dolby Atmos",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
@@ -10000,17 +10000,17 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5600 MHz",
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): Supports up to 64GB DDR5 5600MHz with 2 SO-DIMM slots | CAPACITY: 16GB DDR5"
       },
       "storage": {
-        "capacity_gb": 4096,
+        "capacity_gb": null,
         "storage_type": "SSD",
         "interface": "PCIe 4.0",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1 PCIe Gen4 x4 M.2 slot and 1 PCIe Gen4 x2 M.2 slot with support up to 4TB NVMe SSD"
       },
@@ -10181,9 +10181,9 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": null,
-        "max_supported_gb": 32,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 2x 16GB SODIMM DDR5-5600 (Max 32GB)"
       },
@@ -10518,7 +10518,7 @@
         "manufacturer_part_number": "90NB13Y2-M02EL0",
         "retailer_sku": "90NB13Y2-M02EL0",
         "color": "Cool Silver",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": null,
         "warranty_years": null,
         "condition": null,
@@ -10569,7 +10569,7 @@
         "speed": null,
         "slot_count": 1,
         "max_supported_gb": null,
-        "is_soldered": false,
+        "is_soldered": true,
         "raw_spec": "On board memory: 8GB DDR5 on board | Total System Memory: DDR5 8GB | Disclaimer for memory: Dual-channel memory support requires at least one SO-DIMM module. | How to upgrade memory: Upgradable; Need to remove bottom/top case | MEMORY: 8GB DDR5 on board"
       },
       "storage": {
@@ -10749,7 +10749,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "FX607VU-RL167W",
         "manufacturer_part_number": "90NR0N06-M00JB0",
         "retailer_sku": "90NR0N06-M00JB0",
@@ -10802,9 +10802,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": 2,
-        "max_supported_gb": 64,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SO-DIMM | Memory Slots: 2x SO-DIMM slots (Upgradable to 64GB)"
       },
@@ -10956,7 +10956,7 @@
         "threads": 12,
         "clock_base_ghz": 2.0,
         "clock_boost_ghz": 4.6,
-        "cache_mb": 8,
+        "cache_mb": 14,
         "microarchitecture": "Zen 5 / Zen 5c",
         "microarchitecture_code": "Gorgon Point",
         "low_power_cores": null,
@@ -11046,7 +11046,7 @@
         "raw_spec": "Keyboard color: Black | Keyboard type: Backlit Chiclet Keyboard With Copilot key | Touchpad: Precision touchpad support NumberPad | Security: IR webcam with Windows Hello support McAfee BIOS Booting User Password Protection BIOS setup user password Microsoft Pluton security processor Trusted Platform Module (Firmware TPM)"
       },
       "audio_webcam": {
-        "speaker_count": 1,
+        "speaker_count": null,
         "microphone": "Smart Amp Technology Built-in speaker Built-in array microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -11180,7 +11180,7 @@
         "threads": 8,
         "clock_base_ghz": 2.0,
         "clock_boost_ghz": 4.5,
-        "cache_mb": 8,
+        "cache_mb": 12,
         "microarchitecture": "Zen 5 and Zen 5c",
         "microarchitecture_code": "Krackan Point",
         "low_power_cores": null,
@@ -11213,9 +11213,9 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": 1,
+        "slot_count": null,
         "max_supported_gb": null,
-        "is_soldered": false,
+        "is_soldered": true,
         "raw_spec": "Memory (RAM): 16GB DDR5 on board (1x DDR5 SO-DIMM slot available) | MEMORY: 16GB DDR5 on board (1x DDR5 SO-DIMM slot available)"
       },
       "storage": {
@@ -11270,7 +11270,7 @@
         "raw_spec": "Keyboard: Backlit Chiclet Keyboard with Copilot key | Security: Microsoft Pluton, TPM, IR webcam for Windows Hello"
       },
       "audio_webcam": {
-        "speaker_count": 1,
+        "speaker_count": null,
         "microphone": "Built-in speaker & array microphone (AI Noise Canceling)",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -11347,7 +11347,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "FX608JMR-RV057W",
         "manufacturer_part_number": "90NR0NB1-M00J30",
         "retailer_sku": "90NR0NB1-M00J30",
@@ -11410,7 +11410,7 @@
         "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
-        "form_factor": "M.2",
+        "form_factor": null,
         "slot_count": 2,
         "max_supported_gb": 1024,
         "raw_spec": "Storage: 512GB PCIe 4.0 NVMe SSD | M.2 Slots: 2x M.2 PCIe | Supported SSD: 512GB / 1TB / 2TB"
@@ -11462,12 +11462,12 @@
         "microphone": "Built-in array microphone",
         "webcam_resolution": "1080P",
         "has_privacy_shutter": null,
-        "has_ir_camera": true,
+        "has_ir_camera": null,
         "raw_spec": "Camera: 1080P FHD IR (Windows Hello) | Microphone: Built-in array microphone | Speakers: Dual speakers | Audio Technology: Dolby Atmos + AI Noise Canceling"
       },
       "connectivity": {
         "wifi": "Wi-Fi 6E",
-        "bluetooth": "Bluetooth 5.4",
+        "bluetooth": null,
         "ethernet": "10/100/1000 Mbps",
         "ports": [
           "3x USB 3.2 Gen 2 Type-A",
@@ -11585,8 +11585,8 @@
         "cores": 8,
         "threads": 8,
         "clock_base_ghz": null,
-        "clock_boost_ghz": 2.976,
-        "cache_mb": null,
+        "clock_boost_ghz": 2.97,
+        "cache_mb": 30,
         "microarchitecture": "Qualcomm Oryon",
         "microarchitecture_code": null,
         "low_power_cores": null,
@@ -11742,7 +11742,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "FX607VU-RL121",
         "manufacturer_part_number": "90NR0N06-M00F80",
         "retailer_sku": "90NR0N06-M00F80",
@@ -11795,9 +11795,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB | MEMORY: 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB"
       },
@@ -11806,7 +11806,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots total)"
       },
@@ -11876,7 +11876,7 @@
         "raw_spec": "I/O Ports: 1x RJ45, 1x Thunderbolt 4 (DP), 1x USB 3.2 Gen 2 Type-C (DP/PD/G-Sync), 2x USB 3.2 Gen 1 Type-A"
       },
       "operating_system": {
-        "name": null,
+        "name": "No OS",
         "raw_spec": "Operating System: No preinstalled OS | OS: No preinstalled OS"
       }
     },
@@ -11926,7 +11926,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "ASUS TUF Gaming F16 (TUF608JPR-RV084)",
         "manufacturer_part_number": "90NR0NG1-M005W0",
         "retailer_sku": "90NR0NG1-M005W0",
@@ -11981,7 +11981,7 @@
         "memory_type": "DDR5",
         "speed": "5600 MHz",
         "slot_count": 2,
-        "max_supported_gb": 64,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR5-5600MHz (2x SO-DIMM, supports up to 64GB) | RAM Slots: 2x SO-DIMM Slots (Dual Channel Supported)"
       },
@@ -12014,7 +12014,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": 4,
         "power_adapter_w": 280,
-        "fast_charging": 45,
+        "fast_charging": null,
         "raw_spec": "Battery: 90WHrs, 4S1P, 4-cell Li-ion | Power Supply: 280W AC Adapter (Supports Type-C charging 45W-100W) | Battery & Power: 90WHrs 4-cell Li-ion Battery, 280W AC Adapter"
       },
       "physical": {
@@ -12047,7 +12047,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 6E",
         "bluetooth": "Bluetooth 5.4",
-        "ethernet": "RJ45 LAN (Gigabit)",
+        "ethernet": null,
         "ports": [
           "1x Thunderbolt 4 (40Gbps, supports DisplayPort / G-SYNC)",
           "1x USB 3.2 Gen 2 Type-C (DP + PD)",
@@ -12061,7 +12061,7 @@
         "raw_spec": "Networking: Wi-Fi 6E (802.11ax) + Bluetooth 5.4 + RJ45 LAN (Gigabit) | Thunderbolt Port: 1x Thunderbolt 4 (40Gbps, supports DisplayPort / G-SYNC) | USB Ports: 1x USB 3.2 Gen 2 Type-C (DP + PD), 3x USB 3.2 Gen 2 Type-A | Other Ports: 1x HDMI 2.1 FRL, 1x 3.5mm Combo Audio Jack"
       },
       "operating_system": {
-        "name": "FreeDOS",
+        "name": "No OS",
         "raw_spec": "Operating System: No OS"
       }
     },
@@ -12116,7 +12116,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Zephyrus Duo",
+        "laptop_family": "ROG Zephyrus Duo",
         "laptop_model": "ROG Zephyrus Duo 16",
         "manufacturer_part_number": "90NR0NT2-M002N0",
         "retailer_sku": "90NR0NT2-M002N0",
@@ -12319,7 +12319,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "ASUS TUF Gaming A15 FA506NCQ-HN167W",
         "manufacturer_part_number": "90NR0QE7-M002R0",
         "retailer_sku": "90NR0QE7-M002R0",
@@ -12340,7 +12340,7 @@
         "threads": 16,
         "clock_base_ghz": 3.2,
         "clock_boost_ghz": 4.75,
-        "cache_mb": 16,
+        "cache_mb": 20,
         "microarchitecture": "Zen 3+",
         "microarchitecture_code": "Rembrandt",
         "low_power_cores": null,
@@ -12365,8 +12365,8 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "4800 MHz",
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: Installed RAM: 16 GB DDR5-4800 MHz SO-DIMM, Slots: 2 × SO-DIMM, Max Capacity: 64 GB | MEMORY: 16 GB DDR5-4800 MHz SO-DIMM"
       },
@@ -12375,7 +12375,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: Primary Drive: 512 GB PCIe 4.0 NVMe M.2 SSD, M.2 Slots: 2 (support NVMe or SATA) | STORAGE: 512 GB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -12398,7 +12398,7 @@
       "power_battery": {
         "battery_capacity_wh": 48.0,
         "battery_cells": 3,
-        "power_adapter_w": 180,
+        "power_adapter_w": null,
         "fast_charging": null,
         "raw_spec": "Power: Battery: 48 Wh, 3-cell Li-ion, Adapter: 180W AC (Ø6.0 mm barrel, 20V/9A)"
       },
@@ -12431,7 +12431,7 @@
       },
       "connectivity": {
         "wifi": "Wi-Fi 6",
-        "bluetooth": "Bluetooth 5.3",
+        "bluetooth": null,
         "ethernet": "Ethernet: 1 × RJ45 LAN port",
         "ports": [
           "Wi-Fi: Wi-Fi 6 (802.11ax, dual-band 2×2)",
@@ -12583,9 +12583,9 @@
       },
       "physical": {
         "weight_kg": 2.7,
-        "width_mm": 356.8,
-        "depth_mm": 275.5,
-        "height_mm": 23.9,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
         "raw_spec": "Physical Characteristics: 23.90 mm (H) × 356.8 mm (W) × 275.5 mm (D), 2.70 kg, Black"
       },
       "build_security": {
@@ -12682,7 +12682,7 @@
         "cores": 8,
         "threads": 12,
         "clock_base_ghz": 2.1,
-        "clock_boost_ghz": 4.6,
+        "clock_boost_ghz": 2.1,
         "cache_mb": 12,
         "microarchitecture": "Raptor Cove / Gracemont",
         "microarchitecture_code": "Raptor Lake-H",
@@ -12690,7 +12690,7 @@
         "performance_cores": {
           "count": 4,
           "base_clock_ghz": 2.1,
-          "boost_clock_ghz": 4.6
+          "boost_clock_ghz": 2.1
         },
         "efficient_cores": {
           "count": 4,
@@ -12761,8 +12761,8 @@
         "raw_spec": "Weight (Approximate): 1.95 kg"
       },
       "build_security": {
-        "has_backlit_keyboard": false,
-        "keyboard_backlight_type": "White Backlight",
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "White Backlit",
         "has_fingerprint": false,
         "has_numpad": null,
         "pointing_device": "TouchPad",
@@ -12774,15 +12774,15 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | Keyboard Features: White Backlight | Security Features: BIOS user, supervisor passwords; Kensington lock slot; Camera shutter"
       },
       "audio_webcam": {
-        "speaker_count": 2,
-        "microphone": true,
+        "speaker_count": null,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
         "raw_spec": "Microphone: Yes | Number of Speakers: 2"
       },
       "connectivity": {
-        "wifi": "IEEE 802.11ax Wi-Fi",
+        "wifi": null,
         "bluetooth": "Bluetooth 5.0",
         "ethernet": "Gigabit Ethernet",
         "ports": [
@@ -12976,14 +12976,14 @@
       },
       "physical": {
         "weight_kg": 2.11,
-        "width_mm": 362.3,
-        "depth_mm": 239.9,
-        "height_mm": 23.5,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
         "raw_spec": "Height: 23.5 mm | Width: 362.3 mm | Depth: 239.9 mm | Weight: 2.11 kg"
       },
       "build_security": {
-        "has_backlit_keyboard": false,
-        "keyboard_backlight_type": "Amber Backlight",
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "Amber Backlit",
         "has_fingerprint": false,
         "has_numpad": null,
         "pointing_device": "TouchPad",
@@ -12996,7 +12996,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -13152,7 +13152,7 @@
         "memory_type": "LPDDR5X",
         "speed": null,
         "slot_count": null,
-        "max_supported_gb": 32,
+        "max_supported_gb": null,
         "is_soldered": true,
         "raw_spec": "Memory: 32GB LPDDR5X on board (Max Total system memory up to: 32GB)"
       },
@@ -13301,7 +13301,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Proart",
+        "laptop_family": "ProArt",
         "laptop_model": "ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W",
         "manufacturer_part_number": "90NB17X2-M00480",
         "retailer_sku": "90NB17X2-M00480",
@@ -13322,7 +13322,7 @@
         "threads": 32,
         "clock_base_ghz": 3.0,
         "clock_boost_ghz": 5.1,
-        "cache_mb": 64,
+        "cache_mb": 80,
         "microarchitecture": "Zen 5",
         "microarchitecture_code": "Strix Halo",
         "low_power_cores": null,
@@ -13357,7 +13357,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "M.2",
-        "slot_count": 1,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB M.2 NVMe PCIe 4.0 SSD (Extra M.2 2230 Slot Available)"
       },
@@ -13529,8 +13529,8 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR4",
-        "speed": 3200,
-        "slot_count": 2,
+        "speed": null,
+        "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "RAM: 16GB DDR4 3200MHz (2×8GB) | MEMORY: 16GB DDR4 3200MHz (2×8GB)"
@@ -13594,7 +13594,7 @@
       },
       "connectivity": {
         "wifi": "Wi-Fi 6",
-        "bluetooth": "Bluetooth 5.3",
+        "bluetooth": null,
         "ethernet": "RJ-45 Ethernet",
         "ports": [],
         "has_card_reader": null,
@@ -13649,12 +13649,12 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Ideapad Slim",
+        "laptop_family": "IdeaPad Slim",
         "laptop_model": "83K100QNED",
         "manufacturer_part_number": "83K100QNED",
         "retailer_sku": "83K100QNED",
         "color": "Cosmic Blue",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": "1-year, Courier or Carry-in",
         "warranty_years": 1,
         "condition": null,
@@ -13700,10 +13700,10 @@
         "raw_spec": "Graphics: Integrated Intel UHD Graphics | GPU: Integrated Intel UHD Graphics"
       },
       "memory": {
-        "capacity_gb": 8,
+        "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 4800,
-        "slot_count": 0,
+        "speed": null,
+        "slot_count": 2,
         "max_supported_gb": 24,
         "is_soldered": true,
         "raw_spec": "Memory: 8GB Soldered DDR5-4800 + 8GB SODIMM DDR5-4800 | Memory Slots: One memory soldered to systemboard, one DDR5 SODIMM slot, dual-channel capable | Max Memory: Up to 24GB (8GB soldered + 16GB SODIMM) DDR5-4800 offering"
@@ -13748,8 +13748,8 @@
         "raw_spec": "Dimensions (WxDxH): 343.4 x 239.5 x 16.9-17.9 mm (13.52 x 9.51 x 0.67-0.70 inches) | Weight: Starting at 1.59 kg (3.51 lbs)"
       },
       "build_security": {
-        "has_backlit_keyboard": true,
-        "keyboard_backlight_type": "Backlit",
+        "has_backlit_keyboard": false,
+        "keyboard_backlight_type": null,
         "has_fingerprint": false,
         "has_numpad": null,
         "pointing_device": "Buttonless Mylar surface multi-touch touchpad, supports Precision TouchPad (PTP), 75 x 120 mm (2.95 x 4.72 inches)",
@@ -13772,7 +13772,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 6",
         "bluetooth": "Bluetooth 5.2",
-        "ethernet": "No Onboard Ethernet",
+        "ethernet": null,
         "ports": [
           "2x USB-A (USB 5Gbps / USB 3.2 Gen 1)",
           "1x USB-C (USB 5Gbps / USB 3.2 Gen 1) with USB PD 45-65W and DisplayPort 1.2",
@@ -13913,7 +13913,7 @@
         "raw_spec": "Graphics: Intel UHD Graphics | GPU: Intel UHD Graphics"
       },
       "memory": {
-        "capacity_gb": 8,
+        "capacity_gb": 16,
         "memory_type": "DDR4",
         "speed": null,
         "slot_count": null,
@@ -14088,7 +14088,7 @@
         "cores": 6,
         "threads": 12,
         "clock_base_ghz": 4.3,
-        "clock_boost_ghz": 5.0,
+        "clock_boost_ghz": 4.3,
         "cache_mb": 16,
         "microarchitecture": "Zen 4",
         "microarchitecture_code": "Hawk Point",
@@ -14159,10 +14159,10 @@
         "raw_spec": "Weight: 5.38 lb ≈ 2.44 kg"
       },
       "build_security": {
-        "has_backlit_keyboard": false,
-        "keyboard_backlight_type": "Amber",
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "Amber Backlit",
         "has_fingerprint": false,
-        "has_numpad": true,
+        "has_numpad": null,
         "pointing_device": "Microsoft Precision Certified",
         "chassis_material": null,
         "security_features": [
@@ -14260,7 +14260,7 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "Hp Omen 16 Slim (16-Am0001Nia)",
+        "laptop_family": "HP OMEN 16 Slim (16-am0001nia)",
         "laptop_model": "HP OMEN 16 Slim (16-am0001nia)",
         "manufacturer_part_number": "C34VDEA",
         "retailer_sku": "C34VDEA",
@@ -14280,7 +14280,7 @@
         "cores": 16,
         "threads": 16,
         "clock_base_ghz": 2.0,
-        "clock_boost_ghz": 5.1,
+        "clock_boost_ghz": 4.8,
         "cache_mb": 24,
         "microarchitecture": "Lion Cove / Skymont",
         "microarchitecture_code": "Arrow Lake-H",
@@ -14288,7 +14288,7 @@
         "performance_cores": {
           "count": 6,
           "base_clock_ghz": 2.0,
-          "boost_clock_ghz": 5.1
+          "boost_clock_ghz": 4.8
         },
         "efficient_cores": {
           "count": 8,
@@ -14314,7 +14314,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5600 MHz",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "Memory: 16GB DDR5-5600MHz (2x Slots available)"
@@ -14528,7 +14528,7 @@
       },
       "audio_webcam": {
         "speaker_count": null,
-        "microphone": "dual array digital microphones",
+        "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -14601,8 +14601,8 @@
         "laptop_model": "Dell Alienware AC1620 (Black) - AXGON 3 in 1 Gaming Set AX1COM31",
         "manufacturer_part_number": "AC1620",
         "retailer_sku": "AC1620",
-        "color": "Black",
-        "is_bundle": false,
+        "color": null,
+        "is_bundle": true,
         "warranty": "1 Year Limited Warranty",
         "warranty_years": 1,
         "condition": null,
@@ -14617,7 +14617,7 @@
         "cores": 14,
         "threads": 20,
         "clock_base_ghz": 2.7,
-        "clock_boost_ghz": 5.8,
+        "clock_boost_ghz": 5.4,
         "cache_mb": 24,
         "microarchitecture": "Raptor Cove / Gracemont",
         "microarchitecture_code": "Raptor Lake",
@@ -14625,7 +14625,7 @@
         "performance_cores": {
           "count": 6,
           "base_clock_ghz": 2.7,
-          "boost_clock_ghz": 5.8
+          "boost_clock_ghz": 5.4
         },
         "efficient_cores": {
           "count": 8,
@@ -14771,7 +14771,7 @@
         "manufacturer_part_number": "AC1620-16",
         "retailer_sku": "AC1620-16",
         "color": null,
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": "1 Year Warranty",
         "warranty_years": 1,
         "condition": null,
@@ -14786,7 +14786,7 @@
         "cores": 14,
         "threads": 20,
         "clock_base_ghz": 2.7,
-        "clock_boost_ghz": 5.8,
+        "clock_boost_ghz": 5.4,
         "cache_mb": 24,
         "microarchitecture": "Raptor Cove / Gracemont",
         "microarchitecture_code": "Raptor Lake",
@@ -14794,7 +14794,7 @@
         "performance_cores": {
           "count": 6,
           "base_clock_ghz": 2.7,
-          "boost_clock_ghz": 5.8
+          "boost_clock_ghz": 5.4
         },
         "efficient_cores": {
           "count": 8,
@@ -14927,12 +14927,12 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83LK006AIN",
         "manufacturer_part_number": "83LK006AIN",
         "retailer_sku": "83LK006AIN",
         "color": "Luna Grey",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": "1-year, Courier or Carry-in",
         "warranty_years": 1,
         "condition": null,
@@ -14980,7 +14980,7 @@
       "memory": {
         "capacity_gb": 12,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": 1,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -15026,8 +15026,8 @@
         "raw_spec": "Dimensions (WxDxH): 359.3 x 236 x 19.9-22.95 mm (14.15 x 9.29 x 0.78-0.90 inches) | Weight: Starting at 1.77 kg (3.9 lbs)"
       },
       "build_security": {
-        "has_backlit_keyboard": true,
-        "keyboard_backlight_type": "Backlit",
+        "has_backlit_keyboard": false,
+        "keyboard_backlight_type": null,
         "has_fingerprint": false,
         "has_numpad": null,
         "pointing_device": "Buttonless Mylar surface multi-touch touchpad, supports Precision TouchPad (PTP), 69 x 104 mm (2.72 x 4.09 inches)",
@@ -15195,7 +15195,7 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -15328,11 +15328,11 @@
     "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614ph-rv161w-ryzen-9-rtx-5050-egypt",
     "title": "ASUS ROG Strix G16 G614PH-RV161W – Ryzen 9 8940HX 16GB RAM 1TB NVMe SSD RTX 5050 8GB – 16\" FHD+ 165Hz IPS – Win11",
     "price_egp": 82214.0,
-    "cpu_key": "intel_core_ultra_9_275hx",
+    "cpu_key": "amd_ryzen_9_8940hx",
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Strix",
+        "laptop_family": "ROG Strix",
         "laptop_model": "ROG Strix SCAR 18 (2025) G835LX-AI464W",
         "manufacturer_part_number": "90NR0KX7-M001J0",
         "retailer_sku": "90NR0KX7-M001J0",
@@ -15344,30 +15344,22 @@
         "raw_spec": "Title: ASUS ROG Strix G16 G614PH-RV161W - Ryzen 9 8940HX 16GB RAM 1TB NVMe SSD RTX 5050 8GB - 16\" FHD+ 165Hz IPS - Win11 | Brand Name: ASUS | Model Name: ROG Strix SCAR 18 (2025) G835LX-AI464W | Color: Off Black | SKU: 90NR0KX7-M001J0 | Part Number: 90NR0KX7-M001J0"
       },
       "cpu": {
-        "manufacturer": "Intel",
-        "line": "Core Ultra 9",
-        "model": "Core Ultra 9 275HX",
-        "series": "Series 2",
-        "full_name": "Intel Core Ultra 9 275HX",
-        "cores": 24,
-        "threads": 24,
-        "clock_base_ghz": 2.7,
-        "clock_boost_ghz": 5.4,
-        "cache_mb": 36,
-        "microarchitecture": "Lion Cove / Skymont",
-        "microarchitecture_code": "Arrow Lake-HX",
+        "manufacturer": "AMD",
+        "line": "Ryzen 9",
+        "model": "Ryzen 9 8940HX",
+        "series": "Ryzen 8000 Series",
+        "full_name": "AMD Ryzen 9 8940HX",
+        "cores": 16,
+        "threads": 32,
+        "clock_base_ghz": 2.4,
+        "clock_boost_ghz": 5.3,
+        "cache_mb": 80,
+        "microarchitecture": "Zen 4",
+        "microarchitecture_code": "Dragon Range",
         "low_power_cores": null,
-        "performance_cores": {
-          "count": 8,
-          "base_clock_ghz": 2.7,
-          "boost_clock_ghz": 5.4
-        },
-        "efficient_cores": {
-          "count": 16,
-          "base_clock_ghz": 2.1,
-          "boost_clock_ghz": 4.6
-        },
-        "npu_tops": 13.0,
+        "performance_cores": null,
+        "efficient_cores": null,
+        "npu_tops": null,
         "base_power_w": 55,
         "raw_spec": "Processor: AMD Ryzen 9 8940HX (16 Cores, 32 Threads, up to 5.3GHz, 80MB Cache) | CPU: AMD Ryzen 9 8940HX (16 Cores, 32 Threads, up to 5.3GHz, 80MB Cache)"
       },
@@ -15385,9 +15377,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5200,
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB RAM | MEMORY: 16GB DDR5-5200 SO-DIMM (Max 64GB, 2 Slots)"
       },
@@ -15396,7 +15388,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB NVMe SSD | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots total)"
       },
@@ -15492,7 +15484,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Proart",
+        "laptop_family": "ProArt",
         "laptop_model": "H7606WW-SE926W",
         "manufacturer_part_number": "90NB17F1-M00180",
         "retailer_sku": "90NB17F1-M00180",
@@ -15679,12 +15671,12 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "90NR0NG1-M00610",
         "retailer_sku": "90NR0NG1-M00610",
         "color": "Jaeger Gray",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": null,
         "warranty_years": null,
         "condition": null,
@@ -15732,9 +15724,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": 2,
-        "max_supported_gb": 64,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (8GB + 8GB) | Memory Slots: 2x SO-DIMM slots (Max 64GB)"
       },
@@ -15948,7 +15940,7 @@
         "aspect_ratio": "16:10",
         "touchscreen": false,
         "brightness_nits": 400,
-        "color_gamut": "100% Adobe color gamut",
+        "color_gamut": null,
         "response_time_ms": null,
         "surface_treatment": null,
         "hdr": null,
@@ -16042,7 +16034,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Ideapad Slim",
+        "laptop_family": "IdeaPad Slim",
         "laptop_model": "IdeaPad Slim 3 15IRU8",
         "manufacturer_part_number": "82X700BVPS",
         "retailer_sku": "82X700BVPS",
@@ -16095,7 +16087,7 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "LPDDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": true,
@@ -16141,8 +16133,8 @@
         "raw_spec": "Dimensions: 359.3 x 235 x 17.9 mm | Weight: Starting at 1.62 kg"
       },
       "build_security": {
-        "has_backlit_keyboard": true,
-        "keyboard_backlight_type": "Backlit",
+        "has_backlit_keyboard": false,
+        "keyboard_backlight_type": null,
         "has_fingerprint": false,
         "has_numpad": null,
         "pointing_device": "Buttonless Mylar multi-touch touchpad with Precision TouchPad support",
@@ -16432,7 +16424,7 @@
     "specs": {
       "identity": {
         "brand": "Gigabyte",
-        "laptop_family": "Aero",
+        "laptop_family": "AERO",
         "laptop_model": "GIGABYTE AERO X16 (Lunar White)",
         "manufacturer_part_number": "1VH93EEC94HW",
         "retailer_sku": "1VH93EEC94HW",
@@ -16524,7 +16516,7 @@
         "raw_spec": null
       },
       "physical": {
-        "weight_kg": 2.2,
+        "weight_kg": 2.0,
         "width_mm": 355.0,
         "depth_mm": 250.0,
         "height_mm": 20.0,
@@ -16543,7 +16535,7 @@
       "audio_webcam": {
         "speaker_count": 2,
         "microphone": null,
-        "webcam_resolution": "720p",
+        "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
         "raw_spec": "Audio: Dual speakers, DTS:X Ultra | Camera: Full HD webcam with Windows Hello"
@@ -16695,7 +16687,7 @@
         "raw_spec": "Power Adapter: 130W or 180W Adapter options"
       },
       "physical": {
-        "weight_kg": 2.57,
+        "weight_kg": 2.49,
         "width_mm": 357.0,
         "depth_mm": 265.4,
         "height_mm": 15.2,
@@ -16713,7 +16705,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "Stereo speakers - 4W total (2W × 2) - Realtek AL3204",
+        "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -16778,7 +16770,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83DV01BCAX (Lenovo LOQ Series)",
         "manufacturer_part_number": "83DV01BCAX",
         "retailer_sku": "83DV01BCAX",
@@ -16832,8 +16824,8 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": 2,
-        "max_supported_gb": 32,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB SO-DIMM DDR5-4800 (Max 32GB, 2x Slots) | MEMORY: 16GB SO-DIMM DDR5-4800"
       },
@@ -16842,7 +16834,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (2x M.2 slots available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe"
       },
@@ -16865,7 +16857,7 @@
       "power_battery": {
         "battery_capacity_wh": 60.0,
         "battery_cells": null,
-        "power_adapter_w": 170,
+        "power_adapter_w": null,
         "fast_charging": null,
         "raw_spec": "Battery & Power: 60Wh Battery, 170W Slim Tip Adapter"
       },
@@ -17063,7 +17055,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "Array Microphone",
+        "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": true,
@@ -17072,7 +17064,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 6E",
         "bluetooth": "Bluetooth 5.2",
-        "ethernet": "RJ-45 Ethernet",
+        "ethernet": null,
         "ports": [
           "1x USB 2.0",
           "2x USB 3.2 Gen 2",
@@ -17129,7 +17121,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "Lenovo LOQ 15IRX9 (83DV00RMAX)",
         "manufacturer_part_number": "83DV00RMAX",
         "retailer_sku": "83DV00RMAX",
@@ -17182,9 +17174,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
-        "max_supported_gb": 32,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (2x 8GB SO-DIMM) / Max 32GB | MEMORY: 16GB DDR5-5600"
       },
@@ -17216,7 +17208,7 @@
       "power_battery": {
         "battery_capacity_wh": 60.0,
         "battery_cells": null,
-        "power_adapter_w": 230,
+        "power_adapter_w": null,
         "fast_charging": null,
         "raw_spec": "Battery & Power: 60Wh Battery with 230W Slim Tip Adapter"
       },
@@ -17303,7 +17295,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Lenovo Loq 15Ahp10 (2025 Gen 10)",
+        "laptop_family": "Lenovo LOQ 15AHP10 (2025 Gen 10)",
         "laptop_model": "Lenovo LOQ 15AHP10 (2025 Gen 10)",
         "manufacturer_part_number": "83JG002BED",
         "retailer_sku": "83JG002BED",
@@ -17348,9 +17340,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
-        "max_supported_gb": 16,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "Memory (RAM): 16GB DDR5-5600 (1×16GB; Dual-channel with 2 slots) | MEMORY: 16GB DDR5-5600 (1×16GB; Dual-channel with 2 slots)"
       },
@@ -17359,7 +17351,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB M.2 2242 PCIe Gen4 NVMe SSD (Dual M.2 slots)"
       },
@@ -17380,7 +17372,7 @@
         "raw_spec": "Display: 15.6\" FHD (1920×1080), 144Hz, IPS, 300 nits, 100% sRGB, G-SYNC"
       },
       "power_battery": {
-        "battery_capacity_wh": 60.0,
+        "battery_capacity_wh": null,
         "battery_cells": null,
         "power_adapter_w": 170,
         "fast_charging": "Rapid Charge Pro",
@@ -17404,7 +17396,7 @@
         "raw_spec": "Keyboard: White Backlit Keyboard, 1.5mm Travel, 100% Anti-Ghosting"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": null,
         "microphone": null,
         "webcam_resolution": "5MP",
         "has_privacy_shutter": true,
@@ -17524,8 +17516,8 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
+        "speed": null,
+        "slot_count": null,
         "max_supported_gb": 32,
         "is_soldered": null,
         "raw_spec": "Memory: 32GB (2×16GB) DDR5-5600, Dual Channel | Max Memory: Up to 32GB DDR5-5600 offering"
@@ -17901,7 +17893,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 2TB PCIe Gen4x4 NVMe SSD (2x 1TB M.2)"
       },
@@ -17910,7 +17902,7 @@
         "resolution": "2560x1600",
         "resolution_width": 2560,
         "resolution_height": 1600,
-        "panel_type": "Mini-LED",
+        "panel_type": "MINI-LED",
         "refresh_rate_hz": 240,
         "aspect_ratio": "16:10",
         "touchscreen": false,
@@ -17948,7 +17940,7 @@
       "audio_webcam": {
         "speaker_count": 2,
         "microphone": null,
-        "webcam_resolution": "720p",
+        "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": true,
         "raw_spec": "Audio: DTS:X Ultra with dual 2W speakers | Webcam: Full HD IR Camera with Windows Hello support"
@@ -18068,9 +18060,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR4",
-        "speed": "3200 MHz",
+        "speed": null,
         "slot_count": 2,
-        "max_supported_gb": 64,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB | MEMORY 16GB DDR4-3200 MHz (2 x 8GB): Expandable up to 64GB | MEMORY: 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB"
       },
@@ -18079,7 +18071,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "2.5-inch",
-        "slot_count": 1,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB NVMe PCIe Gen4 SSD (plus 1x 2.5\" SATA HDD/SSD expansion slot)"
       },
@@ -18100,7 +18092,7 @@
         "raw_spec": "Display: 15.6\" FHD (1920x1080), 144Hz, IPS-Level, 45% NTSC"
       },
       "power_battery": {
-        "battery_capacity_wh": 52.4,
+        "battery_capacity_wh": null,
         "battery_cells": 3,
         "power_adapter_w": 120,
         "fast_charging": null,
@@ -18194,7 +18186,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Strix",
+        "laptop_family": "ROG Strix",
         "laptop_model": "ROG Strix",
         "manufacturer_part_number": "90NR0LG1-M00840",
         "retailer_sku": "90NR0X80-M00270",
@@ -18247,9 +18239,9 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 32GB DDR5-5600 (2x 16GB SO-DIMM, Expandable to 64GB) | MEMORY: 32GB DDR5-5600"
       },
@@ -18258,7 +18250,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -18282,7 +18274,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": null,
-        "fast_charging": "0-50% in 30 mins",
+        "fast_charging": null,
         "raw_spec": "Battery & Power: 90WHrs Battery / 380W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -18368,12 +18360,12 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Strix Scar",
+        "laptop_family": "ROG Strix SCAR",
         "laptop_model": "ROG Strix SCAR 16",
         "manufacturer_part_number": "90NR0L81-M001C0",
         "retailer_sku": "90NR0L81-M001C0",
         "color": null,
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": null,
         "warranty_years": null,
         "condition": null,
@@ -18421,7 +18413,7 @@
       "memory": {
         "capacity_gb": 64,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -18441,7 +18433,7 @@
         "resolution": "2560x1600",
         "resolution_width": 2560,
         "resolution_height": 1600,
-        "panel_type": "Mini-LED",
+        "panel_type": null,
         "refresh_rate_hz": 240,
         "aspect_ratio": "16:10",
         "touchscreen": false,
@@ -18544,7 +18536,7 @@
         "manufacturer_part_number": "90NB16L1-M002N0",
         "retailer_sku": "90NB16L1-M002N0",
         "color": null,
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": null,
         "warranty_years": null,
         "condition": null,
@@ -18593,7 +18585,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5 SO-DIMM (Dual-channel support, 2x Slots) | MEMORY: 16GB DDR5 SO-DIMM"
@@ -18715,7 +18707,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "Lenovo LOQ 15IRX9 (83DV018TAX) - Luna Grey",
         "manufacturer_part_number": "83DV018TAX",
         "retailer_sku": "83DV018TAX",
@@ -18768,8 +18760,8 @@
       "memory": {
         "capacity_gb": 24,
         "memory_type": "DDR5",
-        "speed": 4800,
-        "slot_count": 2,
+        "speed": null,
+        "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 24GB DDR5-4800 (2x 12GB SO-DIMM) | MEMORY: 24GB DDR5-4800"
@@ -18779,7 +18771,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (2x M.2 Slots available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe"
       },
@@ -18802,7 +18794,7 @@
       "power_battery": {
         "battery_capacity_wh": 60.0,
         "battery_cells": null,
-        "power_adapter_w": 170,
+        "power_adapter_w": null,
         "fast_charging": null,
         "raw_spec": "Battery & Power: 60Wh Battery / 170W Slim Tip Adapter"
       },
@@ -18824,7 +18816,7 @@
         "raw_spec": "Keyboard: White Backlit, Arabic Layout"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": null,
         "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -18834,7 +18826,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 6",
         "bluetooth": "Bluetooth 5.2",
-        "ethernet": "Gigabit Ethernet",
+        "ethernet": null,
         "ports": [
           "1x USB-C (PD 140W/DP 1.4)",
           "3x USB-A (5Gbps)",
@@ -18882,14 +18874,14 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Strix",
+        "laptop_family": "ROG Strix",
         "laptop_model": "ROG Strix",
         "manufacturer_part_number": "90NR0L47-M001N0",
         "retailer_sku": "90NR0L47-M001N0",
         "color": "Eclipse Gray",
         "is_bundle": false,
         "warranty": null,
-        "warranty_years": 3,
+        "warranty_years": null,
         "condition": null,
         "raw_spec": "Title: ASUS ROG Strix G16 G614FP-GR169W- AMD Ryzen 9 9955HX, RTX 5070, 16-inch FHD+ 165Hz, 16GB DDR5, 1TB SSD, Windows 11 Home - Eclipse Gray | Included in Box: ROG Backpack / 3 Months Xbox Game Pass | Part Number: 90NR0L47-M001N0 | Warranty Note: Register within 90 days at eg.asus.click/pwe to activate warranty | SKU: 90NR0L47-M001N0"
       },
@@ -18903,7 +18895,7 @@
         "threads": 32,
         "clock_base_ghz": 2.5,
         "clock_boost_ghz": 5.4,
-        "cache_mb": 64,
+        "cache_mb": 80,
         "microarchitecture": "Zen 5",
         "microarchitecture_code": "Fire Range",
         "low_power_cores": null,
@@ -18927,9 +18919,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (2x SO-DIMM, Upgradable to 64GB)"
       },
@@ -18938,7 +18930,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total)"
       },
@@ -18962,7 +18954,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": 280,
-        "fast_charging": "0-50% in 30 mins",
+        "fast_charging": null,
         "raw_spec": "Battery & Power: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins | POWER: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -19054,7 +19046,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "90NR0JF7-M00HA0",
         "retailer_sku": "90NR0JF7-M00HA0",
@@ -19075,7 +19067,7 @@
         "threads": 12,
         "clock_base_ghz": 3.2,
         "clock_boost_ghz": 4.7,
-        "cache_mb": 16,
+        "cache_mb": 22,
         "microarchitecture": "Zen 4 / Zen 4c",
         "microarchitecture_code": "Phoenix",
         "low_power_cores": null,
@@ -19107,9 +19099,9 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 8GB DDR5-5600 SO-DIMM (Total 2x slots, Upgradable up to 64GB) | MEMORY: 8GB DDR5-5600"
       },
@@ -19118,7 +19110,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB PCIe 4.0 NVMe M.2 SSD (2x M.2 slots total) | STORAGE: 512GB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -19166,7 +19158,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "built-in array microphone",
+        "microphone": null,
         "webcam_resolution": "720P",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -19294,8 +19286,8 @@
         "capacity_gb": 32,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": 2,
-        "max_supported_gb": 96,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 32GB DDR5 (Upgradeable up to 96GB) / 2 Slots | MEMORY: 32GB DDR5"
       },
@@ -19325,7 +19317,7 @@
         "raw_spec": "Display: 17.0\" QHD+ (2560 x 1600) / 240Hz / IPS-Level | DISPLAY: 17.0\" QHD+ (2560 x 1600), 240Hz, IPS-Level"
       },
       "power_battery": {
-        "battery_capacity_wh": 90.0,
+        "battery_capacity_wh": null,
         "battery_cells": 4,
         "power_adapter_w": 330,
         "fast_charging": null,
@@ -19420,7 +19412,7 @@
         "color": "Eclipse Black",
         "is_bundle": false,
         "warranty": null,
-        "warranty_years": 2,
+        "warranty_years": null,
         "condition": null,
         "raw_spec": "Title: Lenovo Legion Pro 5 16IRX10 83NN001SED - Core i7-14650HX - RTX 5050 8GB GDDR7 16 WQXGA 240Hz 16GB DDR5 512GB SSD Eclipse Black - Windows 11 | Special Features: AI Chip: LA3 | Case Color: Eclipse Black | Included Upgrade: 2Y Premium Care with Onsite upgrade from 1Y Courier/Carry-in | Model: 83NN001SED | SKU: 83NN001SED | Part Number: 83NN001SED"
       },
@@ -19466,7 +19458,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -19763,11 +19755,11 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Strix",
+        "laptop_family": "ROG Strix",
         "laptop_model": "ROG Strix",
         "manufacturer_part_number": "90NR0LJ2-M005C0",
         "retailer_sku": "90NR0LJ2-M005C0",
-        "color": "Volt Green",
+        "color": null,
         "is_bundle": false,
         "warranty": null,
         "warranty_years": null,
@@ -19816,9 +19808,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": null,
-        "max_supported_gb": 64,
+        "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "Memory: 16GB DDR5-5600 (Dual-channel, Expandable to 64GB) | MEMORY: 16GB DDR5-5600, Dual-Channel, Up to 64GB"
       },
@@ -19827,7 +19819,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -19851,7 +19843,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": 280,
-        "fast_charging": "0-50% in 30 mins",
+        "fast_charging": null,
         "raw_spec": "Battery & Power: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins | BATTERY: 90Wh"
       },
       "physical": {
@@ -19939,7 +19931,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "90NR0KG1-M00170",
         "retailer_sku": "90NR0KG1-M00170",
@@ -19992,7 +19984,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "LPDDR5X",
-        "speed": "7500",
+        "speed": null,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": true,
@@ -20003,7 +19995,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots)"
       },
@@ -20027,7 +20019,7 @@
         "battery_capacity_wh": 73.0,
         "battery_cells": null,
         "power_adapter_w": 200,
-        "fast_charging": "0-50% in 30 mins",
+        "fast_charging": null,
         "raw_spec": "Battery & Power: 73WHrs Battery / 200W AC Adapter / 0-50% in 30 mins | BATTERY: 73WHrs Battery / 200W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -20123,7 +20115,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Tuf Gaming",
+        "laptop_family": "TUF Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "90NR0MC1-M003T0",
         "retailer_sku": "90NR0MC1-M003T0",
@@ -20144,7 +20136,7 @@
         "threads": 32,
         "clock_base_ghz": 2.4,
         "clock_boost_ghz": 5.3,
-        "cache_mb": 64,
+        "cache_mb": 80,
         "microarchitecture": "Zen 4",
         "microarchitecture_code": "Dragon Range",
         "low_power_cores": null,
@@ -20168,9 +20160,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5200,
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5200 (2x SO-DIMM slots, Max 64GB)"
       },
@@ -20179,7 +20171,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total)"
       },
@@ -20203,7 +20195,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": 280,
-        "fast_charging": "0-50% in 30 mins",
+        "fast_charging": null,
         "raw_spec": "Battery & Power: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -20343,8 +20335,8 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5200 MHz",
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets) | MEMORY: 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets)"
       },
@@ -20353,7 +20345,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe Gen4x4 M.2 SSD (2x M.2 slots, supports up to 4TB total)"
       },
@@ -20720,9 +20712,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 1,
-        "max_supported_gb": 32,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (1x 16GB SO-DIMM) / Up to 32GB supported"
       },
@@ -20731,7 +20723,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Two M.2 slots total)"
       },
@@ -20754,7 +20746,7 @@
       "power_battery": {
         "battery_capacity_wh": 80.0,
         "battery_cells": null,
-        "power_adapter_w": 245,
+        "power_adapter_w": null,
         "fast_charging": null,
         "raw_spec": "Battery & Power: 80Wh Battery / 245W Slim Tip Adapter"
       },
@@ -20841,7 +20833,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Strix",
+        "laptop_family": "ROG Strix",
         "laptop_model": "ROG Strix",
         "manufacturer_part_number": "90NR0L17-M001B0",
         "retailer_sku": "90NR0L17-M001B0",
@@ -20862,7 +20854,7 @@
         "threads": 32,
         "clock_base_ghz": 2.5,
         "clock_boost_ghz": 5.4,
-        "cache_mb": 64,
+        "cache_mb": 80,
         "microarchitecture": "Zen 5",
         "microarchitecture_code": "Fire Range",
         "low_power_cores": null,
@@ -20886,9 +20878,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SO-DIMM (2x Slots, Expandable to 64GB) | MEMORY: 16GB DDR5-5600 SO-DIMM"
       },
@@ -20897,7 +20889,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -20921,7 +20913,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": 280,
-        "fast_charging": "0-50% in 30 mins",
+        "fast_charging": null,
         "raw_spec": "Battery & Power: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -21063,7 +21055,7 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR4",
-        "speed": 3200,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -21073,7 +21065,7 @@
         "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "NVMe",
-        "form_factor": "M.2 2280",
+        "form_factor": null,
         "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB Nvme GEN 4 | Storage Slot: Two M.2 2280 GEN 4 slots"
@@ -21103,7 +21095,7 @@
       },
       "physical": {
         "weight_kg": 3.35,
-        "width_mm": 304.0,
+        "width_mm": null,
         "depth_mm": null,
         "height_mm": null,
         "raw_spec": "Dimensions (WxDxH): 304 x 519 x 68.8 mm | Weight: 3.35 kg"
@@ -21197,7 +21189,7 @@
     "specs": {
       "identity": {
         "brand": "Gigabyte",
-        "laptop_family": "Aero",
+        "laptop_family": "AERO",
         "laptop_model": "AERO",
         "manufacturer_part_number": "1VH93USC94AH",
         "retailer_sku": "1VH93USC94AH",
@@ -21251,17 +21243,17 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5600 MHz",
-        "slot_count": 2,
-        "max_supported_gb": 64,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "System Memory: Up to 64GB DDR5 5600MHz, 2x SO-DIMM sockets for expansion | MEMORY: 16GB DDR5 5600MHz"
       },
       "storage": {
-        "capacity_gb": 4096,
+        "capacity_gb": 1024,
         "storage_type": "SSD",
         "interface": "PCIe 4.0",
         "form_factor": "M.2",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1x PCIe Gen4x4 M.2 slot, 1x PCIe Gen4x2 M.2 slot, Up to 4TB PCIe NVMe M.2 SSD | STORAGE: 1TB PCIe Gen4 NVMe M.2 SSD"
       },
@@ -21381,12 +21373,12 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83JE00DAED",
         "manufacturer_part_number": "83JE00DAED",
         "retailer_sku": "83JE00DAED",
         "color": "Luna Grey",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": "1-year, Courier or Carry-in",
         "warranty_years": 1,
         "condition": null,
@@ -21434,7 +21426,7 @@
       "memory": {
         "capacity_gb": 24,
         "memory_type": "DDR5",
-        "speed": "4800",
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -21631,7 +21623,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "LENOVO LOQ 15IRX9 83DV00URPS",
         "manufacturer_part_number": "83DV00URPS",
         "retailer_sku": "83DV00URPS",
@@ -21684,7 +21676,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 5600,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -21823,12 +21815,12 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "LOQ",
         "manufacturer_part_number": "83DV012HED",
         "retailer_sku": "83DV012HED",
         "color": "Luna Grey",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": "2 Years Warranty (2Y Courier/Carry-in upgrade included)",
         "warranty_years": 2,
         "condition": null,
@@ -21876,7 +21868,7 @@
       "memory": {
         "capacity_gb": 24,
         "memory_type": "DDR5",
-        "speed": "4800",
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -22011,7 +22003,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "LOQ",
         "manufacturer_part_number": "83DV0129ED",
         "retailer_sku": "83DV0129ED",
@@ -22075,7 +22067,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Dual M.2 2280 slots available)"
       },
@@ -22098,7 +22090,7 @@
       "power_battery": {
         "battery_capacity_wh": 60.0,
         "battery_cells": null,
-        "power_adapter_w": 170,
+        "power_adapter_w": null,
         "fast_charging": "Rapid Charge Pro",
         "raw_spec": "Battery & Power: 60Wh Battery / 170W Slim Tip Adapter (Supports Super Rapid Charge Pro)"
       },
@@ -22332,7 +22324,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "Rog Strix Scar",
+        "laptop_family": "ROG Strix SCAR",
         "laptop_model": "G835LW-AI642W",
         "manufacturer_part_number": "90NR0LI1-M002J0",
         "retailer_sku": "90NR0LI1-M002J0",
@@ -22385,8 +22377,8 @@
       "memory": {
         "capacity_gb": 64,
         "memory_type": "DDR5",
-        "speed": 5600,
-        "slot_count": 2,
+        "speed": null,
+        "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Total System Memory: DDR5 64GB (2 x 32GB DDR5-5600 SO-DIMM) | MEMORY: DDR5 64GB (2 x 32GB DDR5-5600 SO-DIMM)"
@@ -22405,7 +22397,7 @@
         "resolution": "2560x1600",
         "resolution_width": 2560,
         "resolution_height": 1600,
-        "panel_type": "Mini-LED",
+        "panel_type": null,
         "refresh_rate_hz": 240,
         "aspect_ratio": "16:10",
         "touchscreen": false,
@@ -22517,12 +22509,12 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "LOQ 15IAX9E",
         "manufacturer_part_number": "83LK0062ED",
         "retailer_sku": "83LK0062ED",
         "color": "Luna Grey",
-        "is_bundle": false,
+        "is_bundle": true,
         "warranty": "1-year, Courier or Carry-in",
         "warranty_years": 1,
         "condition": null,
@@ -22570,7 +22562,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": "4800",
+        "speed": null,
         "slot_count": 1,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -22733,7 +22725,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq 15Arp9",
+        "laptop_family": "LOQ 15ARP9",
         "laptop_model": "LOQ 15ARP9",
         "manufacturer_part_number": "83JC0001US",
         "retailer_sku": "83JC0001US",
@@ -22778,9 +22770,9 @@
       "memory": {
         "capacity_gb": 12,
         "memory_type": "DDR5",
-        "speed": 4800,
-        "slot_count": 2,
-        "max_supported_gb": 32,
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 12GB DDR5-4800 SO-DIMM, expandable up to 32GB | Maximum Supported Memory: Up to 32GB | Memory Slots: 2"
       },
@@ -22929,7 +22921,7 @@
     "specs": {
       "identity": {
         "brand": "Acer",
-        "laptop_family": "Travelmate P2 (Nx.Vpqem.008)",
+        "laptop_family": "Travelmate P2 (NX.VPQEM.008)",
         "laptop_model": "Travelmate P2 (NX.VPQEM.008)",
         "manufacturer_part_number": "NX.VPQEM.008",
         "retailer_sku": "NX.VPQEM.008",
@@ -22982,7 +22974,7 @@
       },
       "storage": {
         "capacity_gb": 1024,
-        "storage_type": "SSD",
+        "storage_type": "HDD",
         "interface": "NVMe",
         "form_factor": null,
         "slot_count": null,
@@ -23090,7 +23082,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Ideapad Pro",
+        "laptop_family": "IdeaPad Pro",
         "laptop_model": "Lenovo IdeaPad 5 Pro 16IMH9 (Arctic Grey)",
         "manufacturer_part_number": "83D40030ED",
         "retailer_sku": "83D40030ED",
@@ -23154,7 +23146,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": 2,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Dual M.2 Slots available)"
       },
@@ -23177,7 +23169,7 @@
       "power_battery": {
         "battery_capacity_wh": 84.0,
         "battery_cells": null,
-        "power_adapter_w": 170,
+        "power_adapter_w": null,
         "fast_charging": null,
         "raw_spec": "Battery & Power: Integrated 84Wh Battery / 170W Slim Tip Adapter"
       },
@@ -23199,7 +23191,7 @@
         "raw_spec": "Keyboard & Touch: Backlit (Arabic) / Glass Surface Precision Touchpad"
       },
       "audio_webcam": {
-        "speaker_count": 2,
+        "speaker_count": null,
         "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -23262,7 +23254,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq 15Irx9",
+        "laptop_family": "LOQ 15IRX9",
         "laptop_model": "83DV000EAX",
         "manufacturer_part_number": "83DV000EAX",
         "retailer_sku": "83DV000EAX",
@@ -23315,9 +23307,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": null,
-        "max_supported_gb": 32,
+        "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-4800 SO-DIMM, supports up to 32GB | Maximum Supported Memory: Up to 32GB"
       },
@@ -23326,7 +23318,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 1,
+        "slot_count": null,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB M.2 PCIe 4.0 x4 NVMe SSD, with an extra M.2 slot | Storage Interface: M.2 PCIe 4.0 x4 NVMe | Additional Storage: Extra M.2 slot available"
       },
@@ -23463,7 +23455,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Loq",
+        "laptop_family": "LOQ",
         "laptop_model": "83DV008QED",
         "manufacturer_part_number": "83DV008QED",
         "retailer_sku": "83DV008QED",
@@ -23516,7 +23508,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": 4800,
+        "speed": null,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,

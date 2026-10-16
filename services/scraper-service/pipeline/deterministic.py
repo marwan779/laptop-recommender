@@ -190,6 +190,9 @@ class TableKeyRouter:
         # AI Performance & NPU overrides
         "ai tops": "ai_performance",
         "ai performance": "ai_performance",
+        # Storage overrides
+        "storage support": "max_storage",
+        "storage capability": "max_storage",
         # Keyboard & Stylus overrides
         "numeric keypad": "keyboard",
         "stylus support": "stylus",
@@ -200,6 +203,12 @@ class TableKeyRouter:
         "manufacturer warranty": "warranty",
         "condition": "condition",
         "condition grade": "condition",
+        # Cloud & Packaging overrides
+        "cloud service": "unrouted",
+        "weight in packaging": "package_dimensions",
+        "weight in packaging, kg": "package_dimensions",
+        "packaging weight": "package_dimensions",
+        "package weight": "package_dimensions",
         # Security overrides
         "build level": "security",
     }
@@ -360,11 +369,17 @@ class TableKeyRouter:
         """Route a single table row key to a canonical bucket."""
         norm = self._normalize_key(raw_key)
 
+        # High priority heuristics: packaging weight should not leak into weight bucket
+        if any(term in norm for term in ["package weight", "packaging weight", "weight in packaging"]):
+            return "package_dimensions"
+        if any(term in norm for term in ["cloud service", "dropbox", "cloud storage"]):
+            return "unrouted"
+
         if norm in self.label_to_bucket:
             return self.label_to_bucket[norm]
 
         # Heuristic fallback for previously unseen keys
-        if any(term in norm for term in ["max storage", "maximum storage", "storage support"]):
+        if any(term in norm for term in ["max storage", "maximum storage", "storage support", "storage capability"]):
             return "max_storage"
         if any(term in norm for term in ["storage slot", "m.2 slot", "expansion slot"]):
             return "storage_slots"
@@ -681,21 +696,32 @@ class DeterministicExtractor:
                     break
 
         # 2. Manufacturer Part Number (MPN) / SKU
-        # Check table first, but be careful with truncated machine types (e.g. Lenovo "83S0", "83DV")
         table_mpn = None
         is_machine_type = False
-        for k, v in table.items():
-            kl = k.lower()
-            if any(term in kl for term in ["part number", "part no", "machine type", "mpn", "product number", "base unit"]) and not any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
-                v_clean = v.strip()
-                if v_clean and not any(bad in v_clean.lower() for bad in ["n/a", "none", "ssd", "ram", "rtx", "gtx"]):
-                    if "machine type" in kl or len(v_clean) <= 4:
-                        table_mpn = v_clean
-                        is_machine_type = True
-                    else:
+        for target_k in ["part number", "product number", "mpn"]:
+            for k, v in table.items():
+                if k.lower() == target_k:
+                    v_clean = v.strip()
+                    if v_clean and not any(bad in v_clean.lower() for bad in ["n/a", "none"]):
                         table_mpn = v_clean
                         is_machine_type = False
-                    break
+                        break
+            if table_mpn:
+                break
+
+        if not table_mpn:
+            for k, v in table.items():
+                kl = k.lower()
+                if any(term in kl for term in ["part number", "part no", "machine type", "mpn", "product number", "base unit"]) and not any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
+                    v_clean = v.strip()
+                    if v_clean and not any(bad in v_clean.lower() for bad in ["n/a", "none", "ssd", "ram", "rtx", "gtx"]):
+                        if "machine type" in kl or len(v_clean) <= 4:
+                            table_mpn = v_clean
+                            is_machine_type = True
+                        else:
+                            table_mpn = v_clean
+                            is_machine_type = False
+                        break
 
         # Check if table has a Model or SKU key containing a definitive OEM part number
         if not table_mpn:
@@ -727,9 +753,11 @@ class DeterministicExtractor:
             r"\b(8[0-3][A-Za-z0-9]{8})\b",
             f"{title} {specs['identity'].get('retailer_sku', '')}",
         )
-        if full_lenovo_match:
+        if table_mpn and not is_machine_type:
+            specs["identity"]["manufacturer_part_number"] = table_mpn
+        elif full_lenovo_match:
             specs["identity"]["manufacturer_part_number"] = full_lenovo_match.group(1)
-        elif table_mpn and not is_machine_type:
+        elif table_mpn:
             specs["identity"]["manufacturer_part_number"] = table_mpn
         else:
             # Look for full MPN in clean_name first, then title
@@ -791,9 +819,14 @@ class DeterministicExtractor:
         if not specs["identity"]["laptop_model"]:
             for k, v in table.items():
                 kl = k.lower()
-                if any(term in kl for term in ["model / series", "model"]) and not any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
+                if any(term in kl for term in ["model / series", "model"]) and not any(bad in kl for bad in [
+                    "processor", "cpu", "gpu", "graphic", "video", "wireless", "lan", "wifi", "wi-fi", "wlan",
+                    "network", "bluetooth", "adapter", "battery", "camera", "display", "panel", "audio", "speaker"
+                ]):
                     v_clean = v.strip()
-                    # Do not treat pure MPN codes (like 9S7-...) as the marketing laptop model
+                    # Do not treat network cards, Wi-Fi models, or pure MPN codes as the marketing laptop model
+                    if re.search(r"\b(?:killer|wi-fi|wifi|wlan|ax\d{3,4}|1750x|2x2\s*ax)\b", v_clean, re.I):
+                        continue
                     if not re.match(r"^(?:9S7-[A-Za-z0-9]+-[A-Za-z0-9]+|90N[A-Za-z0-9]{5}-[A-Za-z0-9]+)$", v_clean, re.I):
                         if v_clean and not any(bad in v_clean.lower() for bad in ["n/a", "none"]):
                             specs["identity"]["laptop_model"] = v_clean
@@ -811,6 +844,18 @@ class DeterministicExtractor:
                 specs["identity"]["laptop_model"] = m_sz.group(0).strip()
             else:
                 specs["identity"]["laptop_model"] = fam
+
+        # 5. Bundle Detection
+        is_bundle = False
+        if re.search(r"\b(?:bundle|first light geforce)\b", title, re.IGNORECASE):
+            is_bundle = True
+        for k, v in table.items():
+            kl = k.lower()
+            vl = str(v).strip().lower()
+            if any(b in kl for b in ["bundled accessories", "bundle", "gift"]) and vl and vl not in ("none", "no", "n/a"):
+                is_bundle = True
+                break
+        specs["identity"]["is_bundle"] = is_bundle
 
         # 5. Color
         # Check routed color rows or table keys specifically for color (avoiding gamut/coverage/depth)
@@ -903,7 +948,7 @@ class DeterministicExtractor:
         w_cand = None
         for _, v in warranty_rows:
             vs = v.strip()
-            if vs and not any(bad in vs.lower() for bad in ["http", "click/pwe", "register within"]):
+            if vs and not any(bad in vs.lower() for bad in ["http", "click/pwe", "register within", "dropbox", "cloud service", "cloud storage", "onedrive", "google drive"]):
                 w_cand = vs
                 break
         if not w_cand:
@@ -911,7 +956,7 @@ class DeterministicExtractor:
                 kl = k.lower()
                 if "warranty" in kl and not any(bad in kl for bad in ["activate", "note"]):
                     vs = v.strip()
-                    if vs and not any(bad in vs.lower() for bad in ["http", "click/pwe", "register within"]):
+                    if vs and not any(bad in vs.lower() for bad in ["http", "click/pwe", "register within", "dropbox", "cloud service", "cloud storage", "onedrive", "google drive"]):
                         w_cand = vs
                         break
         if w_cand:
@@ -1233,26 +1278,42 @@ class DeterministicExtractor:
         search_targets = [primary_text, title] if primary_text else [title]
 
         cap_val = None
-        for _, v in mem_rows:
-            # 1. Multi-DIMM check first! (e.g. 2x 16GB or 2 × 16GB -> 32GB)
-            m_dimm = re.search(r"\b(\d+)\s*[xX×]\s*(\d+)\s*(?:gb|g)\b", v, re.IGNORECASE)
-            if m_dimm:
-                count = int(m_dimm.group(1))
-                mod_size = int(m_dimm.group(2))
-                cand = count * mod_size if count > 1 else mod_size
+
+        # Check hybrid multi-stick configuration first (e.g. "8GB Soldered DDR5-4800 + 8GB SODIMM" or "8GB DDR4 onboard + 8GB DDR4 SO-DIMM")
+        for target in search_targets:
+            m_hybrid = re.search(
+                r"(\d+)\s*GB\s*(?:(?:DDR[345]|LPDDR[45]x?)\s*)?(?:soldered|onboard|on-board|on\s*board)[^+]*\+\s*(\d+)\s*GB\s*(?:(?:DDR[345]|LPDDR[45]x?)\s*)?(?:sodimm|so-dimm)",
+                target,
+                re.IGNORECASE,
+            )
+            if m_hybrid:
+                cand = int(m_hybrid.group(1)) + int(m_hybrid.group(2))
                 valid, cap_clean, _ = PhysicalValidator.validate_memory_capacity(cand, cpu_context)
                 if valid:
                     cap_val = cap_clean
                     break
 
-            # 2. Direct leading capacity e.g. "16 GB (2 x 8 GB)" -> 16
-            m_direct = re.search(r"^\s*(\d+)\s*(?:gb|g)\b", v, re.IGNORECASE)
-            if m_direct:
-                cand = int(m_direct.group(1))
-                valid, cap_clean, _ = PhysicalValidator.validate_memory_capacity(cand, cpu_context)
-                if valid:
-                    cap_val = cap_clean
-                    break
+        if not cap_val:
+            for _, v in mem_rows:
+                # 1. Multi-DIMM check (e.g. 2x 16GB or 2 × 16GB -> 32GB)
+                m_dimm = re.search(r"\b(\d+)\s*[xX×]\s*(\d+)\s*(?:gb|g)\b", v, re.IGNORECASE)
+                if m_dimm:
+                    count = int(m_dimm.group(1))
+                    mod_size = int(m_dimm.group(2))
+                    cand = count * mod_size if count > 1 else mod_size
+                    valid, cap_clean, _ = PhysicalValidator.validate_memory_capacity(cand, cpu_context)
+                    if valid:
+                        cap_val = cap_clean
+                        break
+
+                # 2. Direct leading capacity e.g. "16 GB (2 x 8 GB)" -> 16
+                m_direct = re.search(r"^\s*(\d+)\s*(?:gb|g)\b", v, re.IGNORECASE)
+                if m_direct:
+                    cand = int(m_direct.group(1))
+                    valid, cap_clean, _ = PhysicalValidator.validate_memory_capacity(cand, cpu_context)
+                    if valid:
+                        cap_val = cap_clean
+                        break
 
         if not cap_val:
             for target in search_targets:
@@ -1332,9 +1393,15 @@ class DeterministicExtractor:
                 )
             )
 
-        # Speed: e.g. 5600 MHz
+        # Speed: e.g. 5600 MHz or 5.60 GT/s
         speed_targets = [v for _, v in routed_table.get("memory_speed", [])] + [primary_text]
         for target in speed_targets:
+            spd_gt = re.search(r"\b([2-8]\.\d{1,2})\s*gt/s\b", target, re.IGNORECASE)
+            if spd_gt:
+                gt_val = float(spd_gt.group(1))
+                mhz_calc = int(round(gt_val * 1000))
+                specs["memory"]["speed"] = f"{mhz_calc} MHz"
+                break
             spd_match = re.search(r"\b([4-8]\d{3})\s*(?:mhz|mt/s)\b", target, re.IGNORECASE)
             if spd_match:
                 specs["memory"]["speed"] = f"{spd_match.group(1)} MHz"
@@ -1350,24 +1417,27 @@ class DeterministicExtractor:
                     slot_rows.append((k, v))
 
         slot_text = " ".join(v for _, v in slot_rows)
-        # Check dual-channel / (2 x 8 GB) configuration in mem_text or mem_rows
-        m_dual = re.search(r"\(\s*(\d+)\s*x\s*\d+\s*(?:gb|g)?\s*\)", mem_text, re.IGNORECASE)
-        if m_dual:
-            specs["memory"]["slot_count"] = int(m_dual.group(1))
-        elif slot_text:
-            if any(term in slot_text.lower() for term in ["no slots", "no expansion", "not upgradable", "soldered to systemboard", "0 slots", "zero slots"]):
-                specs["memory"]["slot_count"] = 0
+        if slot_text:
+            m_sod = re.search(r"\b(\d+)\s*(?:ddr[45]\s*)?(?:csodimm|so-?dimm)\b", slot_text, re.IGNORECASE)
+            if m_sod:
+                specs["memory"]["slot_count"] = int(m_sod.group(1))
             elif re.search(r"\b(two|dual)\b", slot_text, re.IGNORECASE) and re.search(r"\b(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b", slot_text, re.IGNORECASE):
                 specs["memory"]["slot_count"] = 2
-            elif re.search(r"\b(one|single)\b", slot_text, re.IGNORECASE) and re.search(r"\b(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b", slot_text, re.IGNORECASE):
+            elif re.search(r"\b(one|single)\b\s+(?:ddr[45]\s*)?(?:sodimm|so-dimm|slot)", slot_text, re.IGNORECASE):
                 specs["memory"]["slot_count"] = 1
-            elif "soldered" in slot_text.lower():
+            elif any(term in slot_text.lower() for term in ["no slots", "no expansion", "not upgradable", "0 slots", "zero slots"]):
+                specs["memory"]["slot_count"] = 0
+            elif "soldered to systemboard" in slot_text.lower() and not re.search(r"\b(?:sodimm|so-dimm|slot)\b", slot_text.lower()):
                 specs["memory"]["slot_count"] = 0
             else:
                 m_sl = re.search(r"\b([1-4])\s*(?:x\s*)?(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b|ram,\s*number\s*of\s*slots:\s*([1-4])", slot_text, re.IGNORECASE)
                 if m_sl:
                     cnt = m_sl.group(1) or m_sl.group(2)
                     specs["memory"]["slot_count"] = int(cnt)
+        elif not specs["memory"]["slot_count"]:
+            m_dual = re.search(r"\(\s*(\d+)\s*x\s*\d+\s*(?:gb|g)?\s*\)", mem_text, re.IGNORECASE)
+            if m_dual:
+                specs["memory"]["slot_count"] = int(m_dual.group(1))
 
         max_mem_rows = list(routed_table.get("max_memory", []))
         if not max_mem_rows:
@@ -1380,7 +1450,7 @@ class DeterministicExtractor:
 
         # Soldered vs Upgradeable
         mem_all = f"{mem_text} {' '.join(v for _, v in slot_rows)} {' '.join(v for _, v in routed_table.get('memory_type', []))}"
-        if re.search(r"\b(soldered|on-board|onboard|integrated|unified memory|lpddr[45]x?)\b", mem_all, re.IGNORECASE):
+        if re.search(r"\b(soldered|on-board|onboard|on\s+board|integrated|unified\s+memory|lpddr[45]x?)\b", mem_all, re.IGNORECASE):
             specs["memory"]["is_soldered"] = True
         elif re.search(r"\b(sodimm|so-dimm|upgradeable|removable)\b", mem_all, re.IGNORECASE) or (specs["memory"]["slot_count"] and specs["memory"]["slot_count"] > 0):
             specs["memory"]["is_soldered"] = False
@@ -1416,18 +1486,29 @@ class DeterministicExtractor:
         search_targets = [storage_text, title] if storage_text else [context, title]
 
         for target in search_targets:
+            # Strip expansion limit phrases like "up to 4TB" or "supports up to 4TB"
+            clean_tgt = re.sub(r"\b(?:up\s+to|support(?:s)?\s*(?:up\s+to)?)\s*\d+\s*(?:tb|gb)\b", "", target, flags=re.I)
+
+            # Check HDD vs SSD
+            if re.search(r"\b\d+\s*(?:tb|gb)\s*hdd\b", clean_tgt, re.I):
+                st_type = "HDD"
+            elif bool(re.search(r"\b(?:hdd|hard\s*drive|hard\s*disk)\b", clean_tgt, re.I)) and not bool(re.search(r"\b(?:ssd|nvme)\b", re.sub(r"\bsupport[a-z]*\s+nvme\b", "", clean_tgt, flags=re.I), re.I)):
+                st_type = "HDD"
+            else:
+                st_type = "SSD"
+
             # 1TB to 4TB
-            tb_match = re.search(r"\b([1-4])\s*tb\b", target, re.IGNORECASE)
+            tb_match = re.search(r"\b([1-4])\s*tb\b", clean_tgt, re.IGNORECASE)
             if tb_match:
                 specs["storage"]["capacity_gb"] = int(tb_match.group(1)) * 1024
-                specs["storage"]["storage_type"] = "SSD"
+                specs["storage"]["storage_type"] = st_type
                 break
 
             # GB
-            gb_match = re.search(r"\b(128|256|512)\s*gb\s*(?:ssd|nvme|pcie|emmc)?\b", target, re.IGNORECASE)
+            gb_match = re.search(r"\b(128|256|512)\s*gb\s*(?:ssd|nvme|pcie|emmc|hdd)?\b", clean_tgt, re.IGNORECASE)
             if gb_match:
                 specs["storage"]["capacity_gb"] = int(gb_match.group(1))
-                specs["storage"]["storage_type"] = "SSD"
+                specs["storage"]["storage_type"] = st_type
                 break
 
         # Storage interface & form factor search context
@@ -1478,20 +1559,37 @@ class DeterministicExtractor:
         slot_rows = list(routed_table.get("storage_slots", []))
         max_st_rows = list(routed_table.get("max_storage", []))
         all_slot_text = f"{' '.join(v for _, v in slot_rows)} {' '.join(v for _, v in max_st_rows)}"
-        m_sc = re.search(
-            r"\b(?:total\s*)?([1-4])\s*[xX×]\s*m\.2|two\s+m\.2|up\s+to\s+two\s+drives|\b([1-4])\s*(?:m\.2\s*)?slots?\b",
-            all_slot_text,
-            re.IGNORECASE,
-        )
-        if m_sc:
-            if "two" in m_sc.group(0).lower():
-                specs["storage"]["slot_count"] = 2
-            elif m_sc.group(1):
-                specs["storage"]["slot_count"] = int(m_sc.group(1))
-            elif m_sc.group(2):
-                specs["storage"]["slot_count"] = int(m_sc.group(2))
-            else:
-                specs["storage"]["slot_count"] = 2
+        if not all_slot_text.strip():
+            for k, v in table.items():
+                if any(w in k.lower() for w in ["storage slot", "m.2 slot", "storage capability", "storage support"]):
+                    all_slot_text += f" {v}"
+
+        # Clean out "GEN 4 slot" or "PCIe 4.0 slot" or "Gen4 Slot" false triggers
+        clean_slot_text = re.sub(r"\b(?:gen|pcie|pcie\s*gen)\s*[345](?:\.0)?(?:\s*[xX×]\s*[24])?\s*(?:m\.2\s*)?slots?\b", "m.2 slot", all_slot_text, flags=re.I)
+
+        # Look for multi-slot sum e.g. "1 × M.2 ... Slot and 1 × M.2 ... Slot"
+        m_and_slots = re.findall(r"\b1\s*[^a-zA-Z0-9\s]?\s*m\.2[^\n,]*?slot", all_slot_text, re.I)
+        if len(m_and_slots) >= 2:
+            specs["storage"]["slot_count"] = len(m_and_slots)
+        elif re.search(r"\b(?:supports\s+only\s+one|only\s+one|one\s+m\.2)\b", all_slot_text, re.I):
+            specs["storage"]["slot_count"] = 1
+        elif re.search(r"\b(?:extra\s+m\.2\s+slot|second\s+m\.2|two\s+drives|2x\s*m\.2|two\s+m\.2)\b", all_slot_text, re.I):
+            specs["storage"]["slot_count"] = 2
+        else:
+            m_sc = re.search(
+                r"\b(?:total\s*)?([1-4])\s*[xX×]\s*m\.2|two\s+m\.2|up\s+to\s+two\s+drives|\b([1-4])\s*(?:m\.2\s*)?slots?\b",
+                clean_slot_text,
+                re.IGNORECASE,
+            )
+            if m_sc:
+                if "two" in m_sc.group(0).lower():
+                    specs["storage"]["slot_count"] = 2
+                elif m_sc.group(1):
+                    specs["storage"]["slot_count"] = int(m_sc.group(1))
+                elif m_sc.group(2):
+                    specs["storage"]["slot_count"] = int(m_sc.group(2))
+                else:
+                    specs["storage"]["slot_count"] = 2
 
         # 4. Maximum Storage Support
         if max_st_rows:
@@ -1927,22 +2025,34 @@ class DeterministicExtractor:
         full_search = f"{weight_text} {context}"
 
         # 1. Weight (kg)
-        wt_match = re.search(r"\b([0-4]\.\d{1,2})\s*kg\b", full_search, re.IGNORECASE)
-        if wt_match:
-            valid, clean_wt, _ = PhysicalValidator.validate_weight(wt_match.group(1))
-            if valid:
-                specs["physical"]["weight_kg"] = clean_wt
-            else:
-                envelopes.append(
-                    ExtractionEnvelope(
-                        field_path="physical.weight_kg",
-                        field_description="Laptop weight in kilograms",
-                        raw_context=context or full_search,
-                        failure_reason="validation_failed",
-                        expected_type="float",
-                        section_name="Dimensions & Weight",
+        for wk, wv in weight_rows:
+            if any(bad in wk.lower() for bad in ["package", "packaging", "packag", "box", "shipping"]):
+                continue
+            m = re.search(r"\b([0-4]\.\d{1,2})\b", wv)
+            if m:
+                valid, clean_wt, _ = PhysicalValidator.validate_weight(m.group(1))
+                if valid:
+                    specs["physical"]["weight_kg"] = clean_wt
+                    break
+
+        if specs["physical"]["weight_kg"] is None:
+            clean_search = re.sub(r"\b(?:package\s*weight|packaging\s*weight|weight\s*in\s*packaging)[^|\n]*", "", full_search, flags=re.IGNORECASE)
+            wt_match = re.search(r"\b([0-4]\.\d{1,2})\s*kg\b", clean_search, re.IGNORECASE)
+            if wt_match:
+                valid, clean_wt, _ = PhysicalValidator.validate_weight(wt_match.group(1))
+                if valid:
+                    specs["physical"]["weight_kg"] = clean_wt
+                else:
+                    envelopes.append(
+                        ExtractionEnvelope(
+                            field_path="physical.weight_kg",
+                            field_description="Laptop weight in kilograms",
+                            raw_context=context or full_search,
+                            failure_reason="validation_failed",
+                            expected_type="float",
+                            section_name="Dimensions & Weight",
+                        )
                     )
-                )
 
         # 2. Dimensions (Width, Depth, Height in mm)
         search_dim = f"{dim_text} {context}"
@@ -2204,7 +2314,13 @@ class DeterministicExtractor:
             elif re.search(r"\b(?:windows\s*10\s*home|windows\s*10)\b", clean_tgt, re.IGNORECASE):
                 specs["operating_system"]["name"] = "Windows 10 Home"
                 break
-            elif re.search(r"\b(dos|free\s*dos|no\s*os|eshell)\b", clean_tgt, re.IGNORECASE):
+            elif re.search(r"\bfreedos\b|\bfree\s*dos\b", clean_tgt, re.IGNORECASE):
+                specs["operating_system"]["name"] = "FreeDOS"
+                break
+            elif re.search(r"\b(?:no\s*operating\s*system|no\s*preloaded|no\s*preinstalled|no\s*os|without\s*os|eshell)\b", clean_tgt, re.IGNORECASE):
+                specs["operating_system"]["name"] = "No OS"
+                break
+            elif re.search(r"\bdos\b", clean_tgt, re.IGNORECASE):
                 specs["operating_system"]["name"] = "FreeDOS"
                 break
             elif re.search(r"\bmacos\b", clean_tgt, re.IGNORECASE):
@@ -2245,7 +2361,26 @@ class DeterministicExtractor:
 
         # 1. Backlit keyboard & Backlight Type
         kb_text = " ".join(v for _, v in kb_rows) + " " + title
-        if re.search(r"\bper-?key\s*rgb\b", kb_text, re.IGNORECASE):
+
+        is_non_backlit = False
+        if re.search(r"\b(?:non-backlit|no\s*backlight|not\s*backlit|without\s*backlight)\b", kb_text, re.IGNORECASE):
+            is_non_backlit = True
+        for _, v in kb_rows:
+            vl = v.strip().lower()
+            if any(bad in vl for bad in ["non-backlit", "no backlight", "not backlit", "without backlight"]) or vl in ("no", "none", "false"):
+                is_non_backlit = True
+                break
+        for k, v in table.items():
+            if "backlight" in k.lower():
+                vl = v.strip().lower()
+                if any(bad in vl for bad in ["no", "none", "false", "non-backlit"]):
+                    is_non_backlit = True
+                    break
+
+        if is_non_backlit:
+            specs["build_security"]["has_backlit_keyboard"] = False
+            specs["build_security"]["keyboard_backlight_type"] = None
+        elif re.search(r"\bper-?key\s*rgb\b", kb_text, re.IGNORECASE):
             specs["build_security"]["keyboard_backlight_type"] = "Per-Key RGB"
             specs["build_security"]["has_backlit_keyboard"] = True
         elif re.search(r"\b4-?zone\s*rgb\b", kb_text, re.IGNORECASE):
@@ -2257,14 +2392,23 @@ class DeterministicExtractor:
         elif re.search(r"\brgb\b", kb_text, re.IGNORECASE):
             specs["build_security"]["keyboard_backlight_type"] = "RGB Backlit"
             specs["build_security"]["has_backlit_keyboard"] = True
-        elif re.search(r"\bwhite\s+backlit\b", kb_text, re.IGNORECASE):
+        elif re.search(r"\bamber\s+(?:backlit|backlight)\b|\bamber\b", kb_text, re.IGNORECASE) and any("amber" in v.lower() for _, v in kb_rows):
+            specs["build_security"]["keyboard_backlight_type"] = "Amber Backlit"
+            specs["build_security"]["has_backlit_keyboard"] = True
+        elif re.search(r"\bwhite\s+(?:backlit|backlight)\b", kb_text, re.IGNORECASE):
             specs["build_security"]["keyboard_backlight_type"] = "White Backlit"
             specs["build_security"]["has_backlit_keyboard"] = True
-        elif re.search(r"\bbacklit\b", kb_text, re.IGNORECASE):
+        elif re.search(r"\bbacklit\b|\bbacklight\b", kb_text, re.IGNORECASE):
             specs["build_security"]["keyboard_backlight_type"] = "Backlit"
             specs["build_security"]["has_backlit_keyboard"] = True
-        elif re.search(r"\b(?:non-backlit|no backlight)\b", kb_text, re.IGNORECASE):
-            specs["build_security"]["has_backlit_keyboard"] = False
+        else:
+            for k, v in table.items():
+                if "backlight" in k.lower():
+                    vl = v.strip().lower()
+                    if any(yes in vl for yes in ["yes", "true", "supported", "available", "present"]):
+                        specs["build_security"]["has_backlit_keyboard"] = True
+                        specs["build_security"]["keyboard_backlight_type"] = "Backlit"
+                        break
 
         # 2. Numpad
         numpad_rows = [v for k, v in table.items() if any(nk in k.lower() for nk in ["numeric keypad", "numpad", "num-key", "number pad"])]
@@ -2280,12 +2424,16 @@ class DeterministicExtractor:
             specs["build_security"]["has_numpad"] = True
 
         # 3. Fingerprint reader
-        for _, vs in sec_rows:
-            if re.search(r"\b(?:no\s+fingerprint|without\s+fingerprint)\b", vs, re.IGNORECASE) or vs.strip().lower() in ("no", "none", "n/a"):
+        for sk, vs in sec_rows:
+            row_str = f"{sk}: {vs}"
+            if re.search(r"\b(?:no\s+fingerprint|without\s+fingerprint)\b", row_str, re.IGNORECASE) or vs.strip().lower() in ("no", "none", "n/a"):
                 specs["build_security"]["has_fingerprint"] = False
                 break
-            elif re.search(r"\bfingerprint\b", vs, re.IGNORECASE):
-                specs["build_security"]["has_fingerprint"] = True
+            elif re.search(r"\bfingerprint\b", row_str, re.IGNORECASE):
+                if any(bad in vs.lower() for bad in ["no", "none", "n/a", "not supported", "not available"]):
+                    specs["build_security"]["has_fingerprint"] = False
+                else:
+                    specs["build_security"]["has_fingerprint"] = True
                 break
 
         # 4. Pointing device (Touchpad)
@@ -2360,9 +2508,13 @@ class DeterministicExtractor:
             if m_num:
                 specs["audio_webcam"]["webcam_resolution"] = m_num.group(1).strip()
                 break
-            m_named = re.search(r"\b(FHD|QHD|UHD|4K|HD)\b", vs, re.IGNORECASE)
+            m_fhd = re.search(r"\b(Full\s*HD|FHD)\b", vs, re.IGNORECASE)
+            if m_fhd:
+                specs["audio_webcam"]["webcam_resolution"] = "1080p"
+                break
+            m_named = re.search(r"\b(QHD|UHD|4K|HD)\b", vs, re.IGNORECASE)
             if m_named:
-                named_map = {"HD": "720p", "FHD": "1080p", "QHD": "1440p", "UHD": "2160p", "4K": "2160p"}
+                named_map = {"HD": "720p", "QHD": "1440p", "UHD": "2160p", "4K": "2160p"}
                 specs["audio_webcam"]["webcam_resolution"] = named_map.get(m_named.group(1).upper(), m_named.group(1).upper())
                 break
 
@@ -2387,12 +2539,16 @@ class DeterministicExtractor:
                     specs["audio_webcam"]["microphone"] = clean_mic
 
             if specs["audio_webcam"]["speaker_count"] is None:
-                m_sp = re.search(r"(\d+)[-\s]*(?:x\s*\d+(?:\.\d+)?\s*W|speakers?|speaker\s*system)", vs, re.IGNORECASE)
-                if m_sp:
-                    specs["audio_webcam"]["speaker_count"] = int(m_sp.group(1))
-                elif re.search(r"\b(?:quad|four|4x)\b", vs, re.IGNORECASE):
-                    specs["audio_webcam"]["speaker_count"] = 4
-                elif re.search(r"\b(?:dual|stereo|two|2x)\b", vs, re.IGNORECASE):
-                    specs["audio_webcam"]["speaker_count"] = 2
+                m_wt = re.findall(r"(\d+)\s*(?:woofers?|tweeters?)", vs, re.IGNORECASE)
+                if len(m_wt) >= 2:
+                    specs["audio_webcam"]["speaker_count"] = sum(int(c) for c in m_wt)
+                else:
+                    m_sp = re.search(r"(\d+)[-\s]*(?:stereo\s*)?(?:x\s*\d+(?:\.\d+)?\s*W|speakers?|speaker\s*system)", vs, re.IGNORECASE)
+                    if m_sp:
+                        specs["audio_webcam"]["speaker_count"] = int(m_sp.group(1))
+                    elif re.search(r"\b(?:quad|four|4x)\b", vs, re.IGNORECASE):
+                        specs["audio_webcam"]["speaker_count"] = 4
+                    elif re.search(r"\b(?:dual|stereo|two|2x)\b", vs, re.IGNORECASE):
+                        specs["audio_webcam"]["speaker_count"] = 2
 
 
