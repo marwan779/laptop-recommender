@@ -95,7 +95,7 @@ def setup_ai_fallback(
         except ImportError:
             has_cuda = False
         exec_provider = "CUDAExecutionProvider" if device == "cuda" or (device == "auto" and has_cuda) else "CPUExecutionProvider"
-        logger.info("Initializing NuExtract-v1.5 (3.8B) fallback (provider=%s)...", exec_provider)
+        logger.info("Initializing NuExtract-2.0 (2B) fallback (provider=%s)...", exec_provider)
         return NuExtractFallbackExtractor(
             onnx_model_dir=onnx_dir,
             execution_provider=exec_provider,

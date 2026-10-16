@@ -1,7 +1,8 @@
-"""NuExtract-v1.5 (3.8B) AI Fallback implementation using ONNX Runtime.
+"""NuExtract AI Fallback implementation using Transformers and ONNX Runtime.
 
-Implements IAIFallbackExtractor using NuMind's NuExtract-v1.5 (Phi-3.5-mini based 3.8B model)
-optimized for structured JSON extraction via ONNX Runtime / onnxruntime-genai.
+Implements IAIFallbackExtractor using NuMind's NuExtract models (defaulting to
+NuExtract-2.0-2B, with backward compatibility for NuExtract-v1.5 and NuExtract-2.0-4B)
+optimized for structured JSON extraction on CUDA GPU and server CPU environments.
 """
 
 from __future__ import annotations
@@ -24,14 +25,14 @@ logger = logging.getLogger(__name__)
 
 
 class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
-    """Structured extraction fallback powered by numind/NuExtract-v1.5 (3.8B) via ONNX Runtime."""
+    """Structured extraction fallback powered by numind/NuExtract models via Transformers / ONNX Runtime."""
 
     def __init__(
         self,
-        model_id: str = "numind/NuExtract-v1.5",
+        model_id: str = "numind/NuExtract-2.0-2B",
         onnx_model_dir: Optional[str] = None,
         execution_provider: str = "CPUExecutionProvider",
-        max_new_tokens: int = 512,
+        max_new_tokens: int = 256,
         lazy_load: bool = True,
     ) -> None:
         self._model_id = model_id
@@ -61,11 +62,11 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
             try:
                 import onnxruntime_genai as og
 
-                logger.info("Loading NuExtract-v1.5 ONNX GenAI model from: %s", self._onnx_model_dir)
+                logger.info("Loading NuExtract ONNX GenAI model from: %s", self._onnx_model_dir)
                 self._genai_model = og.Model(self._onnx_model_dir)
                 self._genai_tokenizer = og.Tokenizer(self._genai_model)
                 self._backend = "onnx-genai"
-                logger.info("NuExtract-v1.5 ONNX GenAI model initialized successfully")
+                logger.info("NuExtract ONNX GenAI model initialized successfully")
                 return
             except Exception as e:
                 logger.warning(
@@ -77,10 +78,25 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
         # 2. Check for local ONNX cache or PyTorch transformers fallback
         try:
             import torch
-            from transformers import AutoModelForCausalLM, AutoTokenizer
+            from transformers import AutoConfig, AutoTokenizer
 
-            logger.info("Initializing NuExtract-v1.5 via Transformers: %s", self._model_id)
+            logger.info("Initializing NuExtract via Transformers: %s", self._model_id)
             self._hf_tokenizer = AutoTokenizer.from_pretrained(self._model_id, trust_remote_code=False)
+
+            # Auto-detect vision-language architecture (Qwen2-VL / Qwen2.5-VL) vs CausalLM (Phi-3)
+            try:
+                cfg = AutoConfig.from_pretrained(self._model_id, trust_remote_code=False)
+                is_vlm = getattr(cfg, "model_type", "") in ("qwen2_vl", "qwen2_5_vl")
+            except Exception:
+                is_vlm = "2.0" in self._model_id or "qwen" in self._model_id.lower()
+
+            if is_vlm:
+                from transformers import Qwen2VLForConditionalGeneration
+                model_cls = Qwen2VLForConditionalGeneration
+            else:
+                from transformers import AutoModelForCausalLM
+                model_cls = AutoModelForCausalLM
+
             device = "cuda" if torch.cuda.is_available() and self.execution_provider != "CPUExecutionProvider" else "cpu"
             model_kwargs: Dict[str, Any] = {
                 "low_cpu_mem_usage": True,
@@ -89,7 +105,10 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
 
             if device == "cuda":
                 total_vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)
-                if total_vram_gb <= 12.0:
+                # 2B models require ~4.1 GB in FP16, which fits natively and at maximum accuracy on 6GB+ GPUs.
+                # Use 4-bit quantization only when GPU VRAM < 6GB or for larger models (>3B).
+                use_4bit = total_vram_gb < 5.5 or (not is_vlm and total_vram_gb <= 12.0)
+                if use_4bit:
                     try:
                         from transformers import BitsAndBytesConfig
 
@@ -107,25 +126,27 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
                         model_kwargs["torch_dtype"] = torch.float16
                 else:
                     model_kwargs["torch_dtype"] = torch.float16
+                    model_kwargs["device_map"] = "auto"
+                    logger.info("Using native float16 precision for %s on GPU (%.1f GB VRAM detected)", self._model_id, total_vram_gb)
 
-                self._hf_model = AutoModelForCausalLM.from_pretrained(
+                self._hf_model = model_cls.from_pretrained(
                     self._model_id,
                     **model_kwargs,
                 )
                 if "device_map" not in model_kwargs:
                     self._hf_model = self._hf_model.to(device)
             else:
-                model_kwargs["torch_dtype"] = torch.bfloat16
-                self._hf_model = AutoModelForCausalLM.from_pretrained(
+                model_kwargs["torch_dtype"] = torch.float32
+                self._hf_model = model_cls.from_pretrained(
                     self._model_id,
                     **model_kwargs,
                 ).to("cpu")
 
             self._hf_model.eval()
             self._backend = f"transformers-{device}"
-            logger.info("NuExtract-v1.5 model loaded on %s", device)
+            logger.info("NuExtract model loaded on %s (%s)", device, model_cls.__name__)
         except Exception as e:
-            logger.error("Could not load NuExtract-v1.5 model weights: %s", e)
+            logger.error("Could not load NuExtract model weights: %s", e)
             self._backend = "unavailable"
             raise e
 
@@ -138,10 +159,12 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
             return False
 
     @staticmethod
-    def format_prompt(text: str, field_name: str) -> str:
+    def format_prompt(text: str, field_name: str, model_id: Optional[str] = None) -> str:
         """Format input text and template into the official NuExtract prompt."""
         template = {field_name: None}
         template_str = json.dumps(template, indent=2)
+        if model_id and ("2.0" in model_id or "qwen" in model_id.lower() or "nuextract3" in model_id.lower()):
+            return f"<|im_start|>user\n# Template:\n{template_str}\n# Context:\n{text}<|im_end|>\n<|im_start|>assistant\n"
         return f"<|input|>\n### Template:\n{template_str}\n### Text:\n{text}\n\n<|output|>\n"
 
     def _generate_onnx_genai(self, prompt: str) -> str:
@@ -164,6 +187,8 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
         full_text = self._genai_tokenizer.decode(out_tokens)
         if "<|output|>" in full_text:
             return full_text.split("<|output|>")[-1].strip()
+        if "<|im_start|>assistant" in full_text:
+            return full_text.split("<|im_start|>assistant")[-1].strip()
         return full_text.strip()
 
     def _generate_transformers(self, prompt: str) -> str:
@@ -248,7 +273,7 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
         try:
             self._ensure_loaded()
         except Exception as e:
-            logger.warning("NuExtract-v1.5 model not available for extraction: %s", e)
+            logger.warning("NuExtract model not available for extraction: %s", e)
             return EnvelopeResult(
                 field_path=envelope.field_path,
                 extracted_value=None,
@@ -257,7 +282,7 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
             )
 
         f_name = envelope.field_path.split(".")[-1]
-        prompt = self.format_prompt(text=envelope.raw_context, field_name=f_name)
+        prompt = self.format_prompt(text=envelope.raw_context, field_name=f_name, model_id=self._model_id)
 
         try:
             if self._genai_model is not None:
@@ -296,10 +321,12 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
         return [self.extract_envelope(env) for env in envelopes]
 
     @staticmethod
-    def format_component_prompt(envelope: ComponentEnvelope) -> str:
+    def format_component_prompt(envelope: ComponentEnvelope, model_id: Optional[str] = None) -> str:
         """Format a ComponentEnvelope into official NuExtract hierarchical template prompt."""
         template = {envelope.component_name: envelope.sub_schema}
         template_str = json.dumps(template, indent=2)
+        if model_id and ("2.0" in model_id or "qwen" in model_id.lower() or "nuextract3" in model_id.lower()):
+            return f"<|im_start|>user\n# Template:\n{template_str}\n# Context:\n{envelope.raw_spec}<|im_end|>\n<|im_start|>assistant\n"
         return f"<|input|>\n### Template:\n{template_str}\n### Text:\n{envelope.raw_spec}\n\n<|output|>\n"
 
     @staticmethod
@@ -363,7 +390,7 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
                 model_name=self.model_name,
             )
 
-        prompt = self.format_component_prompt(envelope)
+        prompt = self.format_component_prompt(envelope, model_id=self._model_id)
 
         try:
             if self._genai_model is not None:

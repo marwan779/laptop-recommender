@@ -22,7 +22,7 @@ def test_nuextract_onnx_implements_interface():
     assert issubclass(NuExtractONNXFallbackExtractor, IAIFallbackExtractor)
     # Check backward compatibility alias
     assert NuExtractFallbackExtractor is NuExtractONNXFallbackExtractor
-    assert "numind/NuExtract-v1.5" in extractor.model_name
+    assert "numind/NuExtract-2.0-2B" in extractor.model_name
 
 
 def test_nuextract_official_prompt_formatting():
@@ -92,7 +92,7 @@ def test_extract_envelope_with_mocked_generator():
     assert res.field_path == "display.refresh_rate_hz"
     assert res.extracted_value == 144
     assert res.confidence == 0.9
-    assert "numind/NuExtract-v1.5" in res.model_name
+    assert "numind/NuExtract-2.0-2B" in res.model_name
 
     # Test batch extraction
     batch_res = extractor.batch_extract_envelopes([envelope, envelope])
