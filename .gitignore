@@ -20,3 +20,7 @@ htmlcov/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Raw Scrapes and Local Data Caches
+raw_scrapes/
+
