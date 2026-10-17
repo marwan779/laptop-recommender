@@ -100,9 +100,9 @@
       },
       "physical": {
         "weight_kg": 2.33,
-        "width_mm": null,
-        "depth_mm": null,
-        "height_mm": null,
+        "width_mm": 369.0,
+        "depth_mm": 259.4,
+        "height_mm": 22.9,
         "raw_spec": "Weight: 2.33 kg | Width: 369 mm | Depth: 259.4 mm | Height (Front): 2.29 cm | Height (Rear): 2.39 cm | DIMENSIONS: 369 mm x 259.4 mm x 2.29 cm (front height), 2.39 cm (rear height)"
       },
       "build_security": {
@@ -116,8 +116,8 @@
         "raw_spec": "Keyboard: Full-size, backlit, numeric keypad | Keyboard Layout: English | Pointing Device: Touchpad"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": null,
+        "speaker_count": 2,
+        "microphone": true,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -125,7 +125,7 @@
       },
       "connectivity": {
         "wifi": "Wi-Fi 6E",
-        "bluetooth": null,
+        "bluetooth": "Bluetooth 5.3",
         "ethernet": "Yes, 10/100/1000 Mbit/s",
         "ports": [
           "1 x USB 3.2 Gen 1 (with DisplayPort Alternate Mode, USB PD, Sleep-and-Charge)",
@@ -257,7 +257,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 20.958
+    "elapsed_s": 24.291
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-essential-15arp10-83s000c2in-ryzen-7-rtx-4050-512gb-ssd-egypt",
@@ -267,7 +267,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ Essential",
+        "laptop_family": "Loq Essential",
         "laptop_model": "83S000C2IN",
         "manufacturer_part_number": "83S000C2IN",
         "retailer_sku": "83S000C2IN",
@@ -312,7 +312,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 2,
         "max_supported_gb": 16,
         "is_soldered": false,
@@ -467,7 +467,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 14.669
+    "elapsed_s": 17.396
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-essential-15arp10-ryzen-7-rtx-3050-egypt",
@@ -477,7 +477,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "15ARP10E",
         "manufacturer_part_number": "83S000C3IN",
         "retailer_sku": "83S000C3IN",
@@ -522,7 +522,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 2,
         "max_supported_gb": 16,
         "is_soldered": false,
@@ -671,7 +671,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 15.115
+    "elapsed_s": 17.164
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-aspire-go-16-ag16-71p-9142-intel-core-9-270h-16gb-512gb-egypt",
@@ -774,9 +774,9 @@
       },
       "physical": {
         "weight_kg": 1.65,
-        "width_mm": null,
-        "depth_mm": null,
-        "height_mm": null,
+        "width_mm": 357.4,
+        "depth_mm": 253.9,
+        "height_mm": 17.9,
         "raw_spec": "Height: 17.90 mm | Height (Front): 12.20 mm | Height (Rear): 17.90 mm | Width: 357.4 mm | Depth: 253.9 mm | Weight (Approximate): 1.65 kg"
       },
       "build_security": {
@@ -793,8 +793,8 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | TouchPad Features: Microsoft Precision Touchpad Certification | Keyboard Features: Programmable Key | Security Features: BIOS user, supervisor, HDD passwords"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": null,
+        "speaker_count": 2,
+        "microphone": true,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -818,7 +818,7 @@
         "raw_spec": "Memory Card Reader: No | Wireless LAN Standard: IEEE 802.11ax | Ethernet Technology: Gigabit Ethernet | Bluetooth Standard: Bluetooth 5.1 or above | HDMI: Yes | Number of HDMI Outputs: 1 | Number of USB 3.2 Gen 1 Type-A Ports: 2 | Number of USB 3.2 Gen 2 Type-C Ports: 1 | Total Number of USB Ports: 3 | USB Type-C: Yes | Network (RJ-45): No | Wireless: Wi-Fi 6 and Bluetooth"
       },
       "operating_system": {
-        "name": "No OS",
+        "name": null,
         "raw_spec": "Operating System: EShell | Operating system: No operating system pre-installed (boot-up only)"
       }
     },
@@ -902,9 +902,9 @@
       "Performance for your daily workload": "The Intel Core 9 270H processor works with 16GB DDR5 memory, installed as two 8GB modules. A 512GB PCIe NVMe SSD gives you responsive storage for your files and applications. Graphics are handled by the processor's integrated Intel graphics; this model does not have a dedicated graphics card.",
       "Built for everyday use": "Connect using Wi-Fi 6 and Bluetooth, and join video calls with the Full HD webcam. The laptop comes in Pure Silver with a 53Wh battery and a 65W USB-C power adapter."
     },
-    "envelopes_count": 9,
-    "rejections_count": 0,
-    "elapsed_s": 19.367
+    "envelopes_count": 10,
+    "rejections_count": 2,
+    "elapsed_s": 23.526
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-a31-r8la-ryzen-7-170-rtx-5060-16gb-512gb-egypt",
@@ -999,9 +999,9 @@
       },
       "physical": {
         "weight_kg": 2.1,
-        "width_mm": null,
-        "depth_mm": null,
-        "height_mm": null,
+        "width_mm": 362.3,
+        "depth_mm": 239.9,
+        "height_mm": 23.5,
         "raw_spec": "Height: 23.50 mm | Height (Rear): 23.50 mm | Width: 362.3 mm | Depth: 239.9 mm | Weight (Approximate): 2.10 kg"
       },
       "build_security": {
@@ -1018,8 +1018,8 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | TouchPad Features: Microsoft Precision Touchpad Certification | Keyboard Features: NitroSense | Security Features: Firmware Trusted Platform Module (TPM) solution"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": null,
+        "speaker_count": 2,
+        "microphone": true,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -1116,7 +1116,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 18.698
+    "elapsed_s": 23.489
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16s-anv16s-71-76pu-core-7-240h-rtx-5070-16gb-512gb-egypt",
@@ -1219,9 +1219,9 @@
       },
       "physical": {
         "weight_kg": 2.1,
-        "width_mm": null,
-        "depth_mm": null,
-        "height_mm": null,
+        "width_mm": 357.7,
+        "depth_mm": 264.0,
+        "height_mm": 19.95,
         "raw_spec": "Height: 19.95 mm | Height (Front): 13.90 mm | Height (Rear): 19.95 mm | Width: 357.7 mm | Depth: 264 mm | Weight (Approximate): 2.10 kg"
       },
       "build_security": {
@@ -1238,8 +1238,8 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | TouchPad Features: Microsoft Precision Touchpad Certification | Keyboard Features: NitroSense | Security Features: MSFT Pluton Security Processor as Firmware TPM solution"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": null,
+        "speaker_count": 2,
+        "microphone": true,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -1358,7 +1358,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 1,
-    "elapsed_s": 19.527
+    "elapsed_s": 22.304
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-core-i7-rtx-4050-gaming-laptop-egypt",
@@ -1368,7 +1368,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83DV01HRPS",
         "manufacturer_part_number": "198154823109",
         "retailer_sku": "198154823109",
@@ -1421,7 +1421,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -1576,7 +1576,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 15.419
+    "elapsed_s": 18.615
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-255-g10-b39stat-a2n-ryzen-5-7535u-16gb-512gb-egypt",
@@ -1640,7 +1640,7 @@
       "storage": {
         "capacity_gb": 512,
         "storage_type": "SSD",
-        "interface": null,
+        "interface": "PCIe",
         "form_factor": null,
         "slot_count": null,
         "max_supported_gb": null,
@@ -1751,7 +1751,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 1,
-    "elapsed_s": 18.38
+    "elapsed_s": 20.461
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-250-g10-core-i3-1315u-16gb-512gb-ssd-fhd-egypt",
@@ -1761,7 +1761,7 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "HP",
+        "laptop_family": "Hp",
         "laptop_model": "HP 250",
         "manufacturer_part_number": "AL0B9AT#BH5",
         "retailer_sku": "AL0B9AT#BH5",
@@ -1815,8 +1815,8 @@
         "capacity_gb": 16,
         "memory_type": "DDR4",
         "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "slot_count": 2,
+        "max_supported_gb": 32,
         "is_soldered": null,
         "raw_spec": "RAM, Memory Capacity, GB: 16 | RAM, Maximum Capacity, GB: 32 | RAM, Number of Slots: 2 | RAM, Memory Type: DDR4 | MEMORY: 16"
       },
@@ -1846,7 +1846,7 @@
         "raw_spec": "Screen, Diagonal, inches: 15.6 | Screen, Resolution: 1920 x 1080 | Screen, Matrix Type: IPS | Screen, Brightness, cd/m2: 250 | Screen, Refresh Rate: 60 Hz | Screen, Dynamic Screen Refresh Technology: No | Screen, Touch Screen: No | Screen, Screen Covering: Matte | Screen, Privacy Filter: No | Interfaces, DISPLAYPORT: No | Interfaces, MINI DISPLAYPORT: No | DISPLAY: 1920 x 1080"
       },
       "power_battery": {
-        "battery_capacity_wh": null,
+        "battery_capacity_wh": 41.0,
         "battery_cells": null,
         "power_adapter_w": null,
         "fast_charging": null,
@@ -1855,7 +1855,7 @@
       "physical": {
         "weight_kg": 1.52,
         "width_mm": null,
-        "depth_mm": null,
+        "depth_mm": 305.0,
         "height_mm": null,
         "raw_spec": "Package Size (W x D x H), mm: 67 x 550 x 305 | Device Weight, kg: 1.52 | Weight in Packaging, kg: 2.435"
       },
@@ -1882,13 +1882,13 @@
       "connectivity": {
         "wifi": null,
         "bluetooth": null,
-        "ethernet": null,
+        "ethernet": false,
         "ports": [
           "2",
           "1",
           "Eat"
         ],
-        "has_card_reader": null,
+        "has_card_reader": false,
         "card_reader_type": null,
         "thunderbolt_version": null,
         "raw_spec": "Interfaces, USB 2.0: No | Interfaces, USB 3.0: 2 | Interfaces, USB Type-C: 1 | Interfaces, THUNDERBOLT: No | Interfaces, Docking Station Connector: No | Interfaces, SD Card Slot: No | Interfaces, Ethernet Network Interface: No | Interfaces, Ethernet Network Interface Type: No | Interfaces, HDMI: Eat | Interfaces, VGA: No | Wireless Communication: Wi-Fi + Bluetooth | Keyboard Language: Russian | LTE Modem: No | WIRELESS: Wi-Fi + Bluetooth"
@@ -1970,7 +1970,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 4,
-    "elapsed_s": 14.086
+    "elapsed_s": 16.892
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15irx10-83ly00r8ed-gaming-laptop-intel-core-i7-13650hx-rtx-5070-8gb-32gb-ddr5-1tb-ssd-15-3-inch-wuxga-165hz-dos",
@@ -1984,7 +1984,7 @@
         "laptop_model": "Legion 5 15IRX10",
         "manufacturer_part_number": "83LY00R8ED",
         "retailer_sku": "83LY00R8ED",
-        "color": null,
+        "color": "Gamut 100% sRGB",
         "is_bundle": false,
         "warranty": "2Y Premium Care with Onsite (upgrade from 1Y Courier/Carry-in)",
         "warranty_years": 2,
@@ -2033,7 +2033,7 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -2113,7 +2113,7 @@
         "raw_spec": "Wireless: Wi-Fi 6, 802.11ax 2×2 and Bluetooth 5.2 | Ethernet: Gigabit Ethernet RJ-45 | Ports: 3 × USB-A 5Gbps, 1 × USB-C 10Gbps with DisplayPort 2.1 and USB Power Delivery, 1 × USB-C 10Gbps with DisplayPort 1.4, 1 × HDMI 2.1 up to 8K/60Hz, 1 × RJ-45 and 1 × 3.5mm audio combo jack"
       },
       "operating_system": {
-        "name": "No OS",
+        "name": "DOS",
         "raw_spec": "Operating System: DOS / No Preloaded Operating System"
       }
     },
@@ -2162,9 +2162,9 @@
       "14 cores": "6 Performance-cores + 8 Efficient-cores",
       "344.9 × 255.35 × 22.50": "23.99mm"
     },
-    "envelopes_count": 7,
-    "rejections_count": 0,
-    "elapsed_s": 13.932
+    "envelopes_count": 8,
+    "rejections_count": 1,
+    "elapsed_s": 20.246
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv01hsed-i7-rtx-4050-laptop-egypt",
@@ -2174,7 +2174,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83DV01HSED",
         "manufacturer_part_number": "83DV01HSED",
         "retailer_sku": "83DV01HSED",
@@ -2237,7 +2237,7 @@
         "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "NVMe",
-        "form_factor": null,
+        "form_factor": "M.2 2280 PCIe 4.0 x4",
         "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB Nvme GEN 4 | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots"
@@ -2347,7 +2347,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 13.189
+    "elapsed_s": 18.434
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-anv15-52-786f-gaming-laptop-i7-13620h-rtx-4050-6gb-16gb-ddr5-512gb-nvme-gen-4-15-6-fhd-ips-165hz-windows-11-obsidian-black-egypt",
@@ -2410,7 +2410,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": null,
@@ -2530,7 +2530,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 9.521
+    "elapsed_s": 13.01
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa2352tx-gaming-laptop-core-i7-13620h-16gb-ddr5-512gb-ssd-rtx-5050-8gb-15-6-inch-fhd-144hz-dos-mica-silver-egypt",
@@ -2697,7 +2697,7 @@
     },
     "envelopes_count": 4,
     "rejections_count": 0,
-    "elapsed_s": 7.47
+    "elapsed_s": 10.498
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-i7-rtx-5070-32gb-1tb-egypt",
@@ -2707,7 +2707,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83JE00XEED",
         "manufacturer_part_number": "83JE00XEED",
         "retailer_sku": "83JE00XEED",
@@ -2760,7 +2760,7 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -2916,7 +2916,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 13.422
+    "elapsed_s": 16.628
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je01ated-core-i7-13645hx-rtx-5060-8gb-egypt",
@@ -2926,7 +2926,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ 15IRX10",
+        "laptop_family": "Loq 15Irx10",
         "laptop_model": "83JE01ATED",
         "manufacturer_part_number": "83JE01ATED",
         "retailer_sku": "83JE01ATED",
@@ -2979,8 +2979,8 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
+        "speed": 5600,
+        "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SODIMM | Memory Configuration: 1 × 16GB | Memory Slots: 2 × DDR5 SODIMM | Maximum Memory: Up to 32GB DDR5-5600 | MEMORY: 16GB DDR5-5600 SODIMM (1 × 16GB)"
@@ -3062,7 +3062,7 @@
         "raw_spec": "Card Reader: No | WLAN: Wi-Fi 6, 802.11ax 2×2 | Bluetooth: Bluetooth 5.2 | Ethernet: 100/1000M RJ-45 | USB-A: 3 × USB 5Gbps / USB 3.2 Gen 1 | USB-C: 1 × USB 10Gbps / USB 3.2 Gen 2 with PD 65-100W and DP 1.4 | HDMI: HDMI 2.1 up to 8K/60Hz | Audio Jack: 3.5mm Headphone / Microphone Combo | WWAN: Not Supported"
       },
       "operating_system": {
-        "name": "No OS",
+        "name": "DOS",
         "raw_spec": "OS: DOS / No Preinstalled Operating System"
       }
     },
@@ -3141,9 +3141,9 @@
       "OS": "DOS / No Preinstalled Operating System",
       "COLOR": "Luna Grey"
     },
-    "envelopes_count": 6,
-    "rejections_count": 0,
-    "elapsed_s": 13.807
+    "envelopes_count": 7,
+    "rejections_count": 1,
+    "elapsed_s": 17.652
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp9-83dx00f1pb-ryzen-7-7445hs-rtx-3050-6gb-egypt",
@@ -3153,7 +3153,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ 15AHP9",
+        "laptop_family": "Loq 15Ahp9",
         "laptop_model": "83DX00F1PB",
         "manufacturer_part_number": "83DX00F1PB",
         "retailer_sku": "83DX00F1PB",
@@ -3206,8 +3206,8 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
+        "speed": 5600,
+        "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SODIMM | Memory Configuration: 1 × 16GB | Memory Slots: 2 × DDR5 SODIMM | Maximum Memory: Up to 32GB DDR5-5600 | MAX MEMORY: Up to 32GB DDR5-5600"
@@ -3391,7 +3391,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.806
+    "elapsed_s": 16.359
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16adr10-83lt0031lk-ryzen-7-8745hx-rtx-5060-oled-egypt",
@@ -3401,7 +3401,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Legion Pro 5 16ADR10",
+        "laptop_family": "Legion Pro 5 16Adr10",
         "laptop_model": "Lenovo Legion Pro 5 16ADR10 - 83LT0031LK",
         "manufacturer_part_number": "83LT0031LK",
         "retailer_sku": "83LT0031LK",
@@ -3446,8 +3446,8 @@
       "memory": {
         "capacity_gb": 24,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
+        "speed": 5200,
+        "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 24GB DDR5-5200, dual-channel capable, 2 × SODIMM slots | Memory Slots: 2 × DDR5"
@@ -3456,7 +3456,7 @@
         "capacity_gb": 1024,
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
-        "form_factor": null,
+        "form_factor": "M.2 2280 PCIe Gen 4",
         "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe SSD | Storage Slots: 2 × M.2 2280 PCIe Gen 4 | Storage Expansion: 2 × M.2 2280 PCIe 4.0 x4 slots"
@@ -3502,7 +3502,7 @@
         "raw_spec": "Keyboard: English RGB backlit keyboard with numeric keypad"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 2,
         "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
@@ -3512,7 +3512,7 @@
       "connectivity": {
         "wifi": null,
         "bluetooth": null,
-        "ethernet": null,
+        "ethernet": "Gigabit Ethernet RJ-45",
         "ports": [
           "2 × USB-A 5Gbps",
           "1 × USB-A 10Gbps Always On",
@@ -3590,7 +3590,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 15.969
+    "elapsed_s": 18.106
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-15-fd1062ne-d41p1ea-laptop-intel-core-ultra-512gb-pcie-ssd-egypt",
@@ -3601,7 +3601,7 @@
       "identity": {
         "brand": "HP",
         "laptop_family": null,
-        "laptop_model": null,
+        "laptop_model": "15-fd1062ne",
         "manufacturer_part_number": "D41P1EA",
         "retailer_sku": "D41P1EA",
         "color": "Natural Silver",
@@ -3662,7 +3662,7 @@
       "storage": {
         "capacity_gb": 512,
         "storage_type": "SSD",
-        "interface": null,
+        "interface": "PCIe",
         "form_factor": null,
         "slot_count": null,
         "max_supported_gb": null,
@@ -3769,7 +3769,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 1,
-    "elapsed_s": 16.318
+    "elapsed_s": 18.04
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-black-edition-a13ve-i7-13620h-rtx-4050-144hz-egypt",
@@ -3832,7 +3832,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5200,
         "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -3842,7 +3842,7 @@
         "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "NVMe",
-        "form_factor": null,
+        "form_factor": "M.2 2280",
         "slot_count": 1,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB Nvme GEN 4 | Storage Slot: One M.2 2280 GEN 4 slot"
@@ -3952,7 +3952,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 15.488
+    "elapsed_s": 17.079
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-crosshair-16-hx-ai-d2xwgkg-9s7-15p421-271-intel-core-ultra-9-275hx-rtx-5070-8gb-gddr7-32gb-ddr5-2tb-ssd-16-inch-qhd-plus-240hz-windows-11-home-cosmos-gray-egypt",
@@ -4015,9 +4015,9 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": "6400",
+        "slot_count": 2,
+        "max_supported_gb": 96,
         "is_soldered": null,
         "raw_spec": "Memory: 32GB DDR5 RAM (2 × 16GB) | Memory Capability: 2 RAM Slots, supports up to 96GB DDR5-6400"
       },
@@ -4073,7 +4073,7 @@
         "raw_spec": "Keyboard: 24-Zone RGB Gaming Keyboard with Copilot Key | Security: Firmware TPM 2.0, Kensington Lock and Webcam Privacy Shutter"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 2,
         "microphone": "2 × 2W Speakers, Array Microphone, Nahimic 3 and Hi-Res Audio Ready",
         "webcam_resolution": "720p",
         "has_privacy_shutter": true,
@@ -4145,7 +4145,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 21.856
+    "elapsed_s": 18.139
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-katana-15-hx-b14wgk-i7-14650hx-rtx-5070-512gb-ssd-dos-egypt",
@@ -4208,7 +4208,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 96,
         "is_soldered": false,
@@ -4264,7 +4264,7 @@
         "raw_spec": "Keyboard: 4-Zone RGB Gaming Keyboard with Copilot Key"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 2,
         "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
@@ -4340,7 +4340,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 16.354
+    "elapsed_s": 13.775
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-vector-16-hx-ai-a2xwig-core-ultra-9-rtx-5080",
@@ -4350,7 +4350,7 @@
     "specs": {
       "identity": {
         "brand": "MSI",
-        "laptop_family": "Vector 16 HX AI",
+        "laptop_family": "Vector 16 Hx Ai",
         "laptop_model": "A2XWIG",
         "manufacturer_part_number": "9S7-15M352-693",
         "retailer_sku": "GGU9275X16GXXDXX",
@@ -4404,7 +4404,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": 96,
         "is_soldered": null,
         "raw_spec": "RAM: 16GB DDR5 | RAM Slots: 2 | Maximum RAM: Up to 96GB | MEMORY: 16GB DDR5"
@@ -4463,7 +4463,7 @@
         "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
-        "has_ir_camera": null,
+        "has_ir_camera": true,
         "raw_spec": "Webcam: FHD IR, 1080p @ 30fps, HDR | Audio: 2 x 2W Speakers, Nahimic 3, Hi-Res Audio Ready"
       },
       "connectivity": {
@@ -4535,7 +4535,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 16.771
+    "elapsed_s": 14.231
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-gaming-laptop-16-am0057ne-d13pqea-core-ultra-7-255h-rtx-5070-16gb-512gb-16-inch-2k-165hz-ips-egypt",
@@ -4545,7 +4545,7 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "OMEN 16",
+        "laptop_family": "Omen 16",
         "laptop_model": "16-am0057ne",
         "manufacturer_part_number": "D13PQEA#ABV",
         "retailer_sku": "D13PQEA#ABV",
@@ -4554,7 +4554,7 @@
         "warranty": "1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply.",
         "warranty_years": 1,
         "condition": null,
-        "raw_spec": "Title: HP OMEN 16-am0057ne D13PQEA Gaming Laptop Intel Core Ultra 7 255H RTX 5070 8GB 16GB DDR5 512GB SSD 16-inch 2K 165Hz FreeDOS | Cloud service: 100 GB Dropbox storage for 3 months | Product color: Shadow black, black chrome logo | Manufacturer Warranty: 1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply. | Color: Gamut 100% sRGB | Brand: HP | Series: OMEN 16 | Model: 16-am0057ne | Product Number: D13PQEA#ABV | SKU: D13PQEA#ABV | Part Number: D13PQEA#ABV"
+        "raw_spec": "Title: HP OMEN 16-am0057ne D13PQEA Gaming Laptop Intel Core Ultra 7 255H RTX 5070 8GB 16GB DDR5 512GB SSD 16-inch 2K 165Hz FreeDOS | Product color: Shadow black, black chrome logo | Manufacturer Warranty: 1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site repair. Terms and conditions vary by country. Certain restrictions and exclusions apply. | Color: Gamut 100% sRGB | Brand: HP | Series: OMEN 16 | Model: 16-am0057ne | Product Number: D13PQEA#ABV | SKU: D13PQEA#ABV | Part Number: D13PQEA#ABV"
       },
       "cpu": {
         "manufacturer": "Intel",
@@ -4657,7 +4657,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": null,
+        "microphone": "dual array digital microphones",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -4740,9 +4740,9 @@
       "HP OMEN Gaming Laptop 16-am0057ne": "Experience powerful next-generation gaming with the HP OMEN 16-am0057ne. Powered by the Intel® Core™ Ultra 7 255H processor and NVIDIA® GeForce RTX™ 5070 Laptop GPU, this gaming laptop delivers excellent performance for modern games, content creation and demanding workloads.",
       "DTS": "X® Ultra, dual speakers, HP Audio Boost and HyperX"
     },
-    "envelopes_count": 5,
+    "envelopes_count": 4,
     "rejections_count": 0,
-    "elapsed_s": 11.984
+    "elapsed_s": 7.652
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf155w-intel-core-ultra-5-laptop-egypt",
@@ -4859,7 +4859,7 @@
         "raw_spec": "Keyboard: Backlit Chiclet Keyboard | Touchpad: Precision touchpad | Security: McAfee BIOS Booting User Password Protection BIOS setup user password Trusted Platform Module (Firmware TPM)"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 1,
         "microphone": "Built-in speaker Built-in array microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -4918,7 +4918,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 12.984
+    "elapsed_s": 11.058
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/dell-pro-15-essential-pv15250-core-i7-1355u-laptop-egypt",
@@ -4981,7 +4981,7 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5200,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -5037,8 +5037,8 @@
         "raw_spec": "Keyboard: English US Non-Backlit"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": null,
+        "speaker_count": 2,
+        "microphone": true,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -5112,7 +5112,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 15.578
+    "elapsed_s": 13.77
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-katana-15-hx-b14wgk-gaming-laptop-i7-14650hx-rtx-5070-egypt",
@@ -5177,7 +5177,7 @@
         "memory_type": "DDR5",
         "speed": "5600 MHz",
         "slot_count": null,
-        "max_supported_gb": null,
+        "max_supported_gb": 96,
         "is_soldered": null,
         "raw_spec": "Memory: 16GB DDR5 5600MHz (Up to 96GB Supported)"
       },
@@ -5288,7 +5288,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 16.867
+    "elapsed_s": 13.654
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-s3407aa-sf157w-ultra-7-355-laptop-egypt",
@@ -5349,7 +5349,7 @@
         "memory_type": "DDR5",
         "speed": null,
         "slot_count": null,
-        "max_supported_gb": null,
+        "max_supported_gb": 32,
         "is_soldered": true,
         "raw_spec": "Memory: 16GB DDR5 on board RAM | Max Total System Memory: up to:32GB"
       },
@@ -5460,7 +5460,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.102
+    "elapsed_s": 11.46
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-yoga-7-2-in-1-intel-core-ultra-7-14-inch-laptop-egypt",
@@ -5579,7 +5579,7 @@
         "microphone": null,
         "webcam_resolution": "5.0MP",
         "has_privacy_shutter": true,
-        "has_ir_camera": null,
+        "has_ir_camera": true,
         "raw_spec": "Camera: 5.0MP + IR with Privacy Shutter | Audio: 4 stereo speakers, 2W x2 (woofers), 2W x2 (tweeters), optimized with Dolby Atmos, Smart Amplifier (AMP)"
       },
       "connectivity": {
@@ -5644,7 +5644,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 20.059
+    "elapsed_s": 19.566
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-15-x1504va-bq857w-core-7-150u-512gb-laptop-egypt",
@@ -5765,7 +5765,7 @@
         "raw_spec": "FingerPrint: Available | Keyboard: Backlit Chiclet Keyboard with Num-key"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 1,
         "microphone": "SonicMaster Built-in speaker Built-in array microphone with Cortana voice-recognition support",
         "webcam_resolution": "720p",
         "has_privacy_shutter": true,
@@ -5837,7 +5837,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 16.447
+    "elapsed_s": 16.714
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-a15-ryzen-7-rtx-3050-laptop-egypt",
@@ -5847,7 +5847,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "FA506NCG-HN857W",
         "retailer_sku": "FA506NCG-HN857W",
@@ -5892,7 +5892,7 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": null,
@@ -5992,7 +5992,7 @@
     },
     "envelopes_count": 4,
     "rejections_count": 0,
-    "elapsed_s": 9.987
+    "elapsed_s": 10.532
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-modern-15-f1mg-intel-core-5-120u-8gb-512gb-laptop-egypt",
@@ -6055,8 +6055,8 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR4",
-        "speed": null,
-        "slot_count": null,
+        "speed": 3200,
+        "slot_count": 2,
         "max_supported_gb": 64,
         "is_soldered": null,
         "raw_spec": "Memory: 8GB DDR4 3200MHz | Memory Slots: 2 | Maximum Memory: 64GB"
@@ -6113,7 +6113,7 @@
         "raw_spec": "Keyboard: Single Backlit Keyboard (White) with Copilot Key | Security: fTPM 2.0, Webcam Shutter, Kensington Lock"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 2,
         "microphone": "Array Microphone",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
@@ -6183,7 +6183,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 19.843
+    "elapsed_s": 19.994
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-16-am0056ne-gaming-laptop-egypt",
@@ -6193,7 +6193,7 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "OMEN 16",
+        "laptop_family": "Omen 16",
         "laptop_model": "16-am0056ne",
         "manufacturer_part_number": "D13PNEA#ABV",
         "retailer_sku": "D13PNEA#ABV",
@@ -6247,7 +6247,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5600 MHz",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "Memory: 16GB DDR5-5600 MT/s (2 × 8GB)"
@@ -6305,7 +6305,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": null,
+        "microphone": "dual-array microphones",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
         "has_ir_camera": null,
@@ -6366,7 +6366,7 @@
     },
     "envelopes_count": 5,
     "rejections_count": 0,
-    "elapsed_s": 12.147
+    "elapsed_s": 10.28
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-max-16-ah0029ne-gaming-laptop-egypt",
@@ -6495,7 +6495,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 7",
         "bluetooth": "Bluetooth 5.4",
-        "ethernet": null,
+        "ethernet": "Integrated 10/100/1000/2500 GbE LAN",
         "ports": [],
         "has_card_reader": null,
         "card_reader_type": null,
@@ -6532,7 +6532,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 16.801
+    "elapsed_s": 14.39
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15iph11-intel-core-ultra-7-16gb-512gb-rtx-5060-egypt",
@@ -6542,7 +6542,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83SL001MED",
         "manufacturer_part_number": "83SL001MED",
         "retailer_sku": "83SL001MED",
@@ -6595,7 +6595,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -6659,7 +6659,7 @@
         "microphone": "2x, Array",
         "webcam_resolution": "5.0MP",
         "has_privacy_shutter": true,
-        "has_ir_camera": null,
+        "has_ir_camera": true,
         "raw_spec": "Audio Chip: High Definition (HD) Audio, Realtek ALC3287 codec | Speakers: Stereo speakers, 2W x2, optimized with Nahimic Audio | Microphone: 2x, Array | Camera: 5.0MP + IR with E-shutter"
       },
       "connectivity": {
@@ -6753,7 +6753,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 16.46
+    "elapsed_s": 14.399
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-hp-15-fd0531nia-laptop-i3-1315u-4gb-256gb-ssd-egypt",
@@ -6764,7 +6764,7 @@
       "identity": {
         "brand": "HP",
         "laptop_family": null,
-        "laptop_model": null,
+        "laptop_model": "15-FD0531NIA",
         "manufacturer_part_number": "B82HWEA",
         "retailer_sku": "B82HWEA",
         "color": "Natural silver",
@@ -6816,7 +6816,7 @@
       "memory": {
         "capacity_gb": 4,
         "memory_type": "DDR4",
-        "speed": null,
+        "speed": "3200 MT/s",
         "slot_count": 1,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -6873,7 +6873,7 @@
       },
       "audio_webcam": {
         "speaker_count": null,
-        "microphone": null,
+        "microphone": "dual array digital microphones",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -6929,7 +6929,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 17.644
+    "elapsed_s": 15.103
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-zenbook-a14-ux3407qa-qd155w-laptop-snapdragon-x-16gb-512gb-egypt",
@@ -7148,7 +7148,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 13.711
+    "elapsed_s": 11.88
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2we-gaming-laptop-i7-13620h-rtx-5050-16gb-egypt",
@@ -7243,7 +7243,7 @@
         "raw_spec": "Display: 15.6\" FHD (1920*1080), 144Hz 100%sRGB IPS-Level"
       },
       "power_battery": {
-        "battery_capacity_wh": null,
+        "battery_capacity_wh": 60.0,
         "battery_cells": null,
         "power_adapter_w": 180,
         "fast_charging": null,
@@ -7269,7 +7269,7 @@
         "raw_spec": "Keyboard: Single white Gaming Keyboard | Security: Firmware TPM 2.0, Kensington Lock"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 2,
         "microphone": "2×2W Speakers, Array Microphone",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
@@ -7330,7 +7330,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.418
+    "elapsed_s": 13.878
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wf-gaming-laptop-i7-13620h-rtx-5060-16gb-egypt",
@@ -7404,7 +7404,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": null,
-        "slot_count": null,
+        "slot_count": 4,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB NVMe PCIe SSD Gen4x4 w/o DRAM | STORAGE: 512GB NVMe PCIe Gen4 ×4 SSD"
       },
@@ -7425,7 +7425,7 @@
         "raw_spec": "Display: 15.6\" FHD (1920*1080), 144Hz 100%sRGB IPS-Level | DISPLAY: 15.6-inch Full HD IPS-Level Display | REFRESH RATE: 144Hz"
       },
       "power_battery": {
-        "battery_capacity_wh": null,
+        "battery_capacity_wh": 60.0,
         "battery_cells": null,
         "power_adapter_w": null,
         "fast_charging": null,
@@ -7494,7 +7494,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 13.251
+    "elapsed_s": 11.87
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-cyborg-15-max-c2wg-gaming-laptop-intel-core-i7-13620h-rtx-5070-egypt",
@@ -7559,7 +7559,7 @@
         "memory_type": "DDR5",
         "speed": "5200 MHz",
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 96,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5 5200MHz | Memory Slots: 2 x DDR5 Slots | Memory Capability: 2 RAM Slots, upgradeable up to 96GB DDR5-5200"
       },
@@ -7567,7 +7567,7 @@
         "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "NVMe",
-        "form_factor": null,
+        "form_factor": "M.2 2280",
         "slot_count": 1,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB NVMe PCIe Gen4 ×4 SSD | Storage Slot: 1 x M.2 2280 PCIe Gen4 Slot | Storage Capability: 2 × M.2 SSD Slots supporting NVMe PCIe Gen4"
@@ -7698,7 +7698,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 15.346
+    "elapsed_s": 14.853
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ai-phn16-73-97bp-gaming-laptop-core-ultra-9-1tb-egypt",
@@ -7801,9 +7801,9 @@
       },
       "physical": {
         "weight_kg": 2.7,
-        "width_mm": null,
-        "depth_mm": null,
-        "height_mm": null,
+        "width_mm": 356.8,
+        "depth_mm": 275.5,
+        "height_mm": 23.9,
         "raw_spec": "Height: 23.90 mm | Width: 356.8 mm | Depth: 275.5 mm | Weight (Approximate): 2.70 kg"
       },
       "build_security": {
@@ -7821,8 +7821,8 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | Keyboard Features: RGB 4 Zones Backlight | Keyboard Feature: Microphone Mute Indicator | Security Features: Kensington lock | Security Feature: Firmware Trusted Platform Module (TPM) solution"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": null,
+        "speaker_count": 2,
+        "microphone": true,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -7923,7 +7923,7 @@
     },
     "envelopes_count": 10,
     "rejections_count": 2,
-    "elapsed_s": 17.88
+    "elapsed_s": 18.295
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ph16-73-92v4-gaming-laptop-ultra9-275hx-rtx5090-egypt",
@@ -8045,7 +8045,7 @@
       },
       "audio_webcam": {
         "speaker_count": 4,
-        "microphone": null,
+        "microphone": true,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -8069,7 +8069,7 @@
         "raw_spec": "Memory Card Reader: Yes | Memory Card Supported: microSD | Wireless LAN Standard: IEEE 802.11be | Ethernet Technology: 5 Gigabit Ethernet | Bluetooth Standard: Bluetooth 5.4 or above | HDMI: Yes | Number of HDMI Outputs: 1 | Number of USB 3.2 Gen 1 Type-A Ports: 1 | Number of USB 3.2 Gen 2 Type-A Ports: 2 | Total Number of USB Ports: 5 | Network (RJ-45): Yes | Number of USB 3.2 Gen 2x2 Type-C Ports: 2 | Wireless: Killer Wi-Fi 7, Bluetooth 5.4 or above | Wired Network: 5 Gigabit Ethernet"
       },
       "operating_system": {
-        "name": "No OS",
+        "name": null,
         "raw_spec": "Operating System: No OS / Acer EShell"
       }
     },
@@ -8158,9 +8158,9 @@
       "240Hz refresh rate. Its 16": "10 aspect ratio provides more vertical viewing space,",
       "16-inch OLED, 2560 × 1600, 240Hz, 16": "10"
     },
-    "envelopes_count": 9,
-    "rejections_count": 1,
-    "elapsed_s": 17.737
+    "envelopes_count": 10,
+    "rejections_count": 3,
+    "elapsed_s": 18.463
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15irx9-gaming-laptop-i7-13645hx-rtx4050-egypt",
@@ -8170,7 +8170,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83DV01HBAX",
         "manufacturer_part_number": "83DV01HBAX",
         "retailer_sku": "83DV01HBAX",
@@ -8223,7 +8223,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -8379,7 +8379,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.179
+    "elapsed_s": 14.16
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-gaming-a16-cth-intel-core-i7-13620h-rtx-5050-8gb-16gb-ddr5-512gb-nvme-gen4-ssd-gaming-laptop",
@@ -8501,7 +8501,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": null,
+        "microphone": "Dolby Atmos",
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -8552,7 +8552,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 1,
-    "elapsed_s": 15.792
+    "elapsed_s": 16.127
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614ph-ryzen9-8940hx-rtx5050-8gb-16gb-512gb-ssd-16inch-165hz-laptop",
@@ -8562,7 +8562,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Strix",
+        "laptop_family": "Rog Strix",
         "laptop_model": "G614PH-RV659W",
         "manufacturer_part_number": "90NR0KX7-M00740",
         "retailer_sku": "90NR0KX7-M00740",
@@ -8607,7 +8607,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": "5200",
         "slot_count": 2,
         "max_supported_gb": 64,
         "is_soldered": false,
@@ -8766,7 +8766,7 @@
     },
     "envelopes_count": 5,
     "rejections_count": 0,
-    "elapsed_s": 10.333
+    "elapsed_s": 10.446
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-asus-rog-zephyrus-g16-gu606ar-tb321w-core-ultra-9-386h-rtx-5070-ti-32gb-1tb-oled-240hz-gaming-laptop",
@@ -8776,7 +8776,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Zephyrus",
+        "laptop_family": "Rog Zephyrus",
         "laptop_model": "GU606AR-TB321W",
         "manufacturer_part_number": "90NR0PC2-M00310",
         "retailer_sku": "90NR0PC2-M00310",
@@ -8991,7 +8991,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 13.2
+    "elapsed_s": 13.199
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614pw-ts161w-ryzen-9-8940hx-rtx-5080-16gb-gddr7-1tb-pcie-4-0-nvme-ssd-16-inch-2-5k-300hz-gaming-laptop",
@@ -9001,7 +9001,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Strix",
+        "laptop_family": "Rog Strix",
         "laptop_model": "G614PW-TS161W",
         "manufacturer_part_number": "g614pw-ts161w",
         "retailer_sku": "g614pw-ts161w",
@@ -9046,7 +9046,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5200,
         "slot_count": 2,
         "max_supported_gb": 64,
         "is_soldered": false,
@@ -9207,7 +9207,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 12.013
+    "elapsed_s": 11.51
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-lenovo-loq-15arp9-ryzen-5-7235hs-rtx-3050-16gb-512gb-83jc00p6ed",
@@ -9217,11 +9217,11 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83JC00P6ED",
         "manufacturer_part_number": "83JC00P6ED",
         "retailer_sku": "83JC00P6ED",
-        "color": null,
+        "color": "Accuracy 100% sRGB Coverage and 300-Nit Brightness",
         "is_bundle": false,
         "warranty": "2 Years Courier/Carry-in",
         "warranty_years": 2,
@@ -9264,7 +9264,7 @@
         "memory_type": "DDR5",
         "speed": null,
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5 Dual-Channel Memory for Fast Multitasking | Memory Slots: 2x DDR5 SODIMM Slots, Up to 32GB"
       },
@@ -9273,7 +9273,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": null,
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB PCIe 4.0 NVMe SSD with Expansion Support | Storage Expansion: Dual M.2 PCIe 4.0 SSD Slots"
       },
@@ -9377,7 +9377,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 20.689
+    "elapsed_s": 17.731
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-7i-16iax10h-83f500fbin-core-ultra-9-275hx-rtx-5090-24gb-64gb-ddr5-6400-gaming-laptop",
@@ -9440,7 +9440,7 @@
       "memory": {
         "capacity_gb": 64,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": "6400",
         "slot_count": 2,
         "max_supported_gb": 64,
         "is_soldered": false,
@@ -9600,7 +9600,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 1,
-    "elapsed_s": 15.243
+    "elapsed_s": 13.536
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-hp-probook-460-g11-core-ultra-7-155u-16gb-512gb-rtx-2050-business-laptop",
@@ -9610,7 +9610,7 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "ProBook",
+        "laptop_family": "Probook",
         "laptop_model": "ProBook 460 G11",
         "manufacturer_part_number": "B9ZM1ET#BH5",
         "retailer_sku": "B9ZM1ET#BH5",
@@ -9762,7 +9762,7 @@
     },
     "envelopes_count": 4,
     "rejections_count": 0,
-    "elapsed_s": 9.014
+    "elapsed_s": 7.768
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
@@ -9772,9 +9772,9 @@
     "specs": {
       "identity": {
         "brand": "Gigabyte",
-        "laptop_family": "AERO",
+        "laptop_family": "Aero",
         "laptop_model": "AERO",
-        "manufacturer_part_number": "gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
+        "manufacturer_part_number": "1TH93EEC94DH",
         "retailer_sku": "gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
         "color": "Space Gray / Lunar White",
         "is_bundle": false,
@@ -9850,7 +9850,7 @@
         "aspect_ratio": "16:10",
         "touchscreen": false,
         "brightness_nits": 400,
-        "color_gamut": null,
+        "color_gamut": "sRGB",
         "response_time_ms": 3.0,
         "surface_treatment": null,
         "hdr": null,
@@ -9881,7 +9881,7 @@
         "raw_spec": "Keyboard: 1-zone RGB Backlit, up to 1.7mm key travel, N-Key rollover"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 2,
         "microphone": "2× 2W speakers, microphone, Dolby Atmos",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
@@ -9943,8 +9943,8 @@
       "16\" 16": "10 IPS QHD+ 165Hz, 3ms, sRGB 100%, 400 nits"
     },
     "envelopes_count": 8,
-    "rejections_count": 0,
-    "elapsed_s": 18.934
+    "rejections_count": 1,
+    "elapsed_s": 16.363
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-gigabyte-gaming-a16-ga63h-rtx5050-ryzen7-165hz-16inch-gaming-laptop",
@@ -10000,17 +10000,17 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5600 MHz",
-        "slot_count": null,
-        "max_supported_gb": null,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): Supports up to 64GB DDR5 5600MHz with 2 SO-DIMM slots | CAPACITY: 16GB DDR5"
       },
       "storage": {
-        "capacity_gb": null,
+        "capacity_gb": 4096,
         "storage_type": "SSD",
         "interface": "PCIe 4.0",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1 PCIe Gen4 x4 M.2 slot and 1 PCIe Gen4 x2 M.2 slot with support up to 4TB NVMe SSD"
       },
@@ -10118,7 +10118,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 19.56
+    "elapsed_s": 17.798
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-5-15iax10-ultra-7-rtx-5060-oled-165hz-egypt",
@@ -10181,9 +10181,9 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": null,
-        "max_supported_gb": null,
+        "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 2x 16GB SODIMM DDR5-5600 (Max 32GB)"
       },
@@ -10310,7 +10310,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 15.437
+    "elapsed_s": 13.044
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-a16-i7-rtx5050-16gb-1tb-gaming-laptop",
@@ -10503,7 +10503,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 18.484
+    "elapsed_s": 15.862
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-15-core5-8gb-512gb-90nb13y2",
@@ -10739,7 +10739,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 16.749
+    "elapsed_s": 15.079
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx607vu-rtx4050-core7-16gb-512ssd",
@@ -10749,7 +10749,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "FX607VU-RL167W",
         "manufacturer_part_number": "90NR0N06-M00JB0",
         "retailer_sku": "90NR0N06-M00JB0",
@@ -10802,9 +10802,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SO-DIMM | Memory Slots: 2x SO-DIMM slots (Upgradable to 64GB)"
       },
@@ -10925,7 +10925,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 15.978
+    "elapsed_s": 13.861
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-zenbook-14-ryzen-ai7-16gb-512gb-oled-90nb17r2",
@@ -11046,7 +11046,7 @@
         "raw_spec": "Keyboard color: Black | Keyboard type: Backlit Chiclet Keyboard With Copilot key | Touchpad: Precision touchpad support NumberPad | Security: IR webcam with Windows Hello support McAfee BIOS Booting User Password Protection BIOS setup user password Microsoft Pluton security processor Trusted Platform Module (Firmware TPM)"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 1,
         "microphone": "Smart Amp Technology Built-in speaker Built-in array microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -11149,7 +11149,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 12.982
+    "elapsed_s": 11.325
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-s14-m3407ka-sf155w-ryzen-ai-5-egypt",
@@ -11213,7 +11213,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 1,
         "max_supported_gb": null,
         "is_soldered": true,
         "raw_spec": "Memory (RAM): 16GB DDR5 on board (1x DDR5 SO-DIMM slot available) | MEMORY: 16GB DDR5 on board (1x DDR5 SO-DIMM slot available)"
@@ -11270,7 +11270,7 @@
         "raw_spec": "Keyboard: Backlit Chiclet Keyboard with Copilot key | Security: Microsoft Pluton, TPM, IR webcam for Windows Hello"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 1,
         "microphone": "Built-in speaker & array microphone (AI Noise Canceling)",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -11337,7 +11337,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 15.629
+    "elapsed_s": 12.867
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-fx608jmr-i7-rtx-5060-16gb-512gb-165hz-egypt",
@@ -11347,7 +11347,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "FX608JMR-RV057W",
         "manufacturer_part_number": "90NR0NB1-M00J30",
         "retailer_sku": "90NR0NB1-M00J30",
@@ -11410,7 +11410,7 @@
         "capacity_gb": 512,
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
-        "form_factor": null,
+        "form_factor": "M.2",
         "slot_count": 2,
         "max_supported_gb": 1024,
         "raw_spec": "Storage: 512GB PCIe 4.0 NVMe SSD | M.2 Slots: 2x M.2 PCIe | Supported SSD: 512GB / 1TB / 2TB"
@@ -11462,12 +11462,12 @@
         "microphone": "Built-in array microphone",
         "webcam_resolution": "1080P",
         "has_privacy_shutter": null,
-        "has_ir_camera": null,
+        "has_ir_camera": true,
         "raw_spec": "Camera: 1080P FHD IR (Windows Hello) | Microphone: Built-in array microphone | Speakers: Dual speakers | Audio Technology: Dolby Atmos + AI Noise Canceling"
       },
       "connectivity": {
         "wifi": "Wi-Fi 6E",
-        "bluetooth": null,
+        "bluetooth": "Bluetooth 5.4",
         "ethernet": "10/100/1000 Mbps",
         "ports": [
           "3x USB 3.2 Gen 2 Type-A",
@@ -11555,7 +11555,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 18.226
+    "elapsed_s": 15.147
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-16-x1607qa-mb155w-snapdragon-x-egypt",
@@ -11732,7 +11732,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 14.789
+    "elapsed_s": 12.561
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-fx607vu-rl121-i7-rtx4050-16gb-1tb",
@@ -11742,7 +11742,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "FX607VU-RL121",
         "manufacturer_part_number": "90NR0N06-M00F80",
         "retailer_sku": "90NR0N06-M00F80",
@@ -11795,9 +11795,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5600,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB | MEMORY: 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB"
       },
@@ -11806,7 +11806,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots total)"
       },
@@ -11876,7 +11876,7 @@
         "raw_spec": "I/O Ports: 1x RJ45, 1x Thunderbolt 4 (DP), 1x USB 3.2 Gen 2 Type-C (DP/PD/G-Sync), 2x USB 3.2 Gen 1 Type-A"
       },
       "operating_system": {
-        "name": "No OS",
+        "name": null,
         "raw_spec": "Operating System: No preinstalled OS | OS: No preinstalled OS"
       }
     },
@@ -11915,8 +11915,8 @@
       "Graphics": "NVIDIA® GeForce RTX™ 4050 Laptop GPU (6GB GDDR6)"
     },
     "envelopes_count": 8,
-    "rejections_count": 1,
-    "elapsed_s": 19.1
+    "rejections_count": 2,
+    "elapsed_s": 16.426
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-f16-i7-14650hx-rtx-5070-egypt",
@@ -11926,7 +11926,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "ASUS TUF Gaming F16 (TUF608JPR-RV084)",
         "manufacturer_part_number": "90NR0NG1-M005W0",
         "retailer_sku": "90NR0NG1-M005W0",
@@ -11981,7 +11981,7 @@
         "memory_type": "DDR5",
         "speed": "5600 MHz",
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR5-5600MHz (2x SO-DIMM, supports up to 64GB) | RAM Slots: 2x SO-DIMM Slots (Dual Channel Supported)"
       },
@@ -12014,7 +12014,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": 4,
         "power_adapter_w": 280,
-        "fast_charging": null,
+        "fast_charging": 45,
         "raw_spec": "Battery: 90WHrs, 4S1P, 4-cell Li-ion | Power Supply: 280W AC Adapter (Supports Type-C charging 45W-100W) | Battery & Power: 90WHrs 4-cell Li-ion Battery, 280W AC Adapter"
       },
       "physical": {
@@ -12047,7 +12047,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 6E",
         "bluetooth": "Bluetooth 5.4",
-        "ethernet": null,
+        "ethernet": "RJ45 LAN (Gigabit)",
         "ports": [
           "1x Thunderbolt 4 (40Gbps, supports DisplayPort / G-SYNC)",
           "1x USB 3.2 Gen 2 Type-C (DP + PD)",
@@ -12061,7 +12061,7 @@
         "raw_spec": "Networking: Wi-Fi 6E (802.11ax) + Bluetooth 5.4 + RJ45 LAN (Gigabit) | Thunderbolt Port: 1x Thunderbolt 4 (40Gbps, supports DisplayPort / G-SYNC) | USB Ports: 1x USB 3.2 Gen 2 Type-C (DP + PD), 3x USB 3.2 Gen 2 Type-A | Other Ports: 1x HDMI 2.1 FRL, 1x 3.5mm Combo Audio Jack"
       },
       "operating_system": {
-        "name": "No OS",
+        "name": null,
         "raw_spec": "Operating System: No OS"
       }
     },
@@ -12104,9 +12104,9 @@
       "Battery & Power": "90WHrs 4-cell Li-ion Battery, 280W AC Adapter",
       "Dimensions & Weight": "35.4 x 26.9 x 1.79 ~ 2.73 cm, 2.20 Kg"
     },
-    "envelopes_count": 7,
-    "rejections_count": 0,
-    "elapsed_s": 18.601
+    "envelopes_count": 8,
+    "rejections_count": 2,
+    "elapsed_s": 16.083
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-zephyrus-duo-16-rtx5090-oled-egypt",
@@ -12116,7 +12116,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Zephyrus Duo",
+        "laptop_family": "Rog Zephyrus Duo",
         "laptop_model": "ROG Zephyrus Duo 16",
         "manufacturer_part_number": "90NR0NT2-M002N0",
         "retailer_sku": "90NR0NT2-M002N0",
@@ -12309,7 +12309,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 17.886
+    "elapsed_s": 14.704
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-a15-fa506ncq-ryzen-7-rtx-3050-16gb-512gb-gaming-laptop",
@@ -12319,7 +12319,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "ASUS TUF Gaming A15 FA506NCQ-HN167W",
         "manufacturer_part_number": "90NR0QE7-M002R0",
         "retailer_sku": "90NR0QE7-M002R0",
@@ -12365,8 +12365,8 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "4800 MHz",
-        "slot_count": null,
-        "max_supported_gb": null,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory: Installed RAM: 16 GB DDR5-4800 MHz SO-DIMM, Slots: 2 × SO-DIMM, Max Capacity: 64 GB | MEMORY: 16 GB DDR5-4800 MHz SO-DIMM"
       },
@@ -12375,7 +12375,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: Primary Drive: 512 GB PCIe 4.0 NVMe M.2 SSD, M.2 Slots: 2 (support NVMe or SATA) | STORAGE: 512 GB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -12398,7 +12398,7 @@
       "power_battery": {
         "battery_capacity_wh": 48.0,
         "battery_cells": 3,
-        "power_adapter_w": null,
+        "power_adapter_w": 180,
         "fast_charging": null,
         "raw_spec": "Power: Battery: 48 Wh, 3-cell Li-ion, Adapter: 180W AC (Ø6.0 mm barrel, 20V/9A)"
       },
@@ -12431,7 +12431,7 @@
       },
       "connectivity": {
         "wifi": "Wi-Fi 6",
-        "bluetooth": null,
+        "bluetooth": "Bluetooth 5.3",
         "ethernet": "Ethernet: 1 × RJ45 LAN port",
         "ports": [
           "Wi-Fi: Wi-Fi 6 (802.11ax, dual-band 2×2)",
@@ -12480,7 +12480,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 17.261
+    "elapsed_s": 14.819
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-predator-helios-neo-16-ai-rtx5070-ultra9-275hx-16gb-1tb-egypt",
@@ -12583,9 +12583,9 @@
       },
       "physical": {
         "weight_kg": 2.7,
-        "width_mm": null,
-        "depth_mm": null,
-        "height_mm": null,
+        "width_mm": 356.8,
+        "depth_mm": 275.5,
+        "height_mm": 23.9,
         "raw_spec": "Physical Characteristics: 23.90 mm (H) × 356.8 mm (W) × 275.5 mm (D), 2.70 kg, Black"
       },
       "build_security": {
@@ -12652,7 +12652,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.339
+    "elapsed_s": 14.43
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-lite-16-nl16-71g-53a0-rtx-4050-16gb",
@@ -12774,15 +12774,15 @@
         "raw_spec": "Finger Print Reader: No | Pointing Device Type: TouchPad | Keyboard: Yes | Keyboard Backlight: Yes | Keyboard Features: White Backlight | Security Features: BIOS user, supervisor passwords; Kensington lock slot; Camera shutter"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": null,
+        "speaker_count": 2,
+        "microphone": true,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
         "raw_spec": "Microphone: Yes | Number of Speakers: 2"
       },
       "connectivity": {
-        "wifi": null,
+        "wifi": "IEEE 802.11ax Wi-Fi",
         "bluetooth": "Bluetooth 5.0",
         "ethernet": "Gigabit Ethernet",
         "ports": [
@@ -12873,7 +12873,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 16.3
+    "elapsed_s": 16.794
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-core-i9-13900h-rtx-5050-165hz-egypt",
@@ -12976,9 +12976,9 @@
       },
       "physical": {
         "weight_kg": 2.11,
-        "width_mm": null,
-        "depth_mm": null,
-        "height_mm": null,
+        "width_mm": 362.3,
+        "depth_mm": 239.9,
+        "height_mm": 23.5,
         "raw_spec": "Height: 23.5 mm | Width: 362.3 mm | Depth: 239.9 mm | Weight: 2.11 kg"
       },
       "build_security": {
@@ -12996,7 +12996,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": null,
+        "microphone": true,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -13087,7 +13087,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 20.501
+    "elapsed_s": 20.477
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-zenbook-duo-ux8407aa-copilot-plus-32gb-1tb-3k-oled",
@@ -13152,7 +13152,7 @@
         "memory_type": "LPDDR5X",
         "speed": null,
         "slot_count": null,
-        "max_supported_gb": null,
+        "max_supported_gb": 32,
         "is_soldered": true,
         "raw_spec": "Memory: 32GB LPDDR5X on board (Max Total system memory up to: 32GB)"
       },
@@ -13291,7 +13291,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 14.657
+    "elapsed_s": 14.447
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-proart-px13-hn7306eac-ryzen-ai-128gb-3k-oled-egypt",
@@ -13301,7 +13301,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ProArt",
+        "laptop_family": "Proart",
         "laptop_model": "ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W",
         "manufacturer_part_number": "90NB17X2-M00480",
         "retailer_sku": "90NB17X2-M00480",
@@ -13357,7 +13357,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 1,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB M.2 NVMe PCIe 4.0 SSD (Extra M.2 2230 Slot Available)"
       },
@@ -13466,7 +13466,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 16.881
+    "elapsed_s": 16.605
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-15-rtx-4050-i5-gaming-laptop",
@@ -13529,8 +13529,8 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR4",
-        "speed": null,
-        "slot_count": null,
+        "speed": 3200,
+        "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "RAM: 16GB DDR4 3200MHz (2×8GB) | MEMORY: 16GB DDR4 3200MHz (2×8GB)"
@@ -13594,7 +13594,7 @@
       },
       "connectivity": {
         "wifi": "Wi-Fi 6",
-        "bluetooth": null,
+        "bluetooth": "Bluetooth 5.3",
         "ethernet": "RJ-45 Ethernet",
         "ports": [],
         "has_card_reader": null,
@@ -13639,7 +13639,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 18.414
+    "elapsed_s": 21.849
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-ideapad-slim-3-83k100qned-i7-16gb-512gb",
@@ -13649,7 +13649,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "IdeaPad Slim",
+        "laptop_family": "Ideapad Slim",
         "laptop_model": "83K100QNED",
         "manufacturer_part_number": "83K100QNED",
         "retailer_sku": "83K100QNED",
@@ -13702,7 +13702,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 2,
         "max_supported_gb": 24,
         "is_soldered": true,
@@ -13772,7 +13772,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 6",
         "bluetooth": "Bluetooth 5.2",
-        "ethernet": null,
+        "ethernet": "No Onboard Ethernet",
         "ports": [
           "2x USB-A (USB 5Gbps / USB 3.2 Gen 1)",
           "1x USB-C (USB 5Gbps / USB 3.2 Gen 1) with USB PD 45-65W and DisplayPort 1.2",
@@ -13852,7 +13852,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 14.893
+    "elapsed_s": 15.225
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-16-x1605va-i7-16gb-512gb-oled-egypt",
@@ -14058,7 +14058,7 @@
     },
     "envelopes_count": 5,
     "rejections_count": 0,
-    "elapsed_s": 11.126
+    "elapsed_s": 11.047
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-16-anv16-42-r309-ryzen-5-rtx-5050-egypt",
@@ -14250,7 +14250,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 21.075
+    "elapsed_s": 34.638
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-omen-16-am0001nia-ultra-7-255h-rtx-5070-egypt",
@@ -14260,7 +14260,7 @@
     "specs": {
       "identity": {
         "brand": "HP",
-        "laptop_family": "HP OMEN 16 Slim (16-am0001nia)",
+        "laptop_family": "Hp Omen 16 Slim (16-Am0001Nia)",
         "laptop_model": "HP OMEN 16 Slim (16-am0001nia)",
         "manufacturer_part_number": "C34VDEA",
         "retailer_sku": "C34VDEA",
@@ -14314,7 +14314,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5600 MHz",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": null,
         "raw_spec": "Memory: 16GB DDR5-5600MHz (2x Slots available)"
@@ -14408,7 +14408,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 17.401
+    "elapsed_s": 38.802
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa2787nr-i7-13620h-rtx-5060-egypt",
@@ -14528,7 +14528,7 @@
       },
       "audio_webcam": {
         "speaker_count": null,
-        "microphone": null,
+        "microphone": "dual array digital microphones",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -14587,7 +14587,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 17.654
+    "elapsed_s": 18.366
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/dell-alienware-ac1620-core-9-270h-rtx-5070-32gb-dos-egypt",
@@ -14601,7 +14601,7 @@
         "laptop_model": "Dell Alienware AC1620 (Black) - AXGON 3 in 1 Gaming Set AX1COM31",
         "manufacturer_part_number": "AC1620",
         "retailer_sku": "AC1620",
-        "color": null,
+        "color": "Black",
         "is_bundle": true,
         "warranty": "1 Year Limited Warranty",
         "warranty_years": 1,
@@ -14756,7 +14756,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 1,
-    "elapsed_s": 14.262
+    "elapsed_s": 14.566
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/dell-alienware-ac1620-core-9-270h-rtx-5060-dos-egypt",
@@ -14917,7 +14917,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 1,
-    "elapsed_s": 13.761
+    "elapsed_s": 18.676
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15-i5-12450hx-rtx-3050-gaming-laptop",
@@ -14927,7 +14927,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83LK006AIN",
         "manufacturer_part_number": "83LK006AIN",
         "retailer_sku": "83LK006AIN",
@@ -14980,7 +14980,7 @@
       "memory": {
         "capacity_gb": 12,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 1,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -15132,7 +15132,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 16.815
+    "elapsed_s": 15.675
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-lenovo-legion-5-15iax10-core-ultra-7-rtx-5060-egypt",
@@ -15195,7 +15195,7 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -15322,17 +15322,17 @@
     },
     "envelopes_count": 5,
     "rejections_count": 0,
-    "elapsed_s": 13.847
+    "elapsed_s": 13.384
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614ph-rv161w-ryzen-9-rtx-5050-egypt",
     "title": "ASUS ROG Strix G16 G614PH-RV161W – Ryzen 9 8940HX 16GB RAM 1TB NVMe SSD RTX 5050 8GB – 16\" FHD+ 165Hz IPS – Win11",
     "price_egp": 82214.0,
-    "cpu_key": "amd_ryzen_9_8940hx",
+    "cpu_key": "intel_core_ultra_9_275hx",
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Strix",
+        "laptop_family": "Rog Strix",
         "laptop_model": "ROG Strix SCAR 18 (2025) G835LX-AI464W",
         "manufacturer_part_number": "90NR0KX7-M001J0",
         "retailer_sku": "90NR0KX7-M001J0",
@@ -15344,22 +15344,30 @@
         "raw_spec": "Title: ASUS ROG Strix G16 G614PH-RV161W - Ryzen 9 8940HX 16GB RAM 1TB NVMe SSD RTX 5050 8GB - 16\" FHD+ 165Hz IPS - Win11 | Brand Name: ASUS | Model Name: ROG Strix SCAR 18 (2025) G835LX-AI464W | Color: Off Black | SKU: 90NR0KX7-M001J0 | Part Number: 90NR0KX7-M001J0"
       },
       "cpu": {
-        "manufacturer": "AMD",
-        "line": "Ryzen 9",
-        "model": "Ryzen 9 8940HX",
-        "series": "Ryzen 8000 Series",
-        "full_name": "AMD Ryzen 9 8940HX",
-        "cores": 16,
-        "threads": 32,
-        "clock_base_ghz": 2.4,
+        "manufacturer": "Intel",
+        "line": "Core Ultra 9",
+        "model": "Core Ultra 9 275HX",
+        "series": "Series 2",
+        "full_name": "Intel Core Ultra 9 275HX",
+        "cores": 24,
+        "threads": 24,
+        "clock_base_ghz": 2.7,
         "clock_boost_ghz": 5.3,
         "cache_mb": 80,
-        "microarchitecture": "Zen 4",
-        "microarchitecture_code": "Dragon Range",
+        "microarchitecture": "Lion Cove / Skymont",
+        "microarchitecture_code": "Arrow Lake-HX",
         "low_power_cores": null,
-        "performance_cores": null,
-        "efficient_cores": null,
-        "npu_tops": null,
+        "performance_cores": {
+          "count": 8,
+          "base_clock_ghz": 2.7,
+          "boost_clock_ghz": 5.3
+        },
+        "efficient_cores": {
+          "count": 16,
+          "base_clock_ghz": 2.1,
+          "boost_clock_ghz": 4.6
+        },
+        "npu_tops": 13.0,
         "base_power_w": 55,
         "raw_spec": "Processor: AMD Ryzen 9 8940HX (16 Cores, 32 Threads, up to 5.3GHz, 80MB Cache) | CPU: AMD Ryzen 9 8940HX (16 Cores, 32 Threads, up to 5.3GHz, 80MB Cache)"
       },
@@ -15377,9 +15385,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5200,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB RAM | MEMORY: 16GB DDR5-5200 SO-DIMM (Max 64GB, 2 Slots)"
       },
@@ -15388,7 +15396,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB NVMe SSD | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots total)"
       },
@@ -15474,7 +15482,7 @@
     },
     "envelopes_count": 4,
     "rejections_count": 0,
-    "elapsed_s": 12.19
+    "elapsed_s": 11.738
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-proart-p16-h7606ww-se926w-ryzen-ai-9-rtx-5080-16gb-egypt",
@@ -15484,7 +15492,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ProArt",
+        "laptop_family": "Proart",
         "laptop_model": "H7606WW-SE926W",
         "manufacturer_part_number": "90NB17F1-M00180",
         "retailer_sku": "90NB17F1-M00180",
@@ -15661,7 +15669,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 20.323
+    "elapsed_s": 19.884
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-f16-i7-rtx-5070",
@@ -15671,7 +15679,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "90NR0NG1-M00610",
         "retailer_sku": "90NR0NG1-M00610",
@@ -15724,9 +15732,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (8GB + 8GB) | Memory Slots: 2x SO-DIMM slots (Max 64GB)"
       },
@@ -15852,7 +15860,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 18.349
+    "elapsed_s": 17.793
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-v16-v3607vm-pl027w-core-7-rtx-5060-16-2k-144hz-egypt",
@@ -15940,7 +15948,7 @@
         "aspect_ratio": "16:10",
         "touchscreen": false,
         "brightness_nits": 400,
-        "color_gamut": null,
+        "color_gamut": "100% Adobe color gamut",
         "response_time_ms": null,
         "surface_treatment": null,
         "hdr": null,
@@ -16024,7 +16032,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 19.08
+    "elapsed_s": 19.681
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-ideapad-slim-3-15iru8-82x700bvps-egypt",
@@ -16034,7 +16042,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "IdeaPad Slim",
+        "laptop_family": "Ideapad Slim",
         "laptop_model": "IdeaPad Slim 3 15IRU8",
         "manufacturer_part_number": "82X700BVPS",
         "retailer_sku": "82X700BVPS",
@@ -16087,7 +16095,7 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "LPDDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": true,
@@ -16227,7 +16235,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 16.933
+    "elapsed_s": 17.834
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-nitro-v-15-anv15-51-767g-nh-qncem-00m-core-i7-13620h-10-cores-16gb-ddr5-rtx-3050-6gb-512-gb-ssd-15-6-fhd-ips-165hz-windows-11",
@@ -16414,7 +16422,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 1,
-    "elapsed_s": 16.362
+    "elapsed_s": 17.008
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-rtx-5060-16-qhd165hz-egypt",
@@ -16424,7 +16432,7 @@
     "specs": {
       "identity": {
         "brand": "Gigabyte",
-        "laptop_family": "AERO",
+        "laptop_family": "Aero",
         "laptop_model": "GIGABYTE AERO X16 (Lunar White)",
         "manufacturer_part_number": "1VH93EEC94HW",
         "retailer_sku": "1VH93EEC94HW",
@@ -16585,7 +16593,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 12.843
+    "elapsed_s": 14.551
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/alienware-16-aurora-rtx5060-gaming-laptop",
@@ -16705,7 +16713,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": null,
+        "microphone": "Stereo speakers - 4W total (2W × 2) - Realtek AL3204",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -16760,7 +16768,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.265
+    "elapsed_s": 18.712
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-i5-rtx3050",
@@ -16770,7 +16778,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83DV01BCAX (Lenovo LOQ Series)",
         "manufacturer_part_number": "83DV01BCAX",
         "retailer_sku": "83DV01BCAX",
@@ -16824,8 +16832,8 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "slot_count": 2,
+        "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB SO-DIMM DDR5-4800 (Max 32GB, 2x Slots) | MEMORY: 16GB SO-DIMM DDR5-4800"
       },
@@ -16834,7 +16842,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (2x M.2 slots available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe"
       },
@@ -16857,7 +16865,7 @@
       "power_battery": {
         "battery_capacity_wh": 60.0,
         "battery_cells": null,
-        "power_adapter_w": null,
+        "power_adapter_w": 170,
         "fast_charging": null,
         "raw_spec": "Battery & Power: 60Wh Battery, 170W Slim Tip Adapter"
       },
@@ -16935,7 +16943,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.05
+    "elapsed_s": 43.121
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-a16-cwh-i7-13620h-rtx-5070-32gb-1tb-165hz",
@@ -17055,7 +17063,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": null,
+        "microphone": "Array Microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": true,
@@ -17064,7 +17072,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 6E",
         "bluetooth": "Bluetooth 5.2",
-        "ethernet": null,
+        "ethernet": "RJ-45 Ethernet",
         "ports": [
           "1x USB 2.0",
           "2x USB 3.2 Gen 2",
@@ -17111,7 +17119,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 12.303
+    "elapsed_s": 17.19
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-i7-14700hx-rtx4060-16gb-512ssd",
@@ -17121,7 +17129,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "Lenovo LOQ 15IRX9 (83DV00RMAX)",
         "manufacturer_part_number": "83DV00RMAX",
         "retailer_sku": "83DV00RMAX",
@@ -17174,9 +17182,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5600,
+        "slot_count": 2,
+        "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (2x 8GB SO-DIMM) / Max 32GB | MEMORY: 16GB DDR5-5600"
       },
@@ -17208,7 +17216,7 @@
       "power_battery": {
         "battery_capacity_wh": 60.0,
         "battery_cells": null,
-        "power_adapter_w": null,
+        "power_adapter_w": 230,
         "fast_charging": null,
         "raw_spec": "Battery & Power: 60Wh Battery with 230W Slim Tip Adapter"
       },
@@ -17285,7 +17293,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 17.237
+    "elapsed_s": 18.375
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15ahp10-ryzen7-rtx5050-gaming-laptop",
@@ -17295,7 +17303,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "Lenovo LOQ 15AHP10 (2025 Gen 10)",
+        "laptop_family": "Lenovo Loq 15Ahp10 (2025 Gen 10)",
         "laptop_model": "Lenovo LOQ 15AHP10 (2025 Gen 10)",
         "manufacturer_part_number": "83JG002BED",
         "retailer_sku": "83JG002BED",
@@ -17340,9 +17348,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5600,
+        "slot_count": 2,
+        "max_supported_gb": 16,
         "is_soldered": null,
         "raw_spec": "Memory (RAM): 16GB DDR5-5600 (1×16GB; Dual-channel with 2 slots) | MEMORY: 16GB DDR5-5600 (1×16GB; Dual-channel with 2 slots)"
       },
@@ -17351,7 +17359,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB M.2 2242 PCIe Gen4 NVMe SSD (Dual M.2 slots)"
       },
@@ -17372,7 +17380,7 @@
         "raw_spec": "Display: 15.6\" FHD (1920×1080), 144Hz, IPS, 300 nits, 100% sRGB, G-SYNC"
       },
       "power_battery": {
-        "battery_capacity_wh": null,
+        "battery_capacity_wh": 60.0,
         "battery_cells": null,
         "power_adapter_w": 170,
         "fast_charging": "Rapid Charge Pro",
@@ -17396,7 +17404,7 @@
         "raw_spec": "Keyboard: White Backlit Keyboard, 1.5mm Travel, 100% Anti-Ghosting"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 2,
         "microphone": null,
         "webcam_resolution": "5MP",
         "has_privacy_shutter": true,
@@ -17453,7 +17461,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 19.318
+    "elapsed_s": 18.89
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16irx10-i9-14900hx-rtx5070",
@@ -17516,8 +17524,8 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
+        "speed": 5600,
+        "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": null,
         "raw_spec": "Memory: 32GB (2×16GB) DDR5-5600, Dual Channel | Max Memory: Up to 32GB DDR5-5600 offering"
@@ -17649,7 +17657,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 13.072
+    "elapsed_s": 13.764
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-gigabyte-aorus-master-18-bzh-gaming-laptop-egypt",
@@ -17819,7 +17827,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 15.581
+    "elapsed_s": 16.593
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aorus-master-18-byh-gaming-laptop-egypt",
@@ -17893,7 +17901,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 2TB PCIe Gen4x4 NVMe SSD (2x 1TB M.2)"
       },
@@ -17902,7 +17910,7 @@
         "resolution": "2560x1600",
         "resolution_width": 2560,
         "resolution_height": 1600,
-        "panel_type": "MINI-LED",
+        "panel_type": "Mini-LED",
         "refresh_rate_hz": 240,
         "aspect_ratio": "16:10",
         "touchscreen": false,
@@ -17997,7 +18005,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 15.17
+    "elapsed_s": 16.022
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-thin-15-b13ve-gaming-laptop-i7-13620h-rtx-4050-16gb-1tb-144hz-cosmos-grey-egypt",
@@ -18060,9 +18068,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR4",
-        "speed": null,
+        "speed": "3200 MHz",
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB | MEMORY 16GB DDR4-3200 MHz (2 x 8GB): Expandable up to 64GB | MEMORY: 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB"
       },
@@ -18071,7 +18079,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "2.5-inch",
-        "slot_count": null,
+        "slot_count": 1,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB NVMe PCIe Gen4 SSD (plus 1x 2.5\" SATA HDD/SSD expansion slot)"
       },
@@ -18092,7 +18100,7 @@
         "raw_spec": "Display: 15.6\" FHD (1920x1080), 144Hz, IPS-Level, 45% NTSC"
       },
       "power_battery": {
-        "battery_capacity_wh": null,
+        "battery_capacity_wh": 52.4,
         "battery_cells": 3,
         "power_adapter_w": 120,
         "fast_charging": null,
@@ -18176,7 +18184,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 16.229
+    "elapsed_s": 16.278
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-ultra9-rtx5080-gaming-laptop",
@@ -18186,7 +18194,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Strix",
+        "laptop_family": "Rog Strix",
         "laptop_model": "ROG Strix",
         "manufacturer_part_number": "90NR0LG1-M00840",
         "retailer_sku": "90NR0X80-M00270",
@@ -18239,9 +18247,9 @@
       "memory": {
         "capacity_gb": 32,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5600,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory: 32GB DDR5-5600 (2x 16GB SO-DIMM, Expandable to 64GB) | MEMORY: 32GB DDR5-5600"
       },
@@ -18250,7 +18258,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -18274,7 +18282,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": null,
-        "fast_charging": null,
+        "fast_charging": "0-50% in 30 mins",
         "raw_spec": "Battery & Power: 90WHrs Battery / 380W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -18350,7 +18358,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 2,
-    "elapsed_s": 18.734
+    "elapsed_s": 19.551
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-scar-16-g635lx-rw036w",
@@ -18360,7 +18368,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Strix SCAR",
+        "laptop_family": "Rog Strix Scar",
         "laptop_model": "ROG Strix SCAR 16",
         "manufacturer_part_number": "90NR0L81-M001C0",
         "retailer_sku": "90NR0L81-M001C0",
@@ -18413,7 +18421,7 @@
       "memory": {
         "capacity_gb": 64,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": false,
@@ -18433,7 +18441,7 @@
         "resolution": "2560x1600",
         "resolution_width": 2560,
         "resolution_height": 1600,
-        "panel_type": null,
+        "panel_type": "Mini-LED",
         "refresh_rate_hz": 240,
         "aspect_ratio": "16:10",
         "touchscreen": false,
@@ -18521,7 +18529,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 1,
-    "elapsed_s": 16.987
+    "elapsed_s": 18.965
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-v16-v3607vh-eg005w-intel-core-5-rtx-5050",
@@ -18585,7 +18593,7 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5 SO-DIMM (Dual-channel support, 2x Slots) | MEMORY: 16GB DDR5 SO-DIMM"
@@ -18697,7 +18705,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 1,
-    "elapsed_s": 14.308
+    "elapsed_s": 16.324
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-i5-13450hx-rtx3050-24gb-512gb-144hz",
@@ -18707,7 +18715,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "Lenovo LOQ 15IRX9 (83DV018TAX) - Luna Grey",
         "manufacturer_part_number": "83DV018TAX",
         "retailer_sku": "83DV018TAX",
@@ -18760,8 +18768,8 @@
       "memory": {
         "capacity_gb": 24,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
+        "speed": 4800,
+        "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Memory: 24GB DDR5-4800 (2x 12GB SO-DIMM) | MEMORY: 24GB DDR5-4800"
@@ -18771,7 +18779,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (2x M.2 Slots available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe"
       },
@@ -18794,7 +18802,7 @@
       "power_battery": {
         "battery_capacity_wh": 60.0,
         "battery_cells": null,
-        "power_adapter_w": null,
+        "power_adapter_w": 170,
         "fast_charging": null,
         "raw_spec": "Battery & Power: 60Wh Battery / 170W Slim Tip Adapter"
       },
@@ -18816,7 +18824,7 @@
         "raw_spec": "Keyboard: White Backlit, Arabic Layout"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 2,
         "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -18826,7 +18834,7 @@
       "connectivity": {
         "wifi": "Wi-Fi 6",
         "bluetooth": "Bluetooth 5.2",
-        "ethernet": null,
+        "ethernet": "Gigabit Ethernet",
         "ports": [
           "1x USB-C (PD 140W/DP 1.4)",
           "3x USB-A (5Gbps)",
@@ -18864,7 +18872,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 17.999
+    "elapsed_s": 20.716
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g614fp-gr169w-gaming-laptop-egypt",
@@ -18874,14 +18882,14 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Strix",
+        "laptop_family": "Rog Strix",
         "laptop_model": "ROG Strix",
         "manufacturer_part_number": "90NR0L47-M001N0",
         "retailer_sku": "90NR0L47-M001N0",
         "color": "Eclipse Gray",
         "is_bundle": false,
         "warranty": null,
-        "warranty_years": null,
+        "warranty_years": 3,
         "condition": null,
         "raw_spec": "Title: ASUS ROG Strix G16 G614FP-GR169W- AMD Ryzen 9 9955HX, RTX 5070, 16-inch FHD+ 165Hz, 16GB DDR5, 1TB SSD, Windows 11 Home - Eclipse Gray | Included in Box: ROG Backpack / 3 Months Xbox Game Pass | Part Number: 90NR0L47-M001N0 | Warranty Note: Register within 90 days at eg.asus.click/pwe to activate warranty | SKU: 90NR0L47-M001N0"
       },
@@ -18919,9 +18927,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5600,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (2x SO-DIMM, Upgradable to 64GB)"
       },
@@ -18930,7 +18938,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total)"
       },
@@ -18954,7 +18962,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": 280,
-        "fast_charging": null,
+        "fast_charging": "0-50% in 30 mins",
         "raw_spec": "Battery & Power: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins | POWER: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -19036,7 +19044,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 16.33
+    "elapsed_s": 18.788
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-gaming-a15-fa506ncg-ryzen-7-rtx-3050-egypt",
@@ -19046,7 +19054,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "90NR0JF7-M00HA0",
         "retailer_sku": "90NR0JF7-M00HA0",
@@ -19099,9 +19107,9 @@
       "memory": {
         "capacity_gb": 8,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5600,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 8GB DDR5-5600 SO-DIMM (Total 2x slots, Upgradable up to 64GB) | MEMORY: 8GB DDR5-5600"
       },
@@ -19110,7 +19118,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB PCIe 4.0 NVMe M.2 SSD (2x M.2 slots total) | STORAGE: 512GB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -19158,7 +19166,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": null,
+        "microphone": "built-in array microphone",
         "webcam_resolution": "720P",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -19222,7 +19230,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 23.134
+    "elapsed_s": 20.634
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-msi-vector-17-hx-ai-a2xwjg-rtx-5090-24gb",
@@ -19286,8 +19294,8 @@
         "capacity_gb": 32,
         "memory_type": "DDR5",
         "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "slot_count": 2,
+        "max_supported_gb": 96,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 32GB DDR5 (Upgradeable up to 96GB) / 2 Slots | MEMORY: 32GB DDR5"
       },
@@ -19317,7 +19325,7 @@
         "raw_spec": "Display: 17.0\" QHD+ (2560 x 1600) / 240Hz / IPS-Level | DISPLAY: 17.0\" QHD+ (2560 x 1600), 240Hz, IPS-Level"
       },
       "power_battery": {
-        "battery_capacity_wh": null,
+        "battery_capacity_wh": 90.0,
         "battery_cells": 4,
         "power_adapter_w": 330,
         "fast_charging": null,
@@ -19395,7 +19403,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 21.52
+    "elapsed_s": 17.944
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16irx10-i7-14650hx-rtx-5050-16gb-512gb",
@@ -19412,7 +19420,7 @@
         "color": "Eclipse Black",
         "is_bundle": false,
         "warranty": null,
-        "warranty_years": null,
+        "warranty_years": 2,
         "condition": null,
         "raw_spec": "Title: Lenovo Legion Pro 5 16IRX10 83NN001SED - Core i7-14650HX - RTX 5050 8GB GDDR7 16 WQXGA 240Hz 16GB DDR5 512GB SSD Eclipse Black - Windows 11 | Special Features: AI Chip: LA3 | Case Color: Eclipse Black | Included Upgrade: 2Y Premium Care with Onsite upgrade from 1Y Courier/Carry-in | Model: 83NN001SED | SKU: 83NN001SED | Part Number: 83NN001SED"
       },
@@ -19458,7 +19466,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -19584,7 +19592,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 20.727
+    "elapsed_s": 18.241
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/msi-victor-16-hx-ai-a2xwhg-gaming-laptop-core-ultra-7-rtx-5070",
@@ -19745,7 +19753,7 @@
     },
     "envelopes_count": 5,
     "rejections_count": 0,
-    "elapsed_s": 16.56
+    "elapsed_s": 13.247
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-rog-strix-g16-g615lm-275hx-rtx5060-16gb-1tb-165hz",
@@ -19755,11 +19763,11 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Strix",
+        "laptop_family": "Rog Strix",
         "laptop_model": "ROG Strix",
         "manufacturer_part_number": "90NR0LJ2-M005C0",
         "retailer_sku": "90NR0LJ2-M005C0",
-        "color": null,
+        "color": "Volt Green",
         "is_bundle": false,
         "warranty": null,
         "warranty_years": null,
@@ -19808,9 +19816,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": null,
-        "max_supported_gb": null,
+        "max_supported_gb": 64,
         "is_soldered": null,
         "raw_spec": "Memory: 16GB DDR5-5600 (Dual-channel, Expandable to 64GB) | MEMORY: 16GB DDR5-5600, Dual-Channel, Up to 64GB"
       },
@@ -19819,7 +19827,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -19843,7 +19851,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": 280,
-        "fast_charging": null,
+        "fast_charging": "0-50% in 30 mins",
         "raw_spec": "Battery & Power: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins | BATTERY: 90Wh"
       },
       "physical": {
@@ -19921,7 +19929,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 2,
-    "elapsed_s": 19.517
+    "elapsed_s": 17.926
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-tuf-a14-ryzen-ai-rtx5060-2-5k-165hz-laptop-egypt",
@@ -19931,7 +19939,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "90NR0KG1-M00170",
         "retailer_sku": "90NR0KG1-M00170",
@@ -19984,7 +19992,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "LPDDR5X",
-        "speed": null,
+        "speed": "7500",
         "slot_count": null,
         "max_supported_gb": null,
         "is_soldered": true,
@@ -19995,7 +20003,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots)"
       },
@@ -20019,7 +20027,7 @@
         "battery_capacity_wh": 73.0,
         "battery_cells": null,
         "power_adapter_w": 200,
-        "fast_charging": null,
+        "fast_charging": "0-50% in 30 mins",
         "raw_spec": "Battery & Power: 73WHrs Battery / 200W AC Adapter / 0-50% in 30 mins | BATTERY: 73WHrs Battery / 200W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -20105,7 +20113,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 1,
-    "elapsed_s": 18.673
+    "elapsed_s": 15.844
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-asus-tuf-a16-fa608pm-ryzen9-rtx5060",
@@ -20115,7 +20123,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "TUF Gaming",
+        "laptop_family": "Tuf Gaming",
         "laptop_model": "TUF Gaming",
         "manufacturer_part_number": "90NR0MC1-M003T0",
         "retailer_sku": "90NR0MC1-M003T0",
@@ -20160,9 +20168,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5200,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5200 (2x SO-DIMM slots, Max 64GB)"
       },
@@ -20171,7 +20179,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total)"
       },
@@ -20195,7 +20203,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": 280,
-        "fast_charging": null,
+        "fast_charging": "0-50% in 30 mins",
         "raw_spec": "Battery & Power: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -20271,7 +20279,7 @@
     },
     "envelopes_count": 9,
     "rejections_count": 0,
-    "elapsed_s": 22.64
+    "elapsed_s": 19.264
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/laptops-gaming-gigabyte-a16-cvh-egypt",
@@ -20335,8 +20343,8 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5200 MHz",
-        "slot_count": null,
-        "max_supported_gb": null,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets) | MEMORY: 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets)"
       },
@@ -20345,7 +20353,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe Gen4x4 M.2 SSD (2x M.2 slots, supports up to 4TB total)"
       },
@@ -20459,7 +20467,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 0,
-    "elapsed_s": 20.781
+    "elapsed_s": 18.911
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/products-asus-vivobook-pro-15-oled-n6506cu-i9-4050-egypt",
@@ -20649,7 +20657,7 @@
     },
     "envelopes_count": 5,
     "rejections_count": 0,
-    "elapsed_s": 10.277
+    "elapsed_s": 9.563
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-legion-pro-5-16iax10-ultra7-rtx5070",
@@ -20712,9 +20720,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5600,
+        "slot_count": 1,
+        "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (1x 16GB SO-DIMM) / Up to 32GB supported"
       },
@@ -20723,7 +20731,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Two M.2 slots total)"
       },
@@ -20746,7 +20754,7 @@
       "power_battery": {
         "battery_capacity_wh": 80.0,
         "battery_cells": null,
-        "power_adapter_w": null,
+        "power_adapter_w": 245,
         "fast_charging": null,
         "raw_spec": "Battery & Power: 80Wh Battery / 245W Slim Tip Adapter"
       },
@@ -20823,7 +20831,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.336
+    "elapsed_s": 15.33
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/rog-strix-g16-2025-r9-9955hx-rtx5060-16gb-1tb",
@@ -20833,7 +20841,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Strix",
+        "laptop_family": "Rog Strix",
         "laptop_model": "ROG Strix",
         "manufacturer_part_number": "90NR0L17-M001B0",
         "retailer_sku": "90NR0L17-M001B0",
@@ -20878,9 +20886,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 5600,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SO-DIMM (2x Slots, Expandable to 64GB) | MEMORY: 16GB DDR5-5600 SO-DIMM"
       },
@@ -20889,7 +20897,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD"
       },
@@ -20913,7 +20921,7 @@
         "battery_capacity_wh": 90.0,
         "battery_cells": null,
         "power_adapter_w": 280,
-        "fast_charging": null,
+        "fast_charging": "0-50% in 30 mins",
         "raw_spec": "Battery & Power: 90WHrs Battery / 280W AC Adapter / 0-50% in 30 mins"
       },
       "physical": {
@@ -20992,194 +21000,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 1,
-    "elapsed_s": 23.638
-  },
-  {
-    "url": "https://www.compumarts.com/collections/laptop/products/hp-victus-15-fa2013dx-gaming-laptop-intel-core-i5-13420h-8gb-ram-512gb-ssd-nvidia-geforce-rtx-3050-6gb-15-6-fhd-144hz-windows-11",
-    "title": "HP Victus 15-fa2013dx Gaming Laptop INTEL CORE I5-13420H 8GB RAM 512GB SSD NVIDIA GeForce RTX 3050 6GB  15.6″ FHD 144Hz Windows 11",
-    "price_egp": 45111.0,
-    "cpu_key": "intel_core_i5_13420h",
-    "specs": {
-      "identity": {
-        "brand": "HP",
-        "laptop_family": "Victus",
-        "laptop_model": "Victus 15-fa2013dx",
-        "manufacturer_part_number": "B95WHUA",
-        "retailer_sku": "B95WHUA",
-        "color": "Mica Silver",
-        "is_bundle": false,
-        "warranty": "1 Year",
-        "warranty_years": 1,
-        "condition": null,
-        "raw_spec": "Title: HP Victus 15-fa2013dx Gaming Laptop INTEL CORE I5-13420H 8GB RAM 512GB SSD NVIDIA GeForce RTX 3050 6GB 15.6″ FHD 144Hz Windows 11 | Model: Victus 15-fa2013dx | Warranty: 1 Year | Color: Mica Silver | SKU: B95WHUA | Part Number: B95WHUA"
-      },
-      "cpu": {
-        "manufacturer": "Intel",
-        "line": "Core i5",
-        "model": "Core i5-13420H",
-        "series": "13th Gen",
-        "full_name": "Intel Core i5-13420H",
-        "cores": 8,
-        "threads": 12,
-        "clock_base_ghz": 2.1,
-        "clock_boost_ghz": 4.6,
-        "cache_mb": 12,
-        "microarchitecture": "Raptor Cove / Gracemont",
-        "microarchitecture_code": "Raptor Lake-H",
-        "low_power_cores": null,
-        "performance_cores": {
-          "count": 4,
-          "base_clock_ghz": 2.1,
-          "boost_clock_ghz": 4.6
-        },
-        "efficient_cores": {
-          "count": 4,
-          "base_clock_ghz": 1.5,
-          "boost_clock_ghz": 3.4
-        },
-        "npu_tops": null,
-        "base_power_w": 45,
-        "raw_spec": "Processor: Intel Core i5-13420H (8C /12T) | CPU: Intel Core i5-13420H (8C /12T)"
-      },
-      "gpu": {
-        "manufacturer": "NVIDIA",
-        "model": "GeForce RTX 3050",
-        "variant": "Laptop GPU",
-        "vram_gb": 6,
-        "tdp_w": 75,
-        "boost_clock_mhz": null,
-        "ai_tops": 115,
-        "integrated": false,
-        "raw_spec": "Graphics Card: NVIDIA GeForce RTX 3050 6GB | Graphics Card TGP: 75W | GPU: NVIDIA GeForce RTX 3050 6GB | Graphics: NVIDIA GeForce RTX 3050 6GB"
-      },
-      "memory": {
-        "capacity_gb": 8,
-        "memory_type": "DDR4",
-        "speed": null,
-        "slot_count": 2,
-        "max_supported_gb": null,
-        "is_soldered": false,
-        "raw_spec": "Memory: 8GB DDR4 3200MHz | Memory Slots: Two DDR4 slots"
-      },
-      "storage": {
-        "capacity_gb": 512,
-        "storage_type": "SSD",
-        "interface": "NVMe",
-        "form_factor": null,
-        "slot_count": 2,
-        "max_supported_gb": null,
-        "raw_spec": "Storage: 512GB Nvme GEN 4 | Storage Slot: Two M.2 2280 GEN 4 slots"
-      },
-      "display": {
-        "size_inches": 15.6,
-        "resolution": "1920x1080",
-        "resolution_width": 1920,
-        "resolution_height": 1080,
-        "panel_type": "IPS",
-        "refresh_rate_hz": 144,
-        "aspect_ratio": "16:9",
-        "touchscreen": false,
-        "brightness_nits": null,
-        "color_gamut": null,
-        "response_time_ms": null,
-        "surface_treatment": null,
-        "hdr": null,
-        "raw_spec": "Screen Size: 15.6-inch | Resolution: FHD (1920x1080) | Panel: IPS | Refresh Rate: 144Hz | Touchscreen: Non-touch | DISPLAY: FHD (1920x1080)"
-      },
-      "power_battery": {
-        "battery_capacity_wh": 52.5,
-        "battery_cells": null,
-        "power_adapter_w": 120,
-        "fast_charging": null,
-        "raw_spec": "Battery: 52.5Wh | Power Adapter: 120W"
-      },
-      "physical": {
-        "weight_kg": 3.35,
-        "width_mm": null,
-        "depth_mm": null,
-        "height_mm": null,
-        "raw_spec": "Dimensions (WxDxH): 304 x 519 x 68.8 mm | Weight: 3.35 kg"
-      },
-      "build_security": {
-        "has_backlit_keyboard": true,
-        "keyboard_backlight_type": "Backlit",
-        "has_fingerprint": false,
-        "has_numpad": null,
-        "pointing_device": null,
-        "chassis_material": "Plastic",
-        "security_features": [],
-        "raw_spec": "Keyboard: Backlit Keyboard"
-      },
-      "audio_webcam": {
-        "speaker_count": 2,
-        "microphone": null,
-        "webcam_resolution": "720p",
-        "has_privacy_shutter": null,
-        "has_ir_camera": null,
-        "raw_spec": "Speaker: Dual speakers | Camera: HD 720p"
-      },
-      "connectivity": {
-        "wifi": "Wi-Fi 6",
-        "bluetooth": "Bluetooth 5.2",
-        "ethernet": "1 RJ-45",
-        "ports": [
-          "1 USB Type-A 5Gbps (HP Sleep and Charge)",
-          "1 USB Type-A 5Gbps",
-          "1 AC smart pin",
-          "1 HDMI 2.1",
-          "1 headphone/microphone combo",
-          "1 RJ-45",
-          "1 USB Type-C 5Gbps (DisplayPort 1.4a, HP Sleep and Charge)"
-        ],
-        "has_card_reader": null,
-        "card_reader_type": null,
-        "thunderbolt_version": null,
-        "raw_spec": "WLAN + Bluetooth: Wi-Fi 6 + BT5.2 | ports: 1 USB Type-A 5Gbps (HP Sleep and Charge), 1 USB Type-A 5Gbps, 1 AC smart pin, 1 HDMI 2.1, 1 headphone/microphone combo, 1 RJ-45, 1 USB Type-C 5Gbps (DisplayPort 1.4a, HP Sleep and Charge)"
-      },
-      "operating_system": {
-        "name": "Windows 11 Home",
-        "raw_spec": "Operating System: Windows 11 | OS: Windows 11"
-      }
-    },
-    "source_table": {
-      "Model": "Victus 15-fa2013dx",
-      "Processor": "Intel Core i5-13420H (8C /12T)",
-      "Memory": "8GB DDR4 3200MHz",
-      "Memory Slots": "Two DDR4 slots",
-      "Storage": "512GB Nvme GEN 4",
-      "Storage Slot": "Two M.2 2280 GEN 4 slots",
-      "Graphics Card": "NVIDIA GeForce RTX 3050 6GB",
-      "Graphics Card TGP": "75W",
-      "Screen Size": "15.6-inch",
-      "Resolution": "FHD (1920x1080)",
-      "Panel": "IPS",
-      "Refresh Rate": "144Hz",
-      "Touchscreen": "Non-touch",
-      "Keyboard": "Backlit Keyboard",
-      "Battery": "52.5Wh",
-      "Power Adapter": "120W",
-      "Operating System": "Windows 11",
-      "WLAN + Bluetooth": "Wi-Fi 6 + BT5.2",
-      "Dimensions (WxDxH)": "304 x 519 x 68.8 mm",
-      "Weight": "3.35 kg",
-      "Warranty": "1 Year",
-      "Color": "Mica Silver",
-      "ports": "1 USB Type-A 5Gbps (HP Sleep and Charge), 1 USB Type-A 5Gbps, 1 AC smart pin, 1 HDMI 2.1, 1 headphone/microphone combo, 1 RJ-45, 1 USB Type-C® 5Gbps (DisplayPort 1.4a, HP Sleep and Charge)",
-      "Speaker": "Dual speakers",
-      "Camera": "HD 720p",
-      "Material": "Plastic",
-      "Finger print": "None",
-      "CPU": "Intel Core i5-13420H (8C /12T)",
-      "GPU": "NVIDIA GeForce RTX 3050 6GB",
-      "MEMORY": "8GB DDR4 3200MHz",
-      "STORAGE": "512GB Nvme GEN 4",
-      "DISPLAY": "FHD (1920x1080)",
-      "OS": "Windows 11",
-      "Graphics": "NVIDIA GeForce RTX 3050 6GB"
-    },
-    "envelopes_count": 8,
-    "rejections_count": 2,
-    "elapsed_s": 16.973
+    "elapsed_s": 16.888
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-amd-ryzen-ai-7-350-16gb-1tb-rtx-5060-egypt",
@@ -21189,7 +21010,7 @@
     "specs": {
       "identity": {
         "brand": "Gigabyte",
-        "laptop_family": "AERO",
+        "laptop_family": "Aero",
         "laptop_model": "AERO",
         "manufacturer_part_number": "1VH93USC94AH",
         "retailer_sku": "1VH93USC94AH",
@@ -21243,8 +21064,8 @@
         "capacity_gb": 16,
         "memory_type": "DDR5",
         "speed": "5600 MHz",
-        "slot_count": null,
-        "max_supported_gb": null,
+        "slot_count": 2,
+        "max_supported_gb": 64,
         "is_soldered": false,
         "raw_spec": "System Memory: Up to 64GB DDR5 5600MHz, 2x SO-DIMM sockets for expansion | MEMORY: 16GB DDR5 5600MHz"
       },
@@ -21253,7 +21074,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1x PCIe Gen4x4 M.2 slot, 1x PCIe Gen4x2 M.2 slot, Up to 4TB PCIe NVMe M.2 SSD | STORAGE: 1TB PCIe Gen4 NVMe M.2 SSD"
       },
@@ -21363,7 +21184,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.356
+    "elapsed_s": 13.173
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx10-83je00daed-core-i7-14700hx-20-cores-24gb-ddr5-5600-512gb-ssd-rtx-5050-8gb-gddr7-15-6-fhd-ips-100-srgb-144hz-g-sync-win-11-2y-warranty",
@@ -21373,7 +21194,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83JE00DAED",
         "manufacturer_part_number": "83JE00DAED",
         "retailer_sku": "83JE00DAED",
@@ -21426,7 +21247,7 @@
       "memory": {
         "capacity_gb": 24,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": "4800",
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -21613,7 +21434,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 13.908
+    "elapsed_s": 13.074
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv00urps-gaming-laptop-intel-core-i7-14700hx-2x-8gb-ram-512gb-ssd-nvidia-geforce-rtx-4060-8gb-15-6-fhd-ips-144hz",
@@ -21623,7 +21444,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "LENOVO LOQ 15IRX9 83DV00URPS",
         "manufacturer_part_number": "83DV00URPS",
         "retailer_sku": "83DV00URPS",
@@ -21676,7 +21497,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -21805,7 +21626,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 12.564
+    "elapsed_s": 12.202
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i5-13450hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-3050-6gb-15-6-fhd-ips",
@@ -21815,7 +21636,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "LOQ",
         "manufacturer_part_number": "83DV012HED",
         "retailer_sku": "83DV012HED",
@@ -21868,7 +21689,7 @@
       "memory": {
         "capacity_gb": 24,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": "4800",
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -21993,7 +21814,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 13.147
+    "elapsed_s": 13.292
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-intel-core-i7-13650hx-gaming-laptop-2x-12gb-ram-512gb-ssd-nvidia-geforce-rtx-4050-6gb-15-6-fhd-ips",
@@ -22003,7 +21824,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "LOQ",
         "manufacturer_part_number": "83DV0129ED",
         "retailer_sku": "83DV0129ED",
@@ -22067,7 +21888,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Dual M.2 2280 slots available)"
       },
@@ -22090,7 +21911,7 @@
       "power_battery": {
         "battery_capacity_wh": 60.0,
         "battery_cells": null,
-        "power_adapter_w": null,
+        "power_adapter_w": 170,
         "fast_charging": "Rapid Charge Pro",
         "raw_spec": "Battery & Power: 60Wh Battery / 170W Slim Tip Adapter (Supports Super Rapid Charge Pro)"
       },
@@ -22158,7 +21979,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.531
+    "elapsed_s": 14.161
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/asus-vivobook-16-x1607qa-mb054w-copilot-pc-laptop-snapdragon-x-x1-26-100-16gb-1-tb-ssd-qualcomm-adreno-16-wuxga-win-11",
@@ -22314,7 +22135,7 @@
     },
     "envelopes_count": 4,
     "rejections_count": 0,
-    "elapsed_s": 9.589
+    "elapsed_s": 8.392
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/rog-strix-scar-18-2025-gaming-laptop-g835lw-ai642w-intel-core-ultra-9-processor-275hx-nvidia-geforce-rtx-5080-16gb-32gb-ddr5-ssd-2tb-18-inch-wqxga",
@@ -22324,7 +22145,7 @@
     "specs": {
       "identity": {
         "brand": "ASUS",
-        "laptop_family": "ROG Strix SCAR",
+        "laptop_family": "Rog Strix Scar",
         "laptop_model": "G835LW-AI642W",
         "manufacturer_part_number": "90NR0LI1-M002J0",
         "retailer_sku": "90NR0LI1-M002J0",
@@ -22377,8 +22198,8 @@
       "memory": {
         "capacity_gb": 64,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
+        "speed": 5600,
+        "slot_count": 2,
         "max_supported_gb": null,
         "is_soldered": false,
         "raw_spec": "Total System Memory: DDR5 64GB (2 x 32GB DDR5-5600 SO-DIMM) | MEMORY: DDR5 64GB (2 x 32GB DDR5-5600 SO-DIMM)"
@@ -22397,7 +22218,7 @@
         "resolution": "2560x1600",
         "resolution_width": 2560,
         "resolution_height": 1600,
-        "panel_type": null,
+        "panel_type": "Mini-LED",
         "refresh_rate_hz": 240,
         "aspect_ratio": "16:10",
         "touchscreen": false,
@@ -22499,7 +22320,7 @@
     },
     "envelopes_count": 8,
     "rejections_count": 1,
-    "elapsed_s": 18.321
+    "elapsed_s": 16.45
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15iax9e-83lk0062ed-laptop-core-i5-12450hx-16gb-ddr5-512gb-ssd-rtx-2050-4gb-15-6-fhd-100-srgb-144hz-2y-warranty-mouse-gaming",
@@ -22509,7 +22330,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "LOQ 15IAX9E",
         "manufacturer_part_number": "83LK0062ED",
         "retailer_sku": "83LK0062ED",
@@ -22562,7 +22383,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": "4800",
         "slot_count": 1,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -22715,7 +22536,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 13.417
+    "elapsed_s": 13.725
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15-6-gaming-laptop-fhd-amd-ryzen-5-7235hs-with-12gb-memory-nvidia-geforce-rtx-3050-6gb-512gb-ssd-luna-grey",
@@ -22725,7 +22546,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ 15ARP9",
+        "laptop_family": "Loq 15Arp9",
         "laptop_model": "LOQ 15ARP9",
         "manufacturer_part_number": "83JC0001US",
         "retailer_sku": "83JC0001US",
@@ -22770,9 +22591,9 @@
       "memory": {
         "capacity_gb": 12,
         "memory_type": "DDR5",
-        "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
+        "speed": 4800,
+        "slot_count": 2,
+        "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 12GB DDR5-4800 SO-DIMM, expandable up to 32GB | Maximum Supported Memory: Up to 32GB | Memory Slots: 2"
       },
@@ -22911,7 +22732,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 12.589
+    "elapsed_s": 12.564
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/acer-travelmate-p2-tmp214-53g-79xg-i7-1165g7-8gb-1000gb-mx330-2gb-ded-14-fhd-dos-shale-black",
@@ -22921,7 +22742,7 @@
     "specs": {
       "identity": {
         "brand": "Acer",
-        "laptop_family": "Travelmate P2 (NX.VPQEM.008)",
+        "laptop_family": "Travelmate P2 (Nx.Vpqem.008)",
         "laptop_model": "Travelmate P2 (NX.VPQEM.008)",
         "manufacturer_part_number": "NX.VPQEM.008",
         "retailer_sku": "NX.VPQEM.008",
@@ -23072,7 +22893,7 @@
     },
     "envelopes_count": 6,
     "rejections_count": 0,
-    "elapsed_s": 11.584
+    "elapsed_s": 11.607
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-ideapad-5-pro-16imh9-laptop-intel-core-ultra-5-125h-16gb-512gb-ssd-nvidia-geforce-rtx-3050-6gb-16-2k-oled-win11-arctic-grey",
@@ -23082,7 +22903,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "IdeaPad Pro",
+        "laptop_family": "Ideapad Pro",
         "laptop_model": "Lenovo IdeaPad 5 Pro 16IMH9 (Arctic Grey)",
         "manufacturer_part_number": "83D40030ED",
         "retailer_sku": "83D40030ED",
@@ -23146,7 +22967,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Dual M.2 Slots available)"
       },
@@ -23169,7 +22990,7 @@
       "power_battery": {
         "battery_capacity_wh": 84.0,
         "battery_cells": null,
-        "power_adapter_w": null,
+        "power_adapter_w": 170,
         "fast_charging": null,
         "raw_spec": "Battery & Power: Integrated 84Wh Battery / 170W Slim Tip Adapter"
       },
@@ -23191,7 +23012,7 @@
         "raw_spec": "Keyboard & Touch: Backlit (Arabic) / Glass Surface Precision Touchpad"
       },
       "audio_webcam": {
-        "speaker_count": null,
+        "speaker_count": 2,
         "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
@@ -23244,7 +23065,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.835
+    "elapsed_s": 15.249
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-gaming-intel-core-i7-13650hx-16gb-ram-512gb-ssd-rtx-3050-6gb-15-6-fhd-144hz-eng-arb-dos-grey-83dv000eax",
@@ -23254,7 +23075,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ 15IRX9",
+        "laptop_family": "Loq 15Irx9",
         "laptop_model": "83DV000EAX",
         "manufacturer_part_number": "83DV000EAX",
         "retailer_sku": "83DV000EAX",
@@ -23307,9 +23128,9 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": null,
-        "max_supported_gb": null,
+        "max_supported_gb": 32,
         "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-4800 SO-DIMM, supports up to 32GB | Maximum Supported Memory: Up to 32GB"
       },
@@ -23318,7 +23139,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": null,
+        "slot_count": 1,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB M.2 PCIe 4.0 x4 NVMe SSD, with an extra M.2 slot | Storage Interface: M.2 PCIe 4.0 x4 NVMe | Additional Storage: Extra M.2 slot available"
       },
@@ -23445,7 +23266,7 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 13.714
+    "elapsed_s": 14.596
   },
   {
     "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-83dv008qed-core-i7-13650hx-14-cores-rtx-3050-6gb-16gb-ddr5-4800-512gb-ssd-m-2-15-6-fhd-100-srgb-ips-144hz",
@@ -23455,7 +23276,7 @@
     "specs": {
       "identity": {
         "brand": "Lenovo",
-        "laptop_family": "LOQ",
+        "laptop_family": "Loq",
         "laptop_model": "83DV008QED",
         "manufacturer_part_number": "83DV008QED",
         "retailer_sku": "83DV008QED",
@@ -23508,7 +23329,7 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 2,
         "max_supported_gb": 32,
         "is_soldered": false,
@@ -23664,6 +23485,6 @@
     },
     "envelopes_count": 7,
     "rejections_count": 0,
-    "elapsed_s": 14.266
+    "elapsed_s": 14.367
   }
 ]
