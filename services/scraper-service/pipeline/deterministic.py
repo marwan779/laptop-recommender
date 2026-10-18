@@ -1718,15 +1718,20 @@ class DeterministicExtractor:
                     specs["display"]["resolution_height"] = 1800
                     specs["display"]["resolution"] = "2880x1800"
                     break
-                elif re.search(r"\b(?:2\.5k|wqxga)\b", target, re.I):
+                elif re.search(r"\b(?:2\.5k|wqxga|qhd\+|qhd\s*plus)\b", target, re.I):
                     specs["display"]["resolution_width"] = 2560
                     specs["display"]["resolution_height"] = 1600
                     specs["display"]["resolution"] = "2560x1600"
                     break
                 elif re.search(r"\bqhd\b", target, re.I):
-                    specs["display"]["resolution_width"] = 2560
-                    specs["display"]["resolution_height"] = 1440
-                    specs["display"]["resolution"] = "2560x1440"
+                    if "16:10" in target:
+                        specs["display"]["resolution_width"] = 2560
+                        specs["display"]["resolution_height"] = 1600
+                        specs["display"]["resolution"] = "2560x1600"
+                    else:
+                        specs["display"]["resolution_width"] = 2560
+                        specs["display"]["resolution_height"] = 1440
+                        specs["display"]["resolution"] = "2560x1440"
                     break
                 elif re.search(r"\bwuxga\b", target, re.I):
                     specs["display"]["resolution_width"] = 1920

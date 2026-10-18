@@ -207,6 +207,36 @@ class PhysicalValidator:
         return True, val.title(), None
 
     @classmethod
+    def validate_microphone(
+        cls, value: Any
+    ) -> Tuple[bool, Optional[str], Optional[str]]:
+        """Validate microphone specification and reject speaker/audio codec contamination."""
+        if not value or not isinstance(value, str):
+            return False, None, "type_error"
+        val = value.strip()
+        speaker_contaminants = [
+            r"\bspeakers?\b",
+            r"\b2w\s*[xX×]\s*2\b",
+            r"\b4w\s*total\b",
+            r"\brealtek\b",
+            r"\bwoofer\b",
+            r"\btweeter\b",
+            r"\bstereo\s+speakers\b",
+            r"\bdts\s+audio\b",
+            r"\bhi-res\s+audio\b",
+            r"\bdolby\s+atmos\b",
+        ]
+        for pat in speaker_contaminants:
+            if re.search(pat, val, re.I):
+                m_mic = re.search(r"\b([^,;]*(?:microphone|mic|array\s+mic)[^,;]*)\b", val, re.I)
+                if m_mic:
+                    clean_mic = m_mic.group(1).strip()
+                    if not any(re.search(p, clean_mic, re.I) for p in speaker_contaminants):
+                        return True, clean_mic, None
+                return False, None, f"microphone_contains_speaker_spec_{val}"
+        return True, val, None
+
+    @classmethod
     def normalize_dimensions(
         cls, w: Any, d: Any, h: Any
     ) -> Tuple[bool, Optional[float], Optional[float], Optional[float], Optional[str]]:
@@ -475,6 +505,8 @@ class PhysicalValidator:
             return cls.validate_webcam(value)
         elif field_path == "audio_webcam.speaker_count":
             return cls.validate_speaker_count(value)
+        elif field_path == "audio_webcam.microphone":
+            return cls.validate_microphone(value)
         elif field_path == "connectivity.bluetooth":
             return cls.validate_bluetooth(value)
         elif field_path in (

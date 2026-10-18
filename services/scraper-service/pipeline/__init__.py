@@ -12,6 +12,7 @@ Rebuilt from the ground up:
 
 from pipeline.cpu_anchor import CPUAnchorExtractor
 from pipeline.deterministic import DeterministicExtractor
+from pipeline.envelope_normalizer import EnvelopePromptNormalizer
 from pipeline.orchestrator import LaptopExtractionPipeline, PipelineResult
 from pipeline.physical_validator import PhysicalValidator
 from pipeline.raw_storage import RawScrapeStorage
@@ -29,6 +30,7 @@ __all__ = [
     "TextSanitizer",
     "CPUAnchorExtractor",
     "DeterministicExtractor",
+    "EnvelopePromptNormalizer",
     "PhysicalValidator",
     "RawScrapeStorage",
     "ExtractionEnvelope",

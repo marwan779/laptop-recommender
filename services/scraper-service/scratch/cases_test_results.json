@@ -1,0 +1,1828 @@
+[
+  {
+    "title": "GIGABYTE AERO X16 EG61H Gaming Laptop 16-inch QHD 165Hz AMD Ryzen AI 7 350 16GB RAM 1TB SSD GeForce RTX 5050 8GB Windows 11 Home",
+    "url": "https://www.compumarts.com/collections/laptop/products/gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
+    "cpu_key": "amd_ryzen_ai_7_350",
+    "specs": {
+      "identity": {
+        "brand": "Gigabyte",
+        "laptop_family": "Aero",
+        "laptop_model": "AERO",
+        "manufacturer_part_number": "gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
+        "retailer_sku": "gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
+        "color": "Space Gray / Lunar White",
+        "is_bundle": null,
+        "warranty": null,
+        "warranty_years": null,
+        "condition": null,
+        "raw_spec": "Title: GIGABYTE AERO X16 EG61H Gaming Laptop 16-inch QHD 165Hz AMD Ryzen AI 7 350 16GB RAM 1TB SSD GeForce RTX 5050 8GB Windows 11 Home | Color Options: Space Gray / Lunar White | Part Number - Space Gray: 1TH93EEC94AH | Part Number - Lunar White: 1TH93EEC94DH | SKU: gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop | Part Number: gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop"
+      },
+      "cpu": {
+        "manufacturer": "AMD",
+        "line": "Ryzen AI 7",
+        "model": "Ryzen AI 7 350",
+        "series": "Ryzen AI 300 Series",
+        "full_name": "AMD Ryzen AI 7 350",
+        "cores": 8,
+        "threads": 16,
+        "clock_base_ghz": 2.0,
+        "clock_boost_ghz": 5.0,
+        "cache_mb": 16,
+        "microarchitecture": "Zen 5 / Zen 5c",
+        "microarchitecture_code": "Krackan Point",
+        "low_power_cores": null,
+        "performance_cores": {
+          "count": 4,
+          "base_clock_ghz": 2.0,
+          "boost_clock_ghz": 5.0
+        },
+        "efficient_cores": {
+          "count": 4,
+          "base_clock_ghz": 2.0,
+          "boost_clock_ghz": 3.5
+        },
+        "npu_tops": 50.0,
+        "base_power_w": 28,
+        "raw_spec": "Processor: AMD Ryzen AI 7 350 (16MB cache, up to 5 GHz, 8 cores, 16 threads) | CPU: AMD Ryzen AI 7 350 (16MB cache, up to 5 GHz, 8 cores, 16 threads)"
+      },
+      "gpu": {
+        "manufacturer": "NVIDIA",
+        "model": "GeForce RTX 5050",
+        "variant": "Laptop GPU",
+        "vram_gb": 8,
+        "tdp_w": null,
+        "boost_clock_mhz": null,
+        "ai_tops": 440,
+        "integrated": false,
+        "raw_spec": "Graphics: NVIDIA GeForce RTX 5050 Laptop GPU, 8GB GDDR7 | GPU: NVIDIA GeForce RTX 5050 Laptop GPU, 8GB GDDR7"
+      },
+      "memory": {
+        "capacity_gb": 16,
+        "memory_type": "DDR5",
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
+        "is_soldered": null,
+        "raw_spec": "Memory: 16GB DDR5"
+      },
+      "storage": {
+        "capacity_gb": 1024,
+        "storage_type": "SSD",
+        "interface": "PCIe 4.0",
+        "form_factor": "M.2",
+        "slot_count": null,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 1TB PCIe Gen4x4 M.2 NVMe SSD"
+      },
+      "display": {
+        "size_inches": 16.0,
+        "resolution": "2560x1600",
+        "resolution_width": 2560,
+        "resolution_height": 1600,
+        "panel_type": "IPS",
+        "refresh_rate_hz": 165,
+        "aspect_ratio": "16:10",
+        "touchscreen": false,
+        "brightness_nits": 400,
+        "color_gamut": "sRGB",
+        "response_time_ms": 3.0,
+        "surface_treatment": null,
+        "hdr": null,
+        "raw_spec": "Display: 16\" 16:10 IPS QHD+ 165Hz, 3ms, sRGB 100%, 400 nits | Display Features: MUX Switch, Pantone Validated, TÜV Rheinland Low Blue Light"
+      },
+      "power_battery": {
+        "battery_capacity_wh": 76.0,
+        "battery_cells": null,
+        "power_adapter_w": 150,
+        "fast_charging": null,
+        "raw_spec": "Battery: 76Wh Li-Polymer | Adapter: 150W AC adapter"
+      },
+      "physical": {
+        "weight_kg": 1.9,
+        "width_mm": 355.0,
+        "depth_mm": 250.7,
+        "height_mm": 16.8,
+        "raw_spec": "Dimensions: 355 × 250.7 × 16.75-19.99 mm | Weight: ~1.9 kg"
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "1-Zone RGB",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": null,
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": "Keyboard: 1-zone RGB Backlit, up to 1.7mm key travel, N-Key rollover"
+      },
+      "audio_webcam": {
+        "speaker_count": 2,
+        "microphone": "microphone",
+        "webcam_resolution": "1080p",
+        "has_privacy_shutter": null,
+        "has_ir_camera": true,
+        "raw_spec": "Audio: 2× 2W speakers, microphone, Dolby Atmos | Webcam: FHD (1080p) IR Webcam + array microphones, Windows Hello Face Authentication"
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 6E",
+        "bluetooth": "Bluetooth 5.2",
+        "ethernet": "RJ45",
+        "ports": [
+          "DC-in",
+          "RJ45",
+          "HDMI 2.1",
+          "USB-A 3.2 Gen1",
+          "USB4 Type-C (DP 1.4 + PD 3.0)",
+          "USB-A 3.2 Gen1",
+          "USB-A 2.0",
+          "3.5mm audio combo jack"
+        ],
+        "has_card_reader": null,
+        "card_reader_type": null,
+        "thunderbolt_version": null,
+        "raw_spec": "Left Ports: DC-in, RJ45, HDMI 2.1, USB-A 3.2 Gen1, USB4 Type-C (DP 1.4 + PD 3.0) | Right Ports: USB-A 3.2 Gen1, USB-A 2.0, 3.5mm audio combo jack | Wireless: WiFi 6E (802.11ax 2×2), Bluetooth 5.2, LAN 1G"
+      },
+      "operating_system": {
+        "name": "Windows 11 Home",
+        "raw_spec": "Operating System: Windows 11 Home | OS: Windows 11 Home"
+      }
+    },
+    "envelopes_count": 7,
+    "envelopes": [
+      {
+        "subsystem": "identity",
+        "unresolved": [
+          "warranty_years",
+          "is_bundle"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Title: GIGABYTE AERO X16 EG61H Gaming Laptop 16-inch QHD 165Hz AMD Ryzen AI 7 350 16GB RAM 1TB SSD GeForce RTX 5050 8GB Windows 11 Home | Color Options: Space Gray / Lunar White | Part Number - Space Gray: 1TH93EEC94AH | Part Number - Lunar White: 1TH93EEC94DH | SKU: gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop | Part Number: gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop"
+      },
+      {
+        "subsystem": "memory",
+        "unresolved": [
+          "speed",
+          "slot_count",
+          "max_supported_gb",
+          "is_soldered"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Memory: 16GB DDR5"
+      },
+      {
+        "subsystem": "storage",
+        "unresolved": [
+          "slot_count",
+          "max_supported_gb"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Storage: 1TB PCIe Gen4x4 M.2 NVMe SSD"
+      },
+      {
+        "subsystem": "display",
+        "unresolved": [
+          "color_gamut"
+        ],
+        "resolved_by_ai": {
+          "color_gamut": "sRGB"
+        },
+        "raw_context": "Display: 16\" 16:10 IPS QHD+ 165Hz, 3ms, sRGB 100%, 400 nits | Display Features: MUX Switch, Pantone Validated, TÜV Rheinland Low Blue Light"
+      },
+      {
+        "subsystem": "power_battery",
+        "unresolved": [
+          "battery_cells",
+          "fast_charging"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Battery: 76Wh Li-Polymer | Adapter: 150W AC adapter"
+      },
+      {
+        "subsystem": "audio_webcam",
+        "unresolved": [
+          "speaker_count",
+          "has_ir_camera",
+          "has_privacy_shutter"
+        ],
+        "resolved_by_ai": {
+          "speaker_count": 2,
+          "has_ir_camera": true
+        },
+        "raw_context": "Audio: 2× 2W speakers, microphone, Dolby Atmos | Webcam: FHD (1080p) IR Webcam + array microphones, Windows Hello Face Authentication"
+      },
+      {
+        "subsystem": "build_security",
+        "unresolved": [
+          "has_numpad",
+          "chassis_material"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Keyboard: 1-zone RGB Backlit, up to 1.7mm key travel, N-Key rollover"
+      }
+    ],
+    "timing": {
+      "deterministic_s": 0.036,
+      "ai_fallback_s": 47.429,
+      "total_s": 47.47
+    },
+    "index": 49,
+    "baseline_specs": {
+      "identity": {
+        "brand": "Gigabyte",
+        "laptop_family": "Aero",
+        "laptop_model": "AERO",
+        "manufacturer_part_number": "1TH93EEC94DH",
+        "retailer_sku": "gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop",
+        "color": "Space Gray / Lunar White",
+        "is_bundle": false,
+        "warranty": null,
+        "warranty_years": null,
+        "condition": null,
+        "raw_spec": "Title: GIGABYTE AERO X16 EG61H Gaming Laptop 16-inch QHD 165Hz AMD Ryzen AI 7 350 16GB RAM 1TB SSD GeForce RTX 5050 8GB Windows 11 Home | Color Options: Space Gray / Lunar White | Part Number - Space Gray: 1TH93EEC94AH | Part Number - Lunar White: 1TH93EEC94DH | SKU: gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop | Part Number: gigabyte-aero-x16-eg61h-ryzen-ai-7-350-rtx-5050-gaming-laptop"
+      },
+      "cpu": {
+        "manufacturer": "AMD",
+        "line": "Ryzen AI 7",
+        "model": "Ryzen AI 7 350",
+        "series": "Ryzen AI 300 Series",
+        "full_name": "AMD Ryzen AI 7 350",
+        "cores": 8,
+        "threads": 16,
+        "clock_base_ghz": 2.0,
+        "clock_boost_ghz": 5.0,
+        "cache_mb": 16,
+        "microarchitecture": "Zen 5 / Zen 5c",
+        "microarchitecture_code": "Krackan Point",
+        "low_power_cores": null,
+        "performance_cores": {
+          "count": 4,
+          "base_clock_ghz": 2.0,
+          "boost_clock_ghz": 5.0
+        },
+        "efficient_cores": {
+          "count": 4,
+          "base_clock_ghz": 2.0,
+          "boost_clock_ghz": 3.5
+        },
+        "npu_tops": 50.0,
+        "base_power_w": 28,
+        "raw_spec": "Processor: AMD Ryzen AI 7 350 (16MB cache, up to 5 GHz, 8 cores, 16 threads) | CPU: AMD Ryzen AI 7 350 (16MB cache, up to 5 GHz, 8 cores, 16 threads)"
+      },
+      "gpu": {
+        "manufacturer": "NVIDIA",
+        "model": "GeForce RTX 5050",
+        "variant": "Laptop GPU",
+        "vram_gb": 8,
+        "tdp_w": null,
+        "boost_clock_mhz": null,
+        "ai_tops": 440,
+        "integrated": false,
+        "raw_spec": "Graphics: NVIDIA GeForce RTX 5050 Laptop GPU, 8GB GDDR7 | GPU: NVIDIA GeForce RTX 5050 Laptop GPU, 8GB GDDR7"
+      },
+      "memory": {
+        "capacity_gb": 16,
+        "memory_type": "DDR5",
+        "speed": null,
+        "slot_count": null,
+        "max_supported_gb": null,
+        "is_soldered": null,
+        "raw_spec": "Memory: 16GB DDR5"
+      },
+      "storage": {
+        "capacity_gb": 1024,
+        "storage_type": "SSD",
+        "interface": "PCIe 4.0",
+        "form_factor": "M.2",
+        "slot_count": null,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 1TB PCIe Gen4x4 M.2 NVMe SSD"
+      },
+      "display": {
+        "size_inches": 16.0,
+        "resolution": "2560x1440",
+        "resolution_width": 2560,
+        "resolution_height": 1440,
+        "panel_type": "IPS",
+        "refresh_rate_hz": 165,
+        "aspect_ratio": "16:10",
+        "touchscreen": false,
+        "brightness_nits": 400,
+        "color_gamut": "sRGB",
+        "response_time_ms": 3.0,
+        "surface_treatment": null,
+        "hdr": null,
+        "raw_spec": "Display: 16\" 16:10 IPS QHD+ 165Hz, 3ms, sRGB 100%, 400 nits | Display Features: MUX Switch, Pantone Validated, TÜV Rheinland Low Blue Light"
+      },
+      "power_battery": {
+        "battery_capacity_wh": 76.0,
+        "battery_cells": null,
+        "power_adapter_w": 150,
+        "fast_charging": null,
+        "raw_spec": "Battery: 76Wh Li-Polymer | Adapter: 150W AC adapter"
+      },
+      "physical": {
+        "weight_kg": 1.9,
+        "width_mm": 355.0,
+        "depth_mm": 250.7,
+        "height_mm": 16.8,
+        "raw_spec": "Dimensions: 355 × 250.7 × 16.75-19.99 mm | Weight: ~1.9 kg"
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "1-Zone RGB",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": null,
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": "Keyboard: 1-zone RGB Backlit, up to 1.7mm key travel, N-Key rollover"
+      },
+      "audio_webcam": {
+        "speaker_count": 2,
+        "microphone": "2× 2W speakers, microphone, Dolby Atmos",
+        "webcam_resolution": "1080p",
+        "has_privacy_shutter": null,
+        "has_ir_camera": true,
+        "raw_spec": "Audio: 2× 2W speakers, microphone, Dolby Atmos | Webcam: FHD (1080p) IR Webcam + array microphones, Windows Hello Face Authentication"
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 6E",
+        "bluetooth": "Bluetooth 5.2",
+        "ethernet": "RJ45",
+        "ports": [
+          "DC-in",
+          "RJ45",
+          "HDMI 2.1",
+          "USB-A 3.2 Gen1",
+          "USB4 Type-C (DP 1.4 + PD 3.0)",
+          "USB-A 3.2 Gen1",
+          "USB-A 2.0",
+          "3.5mm audio combo jack"
+        ],
+        "has_card_reader": null,
+        "card_reader_type": null,
+        "thunderbolt_version": null,
+        "raw_spec": "Left Ports: DC-in, RJ45, HDMI 2.1, USB-A 3.2 Gen1, USB4 Type-C (DP 1.4 + PD 3.0) | Right Ports: USB-A 3.2 Gen1, USB-A 2.0, 3.5mm audio combo jack | Wireless: WiFi 6E (802.11ax 2×2), Bluetooth 5.2, LAN 1G"
+      },
+      "operating_system": {
+        "name": "Windows 11 Home",
+        "raw_spec": "Operating System: Windows 11 Home | OS: Windows 11 Home"
+      }
+    }
+  },
+  {
+    "title": "ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W 2-in-1 Creator Laptop – Ryzen AI MAX+ 395, Radeon 8060S, 128GB LPDDR5X, 1TB SSD, 13.3″ 3K OLED Touch, Windows 11",
+    "url": "https://www.compumarts.com/collections/laptop/products/asus-proart-px13-hn7306eac-ryzen-ai-128gb-3k-oled-egypt",
+    "cpu_key": "amd_ryzen_ai_max_plus_395",
+    "specs": {
+      "identity": {
+        "brand": "ASUS",
+        "laptop_family": "Proart",
+        "laptop_model": "ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W",
+        "manufacturer_part_number": "90NB17X2-M00480",
+        "retailer_sku": "90NB17X2-M00480",
+        "color": null,
+        "is_bundle": null,
+        "warranty": null,
+        "warranty_years": null,
+        "condition": null,
+        "raw_spec": "Title: ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W 2-in-1 Creator Laptop - Ryzen AI MAX+ 395, Radeon 8060S, 128GB LPDDR5X, 1TB SSD, 13.3″ 3K OLED Touch, Windows 11 | Model: ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W | Accessories: ASUS Stylus (SA205H-MPP2.6) & Protective Cover Included | Included: ASUS Pen SA205H and GoPro Edition Protective Sleeve | SKU: 90NB17X2-M00480 | Part Number: 90NB17X2-M00480"
+      },
+      "cpu": {
+        "manufacturer": "AMD",
+        "line": "Ryzen AI Max",
+        "model": "Ryzen AI Max+ 395",
+        "series": "Ryzen AI Max 300 Series",
+        "full_name": "AMD Ryzen AI Max+ 395",
+        "cores": 16,
+        "threads": 32,
+        "clock_base_ghz": 3.0,
+        "clock_boost_ghz": 5.1,
+        "cache_mb": 64,
+        "microarchitecture": "Zen 5",
+        "microarchitecture_code": "Strix Halo",
+        "low_power_cores": null,
+        "performance_cores": null,
+        "efficient_cores": null,
+        "npu_tops": 50.0,
+        "base_power_w": 55,
+        "raw_spec": "Processor: AMD Ryzen AI MAX+ 395 (16C/32T, Up to 5.1GHz, 80MB Cache) | AI Performance: AMD XDNA NPU - Up to 50 TOPS | Input Devices: Backlit Chiclet Keyboard, Precision Touchpad with DialPad, Stylus Support | AI Engine: AMD XDNA NPU, Up to 50 TOPS"
+      },
+      "gpu": {
+        "manufacturer": "AMD",
+        "model": "AMD Radeon 8060S",
+        "variant": "SoC Integrated",
+        "vram_gb": null,
+        "tdp_w": null,
+        "boost_clock_mhz": null,
+        "ai_tops": 50,
+        "integrated": true,
+        "raw_spec": "Graphics: AMD Radeon 8060S Graphics"
+      },
+      "memory": {
+        "capacity_gb": 128,
+        "memory_type": "LPDDR5X",
+        "speed": "8000 MHz",
+        "slot_count": 0,
+        "max_supported_gb": null,
+        "is_soldered": true,
+        "raw_spec": "Memory: 128GB LPDDR5X 8000MHz Unified Memory | Every Frame. Ultra Clear. Ultra Real.: The 13.3-inch 3K ASUS Lumina OLED touchscreen delivers 2880 × 1800 resolution, 100% DCI-P3 coverage, Delta E < 1 accuracy, true blacks and stylus support with up to 4096 pressure levels."
+      },
+      "storage": {
+        "capacity_gb": 1024,
+        "storage_type": "SSD",
+        "interface": "NVMe",
+        "form_factor": "M.2",
+        "slot_count": 2,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 1TB M.2 NVMe PCIe 4.0 SSD (Extra M.2 2230 Slot Available)"
+      },
+      "display": {
+        "size_inches": 13.3,
+        "resolution": "2880x1800",
+        "resolution_width": 2880,
+        "resolution_height": 1800,
+        "panel_type": "OLED",
+        "refresh_rate_hz": null,
+        "aspect_ratio": "16:10",
+        "touchscreen": true,
+        "brightness_nits": 500,
+        "color_gamut": "100% DCI-P3",
+        "response_time_ms": null,
+        "surface_treatment": null,
+        "hdr": "HDR",
+        "raw_spec": "Display: 13.3\" 3K (2880×1800) OLED Touch, 16:10, 500 nits HDR Peak | Color Accuracy: 100% DCI-P3, Pantone Validated, VESA DisplayHDR True Black 500"
+      },
+      "power_battery": {
+        "battery_capacity_wh": 73.0,
+        "battery_cells": 4,
+        "power_adapter_w": 200,
+        "fast_charging": null,
+        "raw_spec": "Battery & Power: 73Wh 4-Cell Battery, 200W AC Adapter | Battery: 73Wh | Power for Serious Creative Work: AMD Ryzen AI MAX+ 395, Radeon 8060S graphics and 128GB of unified LPDDR5X memory deliver the performance needed for multi-layer 4K and 8K editing, RAW photo processing, AI workloads and 3D creation."
+      },
+      "physical": {
+        "weight_kg": 1.39,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
+        "raw_spec": "Portability: 1.39 kg / US MIL-STD-810H Military-Grade Durability"
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "Backlit",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": null,
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": null
+      },
+      "audio_webcam": {
+        "speaker_count": null,
+        "microphone": null,
+        "webcam_resolution": null,
+        "has_privacy_shutter": null,
+        "has_ir_camera": null,
+        "raw_spec": null
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 7",
+        "bluetooth": "Bluetooth 5.4",
+        "ethernet": null,
+        "ports": [
+          "2x USB4 Type-C (40Gbps)",
+          "1x USB 3.2 Gen 2",
+          "1x HDMI 2.1",
+          "MicroSD 4.0",
+          "2 × USB4 Type-C",
+          "USB 3.2 Gen 2 Type-A",
+          "HDMI 2.1 FRL",
+          "MicroSD 4.0 and 3.5mm Audio"
+        ],
+        "has_card_reader": true,
+        "card_reader_type": "MicroSD",
+        "thunderbolt_version": null,
+        "raw_spec": "I/O Ports: 2x USB4 Type-C (40Gbps), 1x USB 3.2 Gen 2, 1x HDMI 2.1, MicroSD 4.0 | Connectivity: Wi-Fi 7 (802.11be) Triple Band + Bluetooth 5.4 | Ports: 2 × USB4 Type-C, USB 3.2 Gen 2 Type-A, HDMI 2.1 FRL, MicroSD 4.0 and 3.5mm Audio | Wireless: Wi-Fi 7 and Bluetooth 5.4"
+      },
+      "operating_system": {
+        "name": "Windows 11 Home",
+        "raw_spec": "Operating System: Windows 11 Home"
+      }
+    },
+    "envelopes_count": 6,
+    "envelopes": [
+      {
+        "subsystem": "identity",
+        "unresolved": [
+          "color",
+          "warranty_years",
+          "is_bundle"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Title: ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W 2-in-1 Creator Laptop - Ryzen AI MAX+ 395, Radeon 8060S, 128GB LPDDR5X, 1TB SSD, 13.3″ 3K OLED Touch, Windows 11 | Model: ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W | Accessories: ASUS Stylus (SA205H-MPP2.6) & Protective Cover Included | Included: ASUS Pen SA205H and GoPro Edition Protective Sleeve | SKU: 90NB17X2-M00480 | Part Number: 90NB17X2-M00480"
+      },
+      {
+        "subsystem": "memory",
+        "unresolved": [
+          "slot_count",
+          "max_supported_gb",
+          "is_soldered"
+        ],
+        "resolved_by_ai": {
+          "slot_count": 0,
+          "is_soldered": true
+        },
+        "raw_context": "Memory: 128GB LPDDR5X 8000MHz Unified Memory | Every Frame. Ultra Clear. Ultra Real.: The 13.3-inch 3K ASUS Lumina OLED touchscreen delivers 2880 × 1800 resolution, 100% DCI-P3 coverage, Delta E < 1 accuracy, true blacks and stylus support with up to 4096 pressure levels.\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
+      },
+      {
+        "subsystem": "storage",
+        "unresolved": [
+          "slot_count",
+          "max_supported_gb"
+        ],
+        "resolved_by_ai": {
+          "slot_count": 2
+        },
+        "raw_context": "Storage: 1TB M.2 NVMe PCIe 4.0 SSD (Extra M.2 2230 Slot Available)\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
+      },
+      {
+        "subsystem": "display",
+        "unresolved": [
+          "refresh_rate_hz"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Display: 13.3\" 3K (2880×1800) OLED Touch, 16:10, 500 nits HDR Peak | Color Accuracy: 100% DCI-P3, Pantone Validated, VESA DisplayHDR True Black 500"
+      },
+      {
+        "subsystem": "power_battery",
+        "unresolved": [
+          "fast_charging"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Battery & Power: 73Wh 4-Cell Battery, 200W AC Adapter | Battery: 73Wh | Power for Serious Creative Work: AMD Ryzen AI MAX+ 395, Radeon 8060S graphics and 128GB of unified LPDDR5X memory deliver the performance needed for multi-layer 4K and 8K editing, RAW photo processing, AI workloads and 3D creation."
+      },
+      {
+        "subsystem": "physical",
+        "unresolved": [
+          "width_mm",
+          "depth_mm",
+          "height_mm"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Portability: 1.39 kg / US MIL-STD-810H Military-Grade Durability"
+      }
+    ],
+    "timing": {
+      "deterministic_s": 0.013,
+      "ai_fallback_s": 15.703,
+      "total_s": 15.717
+    },
+    "index": 67,
+    "baseline_specs": {
+      "identity": {
+        "brand": "ASUS",
+        "laptop_family": "Proart",
+        "laptop_model": "ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W",
+        "manufacturer_part_number": "90NB17X2-M00480",
+        "retailer_sku": "90NB17X2-M00480",
+        "color": null,
+        "is_bundle": false,
+        "warranty": null,
+        "warranty_years": null,
+        "condition": null,
+        "raw_spec": "Title: ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W 2-in-1 Creator Laptop - Ryzen AI MAX+ 395, Radeon 8060S, 128GB LPDDR5X, 1TB SSD, 13.3″ 3K OLED Touch, Windows 11 | Model: ASUS ProArt GoPro Edition PX13 HN7306EAC-LX11W | Accessories: ASUS Stylus (SA205H-MPP2.6) & Protective Cover Included | Included: ASUS Pen SA205H and GoPro Edition Protective Sleeve | SKU: 90NB17X2-M00480 | Part Number: 90NB17X2-M00480"
+      },
+      "cpu": {
+        "manufacturer": "AMD",
+        "line": "Ryzen AI Max",
+        "model": "Ryzen AI Max+ 395",
+        "series": "Ryzen AI Max 300 Series",
+        "full_name": "AMD Ryzen AI Max+ 395",
+        "cores": 16,
+        "threads": 32,
+        "clock_base_ghz": 3.0,
+        "clock_boost_ghz": 5.1,
+        "cache_mb": 80,
+        "microarchitecture": "Zen 5",
+        "microarchitecture_code": "Strix Halo",
+        "low_power_cores": null,
+        "performance_cores": null,
+        "efficient_cores": null,
+        "npu_tops": 50.0,
+        "base_power_w": 55,
+        "raw_spec": "Processor: AMD Ryzen AI MAX+ 395 (16C/32T, Up to 5.1GHz, 80MB Cache) | AI Performance: AMD XDNA NPU - Up to 50 TOPS | Input Devices: Backlit Chiclet Keyboard, Precision Touchpad with DialPad, Stylus Support | AI Engine: AMD XDNA NPU, Up to 50 TOPS"
+      },
+      "gpu": {
+        "manufacturer": "AMD",
+        "model": "AMD Radeon 8060S",
+        "variant": "SoC Integrated",
+        "vram_gb": null,
+        "tdp_w": null,
+        "boost_clock_mhz": null,
+        "ai_tops": 50,
+        "integrated": true,
+        "raw_spec": "Graphics: AMD Radeon 8060S Graphics"
+      },
+      "memory": {
+        "capacity_gb": 128,
+        "memory_type": "LPDDR5X",
+        "speed": "8000 MHz",
+        "slot_count": null,
+        "max_supported_gb": null,
+        "is_soldered": true,
+        "raw_spec": "Memory: 128GB LPDDR5X 8000MHz Unified Memory | Every Frame. Ultra Clear. Ultra Real.: The 13.3-inch 3K ASUS Lumina OLED touchscreen delivers 2880 × 1800 resolution, 100% DCI-P3 coverage, Delta E < 1 accuracy, true blacks and stylus support with up to 4096 pressure levels."
+      },
+      "storage": {
+        "capacity_gb": 1024,
+        "storage_type": "SSD",
+        "interface": "NVMe",
+        "form_factor": "M.2",
+        "slot_count": 1,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 1TB M.2 NVMe PCIe 4.0 SSD (Extra M.2 2230 Slot Available)"
+      },
+      "display": {
+        "size_inches": 13.3,
+        "resolution": "2880x1800",
+        "resolution_width": 2880,
+        "resolution_height": 1800,
+        "panel_type": "OLED",
+        "refresh_rate_hz": null,
+        "aspect_ratio": "16:10",
+        "touchscreen": true,
+        "brightness_nits": 500,
+        "color_gamut": "100% DCI-P3",
+        "response_time_ms": null,
+        "surface_treatment": null,
+        "hdr": "HDR",
+        "raw_spec": "Display: 13.3\" 3K (2880×1800) OLED Touch, 16:10, 500 nits HDR Peak | Color Accuracy: 100% DCI-P3, Pantone Validated, VESA DisplayHDR True Black 500"
+      },
+      "power_battery": {
+        "battery_capacity_wh": 73.0,
+        "battery_cells": 4,
+        "power_adapter_w": 200,
+        "fast_charging": null,
+        "raw_spec": "Battery & Power: 73Wh 4-Cell Battery, 200W AC Adapter | Battery: 73Wh | Power for Serious Creative Work: AMD Ryzen AI MAX+ 395, Radeon 8060S graphics and 128GB of unified LPDDR5X memory deliver the performance needed for multi-layer 4K and 8K editing, RAW photo processing, AI workloads and 3D creation."
+      },
+      "physical": {
+        "weight_kg": 1.39,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
+        "raw_spec": "Portability: 1.39 kg / US MIL-STD-810H Military-Grade Durability"
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "Backlit",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": null,
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": null
+      },
+      "audio_webcam": {
+        "speaker_count": null,
+        "microphone": null,
+        "webcam_resolution": null,
+        "has_privacy_shutter": null,
+        "has_ir_camera": null,
+        "raw_spec": null
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 7",
+        "bluetooth": "Bluetooth 5.4",
+        "ethernet": null,
+        "ports": [
+          "2x USB4 Type-C (40Gbps)",
+          "1x USB 3.2 Gen 2",
+          "1x HDMI 2.1",
+          "MicroSD 4.0",
+          "2 × USB4 Type-C",
+          "USB 3.2 Gen 2 Type-A",
+          "HDMI 2.1 FRL",
+          "MicroSD 4.0 and 3.5mm Audio"
+        ],
+        "has_card_reader": true,
+        "card_reader_type": "MicroSD",
+        "thunderbolt_version": null,
+        "raw_spec": "I/O Ports: 2x USB4 Type-C (40Gbps), 1x USB 3.2 Gen 2, 1x HDMI 2.1, MicroSD 4.0 | Connectivity: Wi-Fi 7 (802.11be) Triple Band + Bluetooth 5.4 | Ports: 2 × USB4 Type-C, USB 3.2 Gen 2 Type-A, HDMI 2.1 FRL, MicroSD 4.0 and 3.5mm Audio | Wireless: Wi-Fi 7 and Bluetooth 5.4"
+      },
+      "operating_system": {
+        "name": "Windows 11 Home",
+        "raw_spec": "Operating System: Windows 11 Home"
+      }
+    }
+  },
+  {
+    "title": "DELL Alienware 16 Aurora Gaming Laptop – Core 7 240H, RTX 5060, 32GB RAM, 1TB SSD, 16” 120Hz– 3 Years Warranty",
+    "url": "https://www.compumarts.com/collections/laptop/products/alienware-16-aurora-rtx5060-gaming-laptop",
+    "cpu_key": "intel_core_7_240h",
+    "specs": {
+      "identity": {
+        "brand": "Dell",
+        "laptop_family": "Alienware",
+        "laptop_model": "Alienware 16",
+        "manufacturer_part_number": "OAN1625000801MINO-5",
+        "retailer_sku": "OAN1625000801MINO-5",
+        "color": "Interstellar Indigo",
+        "is_bundle": null,
+        "warranty": "3 Years Warranty",
+        "warranty_years": 3,
+        "condition": null,
+        "raw_spec": "Title: DELL Alienware 16 Aurora Gaming Laptop - Core 7 240H, RTX 5060, 32GB RAM, 1TB SSD, 16” 120Hz- 3 Years Warranty | Chassis Color: Interstellar Indigo | Warranty: 3 Years Warranty | SKU: OAN1625000801MINO-5 | Part Number: OAN1625000801MINO-5"
+      },
+      "cpu": {
+        "manufacturer": "Intel",
+        "line": "Core 7",
+        "model": "Core 7 240H",
+        "series": "Series 2",
+        "full_name": "Intel Core 7 240H",
+        "cores": 10,
+        "threads": 16,
+        "clock_base_ghz": 2.5,
+        "clock_boost_ghz": 5.2,
+        "cache_mb": 24,
+        "microarchitecture": "Raptor Cove / Gracemont",
+        "microarchitecture_code": "Raptor Lake",
+        "low_power_cores": null,
+        "performance_cores": {
+          "count": 6,
+          "base_clock_ghz": 2.5,
+          "boost_clock_ghz": 5.2
+        },
+        "efficient_cores": {
+          "count": 4,
+          "base_clock_ghz": 1.8,
+          "boost_clock_ghz": 4.0
+        },
+        "npu_tops": null,
+        "base_power_w": 45,
+        "raw_spec": "Processor: Intel Core 7 Processor (Series 2) 240H (10 Cores, 24MB Cache, 1.80-5.20 GHz) | CPU: Intel Core 7 Processor (Series 2) 240H (10 Cores, 24MB Cache, 1.80-5.20 GHz)"
+      },
+      "gpu": {
+        "manufacturer": "NVIDIA",
+        "model": "GeForce RTX 5060",
+        "variant": "Laptop GPU",
+        "vram_gb": 8,
+        "tdp_w": null,
+        "boost_clock_mhz": null,
+        "ai_tops": 572,
+        "integrated": false,
+        "raw_spec": "Graphics Card: NVIDIA GeForce RTX 5060, 8GB GDDR7 | GPU: NVIDIA GeForce RTX 5060, 8GB GDDR7 | Graphics: NVIDIA GeForce RTX 5060, 8GB GDDR7"
+      },
+      "memory": {
+        "capacity_gb": 32,
+        "memory_type": "DDR5",
+        "speed": "5600 MHz",
+        "slot_count": null,
+        "max_supported_gb": null,
+        "is_soldered": null,
+        "raw_spec": "Memory (RAM): 32GB DDR5 (2×16GB), 5600 MT/s | MEMORY: 32GB DDR5 (2×16GB), 5600 MT/s"
+      },
+      "storage": {
+        "capacity_gb": 1024,
+        "storage_type": "SSD",
+        "interface": "NVMe",
+        "form_factor": "M.2",
+        "slot_count": null,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 1 TB, M.2, PCIe NVMe, SSD"
+      },
+      "display": {
+        "size_inches": 16.0,
+        "resolution": "2560x1600",
+        "resolution_width": 2560,
+        "resolution_height": 1600,
+        "panel_type": null,
+        "refresh_rate_hz": 120,
+        "aspect_ratio": "16:10",
+        "touchscreen": true,
+        "brightness_nits": 300,
+        "color_gamut": "100% sRGB",
+        "response_time_ms": null,
+        "surface_treatment": null,
+        "hdr": null,
+        "raw_spec": "Display: 16\" WQXGA, 120Hz, 300 nits, 100% sRGB, ComfortView Plus"
+      },
+      "power_battery": {
+        "battery_capacity_wh": null,
+        "battery_cells": null,
+        "power_adapter_w": 130,
+        "fast_charging": null,
+        "raw_spec": "Power Adapter: 130W or 180W Adapter options"
+      },
+      "physical": {
+        "weight_kg": 2.49,
+        "width_mm": 357.0,
+        "depth_mm": 265.4,
+        "height_mm": 15.2,
+        "raw_spec": "Dimensions: Height: 15.20-22.70 mm / Width: 356.98 mm / Depth: 265.43 mm | Weight: 2.49-2.57 kg (5.49-5.68 lbs)"
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "White Backlit",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": "Premium Precision multi-touch touchpad",
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": "Keyboard: Alienware White Backlit Keyboard, English US | Touchpad: Premium Precision multi-touch touchpad"
+      },
+      "audio_webcam": {
+        "speaker_count": 2,
+        "microphone": null,
+        "webcam_resolution": "720p",
+        "has_privacy_shutter": null,
+        "has_ir_camera": null,
+        "raw_spec": "Camera: 720p HD @ 30 fps, dual-array microphones | Audio: Stereo speakers - 4W total (2W × 2) - Realtek AL3204"
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 7",
+        "bluetooth": null,
+        "ethernet": "1× RJ45 Ethernet (1GbE)",
+        "ports": [
+          "2× USB 3.2 Gen 1",
+          "1× USB 3.2 Gen 2 Type-C (DP 1.4a)",
+          "1× USB 3.2 Gen 2 Type-C (PD)",
+          "1× HDMI 2.1 (direct from GPU)",
+          "1× RJ45 Ethernet (1GbE)",
+          "1× 3.5 mm audio jack"
+        ],
+        "has_card_reader": null,
+        "card_reader_type": null,
+        "thunderbolt_version": null,
+        "raw_spec": "Ports: 2× USB 3.2 Gen 1, 1× USB 3.2 Gen 2 Type-C (DP 1.4a), 1× USB 3.2 Gen 2 Type-C (PD), 1× HDMI 2.1 (direct from GPU), 1× RJ45 Ethernet (1GbE), 1× 3.5 mm audio jack | Wireless: MediaTek Wi-Fi 7 MT7925, 2×2, 802.11be, MU-MIMO, Bluetooth"
+      },
+      "operating_system": {
+        "name": "Linux",
+        "raw_spec": "Operating System: Ubuntu"
+      }
+    },
+    "envelopes_count": 7,
+    "envelopes": [
+      {
+        "subsystem": "identity",
+        "unresolved": [
+          "is_bundle"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Title: DELL Alienware 16 Aurora Gaming Laptop - Core 7 240H, RTX 5060, 32GB RAM, 1TB SSD, 16” 120Hz- 3 Years Warranty | Chassis Color: Interstellar Indigo | Warranty: 3 Years Warranty | SKU: OAN1625000801MINO-5 | Part Number: OAN1625000801MINO-5"
+      },
+      {
+        "subsystem": "memory",
+        "unresolved": [
+          "slot_count",
+          "max_supported_gb",
+          "is_soldered"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Memory (RAM): 32GB DDR5 (2×16GB), 5600 MT/s | MEMORY: 32GB DDR5 (2×16GB), 5600 MT/s"
+      },
+      {
+        "subsystem": "storage",
+        "unresolved": [
+          "slot_count",
+          "max_supported_gb"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Storage: 1 TB, M.2, PCIe NVMe, SSD"
+      },
+      {
+        "subsystem": "display",
+        "unresolved": [
+          "panel_type"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Display: 16\" WQXGA, 120Hz, 300 nits, 100% sRGB, ComfortView Plus"
+      },
+      {
+        "subsystem": "power_battery",
+        "unresolved": [
+          "battery_capacity_wh",
+          "battery_cells",
+          "fast_charging"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Power Adapter: 130W or 180W Adapter options"
+      },
+      {
+        "subsystem": "audio_webcam",
+        "unresolved": [
+          "has_ir_camera",
+          "has_privacy_shutter",
+          "microphone"
+        ],
+        "resolved_by_ai": {
+          "microphone": "Stereo speakers - 4W total (2W × 2) - Realtek AL3204"
+        },
+        "raw_context": "Camera: 720p HD @ 30 fps, dual-array microphones | Audio: Stereo speakers - 4W total (2W × 2) - Realtek AL3204"
+      },
+      {
+        "subsystem": "build_security",
+        "unresolved": [
+          "has_numpad",
+          "chassis_material"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Keyboard: Alienware White Backlit Keyboard, English US | Touchpad: Premium Precision multi-touch touchpad"
+      }
+    ],
+    "timing": {
+      "deterministic_s": 0.014,
+      "ai_fallback_s": 17.435,
+      "total_s": 17.45
+    },
+    "index": 85,
+    "baseline_specs": {
+      "identity": {
+        "brand": "Dell",
+        "laptop_family": "Alienware",
+        "laptop_model": "Alienware 16",
+        "manufacturer_part_number": "OAN1625000801MINO-5",
+        "retailer_sku": "OAN1625000801MINO-5",
+        "color": "Interstellar Indigo",
+        "is_bundle": false,
+        "warranty": "3 Years Warranty",
+        "warranty_years": 3,
+        "condition": null,
+        "raw_spec": "Title: DELL Alienware 16 Aurora Gaming Laptop - Core 7 240H, RTX 5060, 32GB RAM, 1TB SSD, 16” 120Hz- 3 Years Warranty | Chassis Color: Interstellar Indigo | Warranty: 3 Years Warranty | SKU: OAN1625000801MINO-5 | Part Number: OAN1625000801MINO-5"
+      },
+      "cpu": {
+        "manufacturer": "Intel",
+        "line": "Core 7",
+        "model": "Core 7 240H",
+        "series": "Series 2",
+        "full_name": "Intel Core 7 240H",
+        "cores": 10,
+        "threads": 16,
+        "clock_base_ghz": 2.5,
+        "clock_boost_ghz": 5.2,
+        "cache_mb": 24,
+        "microarchitecture": "Raptor Cove / Gracemont",
+        "microarchitecture_code": "Raptor Lake",
+        "low_power_cores": null,
+        "performance_cores": {
+          "count": 6,
+          "base_clock_ghz": 2.5,
+          "boost_clock_ghz": 5.2
+        },
+        "efficient_cores": {
+          "count": 4,
+          "base_clock_ghz": 1.8,
+          "boost_clock_ghz": 4.0
+        },
+        "npu_tops": null,
+        "base_power_w": 45,
+        "raw_spec": "Processor: Intel Core 7 Processor (Series 2) 240H (10 Cores, 24MB Cache, 1.80-5.20 GHz) | CPU: Intel Core 7 Processor (Series 2) 240H (10 Cores, 24MB Cache, 1.80-5.20 GHz)"
+      },
+      "gpu": {
+        "manufacturer": "NVIDIA",
+        "model": "GeForce RTX 5060",
+        "variant": "Laptop GPU",
+        "vram_gb": 8,
+        "tdp_w": null,
+        "boost_clock_mhz": null,
+        "ai_tops": 572,
+        "integrated": false,
+        "raw_spec": "Graphics Card: NVIDIA GeForce RTX 5060, 8GB GDDR7 | GPU: NVIDIA GeForce RTX 5060, 8GB GDDR7 | Graphics: NVIDIA GeForce RTX 5060, 8GB GDDR7"
+      },
+      "memory": {
+        "capacity_gb": 32,
+        "memory_type": "DDR5",
+        "speed": "5600 MHz",
+        "slot_count": null,
+        "max_supported_gb": null,
+        "is_soldered": null,
+        "raw_spec": "Memory (RAM): 32GB DDR5 (2×16GB), 5600 MT/s | MEMORY: 32GB DDR5 (2×16GB), 5600 MT/s"
+      },
+      "storage": {
+        "capacity_gb": 1024,
+        "storage_type": "SSD",
+        "interface": "NVMe",
+        "form_factor": "M.2",
+        "slot_count": null,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 1 TB, M.2, PCIe NVMe, SSD"
+      },
+      "display": {
+        "size_inches": 16.0,
+        "resolution": "2560x1600",
+        "resolution_width": 2560,
+        "resolution_height": 1600,
+        "panel_type": null,
+        "refresh_rate_hz": 120,
+        "aspect_ratio": "16:10",
+        "touchscreen": true,
+        "brightness_nits": 300,
+        "color_gamut": "100% sRGB",
+        "response_time_ms": null,
+        "surface_treatment": null,
+        "hdr": null,
+        "raw_spec": "Display: 16\" WQXGA, 120Hz, 300 nits, 100% sRGB, ComfortView Plus"
+      },
+      "power_battery": {
+        "battery_capacity_wh": null,
+        "battery_cells": null,
+        "power_adapter_w": 130,
+        "fast_charging": null,
+        "raw_spec": "Power Adapter: 130W or 180W Adapter options"
+      },
+      "physical": {
+        "weight_kg": 2.49,
+        "width_mm": 357.0,
+        "depth_mm": 265.4,
+        "height_mm": 15.2,
+        "raw_spec": "Dimensions: Height: 15.20-22.70 mm / Width: 356.98 mm / Depth: 265.43 mm | Weight: 2.49-2.57 kg (5.49-5.68 lbs)"
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "White Backlit",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": "Premium Precision multi-touch touchpad",
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": "Keyboard: Alienware White Backlit Keyboard, English US | Touchpad: Premium Precision multi-touch touchpad"
+      },
+      "audio_webcam": {
+        "speaker_count": 2,
+        "microphone": "Stereo speakers - 4W total (2W × 2) - Realtek AL3204",
+        "webcam_resolution": "720p",
+        "has_privacy_shutter": null,
+        "has_ir_camera": null,
+        "raw_spec": "Camera: 720p HD @ 30 fps, dual-array microphones | Audio: Stereo speakers - 4W total (2W × 2) - Realtek AL3204"
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 7",
+        "bluetooth": null,
+        "ethernet": "1× RJ45 Ethernet (1GbE)",
+        "ports": [
+          "2× USB 3.2 Gen 1",
+          "1× USB 3.2 Gen 2 Type-C (DP 1.4a)",
+          "1× USB 3.2 Gen 2 Type-C (PD)",
+          "1× HDMI 2.1 (direct from GPU)",
+          "1× RJ45 Ethernet (1GbE)",
+          "1× 3.5 mm audio jack"
+        ],
+        "has_card_reader": null,
+        "card_reader_type": null,
+        "thunderbolt_version": null,
+        "raw_spec": "Ports: 2× USB 3.2 Gen 1, 1× USB 3.2 Gen 2 Type-C (DP 1.4a), 1× USB 3.2 Gen 2 Type-C (PD), 1× HDMI 2.1 (direct from GPU), 1× RJ45 Ethernet (1GbE), 1× 3.5 mm audio jack | Wireless: MediaTek Wi-Fi 7 MT7925, 2×2, 802.11be, MU-MIMO, Bluetooth"
+      },
+      "operating_system": {
+        "name": "Linux",
+        "raw_spec": "Operating System: Ubuntu"
+      }
+    }
+  },
+  {
+    "title": "MSI Thin 15 B13VE Gaming Laptop Intel Core i7-13620H RTX 4050 16GB RAM 1TB SSD 15.6 FHD COMPUMARTS WARRANTY",
+    "url": "https://www.compumarts.com/collections/laptop/products/msi-thin-15-b13ve-gaming-laptop-i7-13620h-rtx-4050-16gb-1tb-144hz-cosmos-grey-egypt",
+    "cpu_key": "intel_core_i7_13620h",
+    "specs": {
+      "identity": {
+        "brand": "MSI",
+        "laptop_family": "Thin",
+        "laptop_model": "Thin 15",
+        "manufacturer_part_number": "4711377184165",
+        "retailer_sku": "4711377184165",
+        "color": "Cosmos Grey",
+        "is_bundle": null,
+        "warranty": null,
+        "warranty_years": null,
+        "condition": null,
+        "raw_spec": "Title: MSI Thin 15 B13VE Gaming Laptop Intel Core i7-13620H RTX 4050 16GB RAM 1TB SSD 15.6 FHD COMPUMARTS WARRANTY | Product Name: MSI Thin 15 B13VE Gaming Laptop | Color: Cosmos Grey | SKU: 4711377184165 | Part Number: 4711377184165"
+      },
+      "cpu": {
+        "manufacturer": "Intel",
+        "line": "Core i7",
+        "model": "Core i7-13620H",
+        "series": "13th Gen",
+        "full_name": "Intel Core i7-13620H",
+        "cores": 10,
+        "threads": 16,
+        "clock_base_ghz": 2.4,
+        "clock_boost_ghz": 4.9,
+        "cache_mb": 24,
+        "microarchitecture": "Raptor Cove / Gracemont",
+        "microarchitecture_code": "Raptor Lake",
+        "low_power_cores": null,
+        "performance_cores": {
+          "count": 6,
+          "base_clock_ghz": 2.4,
+          "boost_clock_ghz": 4.9
+        },
+        "efficient_cores": {
+          "count": 4,
+          "base_clock_ghz": 1.8,
+          "boost_clock_ghz": 3.6
+        },
+        "npu_tops": null,
+        "base_power_w": 45,
+        "raw_spec": "Processor: Intel Core i7-13620H (13th Gen), 10 Cores (6P + 4E), 16 Threads, up to 4.90 GHz | CPU: Intel Core i7-13620H (13th Gen), 10 Cores (6P + 4E), 16 Threads, up to 4.90 GHz"
+      },
+      "gpu": {
+        "manufacturer": "NVIDIA",
+        "model": "GeForce RTX 4050",
+        "variant": "Laptop GPU",
+        "vram_gb": 6,
+        "tdp_w": 45,
+        "boost_clock_mhz": null,
+        "ai_tops": 194,
+        "integrated": false,
+        "raw_spec": "Graphics: NVIDIA GeForce RTX 4050 Laptop GPU (6GB GDDR6) | Graphics Power: Up to 45W TGP (Maximum Graphics Power with Dynamic Boost) | GPU: NVIDIA GeForce RTX 4050 Laptop GPU (6GB GDDR6)"
+      },
+      "memory": {
+        "capacity_gb": 16,
+        "memory_type": "DDR4",
+        "speed": "3200 MHz",
+        "slot_count": 2,
+        "max_supported_gb": 64,
+        "is_soldered": null,
+        "raw_spec": "Memory (RAM): 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB | MEMORY 16GB DDR4-3200 MHz (2 x 8GB): Expandable up to 64GB | MEMORY: 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB"
+      },
+      "storage": {
+        "capacity_gb": 1024,
+        "storage_type": "SSD",
+        "interface": "NVMe",
+        "form_factor": "2.5-inch",
+        "slot_count": 2,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 1TB NVMe PCIe Gen4 SSD (plus 1x 2.5\" SATA HDD/SSD expansion slot)"
+      },
+      "display": {
+        "size_inches": 15.6,
+        "resolution": "1920x1080",
+        "resolution_width": 1920,
+        "resolution_height": 1080,
+        "panel_type": "IPS",
+        "refresh_rate_hz": 144,
+        "aspect_ratio": "16:9",
+        "touchscreen": false,
+        "brightness_nits": null,
+        "color_gamut": "45% NTSC",
+        "response_time_ms": null,
+        "surface_treatment": null,
+        "hdr": null,
+        "raw_spec": "Display: 15.6\" FHD (1920x1080), 144Hz, IPS-Level, 45% NTSC"
+      },
+      "power_battery": {
+        "battery_capacity_wh": 52.4,
+        "battery_cells": 3,
+        "power_adapter_w": 120,
+        "fast_charging": null,
+        "raw_spec": "Battery & Power: 3-Cell 52.4 Whr Battery; 120W AC Adapter"
+      },
+      "physical": {
+        "weight_kg": 1.86,
+        "width_mm": 359.0,
+        "depth_mm": 254.0,
+        "height_mm": 21.7,
+        "raw_spec": "Dimensions: 359 x 254 x 21.7 mm | Weight: 1.86 kg (4.1 lbs)"
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "Backlit",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": null,
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": "Keyboard: Single-Zone Blue Backlit Keyboard (Translucent WASD Keys)"
+      },
+      "audio_webcam": {
+        "speaker_count": 2,
+        "microphone": null,
+        "webcam_resolution": "720p",
+        "has_privacy_shutter": null,
+        "has_ir_camera": null,
+        "raw_spec": "Audio: 2x 2W Speakers, DTS Audio, Hi-Res Audio Ready | Webcam: HD type (30fps @ 720p)"
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 6E",
+        "bluetooth": "Bluetooth 5.3",
+        "ethernet": "Gigabit LAN",
+        "ports": [
+          "Intel Wi-Fi 6E AX211",
+          "Bluetooth 5.3",
+          "Gigabit LAN",
+          "1x Type-C (USB3.2 Gen1 / DP)",
+          "3x Type-A USB3.2 Gen1",
+          "1x HDMI (4K @ 30Hz)",
+          "1x RJ45",
+          "Mic-in/Headphone-out"
+        ],
+        "has_card_reader": null,
+        "card_reader_type": null,
+        "thunderbolt_version": null,
+        "raw_spec": "Connectivity: Intel Wi-Fi 6E AX211, Bluetooth 5.3, Gigabit LAN | I/O Ports: 1x Type-C (USB3.2 Gen1 / DP), 3x Type-A USB3.2 Gen1, 1x HDMI (4K @ 30Hz), 1x RJ45, Mic-in/Headphone-out"
+      },
+      "operating_system": {
+        "name": "FreeDOS",
+        "raw_spec": "Operating System: FreeDOS (No Windows pre-installed) | OS: FreeDOS (No Windows pre-installed)"
+      }
+    },
+    "envelopes_count": 7,
+    "envelopes": [
+      {
+        "subsystem": "identity",
+        "unresolved": [
+          "warranty_years",
+          "is_bundle"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Title: MSI Thin 15 B13VE Gaming Laptop Intel Core i7-13620H RTX 4050 16GB RAM 1TB SSD 15.6 FHD COMPUMARTS WARRANTY | Product Name: MSI Thin 15 B13VE Gaming Laptop | Color: Cosmos Grey | SKU: 4711377184165 | Part Number: 4711377184165"
+      },
+      {
+        "subsystem": "memory",
+        "unresolved": [
+          "speed",
+          "slot_count",
+          "max_supported_gb",
+          "is_soldered"
+        ],
+        "resolved_by_ai": {
+          "speed": "3200 MHz",
+          "slot_count": 2,
+          "max_supported_gb": 64
+        },
+        "raw_context": "Memory (RAM): 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB | MEMORY 16GB DDR4-3200 MHz (2 x 8GB): Expandable up to 64GB | MEMORY: 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB\n[Memory Summary: Maximum supported memory: 64 GB.]"
+      },
+      {
+        "subsystem": "storage",
+        "unresolved": [
+          "slot_count",
+          "max_supported_gb"
+        ],
+        "resolved_by_ai": {
+          "slot_count": 2
+        },
+        "raw_context": "Storage: 1TB NVMe PCIe Gen4 SSD (plus 1x 2.5\" SATA HDD/SSD expansion slot)\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
+      },
+      {
+        "subsystem": "display",
+        "unresolved": [
+          "brightness_nits"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Display: 15.6\" FHD (1920x1080), 144Hz, IPS-Level, 45% NTSC"
+      },
+      {
+        "subsystem": "power_battery",
+        "unresolved": [
+          "battery_capacity_wh",
+          "fast_charging"
+        ],
+        "resolved_by_ai": {
+          "battery_capacity_wh": 52.4
+        },
+        "raw_context": "Battery & Power: 3-Cell 52.4 Whr Battery; 120W AC Adapter"
+      },
+      {
+        "subsystem": "audio_webcam",
+        "unresolved": [
+          "has_ir_camera",
+          "has_privacy_shutter",
+          "microphone"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Audio: 2x 2W Speakers, DTS Audio, Hi-Res Audio Ready | Webcam: HD type (30fps @ 720p)"
+      },
+      {
+        "subsystem": "build_security",
+        "unresolved": [
+          "has_numpad",
+          "chassis_material"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Keyboard: Single-Zone Blue Backlit Keyboard (Translucent WASD Keys)"
+      }
+    ],
+    "timing": {
+      "deterministic_s": 0.007,
+      "ai_fallback_s": 17.258,
+      "total_s": 17.265
+    },
+    "index": 93,
+    "baseline_specs": {
+      "identity": {
+        "brand": "MSI",
+        "laptop_family": "Thin",
+        "laptop_model": "Thin 15",
+        "manufacturer_part_number": "4711377184165",
+        "retailer_sku": "4711377184165",
+        "color": "Cosmos Grey",
+        "is_bundle": false,
+        "warranty": null,
+        "warranty_years": null,
+        "condition": null,
+        "raw_spec": "Title: MSI Thin 15 B13VE Gaming Laptop Intel Core i7-13620H RTX 4050 16GB RAM 1TB SSD 15.6 FHD COMPUMARTS WARRANTY | Product Name: MSI Thin 15 B13VE Gaming Laptop | Color: Cosmos Grey | SKU: 4711377184165 | Part Number: 4711377184165"
+      },
+      "cpu": {
+        "manufacturer": "Intel",
+        "line": "Core i7",
+        "model": "Core i7-13620H",
+        "series": "13th Gen",
+        "full_name": "Intel Core i7-13620H",
+        "cores": 10,
+        "threads": 16,
+        "clock_base_ghz": 2.4,
+        "clock_boost_ghz": 4.9,
+        "cache_mb": 24,
+        "microarchitecture": "Raptor Cove / Gracemont",
+        "microarchitecture_code": "Raptor Lake",
+        "low_power_cores": null,
+        "performance_cores": {
+          "count": 6,
+          "base_clock_ghz": 2.4,
+          "boost_clock_ghz": 4.9
+        },
+        "efficient_cores": {
+          "count": 4,
+          "base_clock_ghz": 1.8,
+          "boost_clock_ghz": 3.6
+        },
+        "npu_tops": null,
+        "base_power_w": 45,
+        "raw_spec": "Processor: Intel Core i7-13620H (13th Gen), 10 Cores (6P + 4E), 16 Threads, up to 4.90 GHz | CPU: Intel Core i7-13620H (13th Gen), 10 Cores (6P + 4E), 16 Threads, up to 4.90 GHz"
+      },
+      "gpu": {
+        "manufacturer": "NVIDIA",
+        "model": "GeForce RTX 4050",
+        "variant": "Laptop GPU",
+        "vram_gb": 6,
+        "tdp_w": 45,
+        "boost_clock_mhz": null,
+        "ai_tops": 194,
+        "integrated": false,
+        "raw_spec": "Graphics: NVIDIA GeForce RTX 4050 Laptop GPU (6GB GDDR6) | Graphics Power: Up to 45W TGP (Maximum Graphics Power with Dynamic Boost) | GPU: NVIDIA GeForce RTX 4050 Laptop GPU (6GB GDDR6)"
+      },
+      "memory": {
+        "capacity_gb": 16,
+        "memory_type": "DDR4",
+        "speed": "3200 MHz",
+        "slot_count": 2,
+        "max_supported_gb": 64,
+        "is_soldered": false,
+        "raw_spec": "Memory (RAM): 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB | MEMORY 16GB DDR4-3200 MHz (2 x 8GB): Expandable up to 64GB | MEMORY: 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB"
+      },
+      "storage": {
+        "capacity_gb": 1024,
+        "storage_type": "SSD",
+        "interface": "NVMe",
+        "form_factor": "2.5-inch",
+        "slot_count": 1,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 1TB NVMe PCIe Gen4 SSD (plus 1x 2.5\" SATA HDD/SSD expansion slot)"
+      },
+      "display": {
+        "size_inches": 15.6,
+        "resolution": "1920x1080",
+        "resolution_width": 1920,
+        "resolution_height": 1080,
+        "panel_type": "IPS",
+        "refresh_rate_hz": 144,
+        "aspect_ratio": "16:9",
+        "touchscreen": false,
+        "brightness_nits": null,
+        "color_gamut": "45% NTSC",
+        "response_time_ms": null,
+        "surface_treatment": null,
+        "hdr": null,
+        "raw_spec": "Display: 15.6\" FHD (1920x1080), 144Hz, IPS-Level, 45% NTSC"
+      },
+      "power_battery": {
+        "battery_capacity_wh": 52.4,
+        "battery_cells": 3,
+        "power_adapter_w": 120,
+        "fast_charging": null,
+        "raw_spec": "Battery & Power: 3-Cell 52.4 Whr Battery; 120W AC Adapter"
+      },
+      "physical": {
+        "weight_kg": 1.86,
+        "width_mm": 359.0,
+        "depth_mm": 254.0,
+        "height_mm": 21.7,
+        "raw_spec": "Dimensions: 359 x 254 x 21.7 mm | Weight: 1.86 kg (4.1 lbs)"
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "Backlit",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": null,
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": "Keyboard: Single-Zone Blue Backlit Keyboard (Translucent WASD Keys)"
+      },
+      "audio_webcam": {
+        "speaker_count": 2,
+        "microphone": null,
+        "webcam_resolution": "720p",
+        "has_privacy_shutter": null,
+        "has_ir_camera": null,
+        "raw_spec": "Audio: 2x 2W Speakers, DTS Audio, Hi-Res Audio Ready | Webcam: HD type (30fps @ 720p)"
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 6E",
+        "bluetooth": "Bluetooth 5.3",
+        "ethernet": "Gigabit LAN",
+        "ports": [
+          "Intel Wi-Fi 6E AX211",
+          "Bluetooth 5.3",
+          "Gigabit LAN",
+          "1x Type-C (USB3.2 Gen1 / DP)",
+          "3x Type-A USB3.2 Gen1",
+          "1x HDMI (4K @ 30Hz)",
+          "1x RJ45",
+          "Mic-in/Headphone-out"
+        ],
+        "has_card_reader": null,
+        "card_reader_type": null,
+        "thunderbolt_version": null,
+        "raw_spec": "Connectivity: Intel Wi-Fi 6E AX211, Bluetooth 5.3, Gigabit LAN | I/O Ports: 1x Type-C (USB3.2 Gen1 / DP), 3x Type-A USB3.2 Gen1, 1x HDMI (4K @ 30Hz), 1x RJ45, Mic-in/Headphone-out"
+      },
+      "operating_system": {
+        "name": "FreeDOS",
+        "raw_spec": "Operating System: FreeDOS (No Windows pre-installed) | OS: FreeDOS (No Windows pre-installed)"
+      }
+    }
+  },
+  {
+    "title": "Lenovo LOQ 15IRX9 Gaming (Intel Core i7-13650HX, 16GB RAM, 512GB SSD, RTX 3050 6GB,15.6\" FHD 144Hz ENG/ARB DOS, Grey | 83DV000EAX",
+    "url": "https://www.compumarts.com/collections/laptop/products/lenovo-loq-15irx9-gaming-intel-core-i7-13650hx-16gb-ram-512gb-ssd-rtx-3050-6gb-15-6-fhd-144hz-eng-arb-dos-grey-83dv000eax",
+    "cpu_key": "intel_core_i7_13650hx",
+    "specs": {
+      "identity": {
+        "brand": "Lenovo",
+        "laptop_family": "Loq 15Irx9",
+        "laptop_model": "83DV000EAX",
+        "manufacturer_part_number": "83DV000EAX",
+        "retailer_sku": "83DV000EAX",
+        "color": "& Warranty Luna Grey, 1-year carry-in service",
+        "is_bundle": null,
+        "warranty": "1-Year Carry-in Service",
+        "warranty_years": 1,
+        "condition": null,
+        "raw_spec": "Title: Lenovo LOQ 15IRX9 Gaming (Intel Core i7-13650HX, 16GB RAM, 512GB SSD, RTX 3050 6GB,15.6\" FHD 144Hz ENG/ARB DOS, Grey / 83DV000EAX | Brand: Lenovo | Series: LOQ 15IRX9 | Model: 83DV000EAX | Product Type: Gaming Laptop | Color: & Warranty Luna Grey, 1-year carry-in service | Warranty: 1-Year Carry-in Service | SKU: 83DV000EAX | Part Number: 83DV000EAX"
+      },
+      "cpu": {
+        "manufacturer": "Intel",
+        "line": "Core i7",
+        "model": "Core i7-13650HX",
+        "series": "13th Gen",
+        "full_name": "Intel Core i7-13650HX",
+        "cores": 14,
+        "threads": 20,
+        "clock_base_ghz": 2.6,
+        "clock_boost_ghz": 4.9,
+        "cache_mb": 24,
+        "microarchitecture": "Raptor Cove / Gracemont",
+        "microarchitecture_code": "Raptor Lake",
+        "low_power_cores": null,
+        "performance_cores": {
+          "count": 6,
+          "base_clock_ghz": 2.6,
+          "boost_clock_ghz": 4.9
+        },
+        "efficient_cores": {
+          "count": 8,
+          "base_clock_ghz": 1.9,
+          "boost_clock_ghz": 3.6
+        },
+        "npu_tops": null,
+        "base_power_w": 55,
+        "raw_spec": "Processor: Intel Core i7-13650HX, 14 cores, up to 4.9GHz | Processor Cores: 14 Cores | Maximum Processor Frequency: Up to 4.9GHz | Processor Cache: 24MB | AI Performance: 142 AI TOPS | AI Features: Lenovo AI Chip LA1"
+      },
+      "gpu": {
+        "manufacturer": "NVIDIA",
+        "model": "GeForce RTX 3050",
+        "variant": "Laptop GPU",
+        "vram_gb": 6,
+        "tdp_w": 95,
+        "boost_clock_mhz": null,
+        "ai_tops": 142,
+        "integrated": false,
+        "raw_spec": "Graphics: NVIDIA GeForce RTX 3050 6GB GDDR6, 95W TGP | Graphics Memory: 6GB GDDR6 | Graphics TGP: 95W"
+      },
+      "memory": {
+        "capacity_gb": 16,
+        "memory_type": "DDR5",
+        "speed": 4800,
+        "slot_count": null,
+        "max_supported_gb": 32,
+        "is_soldered": null,
+        "raw_spec": "Memory: 16GB DDR5-4800 SO-DIMM, supports up to 32GB | Maximum Supported Memory: Up to 32GB"
+      },
+      "storage": {
+        "capacity_gb": 512,
+        "storage_type": "SSD",
+        "interface": "PCIe 4.0 NVMe",
+        "form_factor": "M.2",
+        "slot_count": 2,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 512GB M.2 PCIe 4.0 x4 NVMe SSD, with an extra M.2 slot | Storage Interface: M.2 PCIe 4.0 x4 NVMe | Additional Storage: Extra M.2 slot available"
+      },
+      "display": {
+        "size_inches": 15.6,
+        "resolution": "1920x1080",
+        "resolution_width": 1920,
+        "resolution_height": 1080,
+        "panel_type": "IPS",
+        "refresh_rate_hz": 144,
+        "aspect_ratio": "16:9",
+        "touchscreen": false,
+        "brightness_nits": null,
+        "color_gamut": "100% sRGB",
+        "response_time_ms": null,
+        "surface_treatment": null,
+        "hdr": null,
+        "raw_spec": "Display Size: 15.6 inches | Display Resolution: 1920 x 1080 (FHD) | Display Panel: IPS | Refresh Rate: 144Hz | Color Gamut: 100% sRGB | Display Technology: NVIDIA G-SYNC | Display: 15.6-inch FHD IPS, 1920 × 1080, 144Hz, 100% sRGB, G-SYNC"
+      },
+      "power_battery": {
+        "battery_capacity_wh": 60.0,
+        "battery_cells": null,
+        "power_adapter_w": 170,
+        "fast_charging": null,
+        "raw_spec": "Battery Capacity: 60Wh | Power Adapter: 170W Slim Tip | Battery & Power: 60Wh battery with 170W Slim Tip adapter"
+      },
+      "physical": {
+        "weight_kg": null,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
+        "raw_spec": null
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "White Backlit",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": null,
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": "Keyboard: White backlit keyboard with Arabic layout | Keyboard Layout: Arabic"
+      },
+      "audio_webcam": {
+        "speaker_count": 2,
+        "microphone": null,
+        "webcam_resolution": "1080p",
+        "has_privacy_shutter": null,
+        "has_ir_camera": null,
+        "raw_spec": "Audio: Stereo speakers, 2W x 2 | Audio Technology: Nahimic | Camera: 1080p FHD camera with E-shutter"
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 6",
+        "bluetooth": "Bluetooth 5.2",
+        "ethernet": "RJ-45",
+        "ports": [
+          "3x USB-A",
+          "1x USB-C",
+          "HDMI 2.1",
+          "RJ-45",
+          "Power Delivery up to 140W",
+          "DisplayPort 1.4",
+          "3x USB-A",
+          "USB-C with up to 140W Power Delivery and DisplayPort 1.4",
+          "HDMI 2.1",
+          "RJ-45",
+          "Wi-Fi 6",
+          "Bluetooth 5.2"
+        ],
+        "has_card_reader": null,
+        "card_reader_type": null,
+        "thunderbolt_version": null,
+        "raw_spec": "Ports: 3x USB-A, 1x USB-C, HDMI 2.1, RJ-45 | USB-C Features: Power Delivery up to 140W, DisplayPort 1.4 | Wireless: Wi-Fi 6 (802.11ax 2x2) | Bluetooth: Bluetooth 5.2 | Connectivity: 3x USB-A, USB-C with up to 140W Power Delivery and DisplayPort 1.4, HDMI 2.1, RJ-45, Wi-Fi 6, Bluetooth 5.2"
+      },
+      "operating_system": {
+        "name": "FreeDOS",
+        "raw_spec": "Operating System: FreeDOS"
+      }
+    },
+    "envelopes_count": 7,
+    "envelopes": [
+      {
+        "subsystem": "identity",
+        "unresolved": [
+          "is_bundle"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Title: Lenovo LOQ 15IRX9 Gaming (Intel Core i7-13650HX, 16GB RAM, 512GB SSD, RTX 3050 6GB,15.6\" FHD 144Hz ENG/ARB DOS, Grey / 83DV000EAX | Brand: Lenovo | Series: LOQ 15IRX9 | Model: 83DV000EAX | Product Type: Gaming Laptop | Color: & Warranty Luna Grey, 1-year carry-in service | Warranty: 1-Year Carry-in Service | SKU: 83DV000EAX | Part Number: 83DV000EAX"
+      },
+      {
+        "subsystem": "memory",
+        "unresolved": [
+          "speed",
+          "slot_count",
+          "max_supported_gb",
+          "is_soldered"
+        ],
+        "resolved_by_ai": {
+          "speed": 4800,
+          "max_supported_gb": 32
+        },
+        "raw_context": "Memory: 16GB DDR5-4800 SO-DIMM, supports up to 32GB | Maximum Supported Memory: Up to 32GB\n[Memory Summary: Maximum supported memory: 32 GB.]"
+      },
+      {
+        "subsystem": "storage",
+        "unresolved": [
+          "slot_count",
+          "max_supported_gb"
+        ],
+        "resolved_by_ai": {
+          "slot_count": 2
+        },
+        "raw_context": "Storage: 512GB M.2 PCIe 4.0 x4 NVMe SSD, with an extra M.2 slot | Storage Interface: M.2 PCIe 4.0 x4 NVMe | Additional Storage: Extra M.2 slot available\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
+      },
+      {
+        "subsystem": "display",
+        "unresolved": [
+          "brightness_nits"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Display Size: 15.6 inches | Display Resolution: 1920 x 1080 (FHD) | Display Panel: IPS | Refresh Rate: 144Hz | Color Gamut: 100% sRGB | Display Technology: NVIDIA G-SYNC | Display: 15.6-inch FHD IPS, 1920 × 1080, 144Hz, 100% sRGB, G-SYNC"
+      },
+      {
+        "subsystem": "power_battery",
+        "unresolved": [
+          "battery_cells",
+          "fast_charging"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Battery Capacity: 60Wh | Power Adapter: 170W Slim Tip | Battery & Power: 60Wh battery with 170W Slim Tip adapter"
+      },
+      {
+        "subsystem": "audio_webcam",
+        "unresolved": [
+          "has_ir_camera",
+          "has_privacy_shutter",
+          "microphone"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Audio: Stereo speakers, 2W x 2 | Audio Technology: Nahimic | Camera: 1080p FHD camera with E-shutter"
+      },
+      {
+        "subsystem": "build_security",
+        "unresolved": [
+          "has_numpad",
+          "chassis_material"
+        ],
+        "resolved_by_ai": {},
+        "raw_context": "Keyboard: White backlit keyboard with Arabic layout | Keyboard Layout: Arabic"
+      }
+    ],
+    "timing": {
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 18.816,
+      "total_s": 18.822
+    },
+    "index": 121,
+    "baseline_specs": {
+      "identity": {
+        "brand": "Lenovo",
+        "laptop_family": "Loq 15Irx9",
+        "laptop_model": "83DV000EAX",
+        "manufacturer_part_number": "83DV000EAX",
+        "retailer_sku": "83DV000EAX",
+        "color": "& Warranty Luna Grey, 1-year carry-in service",
+        "is_bundle": false,
+        "warranty": "1-Year Carry-in Service",
+        "warranty_years": 1,
+        "condition": null,
+        "raw_spec": "Title: Lenovo LOQ 15IRX9 Gaming (Intel Core i7-13650HX, 16GB RAM, 512GB SSD, RTX 3050 6GB,15.6\" FHD 144Hz ENG/ARB DOS, Grey / 83DV000EAX | Brand: Lenovo | Series: LOQ 15IRX9 | Model: 83DV000EAX | Product Type: Gaming Laptop | Color: & Warranty Luna Grey, 1-year carry-in service | Warranty: 1-Year Carry-in Service | SKU: 83DV000EAX | Part Number: 83DV000EAX"
+      },
+      "cpu": {
+        "manufacturer": "Intel",
+        "line": "Core i7",
+        "model": "Core i7-13650HX",
+        "series": "13th Gen",
+        "full_name": "Intel Core i7-13650HX",
+        "cores": 14,
+        "threads": 20,
+        "clock_base_ghz": 2.6,
+        "clock_boost_ghz": 4.9,
+        "cache_mb": 24,
+        "microarchitecture": "Raptor Cove / Gracemont",
+        "microarchitecture_code": "Raptor Lake",
+        "low_power_cores": null,
+        "performance_cores": {
+          "count": 6,
+          "base_clock_ghz": 2.6,
+          "boost_clock_ghz": 4.9
+        },
+        "efficient_cores": {
+          "count": 8,
+          "base_clock_ghz": 1.9,
+          "boost_clock_ghz": 3.6
+        },
+        "npu_tops": null,
+        "base_power_w": 55,
+        "raw_spec": "Processor: Intel Core i7-13650HX, 14 cores, up to 4.9GHz | Processor Cores: 14 Cores | Maximum Processor Frequency: Up to 4.9GHz | Processor Cache: 24MB | AI Performance: 142 AI TOPS | AI Features: Lenovo AI Chip LA1"
+      },
+      "gpu": {
+        "manufacturer": "NVIDIA",
+        "model": "GeForce RTX 3050",
+        "variant": "Laptop GPU",
+        "vram_gb": 6,
+        "tdp_w": 95,
+        "boost_clock_mhz": null,
+        "ai_tops": 142,
+        "integrated": false,
+        "raw_spec": "Graphics: NVIDIA GeForce RTX 3050 6GB GDDR6, 95W TGP | Graphics Memory: 6GB GDDR6 | Graphics TGP: 95W"
+      },
+      "memory": {
+        "capacity_gb": 16,
+        "memory_type": "DDR5",
+        "speed": 4800,
+        "slot_count": null,
+        "max_supported_gb": 32,
+        "is_soldered": false,
+        "raw_spec": "Memory: 16GB DDR5-4800 SO-DIMM, supports up to 32GB | Maximum Supported Memory: Up to 32GB"
+      },
+      "storage": {
+        "capacity_gb": 512,
+        "storage_type": "SSD",
+        "interface": "PCIe 4.0 NVMe",
+        "form_factor": "M.2",
+        "slot_count": 1,
+        "max_supported_gb": null,
+        "raw_spec": "Storage: 512GB M.2 PCIe 4.0 x4 NVMe SSD, with an extra M.2 slot | Storage Interface: M.2 PCIe 4.0 x4 NVMe | Additional Storage: Extra M.2 slot available"
+      },
+      "display": {
+        "size_inches": 15.6,
+        "resolution": "1920x1080",
+        "resolution_width": 1920,
+        "resolution_height": 1080,
+        "panel_type": "IPS",
+        "refresh_rate_hz": 144,
+        "aspect_ratio": "16:9",
+        "touchscreen": false,
+        "brightness_nits": null,
+        "color_gamut": "100% sRGB",
+        "response_time_ms": null,
+        "surface_treatment": null,
+        "hdr": null,
+        "raw_spec": "Display Size: 15.6 inches | Display Resolution: 1920 x 1080 (FHD) | Display Panel: IPS | Refresh Rate: 144Hz | Color Gamut: 100% sRGB | Display Technology: NVIDIA G-SYNC | Display: 15.6-inch FHD IPS, 1920 × 1080, 144Hz, 100% sRGB, G-SYNC"
+      },
+      "power_battery": {
+        "battery_capacity_wh": 60.0,
+        "battery_cells": null,
+        "power_adapter_w": 170,
+        "fast_charging": null,
+        "raw_spec": "Battery Capacity: 60Wh | Power Adapter: 170W Slim Tip | Battery & Power: 60Wh battery with 170W Slim Tip adapter"
+      },
+      "physical": {
+        "weight_kg": null,
+        "width_mm": null,
+        "depth_mm": null,
+        "height_mm": null,
+        "raw_spec": null
+      },
+      "build_security": {
+        "has_backlit_keyboard": true,
+        "keyboard_backlight_type": "White Backlit",
+        "has_fingerprint": false,
+        "has_numpad": null,
+        "pointing_device": null,
+        "chassis_material": null,
+        "security_features": [],
+        "raw_spec": "Keyboard: White backlit keyboard with Arabic layout | Keyboard Layout: Arabic"
+      },
+      "audio_webcam": {
+        "speaker_count": 2,
+        "microphone": null,
+        "webcam_resolution": "1080p",
+        "has_privacy_shutter": true,
+        "has_ir_camera": null,
+        "raw_spec": "Audio: Stereo speakers, 2W x 2 | Audio Technology: Nahimic | Camera: 1080p FHD camera with E-shutter"
+      },
+      "connectivity": {
+        "wifi": "Wi-Fi 6",
+        "bluetooth": "Bluetooth 5.2",
+        "ethernet": "RJ-45",
+        "ports": [
+          "3x USB-A",
+          "1x USB-C",
+          "HDMI 2.1",
+          "RJ-45",
+          "Power Delivery up to 140W",
+          "DisplayPort 1.4",
+          "3x USB-A",
+          "USB-C with up to 140W Power Delivery and DisplayPort 1.4",
+          "HDMI 2.1",
+          "RJ-45",
+          "Wi-Fi 6",
+          "Bluetooth 5.2"
+        ],
+        "has_card_reader": null,
+        "card_reader_type": null,
+        "thunderbolt_version": null,
+        "raw_spec": "Ports: 3x USB-A, 1x USB-C, HDMI 2.1, RJ-45 | USB-C Features: Power Delivery up to 140W, DisplayPort 1.4 | Wireless: Wi-Fi 6 (802.11ax 2x2) | Bluetooth: Bluetooth 5.2 | Connectivity: 3x USB-A, USB-C with up to 140W Power Delivery and DisplayPort 1.4, HDMI 2.1, RJ-45, Wi-Fi 6, Bluetooth 5.2"
+      },
+      "operating_system": {
+        "name": "FreeDOS",
+        "raw_spec": "Operating System: FreeDOS"
+      }
+    }
+  }
+]

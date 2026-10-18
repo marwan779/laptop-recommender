@@ -24,6 +24,7 @@ from app.engine.scrapling_engine import ScraplingEngine
 from pipeline.ai_fallback.base import IAIFallbackExtractor
 from pipeline.cpu_anchor import CPUAnchorExtractor
 from pipeline.deterministic import DeterministicExtractor
+from pipeline.envelope_normalizer import EnvelopePromptNormalizer
 from pipeline.physical_validator import PhysicalValidator
 from pipeline.provenance import ProvenanceTracker
 from pipeline.raw_storage import RawScrapeStorage
@@ -70,6 +71,7 @@ class LaptopExtractionPipeline:
         self.cpu_anchor = CPUAnchorExtractor()
         self.deterministic = DeterministicExtractor()
         self.validator = PhysicalValidator()
+        self.prompt_normalizer = EnvelopePromptNormalizer()
         self.log_envelopes = log_envelopes
 
     def process_raw_product(self, product: RawScrapedProduct) -> PipelineResult:
@@ -314,6 +316,10 @@ class LaptopExtractionPipeline:
                     )
             else:
                 logger.info("[COMPONENT ENVELOPE] 0 component envelopes generated (all covered or source absent).")
+
+        # --- Pre-AI: Envelope Prompt Normalization (Storage & Memory) ---
+        if component_envelopes:
+            component_envelopes = [self.prompt_normalizer.normalize_envelope(env) for env in component_envelopes]
 
         # --- Layer 6: AI Fallback Layer ---
         ai_results: List[EnvelopeResult] = []

@@ -34,6 +34,7 @@ sys.path.insert(0, os.path.abspath("."))
 from pipeline.ai_fallback.nuextract import NuExtractONNXFallbackExtractor
 from pipeline.cpu_anchor import CPUAnchorExtractor
 from pipeline.deterministic import DeterministicExtractor
+from pipeline.envelope_normalizer import EnvelopePromptNormalizer
 from pipeline.physical_validator import PhysicalValidator
 from pipeline.sanitizer import TextSanitizer
 from pipeline.schema import (
@@ -200,9 +201,12 @@ def run_sandbox_on_product(
     sanitizer: TextSanitizer,
     validator: SandboxPhysicalValidator,
     ai_fallback: NuExtractONNXFallbackExtractor,
+    normalizer: Optional[EnvelopePromptNormalizer] = None,
 ) -> Dict[str, Any]:
     """Execute the sandbox pipeline on a single product."""
     t0 = time.time()
+    if normalizer is None:
+        normalizer = EnvelopePromptNormalizer()
     
     # 1. Sanitizer
     sanitized_title = sanitizer.clean_text(raw_prod.title)
@@ -292,10 +296,13 @@ def run_sandbox_on_product(
             )
         )
 
+    # 5.5 Pre-AI Envelope Prompt Normalization (Storage & Memory)
+    normalized_envelopes = [normalizer.normalize_envelope(env) for env in component_envelopes]
+
     # 6. Layer 6: AI Fallback Extraction (NuExtract-2.0-2B)
     t_ai_start = time.time()
     ai_results = []
-    for env in component_envelopes:
+    for env in normalized_envelopes:
         cr = ai_fallback.extract_component_envelope(env)
         ai_results.append(cr)
         for f_name, candidate_val in cr.extracted_fields.items():
@@ -321,7 +328,7 @@ def run_sandbox_on_product(
                 "resolved_by_ai": next((cr.extracted_fields for cr in ai_results if cr.component_name == env.component_name), {}),
                 "raw_context": env.raw_spec,
             }
-            for env in component_envelopes
+            for env in normalized_envelopes
         ],
         "timing": {
             "deterministic_s": round(t_deterministic, 3),
@@ -335,6 +342,7 @@ def main():
     parser = argparse.ArgumentParser(description="Sandbox Targeted AI Fallback Test")
     parser.add_argument("--index", type=int, default=None, help="Single laptop index to test (0-123)")
     parser.add_argument("--sample", action="store_true", help="Run on a curated representative sample of 6 edge-case laptops")
+    parser.add_argument("--cases", action="store_true", help="Run on the 5 specific contradiction test cases (indices 49, 67, 85, 93, 121)")
     parser.add_argument("--all", action="store_true", help="Run on all laptops in the catalog")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of laptops to process")
     parser.add_argument("--live", action="store_true", help="Crawl live laptops directly from CompuMarts website")
@@ -373,7 +381,9 @@ def main():
         with open(results_file, "r", encoding="utf-8") as f:
             catalog = json.load(f)
 
-        if args.sample:
+        if args.cases:
+            target_indices = [49, 67, 85, 93, 121]
+        elif args.sample:
             target_indices = [0, 3, 19, 69, 70, 78]
         elif args.index is not None:
             target_indices = [args.index]
@@ -442,6 +452,7 @@ def main():
     cpu_anchor = CPUAnchorExtractor()
     deterministic = SandboxDeterministicExtractor()
     validator = SandboxPhysicalValidator()
+    normalizer = EnvelopePromptNormalizer()
 
     print("\n[Loading NuExtract-2.0-2B for AI Fallback]...")
     ai_fallback = NuExtractONNXFallbackExtractor(
@@ -486,6 +497,7 @@ def main():
                 sanitizer=sanitizer,
                 validator=validator,
                 ai_fallback=ai_fallback,
+                normalizer=normalizer,
             )
             res["index"] = idx
             res["baseline_specs"] = item["baseline_specs"]
