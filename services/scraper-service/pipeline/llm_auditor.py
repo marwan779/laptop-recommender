@@ -174,8 +174,8 @@ class GeminiAuditor:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gemini-2.5-flash",
-        fallback_model: str = "gemini-1.5-flash",
+        model: str = "gemini-flash-latest",
+        fallback_models: Optional[List[str]] = None,
         requests_per_minute: float = 14.0,
         max_retries: int = 3,
     ):
@@ -187,7 +187,7 @@ class GeminiAuditor:
             )
 
         self.model = model
-        self.fallback_model = fallback_model
+        self.fallback_models = fallback_models or ["gemini-3.8-flash", "gemini-flash-lite-latest"]
         self.max_retries = max_retries
         self.rate_limiter = RateLimiter(requests_per_minute=requests_per_minute)
 
@@ -245,8 +245,9 @@ class GeminiAuditor:
         )
 
         models_to_try = [self.model]
-        if self.fallback_model and self.fallback_model != self.model:
-            models_to_try.append(self.fallback_model)
+        for fm in self.fallback_models:
+            if fm not in models_to_try:
+                models_to_try.append(fm)
 
         last_error = None
         for current_model in models_to_try:
@@ -279,17 +280,24 @@ class GeminiAuditor:
                     last_error = e
                     status_code = getattr(e, "code", None)
                     is_rate_limit = status_code == 429 or "RESOURCE_EXHAUSTED" in str(e) or "quota" in str(e).lower()
+                    is_unavailable = status_code == 503 or "UNAVAILABLE" in str(e)
+                    is_not_found = status_code == 404 or "NOT_FOUND" in str(e)
 
-                    if is_rate_limit and attempt < self.max_retries:
-                        backoff = 5.0 * (2 ** attempt)
+                    if is_not_found:
+                        logger.warning("Model %s not found (404). Switching to next available fallback model...", current_model)
+                        break
+
+                    if (is_rate_limit or is_unavailable) and attempt < self.max_retries:
+                        backoff = 4.0 * (2 ** attempt)
                         logger.warning(
-                            "Rate limit hit on %s (attempt %d/%d). Backing off for %.1fs...",
+                            "Transient %s on %s (attempt %d/%d). Backing off for %.1fs...",
+                            "RateLimit (429)" if is_rate_limit else "Unavailable (503)",
                             current_model, attempt, self.max_retries, backoff
                         )
                         time.sleep(backoff)
                         continue
                     else:
-                        logger.warning("Gemini API Error on %s: %s", current_model, e)
+                        logger.warning("Gemini API Error on %s: %s. Trying next model...", current_model, e)
                         break
 
                 except Exception as e:

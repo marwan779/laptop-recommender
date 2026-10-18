@@ -5520,7 +5520,7 @@
         "capacity_gb": 32,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": 2,
+        "slot_count": 0,
         "max_supported_gb": null,
         "is_soldered": true,
         "raw_spec": "Ram: 32GB | Ram Info: 32GB Soldered LPDDR5X-7467 | Ram Slots: Memory soldered to systemboard, no slots, dual-channel | MEMORY: 32GB"
@@ -11611,7 +11611,7 @@
         "capacity_gb": 16,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
         "is_soldered": true,
         "raw_spec": "RAM: 16GB LPDDR5X (On Board) | MEMORY: 16GB LPDDR5X (On Board)"
@@ -11669,7 +11669,7 @@
       },
       "audio_webcam": {
         "speaker_count": null,
-        "microphone": "Smart Amp Technology, SonicMaster, Built-in Speakers & Mic",
+        "microphone": "Built-in Mic",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": true,
         "has_ir_camera": true,
@@ -13966,7 +13966,7 @@
         "has_fingerprint": false,
         "has_numpad": true,
         "pointing_device": "Precision touchpad",
-        "chassis_material": "US MIL-STD 810H durability",
+        "chassis_material": null,
         "security_features": [
           "Firmware TPM, BIOS password protection, McAfee security"
         ],
@@ -13974,7 +13974,7 @@
       },
       "audio_webcam": {
         "speaker_count": null,
-        "microphone": "SonicMaster speakers, built-in microphone array",
+        "microphone": "built-in microphone array",
         "webcam_resolution": "720p",
         "has_privacy_shutter": true,
         "has_ir_camera": null,
@@ -18078,7 +18078,7 @@
         "capacity_gb": 1024,
         "storage_type": "SSD",
         "interface": "NVMe",
-        "form_factor": "2.5-inch",
+        "form_factor": "M.2",
         "slot_count": 1,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB NVMe PCIe Gen4 SSD (plus 1x 2.5\" SATA HDD/SSD expansion slot)"

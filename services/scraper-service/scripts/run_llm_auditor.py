@@ -175,14 +175,14 @@ def main() -> None:
     parser.add_argument(
         "--model",
         type=str,
-        default="gemini-2.5-flash",
-        help="Gemini model name (default: gemini-2.5-flash)",
+        default="gemini-flash-latest",
+        help="Gemini model name (default: gemini-flash-latest)",
     )
     parser.add_argument(
-        "--fallback-model",
+        "--fallback-models",
         type=str,
-        default="gemini-1.5-flash",
-        help="Gemini fallback model name (default: gemini-1.5-flash)",
+        default="gemini-3.8-flash,gemini-flash-lite-latest",
+        help="Comma-separated Gemini fallback model names (default: 'gemini-3.8-flash,gemini-flash-lite-latest')",
     )
     parser.add_argument(
         "--api-key",
@@ -260,10 +260,11 @@ def main() -> None:
 
     # Initialize GeminiAuditor
     try:
+        fallback_list = [m.strip() for m in args.fallback_models.split(",") if m.strip()]
         auditor = GeminiAuditor(
             api_key=args.api_key,
             model=args.model,
-            fallback_model=args.fallback_model,
+            fallback_models=fallback_list,
         )
     except ValueError as e:
         logger.error(str(e))
