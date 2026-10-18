@@ -116,7 +116,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -223,8 +223,8 @@
     ],
     "timing": {
       "deterministic_s": 0.017,
-      "ai_fallback_s": 13.552,
-      "total_s": 13.57
+      "ai_fallback_s": 13.457,
+      "total_s": 13.475
     },
     "index": 0,
     "baseline_specs": {
@@ -435,7 +435,7 @@
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 1024,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 SSD up to 1TB each"
       },
       "display": {
@@ -536,7 +536,7 @@
           "slot_count": 2,
           "max_supported_gb": 16
         },
-        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 16GB DDR5-4800 offering"
+        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 16GB DDR5-4800 offering\n[Memory Summary: Maximum supported memory: 16 GB.]"
       },
       {
         "subsystem": "storage",
@@ -546,9 +546,9 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 2
+          "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 SSD up to 1TB each"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 SSD up to 1TB each\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -583,9 +583,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.017,
-      "ai_fallback_s": 12.401,
-      "total_s": 12.419
+      "deterministic_s": 0.015,
+      "ai_fallback_s": 12.153,
+      "total_s": 12.168
     },
     "index": 1,
     "baseline_specs": {
@@ -791,7 +791,7 @@
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 1024,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD; M.2 SSD up to 1TB each"
       },
       "display": {
@@ -892,7 +892,7 @@
           "slot_count": 2,
           "max_supported_gb": 16
         },
-        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 16GB DDR5-4800 offering"
+        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 16GB DDR5-4800 offering\n[Memory Summary: Maximum supported memory: 16 GB.]"
       },
       {
         "subsystem": "storage",
@@ -902,9 +902,9 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 2
+          "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD; M.2 SSD up to 1TB each"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD; M.2 SSD up to 1TB each\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -939,9 +939,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.01,
-      "ai_fallback_s": 11.808,
-      "total_s": 11.818
+      "deterministic_s": 0.009,
+      "ai_fallback_s": 11.913,
+      "total_s": 11.922
     },
     "index": 2,
     "baseline_specs": {
@@ -1203,7 +1203,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -1320,9 +1320,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.016,
-      "ai_fallback_s": 15.586,
-      "total_s": 15.603
+      "deterministic_s": 0.013,
+      "ai_fallback_s": 15.53,
+      "total_s": 15.543
     },
     "index": 3,
     "baseline_specs": {
@@ -1582,7 +1582,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -1699,8 +1699,8 @@
     ],
     "timing": {
       "deterministic_s": 0.013,
-      "ai_fallback_s": 15.135,
-      "total_s": 15.148
+      "ai_fallback_s": 15.281,
+      "total_s": 15.294
     },
     "index": 4,
     "baseline_specs": {
@@ -1959,7 +1959,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -2076,8 +2076,8 @@
     ],
     "timing": {
       "deterministic_s": 0.012,
-      "ai_fallback_s": 15.178,
-      "total_s": 15.19
+      "ai_fallback_s": 16.006,
+      "total_s": 16.018
     },
     "index": 5,
     "baseline_specs": {
@@ -2297,7 +2297,7 @@
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
         "slot_count": 2,
-        "max_supported_gb": 2048,
+        "max_supported_gb": 1024,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each"
       },
       "display": {
@@ -2399,7 +2399,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800"
+        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -2409,9 +2409,9 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 2048
+          "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -2452,9 +2452,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.014,
-      "ai_fallback_s": 12.445,
-      "total_s": 12.459
+      "deterministic_s": 0.013,
+      "ai_fallback_s": 12.832,
+      "total_s": 12.845
     },
     "index": 6,
     "baseline_specs": {
@@ -2714,7 +2714,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "Dual stereo speakers, dual array microphones",
+        "microphone": "dual array microphones",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -2817,9 +2817,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.011,
-      "ai_fallback_s": 13.47,
-      "total_s": 13.481
+      "deterministic_s": 0.01,
+      "ai_fallback_s": 13.749,
+      "total_s": 13.76
     },
     "index": 7,
     "baseline_specs": {
@@ -3181,9 +3181,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 12.332,
-      "total_s": 12.341
+      "deterministic_s": 0.008,
+      "ai_fallback_s": 12.795,
+      "total_s": 12.803
     },
     "index": 8,
     "baseline_specs": {
@@ -3540,8 +3540,8 @@
     ],
     "timing": {
       "deterministic_s": 0.007,
-      "ai_fallback_s": 12.042,
-      "total_s": 12.049
+      "ai_fallback_s": 11.944,
+      "total_s": 11.951
     },
     "index": 9,
     "baseline_specs": {
@@ -3849,7 +3849,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 16GB DDR5 4800MHz | Memory Slots: Two DDR5 slots | Max Memory: Up to 32GB DDR5-4800"
+        "raw_context": "Memory: 16GB DDR5 4800MHz | Memory Slots: Two DDR5 slots | Max Memory: Up to 32GB DDR5-4800\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -3862,7 +3862,7 @@
           "form_factor": "M.2 2280 PCIe 4.0 x4",
           "slot_count": 2
         },
-        "raw_context": "Storage: 512GB Nvme GEN 4 | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots"
+        "raw_context": "Storage: 512GB Nvme GEN 4 | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -3894,9 +3894,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 11.959,
-      "total_s": 11.966
+      "deterministic_s": 0.007,
+      "ai_fallback_s": 11.902,
+      "total_s": 11.91
     },
     "index": 10,
     "baseline_specs": {
@@ -4253,9 +4253,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 13.618,
-      "total_s": 13.624
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 13.948,
+      "total_s": 13.952
     },
     "index": 11,
     "baseline_specs": {
@@ -4580,8 +4580,8 @@
     ],
     "timing": {
       "deterministic_s": 0.004,
-      "ai_fallback_s": 9.294,
-      "total_s": 9.298
+      "ai_fallback_s": 8.895,
+      "total_s": 8.899
     },
     "index": 12,
     "baseline_specs": {
@@ -4791,7 +4791,7 @@
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
         "slot_count": 2,
-        "max_supported_gb": 2048,
+        "max_supported_gb": 1024,
         "raw_spec": "Storage: 1TB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each"
       },
       "display": {
@@ -4899,7 +4899,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 32GB DDR5-4800, 2 × 16GB SO-DIMM, dual-channel capable | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800 offering"
+        "raw_context": "Memory: 32GB DDR5-4800, 2 × 16GB SO-DIMM, dual-channel capable | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800 offering\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -4909,9 +4909,9 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 2048
+          "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 1TB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each"
+        "raw_context": "Storage: 1TB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "display",
@@ -4960,9 +4960,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 15.596,
-      "total_s": 15.605
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 15.695,
+      "total_s": 15.702
     },
     "index": 13,
     "baseline_specs": {
@@ -5289,7 +5289,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 16GB DDR5-5600 SODIMM | Memory Configuration: 1 × 16GB | Memory Slots: 2 × DDR5 SODIMM | Maximum Memory: Up to 32GB DDR5-5600 | MEMORY: 16GB DDR5-5600 SODIMM (1 × 16GB)"
+        "raw_context": "Memory: 16GB DDR5-5600 SODIMM | Memory Configuration: 1 × 16GB | Memory Slots: 2 × DDR5 SODIMM | Maximum Memory: Up to 32GB DDR5-5600 | MEMORY: 16GB DDR5-5600 SODIMM (1 × 16GB)\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -5333,9 +5333,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 12.196,
-      "total_s": 12.206
+      "deterministic_s": 0.013,
+      "ai_fallback_s": 11.761,
+      "total_s": 11.775
     },
     "index": 14,
     "baseline_specs": {
@@ -5655,7 +5655,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 16GB DDR5-5600 SODIMM | Memory Configuration: 1 × 16GB | Memory Slots: 2 × DDR5 SODIMM | Maximum Memory: Up to 32GB DDR5-5600 | MAX MEMORY: Up to 32GB DDR5-5600"
+        "raw_context": "Memory: 16GB DDR5-5600 SODIMM | Memory Configuration: 1 × 16GB | Memory Slots: 2 × DDR5 SODIMM | Maximum Memory: Up to 32GB DDR5-5600 | MAX MEMORY: Up to 32GB DDR5-5600\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -5707,9 +5707,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 12.208,
-      "total_s": 12.217
+      "deterministic_s": 0.011,
+      "ai_fallback_s": 12.746,
+      "total_s": 12.757
     },
     "index": 15,
     "baseline_specs": {
@@ -5914,7 +5914,7 @@
         "speed": 5200,
         "slot_count": 2,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: 24GB DDR5-5200, dual-channel capable, 2 × SODIMM slots | Memory Slots: 2 × DDR5"
       },
       "storage": {
@@ -6019,9 +6019,10 @@
         ],
         "resolved_by_ai": {
           "speed": 5200,
-          "slot_count": 2
+          "slot_count": 2,
+          "is_soldered": false
         },
-        "raw_context": "Memory: 24GB DDR5-5200, dual-channel capable, 2 × SODIMM slots | Memory Slots: 2 × DDR5"
+        "raw_context": "Memory: 24GB DDR5-5200, dual-channel capable, 2 × SODIMM slots | Memory Slots: 2 × DDR5\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -6070,9 +6071,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 12.578,
-      "total_s": 12.588
+      "deterministic_s": 0.012,
+      "ai_fallback_s": 12.918,
+      "total_s": 12.93
     },
     "index": 16,
     "baseline_specs": {
@@ -6432,9 +6433,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 13.082,
-      "total_s": 13.085
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 13.786,
+      "total_s": 13.79
     },
     "index": 17,
     "baseline_specs": {
@@ -6791,9 +6792,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.007,
-      "ai_fallback_s": 12.887,
-      "total_s": 12.894
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 13.308,
+      "total_s": 13.312
     },
     "index": 18,
     "baseline_specs": {
@@ -7053,7 +7054,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "2 × 2W Speakers, Array Microphone, Nahimic 3 and Hi-Res Audio Ready",
+        "microphone": "Array Microphone",
         "webcam_resolution": "720p",
         "has_privacy_shutter": true,
         "has_ir_camera": null,
@@ -7102,7 +7103,7 @@
           "slot_count": 2,
           "max_supported_gb": 96
         },
-        "raw_context": "Memory: 32GB DDR5 RAM (2 × 16GB) | Memory Capability: 2 RAM Slots, supports up to 96GB DDR5-6400"
+        "raw_context": "Memory: 32GB DDR5 RAM (2 × 16GB) | Memory Capability: 2 RAM Slots, supports up to 96GB DDR5-6400\n[Memory Summary: Maximum supported memory: 96 GB.]"
       },
       {
         "subsystem": "storage",
@@ -7113,7 +7114,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 2TB M.2 NVMe PCIe SSD | Storage Capability: 1 × M.2 NVMe PCIe Gen4 Slot and 1 × M.2 NVMe PCIe Gen5 Compatible Slot"
+        "raw_context": "Storage: 2TB M.2 NVMe PCIe SSD | Storage Capability: 1 × M.2 NVMe PCIe Gen4 Slot and 1 × M.2 NVMe PCIe Gen5 Compatible Slot\n[Storage Summary: Total physical storage slots: 2 (2 separate drive slots).]"
       },
       {
         "subsystem": "display",
@@ -7155,9 +7156,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 15.891,
-      "total_s": 15.897
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 14.777,
+      "total_s": 14.781
     },
     "index": 19,
     "baseline_specs": {
@@ -7469,7 +7470,7 @@
           "slot_count": 2,
           "max_supported_gb": 96
         },
-        "raw_context": "Memory: 16GB DDR5-5600 | Memory Slots: 2 Slots | Maximum Memory: Up to 96GB"
+        "raw_context": "Memory: 16GB DDR5-5600 | Memory Slots: 2 Slots | Maximum Memory: Up to 96GB\n[Memory Summary: Maximum supported memory: 96 GB.]"
       },
       {
         "subsystem": "storage",
@@ -7524,8 +7525,8 @@
     ],
     "timing": {
       "deterministic_s": 0.004,
-      "ai_fallback_s": 14.289,
-      "total_s": 14.293
+      "ai_fallback_s": 14.272,
+      "total_s": 14.276
     },
     "index": 20,
     "baseline_specs": {
@@ -7741,7 +7742,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": null,
-        "slot_count": 1,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB NVMe SSD | Storage Type: PCIe 4.0 NVMe SSD | Additional Storage Support: 1 x M.2 PCIe Gen5 slot"
       },
@@ -7835,7 +7836,7 @@
           "slot_count": 2,
           "max_supported_gb": 96
         },
-        "raw_context": "RAM: 16GB DDR5 | RAM Slots: 2 | Maximum RAM: Up to 96GB | MEMORY: 16GB DDR5"
+        "raw_context": "RAM: 16GB DDR5 | RAM Slots: 2 | Maximum RAM: Up to 96GB | MEMORY: 16GB DDR5\n[Memory Summary: Maximum supported memory: 96 GB.]"
       },
       {
         "subsystem": "storage",
@@ -7845,9 +7846,9 @@
           "max_supported_gb"
         ],
         "resolved_by_ai": {
-          "slot_count": 1
+          "slot_count": 2
         },
-        "raw_context": "Storage: 1TB NVMe SSD | Storage Type: PCIe 4.0 NVMe SSD | Additional Storage Support: 1 x M.2 PCIe Gen5 slot"
+        "raw_context": "Storage: 1TB NVMe SSD | Storage Type: PCIe 4.0 NVMe SSD | Additional Storage Support: 1 x M.2 PCIe Gen5 slot\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "display",
@@ -7888,9 +7889,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 15.083,
-      "total_s": 15.086
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 14.415,
+      "total_s": 14.418
     },
     "index": 21,
     "baseline_specs": {
@@ -8235,9 +8236,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.007,
-      "ai_fallback_s": 10.223,
-      "total_s": 10.23
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 10.281,
+      "total_s": 10.286
     },
     "index": 22,
     "baseline_specs": {
@@ -8587,8 +8588,8 @@
     ],
     "timing": {
       "deterministic_s": 0.005,
-      "ai_fallback_s": 11.582,
-      "total_s": 11.587
+      "ai_fallback_s": 11.475,
+      "total_s": 11.48
     },
     "index": 23,
     "baseline_specs": {
@@ -8843,7 +8844,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -8942,8 +8943,8 @@
     ],
     "timing": {
       "deterministic_s": 0.004,
-      "ai_fallback_s": 10.682,
-      "total_s": 10.686
+      "ai_fallback_s": 10.891,
+      "total_s": 10.895
     },
     "index": 24,
     "baseline_specs": {
@@ -9256,7 +9257,7 @@
         "resolved_by_ai": {
           "max_supported_gb": 96
         },
-        "raw_context": "Memory: 16GB DDR5 5600MHz (Up to 96GB Supported)"
+        "raw_context": "Memory: 16GB DDR5 5600MHz (Up to 96GB Supported)\n[Memory Summary: Maximum supported memory: 96 GB.]"
       },
       {
         "subsystem": "storage",
@@ -9306,8 +9307,8 @@
     ],
     "timing": {
       "deterministic_s": 0.004,
-      "ai_fallback_s": 13.869,
-      "total_s": 13.873
+      "ai_fallback_s": 14.541,
+      "total_s": 14.545
     },
     "index": 25,
     "baseline_specs": {
@@ -9652,9 +9653,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.017,
-      "ai_fallback_s": 11.433,
-      "total_s": 11.45
+      "deterministic_s": 0.015,
+      "ai_fallback_s": 11.332,
+      "total_s": 11.347
     },
     "index": 26,
     "baseline_specs": {
@@ -9847,7 +9848,7 @@
         "capacity_gb": 32,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 1,
         "max_supported_gb": null,
         "is_soldered": true,
         "raw_spec": "Ram: 32GB | Ram Info: 32GB Soldered LPDDR5X-7467 | Ram Slots: Memory soldered to systemboard, no slots, dual-channel | MEMORY: 32GB"
@@ -9950,9 +9951,10 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
+          "slot_count": 1,
           "is_soldered": true
         },
-        "raw_context": "Ram: 32GB | Ram Info: 32GB Soldered LPDDR5X-7467 | Ram Slots: Memory soldered to systemboard, no slots, dual-channel | MEMORY: 32GB"
+        "raw_context": "Ram: 32GB | Ram Info: 32GB Soldered LPDDR5X-7467 | Ram Slots: Memory soldered to systemboard, no slots, dual-channel | MEMORY: 32GB\n[Memory Summary: Total memory expansion slots: 1 SO-DIMM slot. Soldered memory: true (hybrid onboard + SO-DIMM slot).]"
       },
       {
         "subsystem": "storage",
@@ -9963,7 +9965,7 @@
         "resolved_by_ai": {
           "max_supported_gb": 2048
         },
-        "raw_context": "Internal: 1TB | Storage: 1TB SSD M.2 2242 PCIe 4.0 NVMe | Storage Support: One drive up to 2TB M.2 2242 SSD"
+        "raw_context": "Internal: 1TB | Storage: 1TB SSD M.2 2242 PCIe 4.0 NVMe | Storage Support: One drive up to 2TB M.2 2242 SSD\n[Storage Summary: Maximum supported storage capacity: 2048 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -10007,9 +10009,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.008,
-      "ai_fallback_s": 11.76,
-      "total_s": 11.769
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 12.757,
+      "total_s": 12.763
     },
     "index": 27,
     "baseline_specs": {
@@ -10327,7 +10329,7 @@
         "resolved_by_ai": {
           "slot_count": 1
         },
-        "raw_context": "Internal: 512GB | Storage: 512GB PCIe 4.0 NVMe M.2 SSD | Storage Support: supports only one M.2 slot"
+        "raw_context": "Internal: 512GB | Storage: 512GB PCIe 4.0 NVMe M.2 SSD | Storage Support: supports only one M.2 slot\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -10370,9 +10372,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 11.883,
-      "total_s": 11.893
+      "deterministic_s": 0.012,
+      "ai_fallback_s": 12.958,
+      "total_s": 12.97
     },
     "index": 28,
     "baseline_specs": {
@@ -10694,9 +10696,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 8.746,
-      "total_s": 8.751
+      "deterministic_s": 0.002,
+      "ai_fallback_s": 8.711,
+      "total_s": 8.714
     },
     "index": 29,
     "baseline_specs": {
@@ -10996,7 +10998,7 @@
           "slot_count": 2,
           "max_supported_gb": 64
         },
-        "raw_context": "Memory: 8GB DDR4 3200MHz | Memory Slots: 2 | Maximum Memory: 64GB"
+        "raw_context": "Memory: 8GB DDR4 3200MHz | Memory Slots: 2 | Maximum Memory: 64GB\n[Memory Summary: Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -11049,9 +11051,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.008,
-      "ai_fallback_s": 14.21,
-      "total_s": 14.219
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 13.853,
+      "total_s": 13.86
     },
     "index": 30,
     "baseline_specs": {
@@ -11400,9 +11402,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 9.859,
-      "total_s": 9.865
+      "deterministic_s": 0.003,
+      "ai_fallback_s": 11.141,
+      "total_s": 11.144
     },
     "index": 31,
     "baseline_specs": {
@@ -11746,8 +11748,8 @@
     ],
     "timing": {
       "deterministic_s": 0.003,
-      "ai_fallback_s": 12.4,
-      "total_s": 12.403
+      "ai_fallback_s": 12.508,
+      "total_s": 12.511
     },
     "index": 32,
     "baseline_specs": {
@@ -12062,7 +12064,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 1x 16GB SODIMM DDR5-5600 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-5600 offering"
+        "raw_context": "Memory: 1x 16GB SODIMM DDR5-5600 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-5600 offering\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -12071,10 +12073,9 @@
           "max_supported_gb"
         ],
         "resolved_by_ai": {
-          "slot_count": 2,
-          "max_supported_gb": 2
+          "slot_count": 2
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 slots | Max Storage Support: Up to two drives, 2x M.2 SSD"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 slots | Max Storage Support: Up to two drives, 2x M.2 SSD\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -12119,8 +12120,8 @@
     ],
     "timing": {
       "deterministic_s": 0.011,
-      "ai_fallback_s": 12.436,
-      "total_s": 12.447
+      "ai_fallback_s": 13.266,
+      "total_s": 13.277
     },
     "index": 33,
     "baseline_specs": {
@@ -12497,9 +12498,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 13.17,
-      "total_s": 13.176
+      "deterministic_s": 0.003,
+      "ai_fallback_s": 14.302,
+      "total_s": 14.306
     },
     "index": 34,
     "baseline_specs": {
@@ -12696,9 +12697,9 @@
         "capacity_gb": 16,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "On Board Memory: 16GB LPDDR5X on board | Total System Memory: LPDDR5X 16GB | MEMORY: 16GB LPDDR5X on board"
       },
       "storage": {
@@ -12753,8 +12754,8 @@
         "raw_spec": "LCD Cover Material: Mg-Al | Top Case Material: Mg-Al | Keyboard Color: Gray | Bottom Case Material: Mg-Al | Military Grade: US MIL-STD 810H military-grade standard | Keyboard Type: Backlit Chiclet Keyboard with Copilot key | Touchpad: Precision touchpad | Security: IR webcam with Windows Hello support; McAfee ; BIOS Booting User Password Protection; BIOS setup user password; Microsoft Pluton security processor; Trusted Platform Module (Firmware TPM)"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": "Smart Amp Technology; Built-in speaker; Built-in array microphone",
+        "speaker_count": 1,
+        "microphone": "Built-in array microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": true,
@@ -12799,8 +12800,11 @@
           "max_supported_gb",
           "is_soldered"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "On Board Memory: 16GB LPDDR5X on board | Total System Memory: LPDDR5X 16GB | MEMORY: 16GB LPDDR5X on board"
+        "resolved_by_ai": {
+          "slot_count": 0,
+          "is_soldered": true
+        },
+        "raw_context": "On Board Memory: 16GB LPDDR5X on board | Total System Memory: LPDDR5X 16GB | MEMORY: 16GB LPDDR5X on board\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -12811,7 +12815,7 @@
         "resolved_by_ai": {
           "slot_count": 1
         },
-        "raw_context": "Expansion Slot: 1x M.2 2280 PCIe 4.0x4 | Storage: 512GB M.2 NVMe PCIe 4.0 SSD"
+        "raw_context": "Expansion Slot: 1x M.2 2280 PCIe 4.0x4 | Storage: 512GB M.2 NVMe PCIe 4.0 SSD\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "power_battery",
@@ -12829,6 +12833,7 @@
           "has_privacy_shutter"
         ],
         "resolved_by_ai": {
+          "speaker_count": 1,
           "has_ir_camera": true
         },
         "raw_context": "Front-facing Camera: FHD camera with IR function to support Windows Hello | Audio: Smart Amp Technology; Built-in speaker; Built-in array microphone"
@@ -12847,8 +12852,8 @@
     ],
     "timing": {
       "deterministic_s": 0.022,
-      "ai_fallback_s": 11.667,
-      "total_s": 11.689
+      "ai_fallback_s": 12.431,
+      "total_s": 12.453
     },
     "index": 35,
     "baseline_specs": {
@@ -13104,7 +13109,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "2×2W Speakers, Array Microphone",
+        "microphone": "Array Microphone",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -13207,9 +13212,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.004,
-      "ai_fallback_s": 14.324,
-      "total_s": 14.328
+      "deterministic_s": 0.003,
+      "ai_fallback_s": 14.691,
+      "total_s": 14.695
     },
     "index": 36,
     "baseline_specs": {
@@ -13559,8 +13564,8 @@
     ],
     "timing": {
       "deterministic_s": 0.003,
-      "ai_fallback_s": 11.557,
-      "total_s": 11.56
+      "ai_fallback_s": 12.407,
+      "total_s": 12.41
     },
     "index": 37,
     "baseline_specs": {
@@ -13867,7 +13872,7 @@
           "slot_count": 2,
           "max_supported_gb": 96
         },
-        "raw_context": "Memory: 16GB DDR5 5200MHz | Memory Slots: 2 x DDR5 Slots | Memory Capability: 2 RAM Slots, upgradeable up to 96GB DDR5-5200"
+        "raw_context": "Memory: 16GB DDR5 5200MHz | Memory Slots: 2 x DDR5 Slots | Memory Capability: 2 RAM Slots, upgradeable up to 96GB DDR5-5200\n[Memory Summary: Maximum supported memory: 96 GB.]"
       },
       {
         "subsystem": "storage",
@@ -13920,8 +13925,8 @@
     ],
     "timing": {
       "deterministic_s": 0.005,
-      "ai_fallback_s": 15.311,
-      "total_s": 15.316
+      "ai_fallback_s": 17.222,
+      "total_s": 17.227
     },
     "index": 38,
     "baseline_specs": {
@@ -14190,7 +14195,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -14320,8 +14325,8 @@
     ],
     "timing": {
       "deterministic_s": 0.007,
-      "ai_fallback_s": 16.207,
-      "total_s": 16.214
+      "ai_fallback_s": 16.775,
+      "total_s": 16.781
     },
     "index": 39,
     "baseline_specs": {
@@ -14589,7 +14594,7 @@
       },
       "audio_webcam": {
         "speaker_count": 4,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -14638,7 +14643,7 @@
         "resolved_by_ai": {
           "max_supported_gb": 64
         },
-        "raw_context": "Standard Memory: 16 GB | Maximum Supported System Memory: 64 GB | System Memory Technology: DDR5 SDRAM | Memory: 16GB DDR5 6400MT/s, supports up to 64GB | Every Frame Looks Unbelievable.: The 16-inch OLED display combines a sharp 2560 × 1600 resolution with a fluid 240Hz refresh rate. Its 16:10 aspect ratio provides more vertical viewing space, while 100% DCI-P3 color coverage produces rich, accurate colors for gaming, editing and professional creative work."
+        "raw_context": "Standard Memory: 16 GB | Maximum Supported System Memory: 64 GB | System Memory Technology: DDR5 SDRAM | Memory: 16GB DDR5 6400MT/s, supports up to 64GB | Every Frame Looks Unbelievable.: The 16-inch OLED display combines a sharp 2560 × 1600 resolution with a fluid 240Hz refresh rate. Its 16:10 aspect ratio provides more vertical viewing space, while 100% DCI-P3 color coverage produces rich, accurate colors for gaming, editing and professional creative work.\n[Memory Summary: Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -14700,9 +14705,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 15.729,
-      "total_s": 15.737
+      "deterministic_s": 0.011,
+      "ai_fallback_s": 16.803,
+      "total_s": 16.815
     },
     "index": 40,
     "baseline_specs": {
@@ -15024,7 +15029,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800"
+        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -15033,10 +15038,9 @@
           "max_supported_gb"
         ],
         "resolved_by_ai": {
-          "slot_count": 2,
-          "max_supported_gb": 2
+          "slot_count": 2
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -15077,9 +15081,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.014,
-      "ai_fallback_s": 11.775,
-      "total_s": 11.789
+      "deterministic_s": 0.011,
+      "ai_fallback_s": 13.192,
+      "total_s": 13.204
     },
     "index": 41,
     "baseline_specs": {
@@ -15293,7 +15297,7 @@
         "memory_type": "DDR5",
         "speed": "5200 MHz",
         "slot_count": null,
-        "max_supported_gb": null,
+        "max_supported_gb": 64,
         "is_soldered": null,
         "raw_spec": "System Memory: Up to 64GB DDR5 5200MHz | MEMORY: Up to 64GB DDR5 5200MHz"
       },
@@ -15303,7 +15307,7 @@
         "interface": "NVMe",
         "form_factor": "M.2",
         "slot_count": null,
-        "max_supported_gb": null,
+        "max_supported_gb": 4096,
         "raw_spec": "Storage: Up to 4TB PCIe NVMe M.2 SSD"
       },
       "display": {
@@ -15350,7 +15354,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "Dolby Atmos",
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -15391,8 +15395,10 @@
           "max_supported_gb",
           "is_soldered"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "System Memory: Up to 64GB DDR5 5200MHz | MEMORY: Up to 64GB DDR5 5200MHz"
+        "resolved_by_ai": {
+          "max_supported_gb": 64
+        },
+        "raw_context": "System Memory: Up to 64GB DDR5 5200MHz | MEMORY: Up to 64GB DDR5 5200MHz\n[Memory Summary: Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -15400,8 +15406,10 @@
           "slot_count",
           "max_supported_gb"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "Storage: Up to 4TB PCIe NVMe M.2 SSD"
+        "resolved_by_ai": {
+          "max_supported_gb": 4096
+        },
+        "raw_context": "Storage: Up to 4TB PCIe NVMe M.2 SSD\n[Storage Summary: Maximum supported storage capacity: 4096 GB.]"
       },
       {
         "subsystem": "display",
@@ -15455,8 +15463,8 @@
     ],
     "timing": {
       "deterministic_s": 0.004,
-      "ai_fallback_s": 14.342,
-      "total_s": 14.346
+      "ai_fallback_s": 15.287,
+      "total_s": 15.291
     },
     "index": 42,
     "baseline_specs": {
@@ -15650,10 +15658,10 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": "5200",
+        "speed": 5200,
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "DIMM Memory: 16GB DDR5-5200 SO-DIMM The memory speed of the systems vary by CPU SPEC | Total System Memory: DDR5 16GB | Memory Slot: 2x SO-DIMM slots | Memory Max.: 64GB | MEMORY: DDR5 16GB"
       },
       "storage": {
@@ -15752,11 +15760,12 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
-          "speed": "5200",
+          "speed": 5200,
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "DIMM Memory: 16GB DDR5-5200 SO-DIMM The memory speed of the systems vary by CPU SPEC | Total System Memory: DDR5 16GB | Memory Slot: 2x SO-DIMM slots | Memory Max.: 64GB | MEMORY: DDR5 16GB"
+        "raw_context": "DIMM Memory: 16GB DDR5-5200 SO-DIMM The memory speed of the systems vary by CPU SPEC | Total System Memory: DDR5 16GB | Memory Slot: 2x SO-DIMM slots | Memory Max.: 64GB | MEMORY: DDR5 16GB\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -15767,7 +15776,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 512GB PCIe 4.0 NVMe M.2 SSD | M.2 slots support either SATA or NVMe: 2 | M.2 SSD Support List: 512G/ 1TB /2TB G4x4 Value PCIe SSD | Expansion Slot (includes used): 2x DDR5 SO-DIMM slots 2x M.2 PCIe"
+        "raw_context": "Storage: 512GB PCIe 4.0 NVMe M.2 SSD | M.2 slots support either SATA or NVMe: 2 | M.2 SSD Support List: 512G/ 1TB /2TB G4x4 Value PCIe SSD | Expansion Slot (includes used): 2x DDR5 SO-DIMM slots 2x M.2 PCIe\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "audio_webcam",
@@ -15792,9 +15801,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.011,
-      "ai_fallback_s": 9.977,
-      "total_s": 9.988
+      "deterministic_s": 0.009,
+      "ai_fallback_s": 12.896,
+      "total_s": 12.906
     },
     "index": 43,
     "baseline_specs": {
@@ -15989,9 +15998,9 @@
         "capacity_gb": 32,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": 32,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "On board memory: 32GB LPDDR5X 8533 on board(Actual memory speeds may vary by CPU configuration.) | Total System Memory: LPDDR5X 32GB | Memory Slot: No expansion possible | Memory Max.: 32GB | Multi-channel memory technology: Support dual channel memory technology | MEMORY: LPDDR5X 32GB"
       },
       "storage": {
@@ -16090,9 +16099,11 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
-          "max_supported_gb": 32
+          "slot_count": 0,
+          "max_supported_gb": 32,
+          "is_soldered": true
         },
-        "raw_context": "On board memory: 32GB LPDDR5X 8533 on board(Actual memory speeds may vary by CPU configuration.) | Total System Memory: LPDDR5X 32GB | Memory Slot: No expansion possible | Memory Max.: 32GB | Multi-channel memory technology: Support dual channel memory technology | MEMORY: LPDDR5X 32GB"
+        "raw_context": "On board memory: 32GB LPDDR5X 8533 on board(Actual memory speeds may vary by CPU configuration.) | Total System Memory: LPDDR5X 32GB | Memory Slot: No expansion possible | Memory Max.: 32GB | Multi-channel memory technology: Support dual channel memory technology | MEMORY: LPDDR5X 32GB\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -16104,7 +16115,7 @@
           "slot_count": 2,
           "max_supported_gb": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD | M.2 slots support either SATA or NVMe: 2 | M.2 SSD Support List: 1TB M.2 NVMe PCIe G5x4 Performance SSD (ACC only) 2TB M.2 NVMe PCIe G5x4 Performance SSD (ACC only) 1TB M.2 NVMe PCIe G4x4 Value SSD 2TB M.2 NVMe PCIe G4x4 Value SSD | Expansion Slot (includes used): 2x M.2 PCIe"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD | M.2 slots support either SATA or NVMe: 2 | M.2 SSD Support List: 1TB M.2 NVMe PCIe G5x4 Performance SSD (ACC only) 2TB M.2 NVMe PCIe G5x4 Performance SSD (ACC only) 1TB M.2 NVMe PCIe G4x4 Value SSD 2TB M.2 NVMe PCIe G4x4 Value SSD | Expansion Slot (includes used): 2x M.2 PCIe\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "display",
@@ -16138,9 +16149,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 13.63,
-      "total_s": 13.636
+      "deterministic_s": 0.007,
+      "ai_fallback_s": 17.08,
+      "total_s": 17.087
     },
     "index": 44,
     "baseline_specs": {
@@ -16337,7 +16348,7 @@
         "speed": 5200,
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "DIMM Memory: 16GB DDR5-5200 SO-DIMM | Total System Memory: DDR5 16GB | Memory Slot: 2x SO-DIMM slots | Memory Max.: 64GB | MEMORY: DDR5 16GB"
       },
       "storage": {
@@ -16438,9 +16449,10 @@
         "resolved_by_ai": {
           "speed": 5200,
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "DIMM Memory: 16GB DDR5-5200 SO-DIMM | Total System Memory: DDR5 16GB | Memory Slot: 2x SO-DIMM slots | Memory Max.: 64GB | MEMORY: DDR5 16GB"
+        "raw_context": "DIMM Memory: 16GB DDR5-5200 SO-DIMM | Total System Memory: DDR5 16GB | Memory Slot: 2x SO-DIMM slots | Memory Max.: 64GB | MEMORY: DDR5 16GB\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -16452,7 +16464,7 @@
           "slot_count": 2,
           "max_supported_gb": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD | M.2 slots support either SATA or NVMe: 2 | M.2 SSD Support List: 1TB /2TB G4x4 Value PCIe SSD | Expansion Slot (includes used): 2x DDR5 SO-DIMM slots 2x M.2 PCIe"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD | M.2 slots support either SATA or NVMe: 2 | M.2 SSD Support List: 1TB /2TB G4x4 Value PCIe SSD | Expansion Slot (includes used): 2x DDR5 SO-DIMM slots 2x M.2 PCIe\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "power_battery",
@@ -16484,9 +16496,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 11.947,
-      "total_s": 11.956
+      "deterministic_s": 0.011,
+      "ai_fallback_s": 15.7,
+      "total_s": 15.711
     },
     "index": 45,
     "baseline_specs": {
@@ -16781,7 +16793,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 16GB DDR5 Dual-Channel Memory for Fast Multitasking | Memory Slots: 2x DDR5 SODIMM Slots, Up to 32GB"
+        "raw_context": "Memory: 16GB DDR5 Dual-Channel Memory for Fast Multitasking | Memory Slots: 2x DDR5 SODIMM Slots, Up to 32GB\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -16838,8 +16850,8 @@
     ],
     "timing": {
       "deterministic_s": 0.005,
-      "ai_fallback_s": 12.209,
-      "total_s": 12.214
+      "ai_fallback_s": 15.189,
+      "total_s": 15.194
     },
     "index": 46,
     "baseline_specs": {
@@ -17155,7 +17167,7 @@
           "slot_count": 2,
           "max_supported_gb": 64
         },
-        "raw_context": "Memory: 2x 32GB CSODIMM DDR5-6400 | Memory Slots: Two DDR5 CSODIMM slots, dual-channel capable | Max Memory: Up to 64GB DDR5-6400 offering"
+        "raw_context": "Memory: 2x 32GB CSODIMM DDR5-6400 | Memory Slots: Two DDR5 CSODIMM slots, dual-channel capable | Max Memory: Up to 64GB DDR5-6400 offering\n[Memory Summary: Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -17167,7 +17179,7 @@
           "slot_count": 2,
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 1TB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 slots • One M.2 2280 PCIe 5.0 x4 slot • One M.2 2280 PCIe 4.0 x4 slot | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB • M.2 2280 SSD up to 2TB"
+        "raw_context": "Storage: 1TB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 slots • One M.2 2280 PCIe 5.0 x4 slot • One M.2 2280 PCIe 4.0 x4 slot | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB • M.2 2280 SSD up to 2TB\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -17203,9 +17215,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.008,
-      "ai_fallback_s": 12.863,
-      "total_s": 12.872
+      "deterministic_s": 0.01,
+      "ai_fallback_s": 14.846,
+      "total_s": 14.856
     },
     "index": 47,
     "baseline_specs": {
@@ -17544,8 +17556,8 @@
     ],
     "timing": {
       "deterministic_s": 0.002,
-      "ai_fallback_s": 7.755,
-      "total_s": 7.757
+      "ai_fallback_s": 9.238,
+      "total_s": 9.24
     },
     "index": 48,
     "baseline_specs": {
@@ -17760,9 +17772,9 @@
       },
       "display": {
         "size_inches": 16.0,
-        "resolution": "2560x1440",
+        "resolution": "2560x1600",
         "resolution_width": 2560,
-        "resolution_height": 1440,
+        "resolution_height": 1600,
         "panel_type": "IPS",
         "refresh_rate_hz": 165,
         "aspect_ratio": "16:10",
@@ -17800,7 +17812,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "2× 2W speakers, microphone, Dolby Atmos",
+        "microphone": "microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": true,
@@ -17905,8 +17917,8 @@
     ],
     "timing": {
       "deterministic_s": 0.006,
-      "ai_fallback_s": 14.043,
-      "total_s": 14.049
+      "ai_fallback_s": 19.819,
+      "total_s": 19.825
     },
     "index": 49,
     "baseline_specs": {
@@ -18162,7 +18174,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "Dual 2W speakers, Dolby Atmos support, built-in microphone",
+        "microphone": "built-in microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": true,
@@ -18217,7 +18229,7 @@
           "slot_count": 2,
           "max_supported_gb": 64
         },
-        "raw_context": "Memory (RAM): Supports up to 64GB DDR5 5600MHz with 2 SO-DIMM slots | CAPACITY: 16GB DDR5"
+        "raw_context": "Memory (RAM): Supports up to 64GB DDR5 5600MHz with 2 SO-DIMM slots | CAPACITY: 16GB DDR5\n[Memory Summary: Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -18231,7 +18243,7 @@
           "slot_count": 2,
           "max_supported_gb": 4096
         },
-        "raw_context": "Storage: 1 PCIe Gen4 x4 M.2 slot and 1 PCIe Gen4 x2 M.2 slot with support up to 4TB NVMe SSD"
+        "raw_context": "Storage: 1 PCIe Gen4 x4 M.2 slot and 1 PCIe Gen4 x2 M.2 slot with support up to 4TB NVMe SSD\n[Storage Summary: Total physical storage slots: 2 (2 separate drive slots). Maximum supported storage capacity: 4096 GB.]"
       },
       {
         "subsystem": "display",
@@ -18272,9 +18284,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 15.733,
-      "total_s": 15.739
+      "deterministic_s": 0.007,
+      "ai_fallback_s": 18.432,
+      "total_s": 18.439
     },
     "index": 50,
     "baseline_specs": {
@@ -18598,7 +18610,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slots: Two M.2 2280 PCIe 4.0 x4 slots"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slots: Two M.2 2280 PCIe 4.0 x4 slots\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -18632,9 +18644,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 11.907,
-      "total_s": 11.913
+      "deterministic_s": 0.007,
+      "ai_fallback_s": 18.914,
+      "total_s": 18.921
     },
     "index": 51,
     "baseline_specs": {
@@ -19002,8 +19014,8 @@
     ],
     "timing": {
       "deterministic_s": 0.005,
-      "ai_fallback_s": 13.725,
-      "total_s": 13.73
+      "ai_fallback_s": 30.526,
+      "total_s": 30.532
     },
     "index": 52,
     "baseline_specs": {
@@ -19268,8 +19280,8 @@
         "raw_spec": "LCD cover-material: Plastic | Top case-material: Plastic | Keyboard color: Gray | Bottom case-material: Plastic | Military grade: US MIL-STD 810H military-grade standard | Keyboard type: Chiclet Keyboard with Num-key | Touchpad: Precision touchpad | FingerPrint: FingerPrint | Security: Fingerprint sensor integrated with Touchpad, McAfee , BIOS Booting User Password Protection, Trusted Platform Module (Firmware TPM)"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": "SonicMaster, Built-in speaker, Built-in array microphone",
+        "speaker_count": 1,
+        "microphone": "Built-in array microphone",
         "webcam_resolution": "720p",
         "has_privacy_shutter": true,
         "has_ir_camera": null,
@@ -19334,7 +19346,7 @@
         "resolved_by_ai": {
           "slot_count": 1
         },
-        "raw_context": "Expansion Slot(includes used): 1x DDR5 SO-DIMM slot, 1x M.2 2280 PCIe 4.0x4 | Storage: 512GB M.2 NVMe PCIe 4.0 SSD"
+        "raw_context": "Expansion Slot(includes used): 1x DDR5 SO-DIMM slot, 1x M.2 2280 PCIe 4.0x4 | Storage: 512GB M.2 NVMe PCIe 4.0 SSD\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "power_battery",
@@ -19352,6 +19364,7 @@
           "has_privacy_shutter"
         ],
         "resolved_by_ai": {
+          "speaker_count": 1,
           "has_privacy_shutter": true
         },
         "raw_context": "Front-facing camera: 720p HD camera ; With privacy shutter | Audio: SonicMaster, Built-in speaker, Built-in array microphone | CAMERA: 720p HD camera ; With privacy shutter"
@@ -19369,9 +19382,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.016,
-      "ai_fallback_s": 11.542,
-      "total_s": 11.558
+      "deterministic_s": 0.019,
+      "ai_fallback_s": 14.408,
+      "total_s": 14.428
     },
     "index": 53,
     "baseline_specs": {
@@ -19588,7 +19601,7 @@
         "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SO-DIMM | Memory Slots: 2x SO-DIMM slots (Upgradable to 64GB)"
       },
       "storage": {
@@ -19692,9 +19705,10 @@
         "resolved_by_ai": {
           "speed": 5600,
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory: 16GB DDR5-5600 SO-DIMM | Memory Slots: 2x SO-DIMM slots (Upgradable to 64GB)"
+        "raw_context": "Memory: 16GB DDR5-5600 SO-DIMM | Memory Slots: 2x SO-DIMM slots (Upgradable to 64GB)\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -19706,7 +19720,7 @@
           "slot_count": 2,
           "max_supported_gb": 2048
         },
-        "raw_context": "Storage: 512GB PCIe 4.0 NVMe M.2 SSD | Expansion Slots: 2x DDR5 SO-DIMM, 2x M.2 PCIe (Supports up to 2TB G4x4)"
+        "raw_context": "Storage: 512GB PCIe 4.0 NVMe M.2 SSD | Expansion Slots: 2x DDR5 SO-DIMM, 2x M.2 PCIe (Supports up to 2TB G4x4)\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 2048 GB.]"
       },
       {
         "subsystem": "audio_webcam",
@@ -19730,9 +19744,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 10.248,
-      "total_s": 10.252
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 12.644,
+      "total_s": 12.649
     },
     "index": 54,
     "baseline_specs": {
@@ -19938,9 +19952,9 @@
         "capacity_gb": 16,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "On board memory: 16GB LPDDR5X on board | Total System Memory: LPDDR5X 16GB | MEMORY: 16GB LPDDR5X on board"
       },
       "storage": {
@@ -20038,8 +20052,11 @@
           "max_supported_gb",
           "is_soldered"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "On board memory: 16GB LPDDR5X on board | Total System Memory: LPDDR5X 16GB | MEMORY: 16GB LPDDR5X on board"
+        "resolved_by_ai": {
+          "slot_count": 0,
+          "is_soldered": true
+        },
+        "raw_context": "On board memory: 16GB LPDDR5X on board | Total System Memory: LPDDR5X 16GB | MEMORY: 16GB LPDDR5X on board\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -20050,7 +20067,7 @@
         "resolved_by_ai": {
           "slot_count": 1
         },
-        "raw_context": "Expansion Slot(includes used): 1x M.2 2280 PCIe 4.0x4 | Storage: 512GB M.2 NVMe PCIe 4.0 SSD"
+        "raw_context": "Expansion Slot(includes used): 1x M.2 2280 PCIe 4.0x4 | Storage: 512GB M.2 NVMe PCIe 4.0 SSD\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "power_battery",
@@ -20086,9 +20103,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.012,
-      "ai_fallback_s": 11.23,
-      "total_s": 11.242
+      "deterministic_s": 0.013,
+      "ai_fallback_s": 14.204,
+      "total_s": 14.218
     },
     "index": 55,
     "baseline_specs": {
@@ -20442,9 +20459,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.008,
-      "ai_fallback_s": 12.026,
-      "total_s": 12.034
+      "deterministic_s": 0.009,
+      "ai_fallback_s": 14.876,
+      "total_s": 14.885
     },
     "index": 56,
     "baseline_specs": {
@@ -20652,7 +20669,7 @@
         "speed": "5600 MHz",
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "RAM: 16GB DDR5 5600MHz | Memory Slots: 2x SO-DIMM | Max Memory: 64GB | Channel Support: Dual Channel | MEMORY: 16GB DDR5 5600MHz"
       },
       "storage": {
@@ -20756,9 +20773,10 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "RAM: 16GB DDR5 5600MHz | Memory Slots: 2x SO-DIMM | Max Memory: 64GB | Channel Support: Dual Channel | MEMORY: 16GB DDR5 5600MHz"
+        "raw_context": "RAM: 16GB DDR5 5600MHz | Memory Slots: 2x SO-DIMM | Max Memory: 64GB | Channel Support: Dual Channel | MEMORY: 16GB DDR5 5600MHz\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -20772,7 +20790,7 @@
           "slot_count": 2,
           "max_supported_gb": 2
         },
-        "raw_context": "Storage: 512GB PCIe 4.0 NVMe SSD | M.2 Slots: 2x M.2 PCIe | Supported SSD: 512GB / 1TB / 2TB"
+        "raw_context": "Storage: 512GB PCIe 4.0 NVMe SSD | M.2 Slots: 2x M.2 PCIe | Supported SSD: 512GB / 1TB / 2TB\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -20804,9 +20822,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 10.996,
-      "total_s": 11.002
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 14.92,
+      "total_s": 14.926
     },
     "index": 57,
     "baseline_specs": {
@@ -21006,9 +21024,9 @@
         "capacity_gb": 16,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "RAM: 16GB LPDDR5X (On Board) | MEMORY: 16GB LPDDR5X (On Board)"
       },
       "storage": {
@@ -21109,8 +21127,11 @@
           "max_supported_gb",
           "is_soldered"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "RAM: 16GB LPDDR5X (On Board) | MEMORY: 16GB LPDDR5X (On Board)"
+        "resolved_by_ai": {
+          "slot_count": 0,
+          "is_soldered": true
+        },
+        "raw_context": "RAM: 16GB LPDDR5X (On Board) | MEMORY: 16GB LPDDR5X (On Board)\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -21121,7 +21142,7 @@
         "resolved_by_ai": {
           "slot_count": 1
         },
-        "raw_context": "Storage: 512GB M.2 NVMe PCIe 4.0 SSD | Expansion Slot: 1x M.2 2280 PCIe 4.0x4"
+        "raw_context": "Storage: 512GB M.2 NVMe PCIe 4.0 SSD | Expansion Slot: 1x M.2 2280 PCIe 4.0x4\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "display",
@@ -21164,9 +21185,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 13.867,
-      "total_s": 13.872
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 18.189,
+      "total_s": 18.195
     },
     "index": 58,
     "baseline_specs": {
@@ -21366,7 +21387,7 @@
         "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB | MEMORY: 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB"
       },
       "storage": {
@@ -21470,9 +21491,10 @@
         "resolved_by_ai": {
           "speed": 5600,
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory (RAM): 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB | MEMORY: 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB"
+        "raw_context": "Memory (RAM): 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB | MEMORY: 16GB DDR5-5600 (8GB x2), 2x SO-DIMM slots, Max 64GB\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -21483,7 +21505,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots total)"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots total)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "audio_webcam",
@@ -21507,8 +21529,8 @@
     ],
     "timing": {
       "deterministic_s": 0.007,
-      "ai_fallback_s": 10.567,
-      "total_s": 10.574
+      "ai_fallback_s": 13.412,
+      "total_s": 13.42
     },
     "index": 59,
     "baseline_specs": {
@@ -21716,7 +21738,7 @@
         "speed": "5600 MHz",
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR5-5600MHz (2x SO-DIMM, supports up to 64GB) | RAM Slots: 2x SO-DIMM Slots (Dual Channel Supported)"
       },
       "storage": {
@@ -21819,9 +21841,10 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory (RAM): 16GB DDR5-5600MHz (2x SO-DIMM, supports up to 64GB) | RAM Slots: 2x SO-DIMM Slots (Dual Channel Supported)"
+        "raw_context": "Memory (RAM): 16GB DDR5-5600MHz (2x SO-DIMM, supports up to 64GB) | RAM Slots: 2x SO-DIMM Slots (Dual Channel Supported)\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false. Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -21832,7 +21855,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe SSD (2x M.2 Slots total) | Storage Expansion: 2x M.2 Slots (PCIe / NVMe)"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe SSD (2x M.2 Slots total) | Storage Expansion: 2x M.2 Slots (PCIe / NVMe)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -21869,9 +21892,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 11.987,
-      "total_s": 11.992
+      "deterministic_s": 0.008,
+      "ai_fallback_s": 15.801,
+      "total_s": 15.809
     },
     "index": 60,
     "baseline_specs": {
@@ -22078,9 +22101,9 @@
         "capacity_gb": 64,
         "memory_type": "LPDDR5X",
         "speed": "8533 MHz",
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "Memory (RAM): 64GB LPDDR5X 8533MHz (Onboard) | Max Memory: 64GB (Non-upgradable)"
       },
       "storage": {
@@ -22184,9 +22207,11 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
-          "max_supported_gb": 64
+          "slot_count": 0,
+          "max_supported_gb": 64,
+          "is_soldered": true
         },
-        "raw_context": "Memory (RAM): 64GB LPDDR5X 8533MHz (Onboard) | Max Memory: 64GB (Non-upgradable)"
+        "raw_context": "Memory (RAM): 64GB LPDDR5X 8533MHz (Onboard) | Max Memory: 64GB (Non-upgradable)\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -22197,7 +22222,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 2TB PCIe 4.0 NVMe M.2 SSD | Storage Slots: 2x M.2 PCIe Slots | 2TB PCIe 5.0 NVMe SSD: High-speed PCIe 5.0 storage gives fast access to games, applications and large creative files. A second M.2 slot is available for expansion. | STORAGE The Zephyrus Duo combines two full-size 16: 10 OLED panels in one mobile chassis,"
+        "raw_context": "Storage: 2TB PCIe 4.0 NVMe M.2 SSD | Storage Slots: 2x M.2 PCIe Slots | 2TB PCIe 5.0 NVMe SSD: High-speed PCIe 5.0 storage gives fast access to games, applications and large creative files. A second M.2 slot is available for expansion. | STORAGE The Zephyrus Duo combines two full-size 16: 10 OLED panels in one mobile chassis,\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "display",
@@ -22237,9 +22262,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 14.77,
-      "total_s": 14.779
+      "deterministic_s": 0.007,
+      "ai_fallback_s": 19.143,
+      "total_s": 19.15
     },
     "index": 61,
     "baseline_specs": {
@@ -22441,7 +22466,7 @@
         "speed": "4800 MHz",
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: Installed RAM: 16 GB DDR5-4800 MHz SO-DIMM, Slots: 2 × SO-DIMM, Max Capacity: 64 GB | MEMORY: 16 GB DDR5-4800 MHz SO-DIMM"
       },
       "storage": {
@@ -22497,7 +22522,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "Webcam: 720p HD, Speakers: 2-speaker system, Audio Tech: DTS Audio Processing, Hi-Res Audio certification (headphones), AI noise-canceling microphone",
+        "microphone": "AI noise-canceling microphone",
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -22545,9 +22570,10 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory: Installed RAM: 16 GB DDR5-4800 MHz SO-DIMM, Slots: 2 × SO-DIMM, Max Capacity: 64 GB | MEMORY: 16 GB DDR5-4800 MHz SO-DIMM"
+        "raw_context": "Memory: Installed RAM: 16 GB DDR5-4800 MHz SO-DIMM, Slots: 2 × SO-DIMM, Max Capacity: 64 GB | MEMORY: 16 GB DDR5-4800 MHz SO-DIMM\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -22558,7 +22584,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: Primary Drive: 512 GB PCIe 4.0 NVMe M.2 SSD, M.2 Slots: 2 (support NVMe or SATA) | STORAGE: 512 GB PCIe 4.0 NVMe M.2 SSD"
+        "raw_context": "Storage: Primary Drive: 512 GB PCIe 4.0 NVMe M.2 SSD, M.2 Slots: 2 (support NVMe or SATA) | STORAGE: 512 GB PCIe 4.0 NVMe M.2 SSD\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "display",
@@ -22601,8 +22627,8 @@
     ],
     "timing": {
       "deterministic_s": 0.011,
-      "ai_fallback_s": 16.245,
-      "total_s": 16.255
+      "ai_fallback_s": 18.244,
+      "total_s": 18.255
     },
     "index": 62,
     "baseline_specs": {
@@ -22953,9 +22979,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 12.162,
-      "total_s": 12.165
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 14.457,
+      "total_s": 14.462
     },
     "index": 63,
     "baseline_specs": {
@@ -23220,7 +23246,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -23337,8 +23363,8 @@
     ],
     "timing": {
       "deterministic_s": 0.009,
-      "ai_fallback_s": 14.845,
-      "total_s": 14.854
+      "ai_fallback_s": 48.931,
+      "total_s": 48.94
     },
     "index": 64,
     "baseline_specs": {
@@ -23609,7 +23635,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": true,
+        "microphone": null,
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -23657,7 +23683,7 @@
         "resolved_by_ai": {
           "max_supported_gb": 32
         },
-        "raw_context": "Installed Memory: 16GB DDR5 | Memory Speed: 5600MHz | Maximum Memory: 32GB"
+        "raw_context": "Installed Memory: 16GB DDR5 | Memory Speed: 5600MHz | Maximum Memory: 32GB\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -23723,9 +23749,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 15.878,
-      "total_s": 15.884
+      "deterministic_s": 0.008,
+      "ai_fallback_s": 80.841,
+      "total_s": 80.849
     },
     "index": 65,
     "baseline_specs": {
@@ -23933,9 +23959,9 @@
         "capacity_gb": 32,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": 32,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "Memory: 32GB LPDDR5X on board (Max Total system memory up to: 32GB)"
       },
       "storage": {
@@ -23990,8 +24016,8 @@
         "raw_spec": "Keyboard & Touchpad: Soft Keyboard, 1.7mm Key-travel, Precision touchpad | Military Grade: US MIL-STD 810H military-grade standard | Security: Trusted Platform Module (Firmware TPM), Microsoft Pluton security processor, IR webcam with Windows Hello support | Keyboard: Detachable Full-Size Bluetooth Keyboard with Touchpad"
       },
       "audio_webcam": {
-        "speaker_count": null,
-        "microphone": "Smart Amp Technology, Built-in speaker, Built-in array microphone, with Cortana support",
+        "speaker_count": 1,
+        "microphone": "Built-in array microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": true,
@@ -24039,9 +24065,11 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
-          "max_supported_gb": 32
+          "slot_count": 0,
+          "max_supported_gb": 32,
+          "is_soldered": true
         },
-        "raw_context": "Memory: 32GB LPDDR5X on board (Max Total system memory up to: 32GB)"
+        "raw_context": "Memory: 32GB LPDDR5X on board (Max Total system memory up to: 32GB)\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -24070,6 +24098,7 @@
           "has_privacy_shutter"
         ],
         "resolved_by_ai": {
+          "speaker_count": 1,
           "has_ir_camera": true
         },
         "raw_context": "Camera: FHD camera with IR function to support Windows Hello | Audio: Smart Amp Technology, Built-in speaker, Built-in array microphone, with Cortana support"
@@ -24086,9 +24115,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 12.342,
-      "total_s": 12.348
+      "deterministic_s": 0.009,
+      "ai_fallback_s": 63.285,
+      "total_s": 63.295
     },
     "index": 66,
     "baseline_specs": {
@@ -24288,9 +24317,9 @@
         "capacity_gb": 128,
         "memory_type": "LPDDR5X",
         "speed": "8000 MHz",
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "Memory: 128GB LPDDR5X 8000MHz Unified Memory | Every Frame. Ultra Clear. Ultra Real.: The 13.3-inch 3K ASUS Lumina OLED touchscreen delivers 2880 × 1800 resolution, 100% DCI-P3 coverage, Delta E < 1 accuracy, true blacks and stylus support with up to 4096 pressure levels."
       },
       "storage": {
@@ -24298,7 +24327,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "M.2",
-        "slot_count": 1,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB M.2 NVMe PCIe 4.0 SSD (Extra M.2 2230 Slot Available)"
       },
@@ -24393,8 +24422,11 @@
           "max_supported_gb",
           "is_soldered"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "Memory: 128GB LPDDR5X 8000MHz Unified Memory | Every Frame. Ultra Clear. Ultra Real.: The 13.3-inch 3K ASUS Lumina OLED touchscreen delivers 2880 × 1800 resolution, 100% DCI-P3 coverage, Delta E < 1 accuracy, true blacks and stylus support with up to 4096 pressure levels."
+        "resolved_by_ai": {
+          "slot_count": 0,
+          "is_soldered": true
+        },
+        "raw_context": "Memory: 128GB LPDDR5X 8000MHz Unified Memory | Every Frame. Ultra Clear. Ultra Real.: The 13.3-inch 3K ASUS Lumina OLED touchscreen delivers 2880 × 1800 resolution, 100% DCI-P3 coverage, Delta E < 1 accuracy, true blacks and stylus support with up to 4096 pressure levels.\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -24403,9 +24435,9 @@
           "max_supported_gb"
         ],
         "resolved_by_ai": {
-          "slot_count": 1
+          "slot_count": 2
         },
-        "raw_context": "Storage: 1TB M.2 NVMe PCIe 4.0 SSD (Extra M.2 2230 Slot Available)"
+        "raw_context": "Storage: 1TB M.2 NVMe PCIe 4.0 SSD (Extra M.2 2230 Slot Available)\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "display",
@@ -24435,9 +24467,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 13.432,
-      "total_s": 13.438
+      "deterministic_s": 0.009,
+      "ai_fallback_s": 30.035,
+      "total_s": 30.044
     },
     "index": 67,
     "baseline_specs": {
@@ -24780,9 +24812,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 10.845,
-      "total_s": 10.848
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 17.323,
+      "total_s": 17.327
     },
     "index": 68,
     "baseline_specs": {
@@ -25097,7 +25129,7 @@
           "max_supported_gb": 24,
           "is_soldered": true
         },
-        "raw_context": "Memory: 8GB Soldered DDR5-4800 + 8GB SODIMM DDR5-4800 | Memory Slots: One memory soldered to systemboard, one DDR5 SODIMM slot, dual-channel capable | Max Memory: Up to 24GB (8GB soldered + 16GB SODIMM) DDR5-4800 offering"
+        "raw_context": "Memory: 8GB Soldered DDR5-4800 + 8GB SODIMM DDR5-4800 | Memory Slots: One memory soldered to systemboard, one DDR5 SODIMM slot, dual-channel capable | Max Memory: Up to 24GB (8GB soldered + 16GB SODIMM) DDR5-4800 offering\n[Memory Summary: Total memory expansion slots: 1 SO-DIMM slot. Soldered memory: true (hybrid onboard + SO-DIMM slot). Maximum supported memory: 24 GB.]"
       },
       {
         "subsystem": "storage",
@@ -25109,7 +25141,7 @@
           "slot_count": 2,
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD, M.2 2242 SSD up to 1TB"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD, M.2 2242 SSD up to 1TB\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -25145,9 +25177,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.007,
-      "ai_fallback_s": 12.551,
-      "total_s": 12.557
+      "deterministic_s": 0.009,
+      "ai_fallback_s": 18.068,
+      "total_s": 18.077
     },
     "index": 69,
     "baseline_specs": {
@@ -25359,9 +25391,9 @@
         "capacity_gb": 16,
         "memory_type": "DDR4",
         "speed": null,
-        "slot_count": null,
-        "max_supported_gb": null,
-        "is_soldered": null,
+        "slot_count": 1,
+        "max_supported_gb": 32,
+        "is_soldered": true,
         "raw_spec": "Memory (RAM): 8GB DDR4 onboard + 8GB DDR4 SO-DIMM | Max Memory: Up to 32GB | MEMORY: 8GB DDR4 onboard + 8GB DDR4 SO-DIMM"
       },
       "storage": {
@@ -25417,7 +25449,7 @@
       },
       "audio_webcam": {
         "speaker_count": null,
-        "microphone": "SonicMaster speakers, built-in microphone array",
+        "microphone": "built-in microphone array",
         "webcam_resolution": "720p",
         "has_privacy_shutter": true,
         "has_ir_camera": null,
@@ -25463,8 +25495,12 @@
           "max_supported_gb",
           "is_soldered"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "Memory (RAM): 8GB DDR4 onboard + 8GB DDR4 SO-DIMM | Max Memory: Up to 32GB | MEMORY: 8GB DDR4 onboard + 8GB DDR4 SO-DIMM"
+        "resolved_by_ai": {
+          "slot_count": 1,
+          "max_supported_gb": 32,
+          "is_soldered": true
+        },
+        "raw_context": "Memory (RAM): 8GB DDR4 onboard + 8GB DDR4 SO-DIMM | Max Memory: Up to 32GB | MEMORY: 8GB DDR4 onboard + 8GB DDR4 SO-DIMM\n[Memory Summary: Total memory expansion slots: 1 SO-DIMM slot. Soldered memory: true (hybrid onboard + SO-DIMM slot). Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -25508,8 +25544,8 @@
     ],
     "timing": {
       "deterministic_s": 0.007,
-      "ai_fallback_s": 11.095,
-      "total_s": 11.101
+      "ai_fallback_s": 17.683,
+      "total_s": 17.69
     },
     "index": 70,
     "baseline_specs": {
@@ -25766,7 +25802,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "Dual Speakers, Built-in Microphone",
+        "microphone": "Built-in Microphone",
         "webcam_resolution": null,
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -25874,9 +25910,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 15.358,
-      "total_s": 15.367
+      "deterministic_s": 0.012,
+      "ai_fallback_s": 23.223,
+      "total_s": 23.235
     },
     "index": 71,
     "baseline_specs": {
@@ -26076,7 +26112,7 @@
         "speed": "5600 MHz",
         "slot_count": 2,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600MHz (2x Slots available)"
       },
       "storage": {
@@ -26171,9 +26207,10 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
-          "slot_count": 2
+          "slot_count": 2,
+          "is_soldered": false
         },
-        "raw_context": "Memory: 16GB DDR5-5600MHz (2x Slots available)"
+        "raw_context": "Memory: 16GB DDR5-5600MHz (2x Slots available)\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -26218,8 +26255,8 @@
     ],
     "timing": {
       "deterministic_s": 0.002,
-      "ai_fallback_s": 11.14,
-      "total_s": 11.143
+      "ai_fallback_s": 19.842,
+      "total_s": 19.844
     },
     "index": 72,
     "baseline_specs": {
@@ -26579,9 +26616,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 12.383,
-      "total_s": 12.389
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 18.661,
+      "total_s": 18.665
     },
     "index": 73,
     "baseline_specs": {
@@ -26922,9 +26959,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.011,
-      "ai_fallback_s": 9.976,
-      "total_s": 9.988
+      "deterministic_s": 0.012,
+      "ai_fallback_s": 15.148,
+      "total_s": 15.16
     },
     "index": 74,
     "baseline_specs": {
@@ -27256,8 +27293,8 @@
     ],
     "timing": {
       "deterministic_s": 0.007,
-      "ai_fallback_s": 10.228,
-      "total_s": 10.235
+      "ai_fallback_s": 14.829,
+      "total_s": 14.836
     },
     "index": 75,
     "baseline_specs": {
@@ -27569,7 +27606,7 @@
           "slot_count": 1,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 1x 12GB SODIMM DDR5-4800 | Memory Slots: One DDR5 SODIMM slot | Max Memory: Up to 32GB DDR5-4800"
+        "raw_context": "Memory: 1x 12GB SODIMM DDR5-4800 | Memory Slots: One DDR5 SODIMM slot | Max Memory: Up to 32GB DDR5-4800\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -27581,7 +27618,7 @@
           "slot_count": 2,
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD M.2 2242 SSD up to 1TB each"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD M.2 2242 SSD up to 1TB each\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -27617,9 +27654,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.009,
-      "ai_fallback_s": 11.48,
-      "total_s": 11.489
+      "deterministic_s": 0.007,
+      "ai_fallback_s": 19.02,
+      "total_s": 19.028
     },
     "index": 76,
     "baseline_specs": {
@@ -27948,7 +27985,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 1TB SSD M.2 2242 PCIe 4.0×4 NVMe | Storage Expansion: Two M.2 2280 PCIe 4.0 x4 slots | Storage Slots: Two M.2 2280 PCIe 4.0×4 slots"
+        "raw_context": "Storage: 1TB SSD M.2 2242 PCIe 4.0×4 NVMe | Storage Expansion: Two M.2 2280 PCIe 4.0 x4 slots | Storage Slots: Two M.2 2280 PCIe 4.0×4 slots\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -27981,9 +28018,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.018,
-      "ai_fallback_s": 11.914,
-      "total_s": 11.933
+      "deterministic_s": 0.011,
+      "ai_fallback_s": 19.133,
+      "total_s": 19.144
     },
     "index": 77,
     "baseline_specs": {
@@ -28294,7 +28331,7 @@
           "slot_count": 2,
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB NVMe SSD | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots total)"
+        "raw_context": "Storage: 512GB NVMe SSD | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots total)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "display",
@@ -28307,8 +28344,8 @@
     ],
     "timing": {
       "deterministic_s": 0.003,
-      "ai_fallback_s": 9.832,
-      "total_s": 9.835
+      "ai_fallback_s": 15.709,
+      "total_s": 15.712
     },
     "index": 78,
     "baseline_specs": {
@@ -28507,9 +28544,9 @@
         "capacity_gb": 64,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "Memory: 64GB LPDDR5X on board"
       },
       "storage": {
@@ -28612,8 +28649,11 @@
           "max_supported_gb",
           "is_soldered"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "Memory: 64GB LPDDR5X on board"
+        "resolved_by_ai": {
+          "slot_count": 0,
+          "is_soldered": true
+        },
+        "raw_context": "Memory: 64GB LPDDR5X on board\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -28658,9 +28698,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.004,
-      "ai_fallback_s": 11.281,
-      "total_s": 11.285
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 17.609,
+      "total_s": 17.614
     },
     "index": 79,
     "baseline_specs": {
@@ -28869,7 +28909,7 @@
         "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (8GB + 8GB) | Memory Slots: 2x SO-DIMM slots (Max 64GB)"
       },
       "storage": {
@@ -28974,9 +29014,10 @@
         "resolved_by_ai": {
           "speed": 5600,
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory: 16GB DDR5-5600 (8GB + 8GB) | Memory Slots: 2x SO-DIMM slots (Max 64GB)"
+        "raw_context": "Memory: 16GB DDR5-5600 (8GB + 8GB) | Memory Slots: 2x SO-DIMM slots (Max 64GB)\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -28988,7 +29029,7 @@
           "slot_count": 2,
           "max_supported_gb": 2048
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD | M.2 Slots: 2x M.2 PCIe slots (supports up to 2TB each)"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD | M.2 Slots: 2x M.2 PCIe slots (supports up to 2TB each)\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 2048 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -29021,9 +29062,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 11.304,
-      "total_s": 11.309
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 17.527,
+      "total_s": 17.534
     },
     "index": 80,
     "baseline_specs": {
@@ -29396,9 +29437,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 15.167,
-      "total_s": 15.17
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 25.647,
+      "total_s": 25.653
     },
     "index": 81,
     "baseline_specs": {
@@ -29602,7 +29643,7 @@
         "capacity_gb": 8,
         "memory_type": "LPDDR5",
         "speed": 4800,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
         "is_soldered": true,
         "raw_spec": "Memory: 8GB soldered LPDDR5-4800, not upgradable | Memory Upgrade: Not upgradable"
@@ -29718,9 +29759,10 @@
         ],
         "resolved_by_ai": {
           "speed": 4800,
+          "slot_count": 0,
           "is_soldered": true
         },
-        "raw_context": "Memory: 8GB soldered LPDDR5-4800, not upgradable | Memory Upgrade: Not upgradable"
+        "raw_context": "Memory: 8GB soldered LPDDR5-4800, not upgradable | Memory Upgrade: Not upgradable\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -29731,7 +29773,7 @@
         "resolved_by_ai": {
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 256GB M.2 2242 PCIe 4.0 x4 NVMe SSD | Maximum Storage Support: Up to 1TB M.2 2242 SSD"
+        "raw_context": "Storage: 256GB M.2 2242 PCIe 4.0 x4 NVMe SSD | Maximum Storage Support: Up to 1TB M.2 2242 SSD\n[Storage Summary: Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "display",
@@ -29784,9 +29826,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 15.082,
-      "total_s": 15.087
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 23.306,
+      "total_s": 23.312
     },
     "index": 82,
     "baseline_specs": {
@@ -30172,9 +30214,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 14.402,
-      "total_s": 14.405
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 21.766,
+      "total_s": 21.77
     },
     "index": 83,
     "baseline_specs": {
@@ -30523,9 +30565,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.004,
-      "ai_fallback_s": 12.393,
-      "total_s": 12.398
+      "deterministic_s": 0.008,
+      "ai_fallback_s": 19.993,
+      "total_s": 20.002
     },
     "index": 84,
     "baseline_specs": {
@@ -30780,7 +30822,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "Stereo speakers - 4W total (2W × 2) - Realtek AL3204",
+        "microphone": null,
         "webcam_resolution": "720p",
         "has_privacy_shutter": null,
         "has_ir_camera": null,
@@ -30878,9 +30920,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.01,
-      "ai_fallback_s": 15.17,
-      "total_s": 15.18
+      "deterministic_s": 0.017,
+      "ai_fallback_s": 21.403,
+      "total_s": 21.42
     },
     "index": 85,
     "baseline_specs": {
@@ -31085,10 +31127,10 @@
       "memory": {
         "capacity_gb": 16,
         "memory_type": "DDR5",
-        "speed": null,
+        "speed": 4800,
         "slot_count": 2,
         "max_supported_gb": 32,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: 16GB SO-DIMM DDR5-4800 (Max 32GB, 2x Slots) | MEMORY: 16GB SO-DIMM DDR5-4800"
       },
       "storage": {
@@ -31189,10 +31231,12 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
+          "speed": 4800,
           "slot_count": 2,
-          "max_supported_gb": 32
+          "max_supported_gb": 32,
+          "is_soldered": false
         },
-        "raw_context": "Memory: 16GB SO-DIMM DDR5-4800 (Max 32GB, 2x Slots) | MEMORY: 16GB SO-DIMM DDR5-4800"
+        "raw_context": "Memory: 16GB SO-DIMM DDR5-4800 (Max 32GB, 2x Slots) | MEMORY: 16GB SO-DIMM DDR5-4800\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -31203,7 +31247,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (2x M.2 slots available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (2x M.2 slots available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -31240,9 +31284,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 12.818,
-      "total_s": 12.821
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 16.791,
+      "total_s": 16.796
     },
     "index": 86,
     "baseline_specs": {
@@ -31604,9 +31648,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 14.167,
-      "total_s": 14.171
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 19.522,
+      "total_s": 19.527
     },
     "index": 87,
     "baseline_specs": {
@@ -31821,7 +31865,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Extra M.2 2280 Slot Available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe"
       },
@@ -31928,8 +31972,10 @@
           "slot_count",
           "max_supported_gb"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Extra M.2 2280 Slot Available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe"
+        "resolved_by_ai": {
+          "slot_count": 2
+        },
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Extra M.2 2280 Slot Available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "power_battery",
@@ -31976,9 +32022,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 12.877,
-      "total_s": 12.88
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 15.099,
+      "total_s": 15.105
     },
     "index": 88,
     "baseline_specs": {
@@ -32296,7 +32342,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 512GB M.2 2242 PCIe Gen4 NVMe SSD (Dual M.2 slots)"
+        "raw_context": "Storage: 512GB M.2 2242 PCIe Gen4 NVMe SSD (Dual M.2 slots)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -32334,8 +32380,8 @@
     ],
     "timing": {
       "deterministic_s": 0.007,
-      "ai_fallback_s": 12.468,
-      "total_s": 12.475
+      "ai_fallback_s": 14.189,
+      "total_s": 14.197
     },
     "index": 89,
     "baseline_specs": {
@@ -32643,7 +32689,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 32GB (2×16GB) DDR5-5600, Dual Channel | Max Memory: Up to 32GB DDR5-5600 offering"
+        "raw_context": "Memory: 32GB (2×16GB) DDR5-5600, Dual Channel | Max Memory: Up to 32GB DDR5-5600 offering\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -32655,7 +32701,7 @@
           "slot_count": 2,
           "max_supported_gb": 2048
         },
-        "raw_context": "Storage: 1TB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slots: Two M.2 2280 PCIe 4.0x4 slots (supports up to 2TB total)"
+        "raw_context": "Storage: 1TB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slots: Two M.2 2280 PCIe 4.0x4 slots (supports up to 2TB total)\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 2048 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -32696,9 +32742,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 12.416,
-      "total_s": 12.421
+      "deterministic_s": 0.011,
+      "ai_fallback_s": 21.372,
+      "total_s": 21.383
     },
     "index": 90,
     "baseline_specs": {
@@ -32915,9 +32961,9 @@
         "capacity_gb": 2048,
         "storage_type": "SSD",
         "interface": "NVMe",
-        "form_factor": null,
+        "form_factor": "2280 Gen 4",
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 2048,
         "raw_spec": "Storage: 2TB NVMe Gen 4 SSD | Storage Slots: 2x M.2 (1x 2280 Gen 4 + 1x 2280 Gen 5)"
       },
       "display": {
@@ -33014,9 +33060,11 @@
           "max_supported_gb"
         ],
         "resolved_by_ai": {
-          "slot_count": 2
+          "form_factor": "2280 Gen 4",
+          "slot_count": 2,
+          "max_supported_gb": 2048
         },
-        "raw_context": "Storage: 2TB NVMe Gen 4 SSD | Storage Slots: 2x M.2 (1x 2280 Gen 4 + 1x 2280 Gen 5)"
+        "raw_context": "Storage: 2TB NVMe Gen 4 SSD | Storage Slots: 2x M.2 (1x 2280 Gen 4 + 1x 2280 Gen 5)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -33048,9 +33096,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 10.804,
-      "total_s": 10.807
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 18.522,
+      "total_s": 18.527
     },
     "index": 91,
     "baseline_specs": {
@@ -33407,9 +33455,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 13.336,
-      "total_s": 13.339
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 22.625,
+      "total_s": 22.629
     },
     "index": 92,
     "baseline_specs": {
@@ -33626,7 +33674,7 @@
         "storage_type": "SSD",
         "interface": "NVMe",
         "form_factor": "2.5-inch",
-        "slot_count": 1,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 1TB NVMe PCIe Gen4 SSD (plus 1x 2.5\" SATA HDD/SSD expansion slot)"
       },
@@ -33726,7 +33774,7 @@
           "slot_count": 2,
           "max_supported_gb": 64
         },
-        "raw_context": "Memory (RAM): 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB | MEMORY 16GB DDR4-3200 MHz (2 x 8GB): Expandable up to 64GB | MEMORY: 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB"
+        "raw_context": "Memory (RAM): 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB | MEMORY 16GB DDR4-3200 MHz (2 x 8GB): Expandable up to 64GB | MEMORY: 16GB DDR4-3200 MHz (2 x 8GB) - Expandable up to 64GB\n[Memory Summary: Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -33735,9 +33783,9 @@
           "max_supported_gb"
         ],
         "resolved_by_ai": {
-          "slot_count": 1
+          "slot_count": 2
         },
-        "raw_context": "Storage: 1TB NVMe PCIe Gen4 SSD (plus 1x 2.5\" SATA HDD/SSD expansion slot)"
+        "raw_context": "Storage: 1TB NVMe PCIe Gen4 SSD (plus 1x 2.5\" SATA HDD/SSD expansion slot)\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "display",
@@ -33779,9 +33827,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 13.489,
-      "total_s": 13.496
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 23.181,
+      "total_s": 23.186
     },
     "index": 93,
     "baseline_specs": {
@@ -34107,7 +34155,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "display",
@@ -34154,9 +34202,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 14.678,
-      "total_s": 14.682
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 24.859,
+      "total_s": 24.865
     },
     "index": 94,
     "baseline_specs": {
@@ -34520,9 +34568,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.004,
-      "ai_fallback_s": 15.506,
-      "total_s": 15.509
+      "deterministic_s": 0.007,
+      "ai_fallback_s": 22.234,
+      "total_s": 22.241
     },
     "index": 95,
     "baseline_specs": {
@@ -34727,7 +34775,7 @@
         "speed": null,
         "slot_count": 2,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5 SO-DIMM (Dual-channel support, 2x Slots) | MEMORY: 16GB DDR5 SO-DIMM"
       },
       "storage": {
@@ -34830,9 +34878,10 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
-          "slot_count": 2
+          "slot_count": 2,
+          "is_soldered": false
         },
-        "raw_context": "Memory: 16GB DDR5 SO-DIMM (Dual-channel support, 2x Slots) | MEMORY: 16GB DDR5 SO-DIMM"
+        "raw_context": "Memory: 16GB DDR5 SO-DIMM (Dual-channel support, 2x Slots) | MEMORY: 16GB DDR5 SO-DIMM\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -34883,8 +34932,8 @@
     ],
     "timing": {
       "deterministic_s": 0.006,
-      "ai_fallback_s": 14.11,
-      "total_s": 14.116
+      "ai_fallback_s": 15.294,
+      "total_s": 15.3
     },
     "index": 96,
     "baseline_specs": {
@@ -35203,7 +35252,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (2x M.2 Slots available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (2x M.2 Slots available) | STORAGE: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -35250,8 +35299,8 @@
     ],
     "timing": {
       "deterministic_s": 0.003,
-      "ai_fallback_s": 12.47,
-      "total_s": 12.473
+      "ai_fallback_s": 13.381,
+      "total_s": 13.384
     },
     "index": 97,
     "baseline_specs": {
@@ -35448,7 +35497,7 @@
         "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 (2x SO-DIMM, Upgradable to 64GB)"
       },
       "storage": {
@@ -35554,9 +35603,10 @@
         "resolved_by_ai": {
           "speed": 5600,
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory: 16GB DDR5-5600 (2x SO-DIMM, Upgradable to 64GB)"
+        "raw_context": "Memory: 16GB DDR5-5600 (2x SO-DIMM, Upgradable to 64GB)\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -35567,7 +35617,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total)"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "display",
@@ -35599,9 +35649,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.007,
-      "ai_fallback_s": 13.71,
-      "total_s": 13.717
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 14.283,
+      "total_s": 14.289
     },
     "index": 98,
     "baseline_specs": {
@@ -35801,7 +35851,7 @@
         "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory (RAM): 8GB DDR5-5600 SO-DIMM (Total 2x slots, Upgradable up to 64GB) | MEMORY: 8GB DDR5-5600"
       },
       "storage": {
@@ -35909,9 +35959,10 @@
         "resolved_by_ai": {
           "speed": 5600,
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory (RAM): 8GB DDR5-5600 SO-DIMM (Total 2x slots, Upgradable up to 64GB) | MEMORY: 8GB DDR5-5600"
+        "raw_context": "Memory (RAM): 8GB DDR5-5600 SO-DIMM (Total 2x slots, Upgradable up to 64GB) | MEMORY: 8GB DDR5-5600\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false. Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -35922,7 +35973,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 512GB PCIe 4.0 NVMe M.2 SSD (2x M.2 slots total) | STORAGE: 512GB PCIe 4.0 NVMe M.2 SSD"
+        "raw_context": "Storage: 512GB PCIe 4.0 NVMe M.2 SSD (2x M.2 slots total) | STORAGE: 512GB PCIe 4.0 NVMe M.2 SSD\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -35956,8 +36007,8 @@
     ],
     "timing": {
       "deterministic_s": 0.008,
-      "ai_fallback_s": 11.217,
-      "total_s": 11.225
+      "ai_fallback_s": 12.552,
+      "total_s": 12.56
     },
     "index": 99,
     "baseline_specs": {
@@ -36270,7 +36321,7 @@
           "slot_count": 2,
           "max_supported_gb": 96
         },
-        "raw_context": "Memory (RAM): 32GB DDR5 (Upgradeable up to 96GB) / 2 Slots | MEMORY: 32GB DDR5"
+        "raw_context": "Memory (RAM): 32GB DDR5 (Upgradeable up to 96GB) / 2 Slots | MEMORY: 32GB DDR5\n[Memory Summary: Maximum supported memory: 96 GB.]"
       },
       {
         "subsystem": "storage",
@@ -36324,8 +36375,8 @@
     ],
     "timing": {
       "deterministic_s": 0.006,
-      "ai_fallback_s": 13.448,
-      "total_s": 13.454
+      "ai_fallback_s": 14.847,
+      "total_s": 14.854
     },
     "index": 100,
     "baseline_specs": {
@@ -36537,7 +36588,7 @@
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
         "slot_count": 2,
-        "max_supported_gb": null,
+        "max_supported_gb": 1024,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 2280 SSD • M.2 2280 SSD up to 1TB each • M.2 2242 SSD up to 1TB each"
       },
       "display": {
@@ -36638,7 +36689,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 1x 16GB SO-DIMM DDR5-5600 | Memory Slots: Two DDR5 SO-DIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-5600 offering | MEMORY: 16GB SO-DIMM DDR5-5600"
+        "raw_context": "Memory: 1x 16GB SO-DIMM DDR5-5600 | Memory Slots: Two DDR5 SO-DIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-5600 offering | MEMORY: 16GB SO-DIMM DDR5-5600\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -36648,9 +36699,9 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 2
+          "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 2280 SSD • M.2 2280 SSD up to 1TB each • M.2 2242 SSD up to 1TB each"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 2280 SSD • M.2 2280 SSD up to 1TB each • M.2 2242 SSD up to 1TB each\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -36685,8 +36736,8 @@
     ],
     "timing": {
       "deterministic_s": 0.005,
-      "ai_fallback_s": 11.783,
-      "total_s": 11.788
+      "ai_fallback_s": 13.151,
+      "total_s": 13.156
     },
     "index": 101,
     "baseline_specs": {
@@ -37023,9 +37074,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 10.56,
-      "total_s": 10.563
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 11.933,
+      "total_s": 11.938
     },
     "index": 102,
     "baseline_specs": {
@@ -37330,7 +37381,7 @@
           "speed": 5600,
           "max_supported_gb": 64
         },
-        "raw_context": "Memory: 16GB DDR5-5600 (Dual-channel, Expandable to 64GB) | MEMORY: 16GB DDR5-5600, Dual-Channel, Up to 64GB"
+        "raw_context": "Memory: 16GB DDR5-5600 (Dual-channel, Expandable to 64GB) | MEMORY: 16GB DDR5-5600, Dual-Channel, Up to 64GB\n[Memory Summary: Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -37341,7 +37392,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "display",
@@ -37388,9 +37439,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 15.158,
-      "total_s": 15.163
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 16.609,
+      "total_s": 16.613
     },
     "index": 103,
     "baseline_specs": {
@@ -37591,9 +37642,9 @@
         "capacity_gb": 16,
         "memory_type": "LPDDR5X",
         "speed": "7500",
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "Memory: 16GB LPDDR5X-7500 on board"
       },
       "storage": {
@@ -37702,9 +37753,11 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
-          "speed": "7500"
+          "speed": "7500",
+          "slot_count": 0,
+          "is_soldered": true
         },
-        "raw_context": "Memory: 16GB LPDDR5X-7500 on board"
+        "raw_context": "Memory: 16GB LPDDR5X-7500 on board\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -37715,7 +37768,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots)"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "display",
@@ -37770,8 +37823,8 @@
     ],
     "timing": {
       "deterministic_s": 0.006,
-      "ai_fallback_s": 15.444,
-      "total_s": 15.45
+      "ai_fallback_s": 15.607,
+      "total_s": 15.612
     },
     "index": 104,
     "baseline_specs": {
@@ -37975,7 +38028,7 @@
         "speed": 5200,
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5200 (2x SO-DIMM slots, Max 64GB)"
       },
       "storage": {
@@ -38078,9 +38131,10 @@
         "resolved_by_ai": {
           "speed": 5200,
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory: 16GB DDR5-5200 (2x SO-DIMM slots, Max 64GB)"
+        "raw_context": "Memory: 16GB DDR5-5200 (2x SO-DIMM slots, Max 64GB)\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -38091,7 +38145,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total)"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (2x M.2 Slots Total)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "display",
@@ -38145,9 +38199,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 15.951,
-      "total_s": 15.957
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 16.536,
+      "total_s": 16.541
     },
     "index": 105,
     "baseline_specs": {
@@ -38345,7 +38399,7 @@
         "speed": "5200 MHz",
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory (RAM): 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets) | MEMORY: 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets)"
       },
       "storage": {
@@ -38401,7 +38455,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "2x 2W speakers, Dolby Atmos, Build-in array Microphone",
+        "microphone": "Build-in array Microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": true,
@@ -38454,9 +38508,10 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory (RAM): 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets) | MEMORY: 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets)"
+        "raw_context": "Memory (RAM): 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets) | MEMORY: 16GB DDR5 5200MHz (Supports up to 64GB, 2x SO-DIMM sockets)\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false. Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -38468,7 +38523,7 @@
           "slot_count": 2,
           "max_supported_gb": 4096
         },
-        "raw_context": "Storage: 1TB PCIe Gen4x4 M.2 SSD (2x M.2 slots, supports up to 4TB total)"
+        "raw_context": "Storage: 1TB PCIe Gen4x4 M.2 SSD (2x M.2 slots, supports up to 4TB total)\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 4096 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -38503,9 +38558,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 12.872,
-      "total_s": 12.879
+      "deterministic_s": 0.004,
+      "ai_fallback_s": 12.657,
+      "total_s": 12.661
     },
     "index": 106,
     "baseline_specs": {
@@ -38874,9 +38929,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.004,
-      "ai_fallback_s": 11.233,
-      "total_s": 11.237
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 11.561,
+      "total_s": 11.567
     },
     "index": 107,
     "baseline_specs": {
@@ -39194,7 +39249,7 @@
           "slot_count": 1,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 16GB DDR5-5600 (1x 16GB SO-DIMM) / Up to 32GB supported"
+        "raw_context": "Memory: 16GB DDR5-5600 (1x 16GB SO-DIMM) / Up to 32GB supported\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -39205,7 +39260,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Two M.2 slots total)"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Two M.2 slots total)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -39240,9 +39295,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 12.124,
-      "total_s": 12.13
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 12.447,
+      "total_s": 12.453
     },
     "index": 108,
     "baseline_specs": {
@@ -39441,7 +39496,7 @@
         "speed": 5600,
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "Memory: 16GB DDR5-5600 SO-DIMM (2x Slots, Expandable to 64GB) | MEMORY: 16GB DDR5-5600 SO-DIMM"
       },
       "storage": {
@@ -39544,9 +39599,10 @@
         "resolved_by_ai": {
           "speed": 5600,
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "Memory: 16GB DDR5-5600 SO-DIMM (2x Slots, Expandable to 64GB) | MEMORY: 16GB DDR5-5600 SO-DIMM"
+        "raw_context": "Memory: 16GB DDR5-5600 SO-DIMM (2x Slots, Expandable to 64GB) | MEMORY: 16GB DDR5-5600 SO-DIMM\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false.]"
       },
       {
         "subsystem": "storage",
@@ -39557,7 +39613,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD"
+        "raw_context": "Storage: 1TB PCIe 4.0 NVMe M.2 SSD (Total 2x M.2 Slots) | STORAGE: 1TB PCIe 4.0 NVMe M.2 SSD\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "display",
@@ -39601,8 +39657,8 @@
     ],
     "timing": {
       "deterministic_s": 0.006,
-      "ai_fallback_s": 14.748,
-      "total_s": 14.755
+      "ai_fallback_s": 15.337,
+      "total_s": 15.344
     },
     "index": 109,
     "baseline_specs": {
@@ -39799,7 +39855,7 @@
         "speed": "5600 MHz",
         "slot_count": 2,
         "max_supported_gb": 64,
-        "is_soldered": null,
+        "is_soldered": false,
         "raw_spec": "System Memory: Up to 64GB DDR5 5600MHz, 2x SO-DIMM sockets for expansion | MEMORY: 16GB DDR5 5600MHz"
       },
       "storage": {
@@ -39853,7 +39909,7 @@
       },
       "audio_webcam": {
         "speaker_count": 2,
-        "microphone": "2x 2W speakers, Microphone, Dolby Atmos",
+        "microphone": "Microphone",
         "webcam_resolution": "1080p",
         "has_privacy_shutter": null,
         "has_ir_camera": true,
@@ -39903,9 +39959,10 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 64
+          "max_supported_gb": 64,
+          "is_soldered": false
         },
-        "raw_context": "System Memory: Up to 64GB DDR5 5600MHz, 2x SO-DIMM sockets for expansion | MEMORY: 16GB DDR5 5600MHz"
+        "raw_context": "System Memory: Up to 64GB DDR5 5600MHz, 2x SO-DIMM sockets for expansion | MEMORY: 16GB DDR5 5600MHz\n[Memory Summary: Total memory slots: 2 discrete SO-DIMM sockets. Soldered memory: false. Maximum supported memory: 64 GB.]"
       },
       {
         "subsystem": "storage",
@@ -39917,7 +39974,7 @@
           "slot_count": 2,
           "max_supported_gb": 4096
         },
-        "raw_context": "Storage: 1x PCIe Gen4x4 M.2 slot, 1x PCIe Gen4x2 M.2 slot, Up to 4TB PCIe NVMe M.2 SSD | STORAGE: 1TB PCIe Gen4 NVMe M.2 SSD"
+        "raw_context": "Storage: 1x PCIe Gen4x4 M.2 slot, 1x PCIe Gen4x2 M.2 slot, Up to 4TB PCIe NVMe M.2 SSD | STORAGE: 1TB PCIe Gen4 NVMe M.2 SSD\n[Storage Summary: Total physical storage slots: 2 (2 separate drive slots). Maximum supported storage capacity: 4096 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -39950,9 +40007,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.006,
-      "ai_fallback_s": 12.891,
-      "total_s": 12.897
+      "deterministic_s": 0.008,
+      "ai_fallback_s": 11.826,
+      "total_s": 11.834
     },
     "index": 110,
     "baseline_specs": {
@@ -40280,7 +40337,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 2x 12GB SO-DIMM DDR5-4800 | Memory Slots: Two DDR5 SO-DIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800 offering"
+        "raw_context": "Memory: 2x 12GB SO-DIMM DDR5-4800 | Memory Slots: Two DDR5 SO-DIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800 offering\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -40292,7 +40349,7 @@
           "slot_count": 2,
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Max Storage Support: Up to two drives, 2x M.2 SSD, M.2 2242 SSD up to 1TB each | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Max Storage Support: Up to two drives, 2x M.2 SSD, M.2 2242 SSD up to 1TB each | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -40325,9 +40382,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.011,
-      "ai_fallback_s": 12.229,
-      "total_s": 12.24
+      "deterministic_s": 0.009,
+      "ai_fallback_s": 12.501,
+      "total_s": 12.51
     },
     "index": 111,
     "baseline_specs": {
@@ -40656,7 +40713,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 16GB (2x 8GB SO-DIMM DDR5-5600) | Memory Slots: Two DDR5 SO-DIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-5600"
+        "raw_context": "Memory: 16GB (2x 8GB SO-DIMM DDR5-5600) | Memory Slots: Two DDR5 SO-DIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-5600\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -40668,7 +40725,7 @@
           "slot_count": 2,
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -40699,9 +40756,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.005,
-      "ai_fallback_s": 12.305,
-      "total_s": 12.311
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 12.368,
+      "total_s": 12.374
     },
     "index": 112,
     "baseline_specs": {
@@ -41021,7 +41078,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 24GB RAM (2x 12GB SO-DIMM DDR5-4800) | Memory Slots: Two DDR5 SO-DIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800"
+        "raw_context": "Memory: 24GB RAM (2x 12GB SO-DIMM DDR5-4800) | Memory Slots: Two DDR5 SO-DIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -41033,7 +41090,7 @@
           "slot_count": 2,
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Support: Up to two drives, 2x M.2 SSD (M.2 2242 SSD up to 1TB each) | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Support: Up to two drives, 2x M.2 SSD (M.2 2242 SSD up to 1TB each) | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -41065,8 +41122,8 @@
     ],
     "timing": {
       "deterministic_s": 0.005,
-      "ai_fallback_s": 12.731,
-      "total_s": 12.736
+      "ai_fallback_s": 11.895,
+      "total_s": 11.899
     },
     "index": 113,
     "baseline_specs": {
@@ -41421,9 +41478,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.003,
-      "ai_fallback_s": 10.739,
-      "total_s": 10.742
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 11.476,
+      "total_s": 11.482
     },
     "index": 114,
     "baseline_specs": {
@@ -41619,9 +41676,9 @@
         "capacity_gb": 16,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
-        "is_soldered": null,
+        "is_soldered": true,
         "raw_spec": "RAM: 16GB LPDDR5X | MEMORY: 16GB LPDDR5X"
       },
       "storage": {
@@ -41715,8 +41772,11 @@
           "max_supported_gb",
           "is_soldered"
         ],
-        "resolved_by_ai": {},
-        "raw_context": "RAM: 16GB LPDDR5X | MEMORY: 16GB LPDDR5X"
+        "resolved_by_ai": {
+          "slot_count": 0,
+          "is_soldered": true
+        },
+        "raw_context": "RAM: 16GB LPDDR5X | MEMORY: 16GB LPDDR5X\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -41740,9 +41800,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.004,
-      "ai_fallback_s": 9.096,
-      "total_s": 9.101
+      "deterministic_s": 0.002,
+      "ai_fallback_s": 9.074,
+      "total_s": 9.077
     },
     "index": 115,
     "baseline_specs": {
@@ -42094,9 +42154,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.016,
-      "ai_fallback_s": 14.611,
-      "total_s": 14.627
+      "deterministic_s": 0.014,
+      "ai_fallback_s": 15.367,
+      "total_s": 15.382
     },
     "index": 116,
     "baseline_specs": {
@@ -42423,7 +42483,7 @@
           "slot_count": 1,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 16GB SO-DIMM DDR5-4800 (Up to 32GB supported) | Memory Slots: One DDR5 SO-DIMM slot | Max Memory: Up to 32GB DDR5-4800"
+        "raw_context": "Memory: 16GB SO-DIMM DDR5-4800 (Up to 32GB supported) | Memory Slots: One DDR5 SO-DIMM slot | Max Memory: Up to 32GB DDR5-4800\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -42435,7 +42495,7 @@
           "slot_count": 2,
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Supports up to 2x M.2 SSDs) | Storage Support: Up to two drives, 2x M.2 SSD M.2 2242 SSD up to 1TB each | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Supports up to 2x M.2 SSDs) | Storage Support: Up to two drives, 2x M.2 SSD M.2 2242 SSD up to 1TB each | Storage Slot: Two M.2 2242 PCIe 4.0 x4 slots\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -42479,8 +42539,8 @@
     ],
     "timing": {
       "deterministic_s": 0.007,
-      "ai_fallback_s": 13.216,
-      "total_s": 13.222
+      "ai_fallback_s": 12.788,
+      "total_s": 12.795
     },
     "index": 117,
     "baseline_specs": {
@@ -42702,7 +42762,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
-        "slot_count": null,
+        "slot_count": 2,
         "max_supported_gb": 1024,
         "raw_spec": "Storage: 512GB M.2 2242 PCIe 4.0 x4 NVMe SSD, supports two M.2 SSDs | Storage Expansion: Supports two M.2 SSDs up to 1TB each"
       },
@@ -42805,7 +42865,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 12GB DDR5-4800 SO-DIMM, expandable up to 32GB | Maximum Supported Memory: Up to 32GB | Memory Slots: 2"
+        "raw_context": "Memory: 12GB DDR5-4800 SO-DIMM, expandable up to 32GB | Maximum Supported Memory: Up to 32GB | Memory Slots: 2\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -42814,9 +42874,10 @@
           "max_supported_gb"
         ],
         "resolved_by_ai": {
+          "slot_count": 2,
           "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB M.2 2242 PCIe 4.0 x4 NVMe SSD, supports two M.2 SSDs | Storage Expansion: Supports two M.2 SSDs up to 1TB each"
+        "raw_context": "Storage: 512GB M.2 2242 PCIe 4.0 x4 NVMe SSD, supports two M.2 SSDs | Storage Expansion: Supports two M.2 SSDs up to 1TB each\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -42853,8 +42914,8 @@
     ],
     "timing": {
       "deterministic_s": 0.007,
-      "ai_fallback_s": 14.858,
-      "total_s": 14.865
+      "ai_fallback_s": 12.475,
+      "total_s": 12.482
     },
     "index": 118,
     "baseline_specs": {
@@ -43194,8 +43255,8 @@
     ],
     "timing": {
       "deterministic_s": 0.005,
-      "ai_fallback_s": 14.46,
-      "total_s": 14.465
+      "ai_fallback_s": 12.132,
+      "total_s": 12.138
     },
     "index": 119,
     "baseline_specs": {
@@ -43386,7 +43447,7 @@
         "capacity_gb": 16,
         "memory_type": "LPDDR5X",
         "speed": null,
-        "slot_count": null,
+        "slot_count": 0,
         "max_supported_gb": null,
         "is_soldered": true,
         "raw_spec": "Memory: 16GB Soldered LPDDR5x-7467 (Dual-channel)"
@@ -43488,9 +43549,10 @@
           "is_soldered"
         ],
         "resolved_by_ai": {
+          "slot_count": 0,
           "is_soldered": true
         },
-        "raw_context": "Memory: 16GB Soldered LPDDR5x-7467 (Dual-channel)"
+        "raw_context": "Memory: 16GB Soldered LPDDR5x-7467 (Dual-channel)\n[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board). Soldered memory: true.]"
       },
       {
         "subsystem": "storage",
@@ -43501,7 +43563,7 @@
         "resolved_by_ai": {
           "slot_count": 2
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Dual M.2 Slots available)"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe (Dual M.2 Slots available)\n[Storage Summary: Total physical storage slots: 2.]"
       },
       {
         "subsystem": "power_battery",
@@ -43541,9 +43603,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.007,
-      "ai_fallback_s": 14.713,
-      "total_s": 14.721
+      "deterministic_s": 0.005,
+      "ai_fallback_s": 12.0,
+      "total_s": 12.005
     },
     "index": 120,
     "baseline_specs": {
@@ -43758,7 +43820,7 @@
         "storage_type": "SSD",
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2",
-        "slot_count": 1,
+        "slot_count": 2,
         "max_supported_gb": null,
         "raw_spec": "Storage: 512GB M.2 PCIe 4.0 x4 NVMe SSD, with an extra M.2 slot | Storage Interface: M.2 PCIe 4.0 x4 NVMe | Additional Storage: Extra M.2 slot available"
       },
@@ -43860,7 +43922,7 @@
           "speed": 4800,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 16GB DDR5-4800 SO-DIMM, supports up to 32GB | Maximum Supported Memory: Up to 32GB"
+        "raw_context": "Memory: 16GB DDR5-4800 SO-DIMM, supports up to 32GB | Maximum Supported Memory: Up to 32GB\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -43869,9 +43931,9 @@
           "max_supported_gb"
         ],
         "resolved_by_ai": {
-          "slot_count": 1
+          "slot_count": 2
         },
-        "raw_context": "Storage: 512GB M.2 PCIe 4.0 x4 NVMe SSD, with an extra M.2 slot | Storage Interface: M.2 PCIe 4.0 x4 NVMe | Additional Storage: Extra M.2 slot available"
+        "raw_context": "Storage: 512GB M.2 PCIe 4.0 x4 NVMe SSD, with an extra M.2 slot | Storage Interface: M.2 PCIe 4.0 x4 NVMe | Additional Storage: Extra M.2 slot available\n[Storage Summary: Total physical storage slots: 2 (1 primary installed drive + 1 extra expansion slot/bay available).]"
       },
       {
         "subsystem": "display",
@@ -43911,9 +43973,9 @@
       }
     ],
     "timing": {
-      "deterministic_s": 0.004,
-      "ai_fallback_s": 18.368,
-      "total_s": 18.373
+      "deterministic_s": 0.006,
+      "ai_fallback_s": 15.204,
+      "total_s": 15.211
     },
     "index": 121,
     "baseline_specs": {
@@ -44136,7 +44198,7 @@
         "interface": "PCIe 4.0 NVMe",
         "form_factor": "M.2 2242",
         "slot_count": 2,
-        "max_supported_gb": 2048,
+        "max_supported_gb": 1024,
         "raw_spec": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each"
       },
       "display": {
@@ -44238,7 +44300,7 @@
           "slot_count": 2,
           "max_supported_gb": 32
         },
-        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800"
+        "raw_context": "Memory: 1x 16GB SODIMM DDR5-4800 | Memory Slots: Two DDR5 SODIMM slots, dual-channel capable | Max Memory: Up to 32GB DDR5-4800\n[Memory Summary: Maximum supported memory: 32 GB.]"
       },
       {
         "subsystem": "storage",
@@ -44248,9 +44310,9 @@
         ],
         "resolved_by_ai": {
           "slot_count": 2,
-          "max_supported_gb": 2048
+          "max_supported_gb": 1024
         },
-        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each"
+        "raw_context": "Storage: 512GB SSD M.2 2242 PCIe 4.0x4 NVMe | Storage Slot: Two M.2 2280 PCIe 4.0 x4 slots | Max Storage Support: Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each\n[Storage Summary: Total physical storage slots: 2. Maximum supported storage capacity: 1024 GB.]"
       },
       {
         "subsystem": "power_battery",
@@ -44292,8 +44354,8 @@
     ],
     "timing": {
       "deterministic_s": 0.007,
-      "ai_fallback_s": 16.501,
-      "total_s": 16.509
+      "ai_fallback_s": 13.157,
+      "total_s": 13.164
     },
     "index": 122,
     "baseline_specs": {

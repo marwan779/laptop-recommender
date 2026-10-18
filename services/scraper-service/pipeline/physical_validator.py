@@ -451,6 +451,64 @@ class PhysicalValidator:
         return False, None, f"warranty_years_{val}_out_of_bounds"
 
     @classmethod
+    def validate_color_gamut(
+        cls, value: Any
+    ) -> Tuple[bool, Optional[str], Optional[str]]:
+        """Validate display color gamut and reject chassis colors/exterior paint names."""
+        if not value or not isinstance(value, str):
+            return False, None, "type_error"
+        val = value.strip()
+        chassis_colors = [
+            "silver", "grey", "gray", "black", "blue", "white", "gold",
+            "mica", "eclipse", "cosmos", "shadow", "luna", "platinum", "dark ash"
+        ]
+        # If string matches chassis paint and lacks gamut keywords, reject
+        if any(c in val.lower() for c in chassis_colors) and not any(g in val.lower() for g in ["srgb", "ntsc", "dci-p3", "adobe"]):
+            return False, None, f"color_gamut_contains_chassis_color_{val}"
+        # Plausible gamuts must contain standards or percentage
+        if any(g in val.lower() for g in ["srgb", "ntsc", "dci-p3", "adobe rgb", "color gamut"]) or "%" in val:
+            return True, val, None
+        return False, None, f"invalid_color_gamut_{val}"
+
+    @classmethod
+    def validate_memory_slots(
+        cls, value: Any
+    ) -> Tuple[bool, Optional[int], Optional[str]]:
+        """Validate RAM slot count (0 for soldered, 1 to 8 for SO-DIMM/CAMM2)."""
+        try:
+            val = int(value)
+        except (ValueError, TypeError):
+            return False, None, "type_error"
+        if 0 <= val <= 8:
+            return True, val, None
+        return False, None, f"memory_slots_{val}_out_of_bounds"
+
+    @classmethod
+    def validate_storage_slots(
+        cls, value: Any
+    ) -> Tuple[bool, Optional[int], Optional[str]]:
+        """Validate storage slot count (1 to 6 slots)."""
+        try:
+            val = int(value)
+        except (ValueError, TypeError):
+            return False, None, "type_error"
+        if 1 <= val <= 6:
+            return True, val, None
+        return False, None, f"storage_slots_{val}_out_of_bounds"
+
+    @classmethod
+    def validate_storage_form_factor(
+        cls, value: Any
+    ) -> Tuple[bool, Optional[str], Optional[str]]:
+        """Validate storage form factor (M.2, 2.5-inch, eMMC, UFS)."""
+        if not value or not isinstance(value, str):
+            return False, None, "type_error"
+        val = value.strip()
+        if any(term in val.lower() for term in ["m.2", "2280", "2242", "2230", "2.5-inch", "2.5\"", "emmc", "ufs"]):
+            return True, val, None
+        return False, None, f"invalid_storage_form_factor_{val}"
+
+    @classmethod
     def validate_field(
         cls,
         field_path: str,
@@ -550,6 +608,14 @@ class PhysicalValidator:
             if any(term in v.lower() for term in ["windows", "dos", "freedos", "linux", "ubuntu", "macos", "chrome"]):
                 return True, v, None
             return False, None, f"invalid_os_{v}"
+        elif field_path == "display.color_gamut":
+            return cls.validate_color_gamut(value)
+        elif field_path == "memory.slot_count":
+            return cls.validate_memory_slots(value)
+        elif field_path == "storage.slot_count":
+            return cls.validate_storage_slots(value)
+        elif field_path == "storage.form_factor":
+            return cls.validate_storage_form_factor(value)
 
         # Default pass-through for other fields
         return True, value, None
