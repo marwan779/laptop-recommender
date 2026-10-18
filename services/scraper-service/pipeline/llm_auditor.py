@@ -210,6 +210,7 @@ class GeminiAuditor:
         self.fallback_models = fallback_models or ["gemini-3.8-flash", "gemini-flash-lite-latest"]
         self.max_retries = max_retries
         self.rate_limiter = RateLimiter(requests_per_minute=requests_per_minute)
+        self._daily_quota_exhausted: set = set()
 
         # Initialize Google GenAI client
         try:
@@ -275,10 +276,20 @@ class GeminiAuditor:
             f"INPUT_BATCH:\n{json.dumps(batch_payload, indent=2, ensure_ascii=False)}"
         )
 
-        models_to_try = [self.model]
-        for fm in self.fallback_models:
-            if fm not in models_to_try:
-                models_to_try.append(fm)
+        all_candidates = [self.model] + self.fallback_models
+        models_to_try = []
+        for m in all_candidates:
+            if m not in self._daily_quota_exhausted and m not in models_to_try:
+                models_to_try.append(m)
+
+        if not models_to_try:
+            logger.error("All Gemini models in fallback chain have exhausted their daily quotas!")
+            return BatchAuditResponse(
+                audited_laptops=[
+                    ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[])
+                    for ident in identifiers
+                ]
+            )
 
         last_error = None
         for current_model in models_to_try:
@@ -310,12 +321,28 @@ class GeminiAuditor:
                 except errors.APIError as e:
                     last_error = e
                     status_code = getattr(e, "code", None)
-                    is_rate_limit = status_code == 429 or "RESOURCE_EXHAUSTED" in str(e) or "quota" in str(e).lower()
-                    is_unavailable = status_code == 503 or "UNAVAILABLE" in str(e)
-                    is_not_found = status_code == 404 or "NOT_FOUND" in str(e)
+                    err_str = str(e).lower()
+                    is_rate_limit = status_code == 429 or "resource_exhausted" in err_str or "quota" in err_str
+                    is_unavailable = status_code == 503 or "unavailable" in err_str
+                    is_not_found = status_code == 404 or "not_found" in err_str
 
                     if is_not_found:
                         logger.warning("Model %s not found (404). Switching to next available fallback model...", current_model)
+                        self._daily_quota_exhausted.add(current_model)
+                        break
+
+                    is_daily_limit = (
+                        "quota exceeded for metric" in err_str
+                        or "generaterequestsperday" in err_str
+                        or "exceeded your current quota" in err_str
+                        or "please retry in" in err_str
+                    )
+                    if is_daily_limit:
+                        self._daily_quota_exhausted.add(current_model)
+                        logger.warning(
+                            "Daily quota ceiling reached for %s. Blacklisting model for remainder of run and failing over immediately.",
+                            current_model
+                        )
                         break
 
                     if (is_rate_limit or is_unavailable) and attempt < self.max_retries:

@@ -41,6 +41,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from app.stores.compumarts import CompumartsStoreScraper
 from pipeline.ai_fallback.gliner_onnx import GLiNERONNXFallbackExtractor
 from pipeline.ai_fallback.nuextract import NuExtractFallbackExtractor
+from pipeline.llm_auditor import GeminiAuditor
 from pipeline.orchestrator import LaptopExtractionPipeline, PipelineResult
 from pipeline.provenance import ProvenanceTracker
 from pipeline.raw_storage import RawScrapeStorage
@@ -117,12 +118,23 @@ def run_pipeline(
     trace_file: str = "pipeline_trace_compumarts.jsonl",
     envelope_log_file: str = "pipeline_envelopes.txt",
     log_envelopes: bool = False,
+    audit_batch_size: int = 4,
+    no_audit: bool = False,
 ) -> None:
     """Execute live scraping and pipeline processing."""
     ai_backend = setup_ai_fallback(ai_type, use_onnx, onnx_dir=onnx_dir, device=device)
     enable_env_logging = log_envelopes or (target_url is not None)
     pipeline = LaptopExtractionPipeline(ai_fallback=ai_backend, log_envelopes=enable_env_logging)
     storage = RawScrapeStorage()
+
+    # Initialize Layer 8 Streaming Ground-Truth LLM Auditor
+    auditor = None
+    if not no_audit:
+        try:
+            auditor = GeminiAuditor()
+            logger.info("Layer 8 Streaming Ground-Truth LLM Auditor active (batch_size=%d, model=%s).", audit_batch_size, auditor.model)
+        except Exception as e:
+            logger.info("Layer 8 LLM Auditor disabled (%s). Running pipeline without LLM audit.", e)
 
     out_path = Path(output_file)
     ckpt_path = Path(checkpoint_file)
@@ -196,6 +208,23 @@ def run_pipeline(
                 print()
             print("-" * 60)
 
+        if auditor:
+            logger.info("Executing Layer 8 Ground-Truth LLM Audit on single product...")
+            single_record = {
+                "url": target_url,
+                "title": result.specs.get("identity", {}).get("laptop_model") or target_url,
+                "specs": result.specs,
+                "source_table": (result.raw_product.raw_tables.get("specs") if result.raw_product else {}) or {},
+            }
+            try:
+                batch_res = auditor.audit_batch([single_record])
+                if batch_res.audited_laptops and batch_res.audited_laptops[0].corrections:
+                    applied = auditor.apply_corrections(single_record, batch_res.audited_laptops[0].corrections)
+                    for app in applied:
+                        logger.info("  [Layer 8 Healed] %s: %s -> %s (Reason: %s)", app["field_path"], app["old_value"], app["new_value"], app["reason"])
+            except Exception as e:
+                logger.warning("Layer 8 single product audit failed: %s", e)
+
         print("\n" + "=" * 60)
         print("STRUCTURED EXTRACTION RESULT:")
         print("=" * 60)
@@ -210,6 +239,7 @@ def run_pipeline(
     logger.info("Discovered %d in-stock laptop products from CompuMarts.", total_found)
 
     results: List[Dict[str, Any]] = []
+    audit_buffer: List[Dict[str, Any]] = []
     stats = {
         "total": total_found,
         "processed": 0,
@@ -218,12 +248,48 @@ def run_pipeline(
         "ai_resolved": 0,
         "gate1_rejections": 0,
         "gate2_rejections": 0,
+        "layer8_corrections": 0,
     }
 
     # Open checkpoint, trace, and envelope text streams
     with ckpt_path.open("w", encoding="utf-8") as ckpt_f, \
          trace_path.open("w", encoding="utf-8") as trace_f, \
          (env_log_path.open("w", encoding="utf-8") if env_log_path else open(os.devnull, "w")) as env_f:
+
+        def flush_audit_buffer():
+            if not audit_buffer:
+                return
+            if auditor:
+                logger.info(
+                    "Executing Layer 8 Streaming LLM Audit on buffer of %d laptops...",
+                    len(audit_buffer),
+                )
+                idents = [it.get("url") or f"lap_{i}" for i, it in enumerate(audit_buffer)]
+                try:
+                    batch_res = auditor.audit_batch(audit_buffer, identifiers=idents)
+                    res_map = {r.laptop_id: r for r in batch_res.audited_laptops}
+                    for ident, it in zip(idents, audit_buffer):
+                        p_res = res_map.get(ident)
+                        if p_res and p_res.has_contradictions and p_res.corrections:
+                            applied = auditor.apply_corrections(it, p_res.corrections)
+                            stats["layer8_corrections"] += len(applied)
+                            for app in applied:
+                                logger.info(
+                                    "  [Layer 8 Healed %s] %s: %s -> %s (Reason: %s)",
+                                    it.get("title", "")[:35],
+                                    app["field_path"],
+                                    app["old_value"],
+                                    app["new_value"],
+                                    app["reason"],
+                                )
+                except Exception as e:
+                    logger.warning("Layer 8 Streaming LLM Audit batch failed: %s", e)
+
+            for it in audit_buffer:
+                results.append(it)
+                ckpt_f.write(json.dumps(it, ensure_ascii=False) + "\n")
+            ckpt_f.flush()
+            audit_buffer.clear()
 
         if env_log_path:
             env_f.write(
@@ -282,11 +348,11 @@ def run_pipeline(
                 "rejections_count": len(res.validation_rejections),
                 "elapsed_s": round(elapsed, 3),
             }
-            results.append(item_record)
+            audit_buffer.append(item_record)
 
-            # Write stream checkpoint
-            ckpt_f.write(json.dumps(item_record, ensure_ascii=False) + "\n")
-            ckpt_f.flush()
+            # Flush buffer when batch size is reached (or immediately if auditor is disabled)
+            if not auditor or len(audit_buffer) >= audit_batch_size:
+                flush_audit_buffer()
 
             # Stream audit trace record to separate file
             if res.provenance_record:
@@ -306,6 +372,10 @@ def run_pipeline(
                 )
                 env_f.write(report + "\n\n")
                 env_f.flush()
+
+        # Flush any remaining laptops in the Layer 8 audit buffer
+        if audit_buffer:
+            flush_audit_buffer()
 
         if env_log_path:
             env_f.write(
@@ -335,6 +405,8 @@ def run_pipeline(
     print(f"AI Fallback Resolved:        {stats['ai_resolved']}")
     print(f"Gate 1 Physical Rejections:  {stats['gate1_rejections']}")
     print(f"Gate 2 AI Rejections:        {stats['gate2_rejections']}")
+    if auditor:
+        print(f"Layer 8 Healed Fields:       {stats['layer8_corrections']}")
     print(f"Output File:                 {out_path.resolve()}")
     print(f"Audit Trace Log:             {trace_path.resolve()}")
     if env_log_path:
@@ -457,6 +529,18 @@ def main() -> None:
         default=False,
         help="Log created extraction envelopes, AI fallback predictions, and Gate 2 decisions in real-time",
     )
+    parser.add_argument(
+        "--no-audit",
+        action="store_true",
+        default=False,
+        help="Disable Layer 8 Ground-Truth LLM Auditor",
+    )
+    parser.add_argument(
+        "--audit-batch-size",
+        type=int,
+        default=4,
+        help="Batch size for Layer 8 Ground-Truth LLM Auditor (default: 4)",
+    )
 
     args = parser.parse_args()
 
@@ -482,6 +566,8 @@ def main() -> None:
         trace_file=args.trace_file,
         envelope_log_file=args.envelope_log,
         log_envelopes=args.log_envelopes,
+        audit_batch_size=args.audit_batch_size,
+        no_audit=args.no_audit,
     )
 
 
