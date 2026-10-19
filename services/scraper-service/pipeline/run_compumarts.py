@@ -118,7 +118,7 @@ def run_pipeline(
     trace_file: str = "pipeline_trace_compumarts.jsonl",
     envelope_log_file: str = "pipeline_envelopes.txt",
     log_envelopes: bool = False,
-    audit_batch_size: int = 4,
+    audit_batch_size: int = 1,
     no_audit: bool = False,
 ) -> None:
     """Execute live scraping and pipeline processing."""
@@ -538,8 +538,8 @@ def main() -> None:
     parser.add_argument(
         "--audit-batch-size",
         type=int,
-        default=4,
-        help="Batch size for Layer 8 Ground-Truth LLM Auditor (default: 4)",
+        default=1,
+        help="Batch size for Layer 8 Ground-Truth LLM Auditor (default: 1)",
     )
 
     args = parser.parse_args()

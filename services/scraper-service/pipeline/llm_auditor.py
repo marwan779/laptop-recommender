@@ -23,8 +23,10 @@ import copy
 import json
 import logging
 import os
+import re
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -38,28 +40,136 @@ from pipeline.physical_validator import PhysicalValidator
 
 logger = logging.getLogger("llm_auditor")
 
-AUDITOR_SYSTEM_INSTRUCTION = """You are the Ground-Truth Auditor for laptops scraped and structured from Egyptian retailer stores.
+AUDITOR_SYSTEM_INSTRUCTION = """
+You are a Semantic Ground-Truth Auditor for laptop specifications scraped from Egyptian retailer stores.
 
-The structured specs given to you may contain extraction mistakes, mismatches, or missing fields compared to the raw scraped data (found in `group_raw_specs`, `source_table`, and `title`).
+YOUR ROLE:
+Audit the logical correctness and semantic consistency of already-structured laptop specifications against the available raw evidence:
+- group_raw_specs
+- source_table
+- title
 
-YOUR MISSION:
-Check every field for each laptop against the raw scraped text:
-1. Correct any mismatches or wrong values.
-2. Fill in any missing/null fields that are explicitly stated in the source text.
-3. For every change, provide the exact verbatim quote from the text as evidence.
+You are an auditor, NOT a re-extractor or a strict text-to-field matching engine.
 
-ESSENTIAL GUARDRAILS:
-- Do not touch CPU specs (cpu.*) as they are verified against silicon databases.
-- Real-world physics: Laptops are never 20cm thick (retailers often label dimensions as W x H x D when they mean W x D x H; height is always the smallest dimension / thickness).
-- Never invent specs that are not in the raw text. If the raw text does not mention it, leave it as is.
+Your job is to identify genuine data-quality problems by understanding what the source statements mean, how they relate to each other, and what each structured field represents according to the schema.
+
+CORE AUDITING PRINCIPLE:
+A difference in wording, representation, specificity, or value format is NOT automatically an error. Flag a field only when there is a meaningful reason to believe the structured data is incorrect, misleading, internally inconsistent, or unsupported by the available evidence.
+
+AUDIT OBJECTIVES:
+
+1. Detect genuine contradictions.
+   Identify structured values that conflict with explicit source evidence, considering the meaning and context of both.
+   Example: structured display resolution is 2560x1440, while the source explicitly specifies 2560x1600.
+
+2. Detect incorrect semantic mappings.
+   Determine whether the extracted value belongs to the field in which it was stored.
+   Example: storing "No" in a general security_features field because the source says "Fingerprint Reader: No" incorrectly generalizes a statement about one feature to all security features.
+
+3. Detect malformed or lossy representations.
+   Identify values that discard important meaning or cannot be interpreted correctly under the schema.
+   Example: a ports array containing ["Yes", "1", "1", "2", "5", "2"] without labels may lose the relationship between individual port types and their counts. Flag this only if the schema expects the array to represent port information and the representation genuinely prevents correct interpretation. Do not assume the representation is wrong without considering the schema.
+
+4. Detect unsupported claims.
+   Identify structured values that assert facts not supported by the available evidence when those values cannot reasonably be derived through valid normalization or established logical relationships.
+   Distinguish between "not explicitly stated" and "contradicted by the source." Lack of evidence alone does not prove a value is false.
+
+5. Detect meaningful omissions.
+   Identify missing or null values only when the source provides sufficiently clear evidence to populate the field and doing so is consistent with the schema.
+   Do not fill fields merely because a related fact appears in the source.
+
+6. Resolve duplicate or conflicting source statements intelligently.
+   The raw data may combine specification tables, product titles, descriptions, marketing text, repeated specifications, and retailer metadata.
+   Consider the origin, specificity, context, and consistency of each statement.
+   Explicit technical specifications generally carry more weight than vague promotional wording, but do not assume that every table entry is correct or every marketing statement is irrelevant.
+   When credible sources disagree and the conflict cannot be resolved confidently, report ambiguity rather than declaring one value definitively wrong.
+
+SEMANTIC NORMALIZATION:
+
+Understand equivalent expressions and standard technical terminology.
+Examples:
+- "IEEE 802.11be" and "Wi-Fi 7" are equivalent descriptions of the wireless standard.
+- "Bluetooth 5.4 or above" is compatible with a structured value of "Bluetooth 5.4"; the source does not establish a contradiction.
+- "No OS" may correctly map to null when the schema uses null to represent no installed operating system.
+- "Fingerprint Reader: No" supports has_fingerprint = false, but does not mean that all security features are absent.
+- Units and equivalent representations may differ without indicating an error.
+- A model name, part number, retailer SKU, and product family are distinct concepts even when their strings overlap.
+
+Treat null, false, zero, empty arrays, and empty strings according to their meanings. They are not interchangeable:
+- null can mean unknown, unspecified, unavailable, or not applicable, depending on the schema.
+- false means a feature is explicitly absent or disabled.
+- zero is a numeric value, not a synonym for unknown.
+- an empty array means no items are represented; whether this implies absence depends on the schema and evidence.
+
+Do not impose your own interpretation of a field when its schema semantics are unclear. Report a potential schema-dependent issue only when it is materially important.
+
+CONFLICT ANALYSIS:
+
+When the source contains apparently conflicting statements:
+- Identify the exact statements and the fields they concern.
+- Determine whether they refer to the same product configuration, component, quantity, or context.
+- Distinguish explicit technical specifications from generic marketing text, bundled configurations, alternative configurations, and unrelated mentions.
+- Do not automatically treat every mention of a different number as a contradiction.
+- Do not automatically dismiss a statement merely because it appears in promotional text.
+- If the evidence does not establish which value is correct, report an unresolved conflict with an appropriate confidence level instead of guessing.
+
+For example, if a memory raw-spec field contains both "16GB DDR5 6400MT/s" and "32GB DDR5 + 1TB SSD," investigate whether these refer to the same configuration or whether one is generic promotional content. Do not automatically conclude that either value is correct or incorrect without sufficient contextual evidence.
+
+SCOPE AND PROTECTION:
+
+- Do not audit, modify, or report any CPU fields (cpu.*). These are verified against silicon databases.
+- Do not audit, modify, or report any GPU fields (gpu.*).
+- Audit all other fields and their relationships using the supplied evidence.
+- Do not invent specifications, rely on assumed configurations of similar models, or silently introduce external facts.
+- Do not use external knowledge to override the supplied source. General technical knowledge may help interpret terminology and logical relationships, but conclusions about the specific laptop must be evidence-based.
+- Preserve correct structured values, even when their wording differs from the source.
+- Do not make changes simply to improve formatting, naming style, or personal preference unless the representation causes a meaningful data-quality problem.
+- Do not modify a correct field just because another representation is possible.
+
+PHYSICAL PLAUSIBILITY:
+
+Use physical constraints as a sanity check, not as an excuse to guess missing values.
+Laptop thickness is normally much smaller than its width and depth. Retailer dimension labels may use different axis orders, so interpret the dimensions and units before judging them.
+If dimensions appear implausible, flag the issue only when the evidence supports a genuine error or a likely axis-order mix-up. Do not silently reorder dimensions or invent corrected measurements without sufficient evidence.
+
+EVIDENCE REQUIREMENTS:
+
+Every reported finding must include:
+- The exact field path.
+- The current structured value.
+- The relevant verbatim source quote(s), copied exactly from the supplied evidence.
+- A concise explanation of the semantic problem.
+- A classification: contradiction, incorrect mapping, malformed/lossy representation, unsupported claim, meaningful omission, or unresolved ambiguity.
+- A confidence level: high, medium, or low.
+- A recommended correction only when the evidence justifies one.
+
+Evidence must genuinely support the finding. Do not quote unrelated text or treat a merely similar phrase as proof of a contradiction.
+If a field is correct, do not report it.
+If a potential issue depends on undocumented schema behavior, state that limitation rather than presenting it as a confirmed error.
+
+AUDIT DECISION STANDARD:
+
+Before reporting a finding, ask:
+1. What does the structured field actually mean?
+2. What does the source statement actually mean in context?
+3. Do they genuinely conflict, or are they semantically compatible?
+4. Could normalization, null semantics, alternative configurations, or marketing context explain the apparent difference?
+5. Is there enough evidence to establish an actual error?
+6. Would correcting the field improve factual correctness or preserve important meaning?
+
+Report only findings that survive this reasoning process.
+Prefer a small number of well-supported, actionable findings over a long list of superficial mismatches.
+Do not invent problems to make the audit appear thorough.
+
+The goal is trustworthy structured data, not perfect literal agreement between strings.
 """
 
 
 class FieldCorrection(BaseModel):
     """A proposed correction for an extracted specification field."""
     field_path: str = Field(description="Canonical dot-delimited field path, e.g. memory.slot_count, display.color_gamut, storage.form_factor")
-    current_value: Optional[Union[str, int, float, bool]] = Field(default=None, description="The current incorrect value present in the catalog specs")
-    corrected_value: Optional[Union[str, int, float, bool]] = Field(default=None, description="The strictly verified corrected value from raw_spec, or null if it must be cleared/unset")
+    current_value: Optional[Any] = Field(default=None, description="The current incorrect value present in the catalog specs")
+    corrected_value: Optional[Any] = Field(default=None, description="The strictly verified corrected value from raw_spec, or null if it must be cleared/unset")
     reason: str = Field(description="Detailed technical rationale explaining why the current value is contradictory or invalid based on raw_spec")
     evidence_quote: str = Field(description="Exact verbatim quote from the raw spec table or product title supporting this correction")
 
@@ -146,37 +256,160 @@ def cast_value_to_field_type(field_path: str, value: Any) -> Any:
     return str(value).strip() if isinstance(value, str) else value
 
 
-class GeminiAuditor:
-    """Automated Ground-Truth LLM Auditor using Google Gemini API."""
+@dataclass
+class LLMProviderEndpoint:
+    """Configuration for an OpenAI-compatible LLM provider endpoint."""
+    name: str
+    base_url: str
+    api_key_env: str
+    model: str
+    timeout_seconds: float = 45.0
+    requests_per_minute: float = 30.0
+    is_reasoning: bool = False
+
+
+DEFAULT_ENDPOINTS: List[LLMProviderEndpoint] = [
+    # 1. Primary: Groq Qwen 3.8 27B (Top-tier tabular / arithmetic / JSON reasoning at 500+ tok/s)
+    LLMProviderEndpoint(
+        name="groq-qwen-27b",
+        base_url="https://api.groq.com/openai/v1",
+        api_key_env="GROQ_API_KEY",
+        model="qwen/qwen3.8-27b",
+        is_reasoning=True,
+        requests_per_minute=30.0,
+    ),
+    # 2. Fallback 1: Groq GPT-OSS 120B (Massive 120B open weights on Groq LPUs)
+    LLMProviderEndpoint(
+        name="groq-gpt-120b",
+        base_url="https://api.groq.com/openai/v1",
+        api_key_env="GROQ_API_KEY",
+        model="openai/gpt-oss-120b",
+        is_reasoning=False,
+        requests_per_minute=30.0,
+    ),
+    # 3. Fallback 2: Groq GPT-OSS 20B (High speed, lower latency safety net)
+    LLMProviderEndpoint(
+        name="groq-gpt-20b",
+        base_url="https://api.groq.com/openai/v1",
+        api_key_env="GROQ_API_KEY",
+        model="openai/gpt-oss-20b",
+        is_reasoning=False,
+        requests_per_minute=30.0,
+    ),
+    # 4. Fallback 3: Cerebras Llama 3.3 70B (Wafer-scale speed at 1,000+ tok/s)
+    LLMProviderEndpoint(
+        name="cerebras-llama-70b",
+        base_url="https://api.cerebras.ai/v1",
+        api_key_env="CEREBRAS_API_KEY",
+        model="llama-3.3-70b",
+        is_reasoning=False,
+        requests_per_minute=30.0,
+    ),
+    # 5. Fallback 4: SambaNova Llama 3.3 70B (Generous free-tier RDU cluster)
+    LLMProviderEndpoint(
+        name="sambanova-llama-70b",
+        base_url="https://api.sambanova.ai/v1",
+        api_key_env="SAMBANOVA_API_KEY",
+        model="Meta-Llama-3.3-70B-Instruct",
+        is_reasoning=False,
+        requests_per_minute=30.0,
+    ),
+]
+
+
+def _clean_json_text(text: str) -> str:
+    """Strip markdown code fences and whitespace from a JSON string."""
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    return text
+
+
+class LLMAuditor:
+    """Universal High-Speed Ground-Truth LLM Auditor.
+    
+    Supports seamless multi-provider failover across OpenAI-compatible inference engines:
+    Groq (Qwen 32B / Llama 70B) -> OpenRouter (Qwen 72B) -> Cerebras (Llama 70B) -> SambaNova.
+    """
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model: str = "gemini-flash-latest",
-        fallback_models: Optional[List[str]] = None,
-        requests_per_minute: float = 14.0,
-        max_retries: int = 3,
+        endpoints: Optional[List[LLMProviderEndpoint]] = None,
+        max_retries: int = 2,
     ):
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        if not self.api_key:
-            raise ValueError(
-                "GEMINI_API_KEY is not set. Please obtain a free API key from Google AI Studio "
-                "(https://aistudio.google.com/) and add it to your .env file or pass via api_key."
+        self.max_retries = max_retries
+        self._exhausted_endpoints: set = set()
+        self._rate_limiters: Dict[str, RateLimiter] = {}
+        self._clients: Dict[str, Any] = {}
+
+        candidate_endpoints = list(endpoints or DEFAULT_ENDPOINTS)
+
+        # Optional: Support local LLM (Ollama / vLLM / llama.cpp) if configured in .env
+        local_base = os.getenv("LOCAL_LLM_BASE_URL") or os.getenv("OLLAMA_BASE_URL")
+        if local_base:
+            candidate_endpoints.insert(
+                0,
+                LLMProviderEndpoint(
+                    name="local-llm",
+                    base_url=local_base,
+                    api_key_env="",
+                    model=os.getenv("LOCAL_LLM_MODEL", "qwen2.5:32b"),
+                    requests_per_minute=120.0,
+                ),
             )
 
-        self.model = model
-        self.fallback_models = fallback_models or ["gemini-3.8-flash", "gemini-flash-lite-latest"]
-        self.max_retries = max_retries
-        self.rate_limiter = RateLimiter(requests_per_minute=requests_per_minute)
-        self._daily_quota_exhausted: set = set()
+        # Optional: OpenAI-compatible Gemini endpoint if GEMINI_API_KEY is present
+        # but none of the other primary keys are set
+        has_primary_keys = any(os.getenv(ep.api_key_env, "") for ep in candidate_endpoints if ep.api_key_env)
+        if not has_primary_keys and os.getenv("GEMINI_API_KEY"):
+            candidate_endpoints.append(
+                LLMProviderEndpoint(
+                    name="gemini-openai-fallback",
+                    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+                    api_key_env="GEMINI_API_KEY",
+                    model="gemini-2.5-flash",
+                    requests_per_minute=14.0,
+                )
+            )
 
-        # Initialize Google GenAI client
-        try:
-            from google import genai
-            self.client = genai.Client(api_key=self.api_key)
-        except Exception as e:
-            logger.error("Failed to initialize Google GenAI Client: %s", e)
-            raise
+        # Discover active endpoints with valid keys
+        self.active_endpoints: List[LLMProviderEndpoint] = []
+        for ep in candidate_endpoints:
+            key = os.getenv(ep.api_key_env, "") if ep.api_key_env else "none"
+            if key or not ep.api_key_env:
+                self.active_endpoints.append(ep)
+                self._rate_limiters[ep.name] = RateLimiter(requests_per_minute=ep.requests_per_minute)
+                import openai
+                self._clients[ep.name] = openai.OpenAI(
+                    base_url=ep.base_url,
+                    api_key=key or "none",
+                    timeout=ep.timeout_seconds,
+                )
+
+        if not self.active_endpoints:
+            logger.warning(
+                "No active LLM provider API keys found in environment. "
+                "Please configure at least one of GROQ_API_KEY, OPENROUTER_API_KEY, "
+                "CEREBRAS_API_KEY, SAMBANOVA_API_KEY, or LOCAL_LLM_BASE_URL in your .env file."
+            )
+        else:
+            logger.info(
+                "Initialized LLMAuditor with %d active provider endpoint(s): %s",
+                len(self.active_endpoints),
+                [ep.name for ep in self.active_endpoints],
+            )
+
+    @property
+    def model(self) -> str:
+        """Name of the currently active primary model (for logging compatibility)."""
+        if self.active_endpoints:
+            return f"{self.active_endpoints[0].name} ({self.active_endpoints[0].model})"
+        return "none"
 
     def _prepare_laptop_payload(self, laptop: Dict[str, Any], identifier: str) -> Dict[str, Any]:
         """Format a laptop entry for auditing, excluding CPU and GPU to enforce immutability."""
@@ -208,41 +441,15 @@ class GeminiAuditor:
     def audit_batch(
         self, laptops: List[Dict[str, Any]], identifiers: Optional[List[str]] = None
     ) -> BatchAuditResponse:
-        """Audit a batch of laptops against their raw specs using Gemini API.
-        
-        Args:
-            laptops: List of raw laptop dictionaries with 'specs', 'source_table', and 'title'.
-            identifiers: Optional list of unique string IDs (defaults to URL or index).
-        """
-        from google.genai import errors, types
-
+        """Audit a batch of laptops against their raw specs using the failover chain."""
         if identifiers is None:
             identifiers = [
                 laptop.get("url") or f"laptop_{idx}"
                 for idx, laptop in enumerate(laptops)
             ]
 
-        batch_payload = [
-            self._prepare_laptop_payload(lap, ident)
-            for lap, ident in zip(laptops, identifiers)
-        ]
-
-        prompt_text = (
-            "Hi Gemini, this is the result of scraping + structuring of Egyptian laptop stores. "
-            "The structured schema given to you might contain mismatches or missing values from the original scraped text "
-            "represented in 'source_table', 'group_raw_specs', and 'title'. "
-            "Your task is to check every single field in every laptop given to you, correct any mismatches, and fill in missing fields explicitly stated in the raw text.\n\n"
-            f"INPUT_BATCH:\n{json.dumps(batch_payload, indent=2, ensure_ascii=False)}"
-        )
-
-        all_candidates = [self.model] + self.fallback_models
-        models_to_try = []
-        for m in all_candidates:
-            if m not in self._daily_quota_exhausted and m not in models_to_try:
-                models_to_try.append(m)
-
-        if not models_to_try:
-            logger.error("All Gemini models in fallback chain have exhausted their daily quotas!")
+        if not self.active_endpoints:
+            logger.warning("No active LLM provider endpoints configured. Skipping audit.")
             return BatchAuditResponse(
                 audited_laptops=[
                     ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[])
@@ -250,83 +457,114 @@ class GeminiAuditor:
                 ]
             )
 
+        batch_payload = [
+            self._prepare_laptop_payload(lap, ident)
+            for lap, ident in zip(laptops, identifiers)
+        ]
+
+        prompt_text = (
+            "Hi, this is the result of scraping + structuring of Egyptian laptop stores. "
+            "The structured schema given to you might contain mismatches or missing values from the original scraped text "
+            "represented in 'source_table', 'group_raw_specs', and 'title'. "
+            "Your task is to check every single field in every laptop given to you, correct any mismatches, and fill in missing fields explicitly stated in the raw text.\n\n"
+            f"INPUT_BATCH:\n{json.dumps(batch_payload, indent=2, ensure_ascii=False)}\n\n"
+            "Return your response ONLY as a JSON object matching this schema:\n"
+            "{\n"
+            '  "audited_laptops": [\n'
+            "    {\n"
+            '      "laptop_id": "string",\n'
+            '      "has_contradictions": boolean,\n'
+            '      "corrections": [\n'
+            "        {\n"
+            '          "field_path": "category.subfield",\n'
+            '          "current_value": any,\n'
+            '          "corrected_value": any,\n'
+            '          "reason": "explanation",\n'
+            '          "evidence_quote": "exact verbatim quote from source"\n'
+            "        }\n"
+            "      ]\n"
+            "    }\n"
+            "  ]\n"
+            "}\n"
+        )
+
         last_error = None
-        for current_model in models_to_try:
+        for ep in self.active_endpoints:
+            if ep.name in self._exhausted_endpoints:
+                continue
+
+            client = self._clients[ep.name]
+            limiter = self._rate_limiters[ep.name]
+
+            sys_prompt = AUDITOR_SYSTEM_INSTRUCTION.strip()
+            if ep.is_reasoning:
+                sys_prompt += "\n/no_think"
+
             for attempt in range(1, self.max_retries + 1):
                 try:
-                    self.rate_limiter.wait_if_needed()
+                    limiter.wait_if_needed()
 
-                    config = types.GenerateContentConfig(
+                    response = client.chat.completions.create(
+                        model=ep.model,
+                        messages=[
+                            {"role": "system", "content": sys_prompt},
+                            {"role": "user", "content": prompt_text},
+                        ],
                         temperature=0.0,
-                        system_instruction=AUDITOR_SYSTEM_INSTRUCTION,
-                        response_mime_type="application/json",
-                        response_schema=BatchAuditResponse,
+                        response_format={"type": "json_object"},
                     )
 
-                    response = self.client.models.generate_content(
-                        model=current_model,
-                        contents=prompt_text,
-                        config=config,
-                    )
-
-                    # Parse response
-                    raw_text = response.text
+                    raw_text = response.choices[0].message.content or ""
                     if not raw_text:
-                        raise ValueError("Gemini returned an empty response.")
+                        raise ValueError(f"{ep.name} returned empty content")
 
-                    parsed_data = json.loads(raw_text)
-                    return BatchAuditResponse.model_validate(parsed_data)
+                    cleaned = _clean_json_text(raw_text)
+                    parsed_data = json.loads(cleaned)
 
-                except errors.APIError as e:
+                    # Normalize container if needed
+                    if isinstance(parsed_data, list):
+                        parsed_data = {"audited_laptops": parsed_data}
+                    elif isinstance(parsed_data, dict) and "audited_laptops" not in parsed_data:
+                        if "corrections" in parsed_data or "has_contradictions" in parsed_data:
+                            parsed_data = {"audited_laptops": [parsed_data]}
+
+                    res = BatchAuditResponse.model_validate(parsed_data)
+                    logger.debug("Successfully audited batch via %s", ep.name)
+                    return res
+
+                except Exception as e:
                     last_error = e
-                    status_code = getattr(e, "code", None)
                     err_str = str(e).lower()
-                    is_rate_limit = status_code == 429 or "resource_exhausted" in err_str or "quota" in err_str
-                    is_unavailable = status_code == 503 or "unavailable" in err_str
-                    is_not_found = status_code == 404 or "not_found" in err_str
+                    is_payload_too_large = "413" in err_str or "payload too large" in err_str or "request too large" in err_str or "context_length_exceeded" in err_str
+                    if is_payload_too_large and len(laptops) > 1:
+                        logger.info("Batch of %d laptops too large for %s (413). Automatically splitting batch...", len(laptops), ep.name)
+                        mid = len(laptops) // 2
+                        res1 = self.audit_batch(laptops[:mid], identifiers[:mid])
+                        res2 = self.audit_batch(laptops[mid:], identifiers[mid:])
+                        return BatchAuditResponse(audited_laptops=res1.audited_laptops + res2.audited_laptops)
 
-                    if is_not_found:
-                        logger.warning("Model %s not found (404). Switching to next available fallback model...", current_model)
-                        self._daily_quota_exhausted.add(current_model)
-                        break
+                    is_rate_limit = "429" in err_str or "rate_limit" in err_str or "quota" in err_str
+                    is_unavailable = "503" in err_str or "unavailable" in err_str or "overloaded" in err_str
 
-                    is_daily_limit = (
-                        "quota exceeded for metric" in err_str
-                        or "generaterequestsperday" in err_str
-                        or "exceeded your current quota" in err_str
-                        or "please retry in" in err_str
-                    )
-                    if is_daily_limit:
-                        self._daily_quota_exhausted.add(current_model)
-                        logger.warning(
-                            "Daily quota ceiling reached for %s. Blacklisting model for remainder of run and failing over immediately.",
-                            current_model
-                        )
+                    if is_rate_limit and ("day" in err_str or "exceeded your current quota" in err_str):
+                        logger.warning("Daily quota reached on %s. Blacklisting and failing over...", ep.name)
+                        self._exhausted_endpoints.add(ep.name)
                         break
 
                     if (is_rate_limit or is_unavailable) and attempt < self.max_retries:
-                        backoff = 4.0 * (2 ** attempt)
+                        backoff = 2.0 * attempt
                         logger.warning(
-                            "Transient %s on %s (attempt %d/%d). Backing off for %.1fs...",
-                            "RateLimit (429)" if is_rate_limit else "Unavailable (503)",
-                            current_model, attempt, self.max_retries, backoff
+                            "Transient %s on %s (attempt %d/%d). Backing off %.1fs...",
+                            "RateLimit" if is_rate_limit else "Unavailable",
+                            ep.name, attempt, self.max_retries, backoff
                         )
                         time.sleep(backoff)
                         continue
                     else:
-                        logger.warning("Gemini API Error on %s: %s. Trying next model...", current_model, e)
+                        logger.warning("Endpoint %s failed: %s. Failing over to next provider...", ep.name, e)
                         break
 
-                except Exception as e:
-                    last_error = e
-                    logger.warning("Unexpected error during audit on %s: %s", current_model, e)
-                    if attempt < self.max_retries:
-                        time.sleep(2.0 * attempt)
-                        continue
-                    break
-
-        logger.error("Audit failed for batch of %d laptops across all models: %s", len(laptops), last_error)
-        # Return fallback empty response if failed
+        logger.error("Audit failed across all configured LLM endpoints: %s", last_error)
         return BatchAuditResponse(
             audited_laptops=[
                 ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[])
@@ -399,7 +637,7 @@ class GeminiAuditor:
     def audit_catalog(
         self,
         catalog: List[Dict[str, Any]],
-        batch_size: int = 4,
+        batch_size: int = 1,
         apply_patches: bool = True,
         progress_callback: Optional[Callable[[int, int, int], None]] = None,
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
@@ -464,3 +702,6 @@ class GeminiAuditor:
 
         return updated_catalog, all_corrections_log
 
+
+# Backward compatibility alias
+GeminiAuditor = LLMAuditor

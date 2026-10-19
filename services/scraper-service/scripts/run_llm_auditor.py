@@ -35,7 +35,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from pipeline.llm_auditor import GeminiAuditor
+from pipeline.llm_auditor import GeminiAuditor, LLMAuditor
 
 logging.basicConfig(
     level=logging.INFO,
@@ -169,20 +169,20 @@ def main() -> None:
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=4,
-        help="Number of laptops per Gemini request (default: 4)",
+        default=1,
+        help="Number of laptops per LLM request (default: 1)",
     )
     parser.add_argument(
         "--model",
         type=str,
-        default="gemini-flash-latest",
-        help="Gemini model name (default: gemini-flash-latest)",
+        default="gemini-3.5-flash",
+        help="Gemini model name (default: gemini-3.5-flash)",
     )
     parser.add_argument(
         "--fallback-models",
         type=str,
-        default="gemini-3.8-flash,gemini-flash-lite-latest",
-        help="Comma-separated Gemini fallback model names (default: 'gemini-3.8-flash,gemini-flash-lite-latest')",
+        default="gemini-3.6-flash",
+        help="Comma-separated Gemini fallback model names (default: 'gemini-3.6-flash')",
     )
     parser.add_argument(
         "--api-key",
@@ -258,21 +258,16 @@ def main() -> None:
         logger.warning("No laptops found to audit. Exiting.")
         return
 
-    # Initialize GeminiAuditor
+    # Initialize LLMAuditor
     try:
-        fallback_list = [m.strip() for m in args.fallback_models.split(",") if m.strip()]
-        auditor = GeminiAuditor(
-            api_key=args.api_key,
-            model=args.model,
-            fallback_models=fallback_list,
-        )
+        auditor = LLMAuditor()
     except ValueError as e:
         logger.error(str(e))
         sys.exit(1)
 
     logger.info(
-        "Starting Ground-Truth LLM Audit (total: %d laptops, batch_size: %d, model: %s, mode: %s)...",
-        len(items_to_audit), args.batch_size, args.model, "APPLY" if should_apply else "DRY-RUN"
+        "Starting Ground-Truth LLM Audit (total: %d laptops, batch_size: %d, provider: %s, mode: %s)...",
+        len(items_to_audit), args.batch_size, auditor.model, "APPLY" if should_apply else "DRY-RUN"
     )
 
     def progress_callback(processed: int, total: int, corrections_count: int) -> None:

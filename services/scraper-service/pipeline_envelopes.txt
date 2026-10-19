@@ -10,7 +10,7 @@ TOTAL COMPONENT ENVELOPES: 9
 [COMPONENT ENVELOPE 1/9] SUBSYSTEM: IDENTITY
 --------------------------------------------------------------------------------
 Subsystem Category : identity
-Pre-filled Anchors : laptop_family='Victus', color='Black', manufacturer_part_number='A7KC2EABH5', laptop_model='Victus Gaming Laptop 16-R1011NIA'
+Pre-filled Anchors : color='Black', laptop_model='Victus Gaming Laptop 16-R1011NIA', manufacturer_part_number='A7KC2EABH5', laptop_family='Victus'
 Unresolved Targets : warranty_years
 CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
 
@@ -31,9 +31,7 @@ Title: HP Victus Gaming Laptop 16-R1011NIA A7KC2EABH5, Intel Core i7-14700HX, RT
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
-Raw Model Output   : {"identity": {"laptop_family": "Victus", "laptop_model": "Victus Gaming Laptop 16-R1011NIA", "manufacturer_part_number": "A7KC2EABH5", "color": "Black", "warranty_years": null}}
-Extracted Fields   : {}
+AI Fallback        : SKIPPED / NOT CONFIGURED
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
   * identity.warranty_years: UNRESOLVED / null (model returned no extraction)
@@ -42,7 +40,7 @@ Extracted Fields   : {}
 [COMPONENT ENVELOPE 2/9] SUBSYSTEM: MEMORY
 --------------------------------------------------------------------------------
 Subsystem Category : memory
-Pre-filled Anchors : memory_type='DDR5', capacity_gb=16, speed='5600 MHz', slot_count=2, is_soldered=False
+Pre-filled Anchors : memory_type='DDR5', capacity_gb=16, is_soldered=False, speed='5600 MHz', slot_count=2
 Unresolved Targets : max_supported_gb
 CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
 
@@ -64,9 +62,7 @@ Memory Type: DDR5-SDRAM | Memory Capacity: 16 GB (2 x 8 GB) | Memory Speed: 5600
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
-Raw Model Output   : {"memory": {"capacity_gb": 16, "memory_type": "DDR5", "speed": "5600 MHz", "slot_count": 2, "max_supported_gb": null, "is_soldered": false}}
-Extracted Fields   : {}
+AI Fallback        : SKIPPED / NOT CONFIGURED
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
   * memory.max_supported_gb: UNRESOLVED / null (model returned no extraction)
@@ -75,7 +71,7 @@ Extracted Fields   : {}
 [COMPONENT ENVELOPE 3/9] SUBSYSTEM: STORAGE
 --------------------------------------------------------------------------------
 Subsystem Category : storage
-Pre-filled Anchors : capacity_gb=512, interface='PCIe 4.0 NVMe', form_factor='M.2', storage_type='SSD'
+Pre-filled Anchors : capacity_gb=512, storage_type='SSD', interface='PCIe 4.0 NVMe', form_factor='M.2'
 Unresolved Targets : slot_count
 CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
 
@@ -96,9 +92,7 @@ Storage Capacity: 512 GB | SSD Count: 1 | SSD Type: PCIe Gen4 NVMe M.2 | STORAGE
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
-Raw Model Output   : {"storage": {"capacity_gb": 512, "storage_type": "SSD", "interface": "PCIe 4.0 NVMe", "form_factor": "M.2", "slot_count": null}}
-Extracted Fields   : {}
+AI Fallback        : SKIPPED / NOT CONFIGURED
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
   * storage.slot_count: UNRESOLVED / null (model returned no extraction)
@@ -107,7 +101,7 @@ Extracted Fields   : {}
 [COMPONENT ENVELOPE 4/9] SUBSYSTEM: DISPLAY
 --------------------------------------------------------------------------------
 Subsystem Category : display
-Pre-filled Anchors : resolution='1920x1080', touchscreen=False, size_inches=16.1, aspect_ratio='16:9', color_gamut='62.5%', brightness_nits=300, panel_type='IPS', refresh_rate_hz=144
+Pre-filled Anchors : panel_type='IPS', touchscreen=False, resolution='1920x1080', color_gamut='62.5%', brightness_nits=300, size_inches=16.1, aspect_ratio='16:9', refresh_rate_hz=144
 Unresolved Targets : response_time_ms
 CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
 
@@ -132,9 +126,7 @@ NVIDIA G-SYNC: Yes | Display Size: 16.1 inch | Display Brightness: 300 cd/m² | 
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
-Raw Model Output   : {"display": {"size_inches": 16.1, "resolution": "1920 x 1080", "refresh_rate_hz": 144, "panel_type": "IPS", "aspect_ratio": "16:9", "touchscreen": false, "brightness_nits": 300, "color_gamut": "62.5%", "response_time_ms": null}}
-Extracted Fields   : {}
+AI Fallback        : SKIPPED / NOT CONFIGURED
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
   * display.response_time_ms: UNRESOLVED / null (model returned no extraction)
@@ -143,7 +135,7 @@ Extracted Fields   : {}
 [COMPONENT ENVELOPE 5/9] SUBSYSTEM: POWER_BATTERY
 --------------------------------------------------------------------------------
 Subsystem Category : power_battery
-Pre-filled Anchors : battery_capacity_wh=70.0, battery_cells=4, fast_charging='50% in 30 minutes'
+Pre-filled Anchors : fast_charging='50% in 30 minutes', battery_cells=4, battery_capacity_wh=70.0
 Unresolved Targets : power_adapter_w
 CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
 
@@ -163,9 +155,7 @@ Max Turbo Power: 157 W | Battery Type: Lithium Polymer (LiPo) | Battery Cells: 4
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
-Raw Model Output   : {"power_battery": {"battery_capacity_wh": 70.0, "power_adapter_w": null, "battery_cells": 4, "fast_charging": "50% in 30 minutes"}}
-Extracted Fields   : {}
+AI Fallback        : SKIPPED / NOT CONFIGURED
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
   * power_battery.power_adapter_w: UNRESOLVED / null (model returned no extraction)
@@ -194,20 +184,18 @@ Weight: 2.33 kg | Width: 369 mm | Depth: 259.4 mm | Height (Front): 2.29 cm | He
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
-Raw Model Output   : {"physical": {"weight_kg": 2.33, "width_mm": 369, "depth_mm": 259.4, "height_mm": 2.29}}
-Extracted Fields   : {"width_mm": 369, "depth_mm": 259.4, "height_mm": 2.29}
+AI Fallback        : SKIPPED / NOT CONFIGURED
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
-  * physical.width_mm: ACCEPTED candidate=369 -> Final: 369.0
-  * physical.depth_mm: ACCEPTED candidate=259.4 -> Final: 259.4
-  * physical.height_mm: ACCEPTED candidate=2.29 -> Final: 22.9
+  * physical.width_mm: UNRESOLVED / null (model returned no extraction)
+  * physical.depth_mm: UNRESOLVED / null (model returned no extraction)
+  * physical.height_mm: UNRESOLVED / null (model returned no extraction)
 
 --------------------------------------------------------------------------------
 [COMPONENT ENVELOPE 7/9] SUBSYSTEM: CONNECTIVITY
 --------------------------------------------------------------------------------
 Subsystem Category : connectivity
-Pre-filled Anchors : ethernet='Yes, 10/100/1000 Mbit/s', wifi='Wi-Fi 6E'
+Pre-filled Anchors : wifi='Wi-Fi 6E', ethernet='Yes, 10/100/1000 Mbit/s'
 Unresolved Targets : bluetooth, has_card_reader, card_reader_type, thunderbolt_version
 CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
 
@@ -229,12 +217,10 @@ Ethernet LAN: Yes, 10/100/1000 Mbit/s | WLAN Controller: Intel Wi-Fi 6E AX211 | 
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
-Raw Model Output   : {"connectivity": {"wifi": "Intel Wi-Fi 6E AX211", "bluetooth": "Yes, version 5.3", "ethernet": "Yes, 10/100/1000 Mbit/s", "has_card_reader": null, "card_reader_type": null, "thunderbolt_version": null}}
-Extracted Fields   : {"bluetooth": "Yes, version 5.3"}
+AI Fallback        : SKIPPED / NOT CONFIGURED
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
-  * connectivity.bluetooth: ACCEPTED candidate='Yes, version 5.3' -> Final: 'Bluetooth 5.3'
+  * connectivity.bluetooth: UNRESOLVED / null (model returned no extraction)
   * connectivity.has_card_reader: UNRESOLVED / null (model returned no extraction)
   * connectivity.card_reader_type: UNRESOLVED / null (model returned no extraction)
   * connectivity.thunderbolt_version: UNRESOLVED / null (model returned no extraction)
@@ -243,7 +229,7 @@ Extracted Fields   : {"bluetooth": "Yes, version 5.3"}
 [COMPONENT ENVELOPE 8/9] SUBSYSTEM: AUDIO_WEBCAM
 --------------------------------------------------------------------------------
 Subsystem Category : audio_webcam
-Pre-filled Anchors : webcam_resolution='1080p', microphone='Dual array microphone'
+Pre-filled Anchors : microphone='Dual array microphone', webcam_resolution='1080p'
 Unresolved Targets : speaker_count, has_ir_camera, has_privacy_shutter
 CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
 
@@ -264,12 +250,10 @@ Headphone/Mic Combo Jack: Yes | Built-in Speakers: 2 | Built-in Microphones: 2 |
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
-Raw Model Output   : {"audio_webcam": {"speaker_count": 2, "webcam_resolution": "Full HD", "has_ir_camera": null, "has_privacy_shutter": null, "microphone": "Dual array microphone"}}
-Extracted Fields   : {"speaker_count": 2}
+AI Fallback        : SKIPPED / NOT CONFIGURED
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
-  * audio_webcam.speaker_count: ACCEPTED candidate=2 -> Final: 2
+  * audio_webcam.speaker_count: UNRESOLVED / null (model returned no extraction)
   * audio_webcam.has_ir_camera: UNRESOLVED / null (model returned no extraction)
   * audio_webcam.has_privacy_shutter: UNRESOLVED / null (model returned no extraction)
 
@@ -277,7 +261,7 @@ Extracted Fields   : {"speaker_count": 2}
 [COMPONENT ENVELOPE 9/9] SUBSYSTEM: BUILD_SECURITY
 --------------------------------------------------------------------------------
 Subsystem Category : build_security
-Pre-filled Anchors : has_backlit_keyboard=True, has_numpad=True, keyboard_backlight_type='Backlit', has_fingerprint=False
+Pre-filled Anchors : has_fingerprint=False, has_backlit_keyboard=True, keyboard_backlight_type='Backlit', has_numpad=True
 Unresolved Targets : chassis_material
 CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
 
@@ -298,9 +282,7 @@ Keyboard: Full-size, backlit, numeric keypad | Keyboard Layout: English | Pointi
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
-Raw Model Output   : {"build_security": {"has_backlit_keyboard": true, "keyboard_backlight_type": "Backlit", "has_fingerprint": false, "has_numpad": true, "chassis_material": null}}
-Extracted Fields   : {}
+AI Fallback        : SKIPPED / NOT CONFIGURED
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
   * build_security.chassis_material: UNRESOLVED / null (model returned no extraction)
