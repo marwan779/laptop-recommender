@@ -26,27 +26,34 @@ class GPUAnchorExtractor:
 
     def __init__(self, specs_db: Optional[Dict[str, dict]] = None) -> None:
         self.specs_db: Dict[str, dict] = specs_db or GPU_SPECS
-        self._compiled_patterns: List[Tuple[str, re.Pattern, dict]] = []
+        self._discrete_patterns: List[Tuple[str, re.Pattern, dict]] = []
+        self._integrated_patterns: List[Tuple[str, re.Pattern, dict]] = []
         self._build_index()
 
     def _build_index(self) -> None:
         """Compile regex patterns for model names and aliases sorted by specificity."""
-        entries = []
+        discrete_entries = []
+        integrated_entries = []
         for key, entry in self.specs_db.items():
             candidates = [entry["model"].lower()] + [p.lower() for p in entry.get("match_patterns", [])]
             seen = set()
+            is_int = entry.get("integrated", False)
             for cand in candidates:
                 cand_clean = cand.strip()
                 if cand_clean and cand_clean not in seen:
                     seen.add(cand_clean)
                     pattern_str = r"(?<![a-zA-Z0-9])" + re.escape(cand_clean) + r"(?![a-zA-Z0-9])"
                     pattern = re.compile(pattern_str, re.IGNORECASE)
-                    entries.append((len(cand_clean), key, pattern, entry))
+                    target_list = integrated_entries if is_int else discrete_entries
+                    target_list.append((len(cand_clean), key, pattern, entry))
 
         # Sort by length descending so longer/more specific aliases match first
         # (e.g. 'rtx 3050 6gb' before 'rtx 3050', 'rtx 4070 ti' before 'rtx 4070')
-        entries.sort(key=lambda x: x[0], reverse=True)
-        self._compiled_patterns = [(key, pat, entry) for _, key, pat, entry in entries]
+        discrete_entries.sort(key=lambda x: x[0], reverse=True)
+        integrated_entries.sort(key=lambda x: x[0], reverse=True)
+        self._discrete_patterns = [(key, pat, entry) for _, key, pat, entry in discrete_entries]
+        self._integrated_patterns = [(key, pat, entry) for _, key, pat, entry in integrated_entries]
+        self._compiled_patterns = self._discrete_patterns + self._integrated_patterns
 
     def match(
         self,
@@ -56,15 +63,17 @@ class GPUAnchorExtractor:
     ) -> Optional[Tuple[str, dict]]:
         """Match the GPU SKU from product title and specification texts.
         
+        Discrete GPUs are ALWAYS searched and prioritized first so dedicated gaming/creator
+        GPUs (e.g. RTX 4050) are never masked by CPU integrated graphics (e.g. Intel UHD Graphics).
         Supports VRAM disambiguation for SKUs with multiple capacities (e.g. RTX 3050 4GB vs 6GB)
         and integrated GPU resolution via CPU context.
         """
         search_targets = [title] + (spec_texts or [])
         combined_text = " ".join([t for t in search_targets if t])
 
-        # 1. First pass: direct pattern matching across all compiled entries
+        # 1. First pass: Search discrete GPUs across title and specs
         matched: Optional[Tuple[str, dict]] = None
-        for key, pattern, entry in self._compiled_patterns:
+        for key, pattern, entry in self._discrete_patterns:
             if pattern.search(combined_text):
                 matched = (key, entry)
                 break
@@ -88,12 +97,17 @@ class GPUAnchorExtractor:
                                 return alt_key, alt_entry
             return key, entry
 
-        # 3. If discrete GPU not found, check CPU context for integrated GPU
+        # 3. Second pass: If NO discrete GPU matched, search integrated GPUs
+        for key, pattern, entry in self._integrated_patterns:
+            if pattern.search(combined_text):
+                return key, entry
+
+        # 4. If still not matched, check CPU context for integrated GPU
         if cpu_context and cpu_context.get("integrated_gpu"):
             igpu_name = cpu_context["integrated_gpu"]
             igpu_lower = igpu_name.lower()
-            for key, pattern, entry in self._compiled_patterns:
-                if entry.get("integrated") and pattern.search(igpu_lower):
+            for key, pattern, entry in self._integrated_patterns:
+                if pattern.search(igpu_lower):
                     return key, entry
 
         return None

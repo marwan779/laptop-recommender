@@ -210,7 +210,8 @@ class PhysicalValidator:
     def validate_microphone(
         cls, value: Any
     ) -> Tuple[bool, Optional[str], Optional[str]]:
-        """Validate microphone specification and reject speaker/audio codec contamination."""
+        if value is True or (isinstance(value, str) and value.strip().lower() in ("true", "yes")):
+            return True, "Built-in microphone", None
         if not value or not isinstance(value, str):
             return False, None, "type_error"
         val = value.strip()

@@ -1591,6 +1591,11 @@ class DeterministicExtractor:
                 else:
                     specs["storage"]["slot_count"] = 2
 
+        if specs["storage"].get("slot_count") is None:
+            m_cnt = re.search(r"\b(?:ssd\s*count|number\s*of\s*ssds?(?:\s*installed)?)\s*[:=]?\s*([1-4])\b", str(table), re.IGNORECASE)
+            if m_cnt:
+                specs["storage"]["slot_count"] = int(m_cnt.group(1))
+
         # 4. Maximum Storage Support
         if max_st_rows:
             max_text = " ".join(v for _, v in max_st_rows)
@@ -2536,12 +2541,18 @@ class DeterministicExtractor:
             specs["audio_webcam"]["has_ir_camera"] = True
 
         # Microphone & Speakers
-        for _, vs in audio_rows:
-            if not specs["audio_webcam"]["microphone"] and re.search(r"\b(?:mic|microphone|array)\b", vs, re.IGNORECASE):
-                if not any(bad in vs.lower() for bad in ["none", "n/a", "no "]):
-                    clean_mic = re.sub(r"[®™©\u200e\u200f\u200b\xa0]", " ", vs)
-                    clean_mic = re.sub(r"\s+", " ", clean_mic).strip()
-                    specs["audio_webcam"]["microphone"] = clean_mic
+        for k, vs in audio_rows:
+            combined_entry = f"{k}: {vs}"
+            if not specs["audio_webcam"]["microphone"]:
+                if re.search(r"\bbuilt-in\s*microphones?\s*[:=]?\s*2\b|\bdual\s*array\b", combined_entry, re.IGNORECASE):
+                    specs["audio_webcam"]["microphone"] = "Dual array microphone"
+                elif re.search(r"\bmicrophone\s*[:=]?\s*(?:yes|1|built-in)\b", combined_entry, re.IGNORECASE):
+                    specs["audio_webcam"]["microphone"] = "Built-in microphone"
+                elif re.search(r"\b(?:mic|microphone|array)\b", vs, re.IGNORECASE):
+                    if not any(bad in vs.lower() for bad in ["none", "n/a", "no "]):
+                        clean_mic = re.sub(r"[®™©\u200e\u200f\u200b\xa0]", " ", vs)
+                        clean_mic = re.sub(r"\s+", " ", clean_mic).strip()
+                        specs["audio_webcam"]["microphone"] = clean_mic
 
             if specs["audio_webcam"]["speaker_count"] is None:
                 m_wt = re.findall(r"(\d+)\s*(?:woofers?|tweeters?)", vs, re.IGNORECASE)

@@ -109,7 +109,7 @@ def setup_ai_fallback(
 def run_pipeline(
     limit: Optional[int] = None,
     target_url: Optional[str] = None,
-    ai_type: str = "gliner",
+    ai_type: str = "nuextract",
     use_onnx: bool = True,
     onnx_dir: Optional[str] = None,
     device: str = "auto",
@@ -212,7 +212,7 @@ def run_pipeline(
             logger.info("Executing Layer 8 Ground-Truth LLM Audit on single product...")
             single_record = {
                 "url": target_url,
-                "title": result.specs.get("identity", {}).get("laptop_model") or target_url,
+                "title": result.raw_product.title if (result.raw_product and result.raw_product.title) else (result.specs.get("identity", {}).get("laptop_model") or target_url),
                 "specs": result.specs,
                 "source_table": (result.raw_product.raw_tables.get("specs") if result.raw_product else {}) or {},
             }
@@ -502,7 +502,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Live CompuMarts Laptop Extraction Pipeline")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of laptops to scrape/process")
     parser.add_argument("--url", type=str, default=None, help="Process a single laptop PDP URL directly")
-    parser.add_argument("--ai", choices=["gliner", "nuextract", "none"], default="gliner", help="AI Fallback backend")
+    parser.add_argument("--ai", choices=["nuextract", "gliner", "none"], default="nuextract", help="AI Fallback backend")
     parser.add_argument("--no-onnx", action="store_true", help="Disable ONNX and run GLiNER with PyTorch")
     parser.add_argument("--output", type=str, default="pipeline_results_compumarts.json", help="Output JSON path")
     parser.add_argument("--onnx-dir", type=str, default=None, help="Path to local ONNX model directory (e.g. for NuExtract ONNX GenAI)")

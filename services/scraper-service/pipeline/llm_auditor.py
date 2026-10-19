@@ -38,62 +38,20 @@ from pipeline.physical_validator import PhysicalValidator
 
 logger = logging.getLogger("llm_auditor")
 
-AUDITOR_SYSTEM_INSTRUCTION = """You are the Principal Hardware Systems Auditor for an automated laptop catalog pipeline.
-Your mission is to perform a rigorous Ground-Truth Audit by comparing extracted specifications against the raw retailer product data.
+AUDITOR_SYSTEM_INSTRUCTION = """You are the Ground-Truth Auditor for laptops scraped and structured from Egyptian retailer stores.
 
-AUTHORITATIVE GROUND-TRUTH SOURCES:
-1. `group_raw_specs`: Dictionary of assembled raw specification text for each subsystem (`identity`, `memory`, `storage`, `display`, etc.). This is the PRIMARY ground truth used by audits.
-2. `source_table`: Key-value dictionary of raw specification table rows.
-3. `title`: Product title string.
+The structured specs given to you may contain extraction mistakes, mismatches, or missing fields compared to the raw scraped data (found in `group_raw_specs`, `source_table`, and `title`).
 
-CRITICAL CONSTRAINTS & IMMUTABLE BOUNDARIES:
-1. CPU & GPU SPECIFICATIONS ARE LOCKED & IMMUTABLE:
-   DO NOT audit, touch, or propose any changes to CPU or GPU fields (e.g. cpu.*, gpu.*). They are 100% verified against manufacturer databases.
+YOUR MISSION:
+Check every field for each laptop against the raw scraped text:
+1. Correct any mismatches or wrong values.
+2. Fill in any missing/null fields that are explicitly stated in the source text.
+3. For every change, provide the exact verbatim quote from the text as evidence.
 
-2. RETAILER CONFLICTS & PRECEDENCE (SPECS TABLE VS TITLE):
-   - When the retailer specs table / group `raw_spec` directly conflicts with the marketing title (for example, title says '18" Mini-LED' but specs table explicitly says 'Screen Size: 16", Panel Type: OLED'), PRIORITIZE the group's `raw_spec` / specs table. Retailer titles often contain marketing copy-paste errors or model name approximations.
-   - Never extrapolate, assume, or hallucinate hardware that is not explicitly stated in the source text.
-   - If a field is currently null and the raw spec does NOT state it, DO NOT propose adding it.
-   - Propose a correction ONLY when there is an explicit contradiction, cross-domain contamination, or clear factual error in the extracted specs.
-
-3. HARDWARE SPECIFICATION RULES & ARITHMETIC:
-   a. Total Storage Slots (`storage.slot_count`):
-      - `storage.slot_count` MUST represent the TOTAL physical drive slots/bays on the laptop (installed drive slots + available/empty expansion slots).
-      - '1TB NVMe PCIe SSD (plus 1x 2.5" SATA expansion slot)' -> 1 installed + 1 expansion = `storage.slot_count = 2`.
-      - '512GB SSD ... with an extra M.2 slot' or '(Extra M.2 2280 Slot Available)' -> 1 installed + 1 extra = `storage.slot_count = 2`.
-      - 'Two M.2 slots', '2x M.2 Slots total', or '1x M.2 Gen5 + 1x M.2 Gen4' -> `storage.slot_count = 2`.
-      - 'supports only one M.2 slot' -> `storage.slot_count = 1`.
-      - DDR4 / DDR5 SO-DIMM is RAM, NOT storage! Only M.2 and 2.5" SATA bays are storage slots.
-   b. Maximum Supported Storage (`storage.max_supported_gb`):
-      - `storage.max_supported_gb` is the MAXIMUM total storage ceiling supported across all bays, NOT the installed drive capacity!
-      - 'Up to two drives, 2x M.2 SSD • M.2 2242 SSD up to 1TB each' -> 2 × 1TB = `storage.max_supported_gb = 2048`.
-      - 'Two M.2 slots ... M.2 2280 SSD up to 2TB' -> max supported capacity is at least `2048` (or 4096 if 2 slots). Never leave `max_supported_gb` at 1024 if the raw spec explicitly states support for 2TB SSDs!
-      - 'Supported SSD: 512GB / 1TB / 2TB' -> `storage.max_supported_gb = 2048`.
-   c. Installed Drive Form Factor (`storage.form_factor`):
-      - `storage.form_factor` describes the PRIMARY INSTALLED SSD, NOT the maximum size supported by the slot!
-      - If raw spec states 'Storage: 1TB SSD M.2 2242 PCIe' and 'Storage Slots: Two M.2 2280 slots', the installed drive form factor is 'M.2 2242', NOT 'M.2 2280'! Do NOT change M.2 2242 to M.2 2280 unless the installed drive itself is explicitly 2280.
-      - Never assign the secondary empty expansion bay's form factor (e.g. 2.5-inch SATA) to the primary installed M.2 SSD.
-   d. Memory Slots vs Soldered ("no slots"):
-      - If raw spec states 'soldered to systemboard', 'no slots', 'on board', or 'non-upgradable', then `memory.slot_count` MUST be 0 and `memory.is_soldered` MUST be true.
-      - Even if the raw spec mentions 'dual-channel' (e.g. 'Memory soldered to systemboard, no slots, dual-channel'), the slot count is STILL 0 because there are zero physical SO-DIMM slots!
-   e. Physical Dimensions (Physics vs W x H x D Labeling Typos):
-      - Retailer spec sheets frequently contain typos labeling dimensions as 'W x H x D' when they actually mean 'W x D x H'.
-      - In laptop physics: Width is largest (250-420 mm), Depth is medium (170-300 mm), Height/thickness is smallest (10-35 mm).
-      - NEVER swap depth and height to make a laptop taller/thicker than its depth (e.g. 214mm tall and 13mm deep is physically impossible). Keep depth as the medium dimension and height as the thickness.
-   f. Display Color Gamut vs Chassis Color / Paint:
-      - Chassis paint finishes like 'Mica silver', 'Cosmos Grey', 'Eclipse Gray', 'Phantom Black', 'Luna Grey', 'Silver', 'Black' are LAPTOP EXTERIOR COLORS, NOT display gamuts!
-      - A display `color_gamut` MUST be a recognized color space standard (e.g., '100% sRGB', '45% NTSC', '100% DCI-P3', 'Adobe RGB').
-      - If the extracted `display.color_gamut` contains chassis paint names or no color gamut was stated in the display specs, correct `display.color_gamut` to null!
-   g. Microphone vs Speaker Contamination:
-      - Specifications like '2W x 2', 'Stereo speakers', 'Realtek ALC', 'Dolby Atmos', 'DTS Audio' are speaker/audio specs, NOT microphones.
-      - If `audio_webcam.microphone` contains speaker wattage or codecs, clean it to retain only the microphone description string (e.g., 'Built-in array microphone') or set to null if no microphone spec is stated. NEVER set `audio_webcam.microphone` to a boolean.
-   h. Identity & Part Numbers:
-      - Check `group_raw_specs.identity` and `source_table`.
-      - If an explicit 'SKU:' or 'Part Number:' is given in `group_raw_specs.identity` or `source_table`, verify that `identity.manufacturer_part_number` matches that exact string.
-
-4. ACCURACY & CONSERVATISM:
-   - If the extracted specs for a laptop are 100% accurate and free of contradictions, set `has_contradictions = false` and `corrections = []`.
-   - For every proposed correction, provide an exact verbatim quote in `evidence_quote` from the raw data.
+ESSENTIAL GUARDRAILS:
+- Do not touch CPU specs (cpu.*) as they are verified against silicon databases.
+- Real-world physics: Laptops are never 20cm thick (retailers often label dimensions as W x H x D when they mean W x D x H; height is always the smallest dimension / thickness).
+- Never invent specs that are not in the raw text. If the raw text does not mention it, leave it as is.
 """
 
 
@@ -228,7 +186,7 @@ class GeminiAuditor:
         auditable_specs: Dict[str, Any] = {}
 
         for group_name, group_data in specs.items():
-            if group_name in ("cpu", "gpu"):
+            if group_name == "cpu":
                 continue
             if isinstance(group_data, dict):
                 group_copy = dict(group_data)
@@ -270,9 +228,10 @@ class GeminiAuditor:
         ]
 
         prompt_text = (
-            "Perform a ground-truth audit on the following batch of laptops. Compare each laptop's 'specs' against "
-            "its 'group_raw_specs', 'source_table', and 'title'. If there are contradictions or errors in non-CPU/non-GPU specs, "
-            "provide exact field corrections with verbatim quotes as evidence according to the system instructions.\n\n"
+            "Hi Gemini, this is the result of scraping + structuring of Egyptian laptop stores. "
+            "The structured schema given to you might contain mismatches or missing values from the original scraped text "
+            "represented in 'source_table', 'group_raw_specs', and 'title'. "
+            "Your task is to check every single field in every laptop given to you, correct any mismatches, and fill in missing fields explicitly stated in the raw text.\n\n"
             f"INPUT_BATCH:\n{json.dumps(batch_payload, indent=2, ensure_ascii=False)}"
         )
 
@@ -389,8 +348,8 @@ class GeminiAuditor:
         for corr in corrections:
             field_path = corr.field_path.strip()
 
-            # Guard against touching locked CPU/GPU fields
-            if field_path.startswith("cpu.") or field_path.startswith("gpu."):
+            # Guard against touching locked CPU fields
+            if field_path.startswith("cpu."):
                 logger.warning("Ignoring proposed correction to locked field: %s", field_path)
                 continue
 
