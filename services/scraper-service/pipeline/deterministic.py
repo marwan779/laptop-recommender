@@ -379,28 +379,36 @@ class TableKeyRouter:
             return self.label_to_bucket[norm]
 
         # Heuristic fallback for previously unseen keys
+        # 1. Guard against promotional marketing slogans / sentences masquerading as spec keys
+        if raw_key.strip().endswith((".", "!")) and len(norm.split()) >= 3:
+            return "unrouted"
+
         if any(term in norm for term in ["max storage", "maximum storage", "storage support", "storage capability"]):
             return "max_storage"
         if any(term in norm for term in ["storage slot", "m.2 slot", "expansion slot"]):
             return "storage_slots"
-        if any(term in norm for term in ["storage", "ssd", "hdd", "hard disk", "hard drive", "internal"]):
+        if re.search(r"\b(?:storage|ssd|hdd|hard\s+disk|hard\s+drive|rom)\b", norm):
             return "storage"
         if any(term in norm for term in ["graphics memory", "video memory", "gpu memory", "vram", "gddr"]):
             return "gpu_vram"
+        if any(term in norm for term in ["gpu power", "graphics power", "tgp"]) or (re.search(r"\bpower\b", norm) and re.search(r"\b(?:gpu|rtx|gtx|graphics|geforce|radeon)\b", norm)):
+            return "gpu_power"
         if any(term in norm for term in ["max memory", "maximum memory", "max ram"]):
             return "max_memory"
         if any(term in norm for term in ["memory slot", "ram slot"]):
             return "memory_slots"
-        if any(term in norm for term in ["graphic", "gpu", "vga", "video"]):
+        if re.search(r"\b(?:graphic|graphics|gpu|vga|video)\b", norm):
             return "gpu"
-        if any(term in norm for term in ["ram", "memory"]):
+        if re.search(r"\b(?:ram|memory)\b", norm):
             return "memory"
-        if any(term in norm for term in ["cpu", "processor"]):
+        if re.search(r"\b(?:cpu|processor)\b", norm):
             return "cpu"
-        if any(term in norm for term in ["battery", "power", "adapter"]):
+        if re.search(r"\b(?:battery|adapter|charging|charger)\b", norm) or (re.search(r"\bpower\b", norm) and not re.search(r"\b(?:gpu|rtx|gtx|graphics|geforce|radeon)\b", norm)):
             return "power"
-        if any(term in norm for term in ["operating system", "os"]):
+        if re.search(r"\b(?:operating\s+system|os)\b", norm):
             return "os"
+        if re.search(r"\b(?:display|screen|resolution|refresh\s+rate|panel|aspect\s+ratio|touchscreen|oled|amoled|ips)\b", norm):
+            return "display"
 
         return "unrouted"
 

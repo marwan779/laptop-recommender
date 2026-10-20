@@ -1,90 +1,98 @@
 ================================================================================
-LAPTOP [1/1]: HP Victus Gaming Laptop 16-R1011NIA A7KC2EABH5, Intel Core i7-14700HX, RTX 4050 6GB, 16GB DDR5 5600MHz RAM, 512GB PCIe Gen4 NVMe SSD, 16.1-inch FHD IPS 144Hz Display, Backlit Keyboard, FreeDOS
-URL: https://www.compumarts.com/collections/laptop/products/hp-victus-gaming-laptop-16-r1011nia-a7kc2eabh5-i7-14700hx-rtx-4050-6gb-16gb-ddr5-512gb-nvme-16-1-inch-fhd-ips-144hz-freedos-egypt
+LAPTOP [1/1]: ASUS ProArt P16 H7606WW-SE926W – Ryzen AI 9 HX 370 RTX 5080 16GB 64GB 2TB SSD 16" 4K OLED 120Hz Win 11 Home
+URL: https://www.compumarts.com/collections/laptop/products/asus-proart-p16-h7606ww-se926w-ryzen-ai-9-rtx-5080-16gb-egypt
 STORE: compumarts
-PRICE: 62,591.00 EGP
-TOTAL COMPONENT ENVELOPES: 9
+PRICE: 199,999.00 EGP
+TOTAL COMPONENT ENVELOPES: 8
 ================================================================================
 
 --------------------------------------------------------------------------------
-[COMPONENT ENVELOPE 1/9] SUBSYSTEM: IDENTITY
+[COMPONENT ENVELOPE 1/8] SUBSYSTEM: IDENTITY
 --------------------------------------------------------------------------------
 Subsystem Category : identity
-Pre-filled Anchors : color='Black', laptop_model='Victus Gaming Laptop 16-R1011NIA', manufacturer_part_number='A7KC2EABH5', laptop_family='Victus'
-Unresolved Targets : warranty_years
-CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
+Pre-filled Anchors : manufacturer_part_number='90NB17F1-M00180', laptop_family='Proart', laptop_model='H7606WW-SE926W'
+Unresolved Targets : color, warranty_years
+CPU Constraints    : cpu_key=ryzen_ai_9_hx_370, supported_memory=['DDR5', 'LPDDR5X'], max_memory_gb=256, base_power_w=28, integrated_gpu=AMD Radeon 890M (16 graphics cores, 2.9 GHz), npu_tops=50.0
 
 --- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---
-Title: HP Victus Gaming Laptop 16-R1011NIA A7KC2EABH5, Intel Core i7-14700HX, RTX 4050 6GB, 16GB DDR5 5600MHz RAM, 512GB PCIe Gen4 NVMe SSD, 16.1-inch FHD IPS 144Hz Display, Backlit Keyboard, FreeDOS | Brand: HP | Product Type: Laptop | Model: Victus Gaming Laptop 16-R1011NIA | Part Number: A7KC2EABH5 | Market Positioning: Gaming | Processor Model: Intel Core i7-14700HX | LED Backlight: Yes | Temperature Sensor: Yes | Product Colour: Black | COLOR: Black | SKU: VICTUS-16-R1011NIA-A7KC2EABH5
+Title: ASUS ProArt P16 H7606WW-SE926W - Ryzen AI 9 HX 370 RTX 5080 16GB 64GB 2TB SSD 16" 4K OLED 120Hz Win 11 Home | Part No: 90NB17F1-M00180 | Sales Model Name: H7606WW-SE926W | Marketing Name: ProArt P16 | Included in the Box: Backpack | SKU: 90NB17F1-M00180 | Part Number: 90NB17F1-M00180
 --------------------------------------------------
 
 --- [SUB-SCHEMA TEMPLATE SENT TO AI] ---
 {
   "identity": {
-    "laptop_family": "Victus",
-    "laptop_model": "Victus Gaming Laptop 16-R1011NIA",
-    "manufacturer_part_number": "A7KC2EABH5",
-    "color": "Black",
+    "laptop_family": "Proart",
+    "laptop_model": "H7606WW-SE926W",
+    "manufacturer_part_number": "90NB17F1-M00180",
+    "color": null,
     "warranty_years": null
   }
 }
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Fallback        : SKIPPED / NOT CONFIGURED
+AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
+Raw Model Output   : {"identity": {"laptop_family": "Proart", "laptop_model": "H7606WW-SE926W", "manufacturer_part_number": "90NB17F1-M00180", "color": null, "warranty_years": null}}
+Extracted Fields   : {}
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
+  * identity.color: UNRESOLVED / null (model returned no extraction)
   * identity.warranty_years: UNRESOLVED / null (model returned no extraction)
 
 --------------------------------------------------------------------------------
-[COMPONENT ENVELOPE 2/9] SUBSYSTEM: MEMORY
+[COMPONENT ENVELOPE 2/8] SUBSYSTEM: MEMORY
 --------------------------------------------------------------------------------
 Subsystem Category : memory
-Pre-filled Anchors : memory_type='DDR5', capacity_gb=16, is_soldered=False, speed='5600 MHz', slot_count=2
-Unresolved Targets : max_supported_gb
-CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
+Pre-filled Anchors : capacity_gb=64, memory_type='LPDDR5X', is_soldered=True
+Unresolved Targets : speed, slot_count, max_supported_gb
+CPU Constraints    : cpu_key=ryzen_ai_9_hx_370, supported_memory=['DDR5', 'LPDDR5X'], max_memory_gb=256, base_power_w=28, integrated_gpu=AMD Radeon 890M (16 graphics cores, 2.9 GHz), npu_tops=50.0
 
 --- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---
-Memory Type: DDR5-SDRAM | Memory Capacity: 16 GB (2 x 8 GB) | Memory Speed: 5600 MHz | Memory Form Factor: SO-DIMM | MEMORY: 16 GB (2 x 8 GB)
+Memory: 64GB LPDDR5X on board
+[Memory Summary: Total memory expansion slots: 0 (100% soldered on-board).]
 --------------------------------------------------
 
 --- [SUB-SCHEMA TEMPLATE SENT TO AI] ---
 {
   "memory": {
-    "capacity_gb": 16,
-    "memory_type": "DDR5",
-    "speed": "5600 MHz",
-    "slot_count": 2,
+    "capacity_gb": 64,
+    "memory_type": "LPDDR5X",
+    "speed": null,
+    "slot_count": null,
     "max_supported_gb": null,
-    "is_soldered": false
+    "is_soldered": true
   }
 }
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Fallback        : SKIPPED / NOT CONFIGURED
+AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
+Raw Model Output   : {"memory": {"capacity_gb": 64, "memory_type": "LPDDR5X", "speed": null, "slot_count": 0, "max_supported_gb": null, "is_soldered": true}}
+Extracted Fields   : {"slot_count": 0}
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
+  * memory.speed: UNRESOLVED / null (model returned no extraction)
+  * memory.slot_count: ACCEPTED candidate=0 -> Final: 0
   * memory.max_supported_gb: UNRESOLVED / null (model returned no extraction)
 
 --------------------------------------------------------------------------------
-[COMPONENT ENVELOPE 3/9] SUBSYSTEM: STORAGE
+[COMPONENT ENVELOPE 3/8] SUBSYSTEM: STORAGE
 --------------------------------------------------------------------------------
 Subsystem Category : storage
-Pre-filled Anchors : capacity_gb=512, storage_type='SSD', interface='PCIe 4.0 NVMe', form_factor='M.2'
+Pre-filled Anchors : capacity_gb=2048, interface='NVMe', storage_type='SSD', form_factor='M.2'
 Unresolved Targets : slot_count
-CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
+CPU Constraints    : cpu_key=ryzen_ai_9_hx_370, supported_memory=['DDR5', 'LPDDR5X'], max_memory_gb=256, base_power_w=28, integrated_gpu=AMD Radeon 890M (16 graphics cores, 2.9 GHz), npu_tops=50.0
 
 --- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---
-Storage Capacity: 512 GB | SSD Count: 1 | SSD Type: PCIe Gen4 NVMe M.2 | STORAGE: 512 GB
+Storage: 2TB M.2 NVMe PCIe 4.0 SSD
 --------------------------------------------------
 
 --- [SUB-SCHEMA TEMPLATE SENT TO AI] ---
 {
   "storage": {
-    "capacity_gb": 512,
+    "capacity_gb": 2048,
     "storage_type": "SSD",
-    "interface": "PCIe 4.0 NVMe",
+    "interface": "NVMe",
     "form_factor": "M.2",
     "slot_count": null
   }
@@ -92,149 +100,124 @@ Storage Capacity: 512 GB | SSD Count: 1 | SSD Type: PCIe Gen4 NVMe M.2 | STORAGE
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Fallback        : SKIPPED / NOT CONFIGURED
+AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
+Raw Model Output   : {"storage": {"capacity_gb": 2048, "storage_type": "SSD", "interface": "NVMe", "form_factor": "M.2", "slot_count": null}}
+Extracted Fields   : {}
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
   * storage.slot_count: UNRESOLVED / null (model returned no extraction)
 
 --------------------------------------------------------------------------------
-[COMPONENT ENVELOPE 4/9] SUBSYSTEM: DISPLAY
+[COMPONENT ENVELOPE 4/8] SUBSYSTEM: DISPLAY
 --------------------------------------------------------------------------------
 Subsystem Category : display
-Pre-filled Anchors : panel_type='IPS', touchscreen=False, resolution='1920x1080', color_gamut='62.5%', brightness_nits=300, size_inches=16.1, aspect_ratio='16:9', refresh_rate_hz=144
+Pre-filled Anchors : color_gamut='100% DCI-P3', size_inches=16.0, aspect_ratio='16:10', brightness_nits=1600, panel_type='OLED', touchscreen=True, refresh_rate_hz=120, resolution='3840x2400'
 Unresolved Targets : response_time_ms
-CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
+CPU Constraints    : cpu_key=ryzen_ai_9_hx_370, supported_memory=['DDR5', 'LPDDR5X'], max_memory_gb=256, base_power_w=28, integrated_gpu=AMD Radeon 890M (16 graphics cores, 2.9 GHz), npu_tops=50.0
 
 --- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---
-NVIDIA G-SYNC: Yes | Display Size: 16.1 inch | Display Brightness: 300 cd/m² | Panel Type: IPS | Display Type: Full HD | Display Resolution: 1920 x 1080 pixels | Refresh Rate: 144Hz | Touchscreen: No | RGB Colour Space: sRGB | Colour Gamut: 62.5% | Aspect Ratio: 16:9 | Front Camera Resolution: Full HD | DISPLAY: 16.1 inch | RESOLUTION: 1920 x 1080 pixels | PANEL: IPS | BRIGHTNESS: 300 cd/m²
+Panel Size: 16.0-inch Touch screen | Resolution: 4K (3840 x 2400) OLED 16:10 | Display Features: 120Hz, 1600nits HDR Peak, 100% DCI-P3, PANTONE Validated, Stylus Support | VESA CERTIFIED Display HDR: True Black 1000 | DISPLAY: 16.0-inch Touch screen
 --------------------------------------------------
 
 --- [SUB-SCHEMA TEMPLATE SENT TO AI] ---
 {
   "display": {
-    "size_inches": 16.1,
-    "resolution": "1920x1080",
-    "refresh_rate_hz": 144,
-    "panel_type": "IPS",
-    "aspect_ratio": "16:9",
-    "touchscreen": false,
-    "brightness_nits": 300,
-    "color_gamut": "62.5%",
+    "size_inches": 16.0,
+    "resolution": "3840x2400",
+    "refresh_rate_hz": 120,
+    "panel_type": "OLED",
+    "aspect_ratio": "16:10",
+    "touchscreen": true,
+    "brightness_nits": 1600,
+    "color_gamut": "100% DCI-P3",
     "response_time_ms": null
   }
 }
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Fallback        : SKIPPED / NOT CONFIGURED
+AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
+Raw Model Output   : {"display": {"size_inches": 16.0, "resolution": "3840x2400", "refresh_rate_hz": 120, "panel_type": "OLED", "aspect_ratio": "16:10", "touchscreen": true, "brightness_nits": 1600, "color_gamut": "100% DCI-P3", "response_time_ms": null}}
+Extracted Fields   : {}
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
   * display.response_time_ms: UNRESOLVED / null (model returned no extraction)
 
 --------------------------------------------------------------------------------
-[COMPONENT ENVELOPE 5/9] SUBSYSTEM: POWER_BATTERY
+[COMPONENT ENVELOPE 5/8] SUBSYSTEM: POWER_BATTERY
 --------------------------------------------------------------------------------
 Subsystem Category : power_battery
-Pre-filled Anchors : fast_charging='50% in 30 minutes', battery_cells=4, battery_capacity_wh=70.0
-Unresolved Targets : power_adapter_w
-CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
+Pre-filled Anchors : power_adapter_w=240, battery_capacity_wh=90.0, battery_cells=4
+Unresolved Targets : fast_charging
+CPU Constraints    : cpu_key=ryzen_ai_9_hx_370, supported_memory=['DDR5', 'LPDDR5X'], max_memory_gb=256, base_power_w=28, integrated_gpu=AMD Radeon 890M (16 graphics cores, 2.9 GHz), npu_tops=50.0
 
 --- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---
-Max Turbo Power: 157 W | Battery Type: Lithium Polymer (LiPo) | Battery Cells: 4 | Battery Capacity: 70 Wh | Maximum Battery Life: 5.25 hours | Video Playback Time: 7 hours | Fast Charging: Yes (50% in 30 minutes) | BATTERY: 70 Wh
+Battery: 90WHrs, 4-cell Li-ion | Power Supply: 240W AC Adapter
 --------------------------------------------------
 
 --- [SUB-SCHEMA TEMPLATE SENT TO AI] ---
 {
   "power_battery": {
-    "battery_capacity_wh": 70.0,
-    "power_adapter_w": null,
+    "battery_capacity_wh": 90.0,
+    "power_adapter_w": 240,
     "battery_cells": 4,
-    "fast_charging": "50% in 30 minutes"
+    "fast_charging": null
   }
 }
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Fallback        : SKIPPED / NOT CONFIGURED
+AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
+Raw Model Output   : {"power_battery": {"battery_capacity_wh": 90.0, "power_adapter_w": 240, "battery_cells": 4, "fast_charging": null}}
+Extracted Fields   : {}
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
-  * power_battery.power_adapter_w: UNRESOLVED / null (model returned no extraction)
+  * power_battery.fast_charging: UNRESOLVED / null (model returned no extraction)
 
 --------------------------------------------------------------------------------
-[COMPONENT ENVELOPE 6/9] SUBSYSTEM: PHYSICAL
---------------------------------------------------------------------------------
-Subsystem Category : physical
-Pre-filled Anchors : weight_kg=2.33
-Unresolved Targets : width_mm, depth_mm, height_mm
-CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
-
---- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---
-Weight: 2.33 kg | Width: 369 mm | Depth: 259.4 mm | Height (Front): 2.29 cm | Height (Rear): 2.39 cm | DIMENSIONS: 369 mm x 259.4 mm x 2.29 cm (front height), 2.39 cm (rear height)
---------------------------------------------------
-
---- [SUB-SCHEMA TEMPLATE SENT TO AI] ---
-{
-  "physical": {
-    "weight_kg": 2.33,
-    "width_mm": null,
-    "depth_mm": null,
-    "height_mm": null
-  }
-}
-----------------------------------------
-
---- [AI MODEL RESOLUTION] ---
-AI Fallback        : SKIPPED / NOT CONFIGURED
-
---- [GATE 2 PHYSICAL VALIDATION] ---
-  * physical.width_mm: UNRESOLVED / null (model returned no extraction)
-  * physical.depth_mm: UNRESOLVED / null (model returned no extraction)
-  * physical.height_mm: UNRESOLVED / null (model returned no extraction)
-
---------------------------------------------------------------------------------
-[COMPONENT ENVELOPE 7/9] SUBSYSTEM: CONNECTIVITY
+[COMPONENT ENVELOPE 6/8] SUBSYSTEM: CONNECTIVITY
 --------------------------------------------------------------------------------
 Subsystem Category : connectivity
-Pre-filled Anchors : wifi='Wi-Fi 6E', ethernet='Yes, 10/100/1000 Mbit/s'
-Unresolved Targets : bluetooth, has_card_reader, card_reader_type, thunderbolt_version
-CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
+Pre-filled Anchors : has_card_reader=True, bluetooth='Bluetooth 5.4', wifi='Wi-Fi 7', card_reader_type='SD Card Reader'
+Unresolved Targets : ethernet, thunderbolt_version
+CPU Constraints    : cpu_key=ryzen_ai_9_hx_370, supported_memory=['DDR5', 'LPDDR5X'], max_memory_gb=256, base_power_w=28, integrated_gpu=AMD Radeon 890M (16 graphics cores, 2.9 GHz), npu_tops=50.0
 
 --- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---
-Ethernet LAN: Yes, 10/100/1000 Mbit/s | WLAN Controller: Intel Wi-Fi 6E AX211 | Wi-Fi Standard: Wi-Fi 6E (802.11ax) | Antenna Type: 2x2 | Bluetooth: Yes, version 5.3 | USB Type-C: 1 x USB 3.2 Gen 1 (with DisplayPort Alternate Mode, USB PD, Sleep-and-Charge) | USB Type-A: 3 x USB 3.2 Gen 1 (2 with Sleep-and-Charge) | HDMI: 1 x HDMI 2.1 | Ethernet Port: 1 | WIRELESS: Intel Wi-Fi 6E AX211 | PORTS: USB Type-C, 3 x USB Type-A, HDMI 2.1, Ethernet (RJ-45), headphone/mic combo jack
+Wireless: Wi-Fi 7(802.11be) Triple band + Bluetooth 5.4 | I/O Ports: 1x USB 4.0 Gen 3 Type-C, 1x USB 3.2 Gen 2 Type-C, 2x USB 3.2 Gen 2 Type-A, 1x HDMI 2.1 FRL, SD Express 7.0 card reader
 --------------------------------------------------
 
 --- [SUB-SCHEMA TEMPLATE SENT TO AI] ---
 {
   "connectivity": {
-    "wifi": "Wi-Fi 6E",
-    "bluetooth": null,
-    "ethernet": "Yes, 10/100/1000 Mbit/s",
-    "has_card_reader": null,
-    "card_reader_type": null,
+    "wifi": "Wi-Fi 7",
+    "bluetooth": "Bluetooth 5.4",
+    "ethernet": null,
+    "has_card_reader": true,
+    "card_reader_type": "SD Card Reader",
     "thunderbolt_version": null
   }
 }
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Fallback        : SKIPPED / NOT CONFIGURED
+AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
+Raw Model Output   : {"connectivity": {"wifi": "Wi-Fi 7", "bluetooth": "Bluetooth 5.4", "ethernet": null, "has_card_reader": true, "card_reader_type": "SD Card Reader", "thunderbolt_version": null}}
+Extracted Fields   : {}
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
-  * connectivity.bluetooth: UNRESOLVED / null (model returned no extraction)
-  * connectivity.has_card_reader: UNRESOLVED / null (model returned no extraction)
-  * connectivity.card_reader_type: UNRESOLVED / null (model returned no extraction)
+  * connectivity.ethernet: UNRESOLVED / null (model returned no extraction)
   * connectivity.thunderbolt_version: UNRESOLVED / null (model returned no extraction)
 
 --------------------------------------------------------------------------------
-[COMPONENT ENVELOPE 8/9] SUBSYSTEM: AUDIO_WEBCAM
+[COMPONENT ENVELOPE 7/8] SUBSYSTEM: AUDIO_WEBCAM
 --------------------------------------------------------------------------------
 Subsystem Category : audio_webcam
-Pre-filled Anchors : microphone='Dual array microphone', webcam_resolution='1080p'
-Unresolved Targets : speaker_count, has_ir_camera, has_privacy_shutter
-CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
+Pre-filled Anchors : has_ir_camera=True, webcam_resolution='1080p'
+Unresolved Targets : speaker_count, has_privacy_shutter, microphone
+CPU Constraints    : cpu_key=ryzen_ai_9_hx_370, supported_memory=['DDR5', 'LPDDR5X'], max_memory_gb=256, base_power_w=28, integrated_gpu=AMD Radeon 890M (16 graphics cores, 2.9 GHz), npu_tops=50.0
 
 --- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---
-Headphone/Mic Combo Jack: Yes | Built-in Speakers: 2 | Built-in Microphones: 2 | Microphone: Yes | Front Camera: Yes | CAMERA: Full HD front camera
+Front-facing camera: FHD camera with IR function for Windows Hello | Audio: Smart Amp Technology with Built-in speakers/microphone
 --------------------------------------------------
 
 --- [SUB-SCHEMA TEMPLATE SENT TO AI] ---
@@ -242,49 +225,54 @@ Headphone/Mic Combo Jack: Yes | Built-in Speakers: 2 | Built-in Microphones: 2 |
   "audio_webcam": {
     "speaker_count": null,
     "webcam_resolution": "1080p",
-    "has_ir_camera": null,
+    "has_ir_camera": true,
     "has_privacy_shutter": null,
-    "microphone": "Dual array microphone"
+    "microphone": null
   }
 }
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Fallback        : SKIPPED / NOT CONFIGURED
+AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
+Raw Model Output   : {"audio_webcam": {"speaker_count": 2, "webcam_resolution": "1080p", "has_ir_camera": true, "has_privacy_shutter": null, "microphone": true}}
+Extracted Fields   : {"speaker_count": 2, "microphone": true}
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
-  * audio_webcam.speaker_count: UNRESOLVED / null (model returned no extraction)
-  * audio_webcam.has_ir_camera: UNRESOLVED / null (model returned no extraction)
+  * audio_webcam.speaker_count: ACCEPTED candidate=2 -> Final: 2
   * audio_webcam.has_privacy_shutter: UNRESOLVED / null (model returned no extraction)
+  * audio_webcam.microphone: ACCEPTED candidate=True -> Final: 'Built-in microphone'
 
 --------------------------------------------------------------------------------
-[COMPONENT ENVELOPE 9/9] SUBSYSTEM: BUILD_SECURITY
+[COMPONENT ENVELOPE 8/8] SUBSYSTEM: BUILD_SECURITY
 --------------------------------------------------------------------------------
 Subsystem Category : build_security
-Pre-filled Anchors : has_fingerprint=False, has_backlit_keyboard=True, keyboard_backlight_type='Backlit', has_numpad=True
-Unresolved Targets : chassis_material
-CPU Constraints    : cpu_key=core_i7-14700hx, supported_memory=['DDR5', 'DDR4'], max_memory_gb=192, base_power_w=55, integrated_gpu=Intel UHD Graphics for 14th Gen Intel Processors
+Pre-filled Anchors : has_fingerprint=False, chassis_material='Aluminum (Nano Black)', has_backlit_keyboard=False
+Unresolved Targets : keyboard_backlight_type, has_numpad
+CPU Constraints    : cpu_key=ryzen_ai_9_hx_370, supported_memory=['DDR5', 'LPDDR5X'], max_memory_gb=256, base_power_w=28, integrated_gpu=AMD Radeon 890M (16 graphics cores, 2.9 GHz), npu_tops=50.0
 
 --- [RAW SPECIFICATION CONTEXT PROVIDED TO AI] ---
-Keyboard: Full-size, backlit, numeric keypad | Keyboard Layout: English | Pointing Device: Touchpad
+Touchpad: Precision touchpad with DialPad support | Security: Microsoft Pluton security processor, Firmware TPM, IR Webcam
 --------------------------------------------------
 
 --- [SUB-SCHEMA TEMPLATE SENT TO AI] ---
 {
   "build_security": {
-    "has_backlit_keyboard": true,
-    "keyboard_backlight_type": "Backlit",
+    "has_backlit_keyboard": false,
+    "keyboard_backlight_type": null,
     "has_fingerprint": false,
-    "has_numpad": true,
-    "chassis_material": null
+    "has_numpad": null,
+    "chassis_material": "Aluminum (Nano Black)"
   }
 }
 ----------------------------------------
 
 --- [AI MODEL RESOLUTION] ---
-AI Fallback        : SKIPPED / NOT CONFIGURED
+AI Model           : numind/NuExtract-2.0-2B (onnx:transformers-cuda)
+Raw Model Output   : {"build_security": {"has_backlit_keyboard": false, "keyboard_backlight_type": null, "has_fingerprint": false, "has_numpad": null, "chassis_material": "Aluminum (Nano Black)"}}
+Extracted Fields   : {}
 
 --- [GATE 2 PHYSICAL VALIDATION] ---
-  * build_security.chassis_material: UNRESOLVED / null (model returned no extraction)
+  * build_security.keyboard_backlight_type: UNRESOLVED / null (model returned no extraction)
+  * build_security.has_numpad: UNRESOLVED / null (model returned no extraction)
 
 ================================================================================

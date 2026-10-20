@@ -103,17 +103,15 @@ Treat null, false, zero, empty arrays, and empty strings according to their mean
 
 Do not impose your own interpretation of a field when its schema semantics are unclear. Report a potential schema-dependent issue only when it is materially important.
 
-CONFLICT ANALYSIS:
+CONFLICT ANALYSIS & TECHNICAL TABLE PRECEDENCE:
 
 When the source contains apparently conflicting statements:
-- Identify the exact statements and the fields they concern.
-- Determine whether they refer to the same product configuration, component, quantity, or context.
-- Distinguish explicit technical specifications from generic marketing text, bundled configurations, alternative configurations, and unrelated mentions.
-- Do not automatically treat every mention of a different number as a contradiction.
-- Do not automatically dismiss a statement merely because it appears in promotional text.
-- If the evidence does not establish which value is correct, report an unresolved conflict with an appropriate confidence level instead of guessing.
-
-For example, if a memory raw-spec field contains both "16GB DDR5 6400MT/s" and "32GB DDR5 + 1TB SSD," investigate whether these refer to the same configuration or whether one is generic promotional content. Do not automatically conclude that either value is correct or incorrect without sufficient contextual evidence.
+- The manufacturer/retailer dedicated Technical Specifications Table (e.g. "Standard Memory: 16 GB", "Total Solid State Drive Capacity: 1 TB", "Display Screen Type: OLED") is the authoritative technical baseline. It represents the factory hardware specifications for the exact Part Number (MPN).
+- Product titles and promotional marketing banners (e.g., "32GB RAM" in the title or "32GB DDR5 + 1TB SSD" in promotional feature headings) frequently contain retailer upselling copy, copy-paste template errors from other SKU tiers, or marketing exaggerations.
+- STRICT RULE: When an explicit technical specification table entry exists (e.g. "Standard Memory: 16 GB" or "Memory: 16GB DDR5"), this table entry takes STRICT PRECEDENCE over contradictory claims in product titles or promotional headings.
+- NEVER override a verified specification table value (such as 16GB RAM) with a different number from the product title or promotional marketing banner (such as 32GB RAM).
+- Only use product titles or promotional text to populate a field if that field is completely missing (null/unpopulated) in the specification table.
+- If credible technical sources disagree and the conflict cannot be resolved confidently, report an unresolved conflict rather than overriding the structured technical value.
 
 SCOPE AND PROTECTION:
 
@@ -616,6 +614,17 @@ class LLMAuditor:
             # Check if value actually changed
             if old_value == validated_val:
                 continue
+
+            # Guard: Prevent LLM Auditor from overriding explicit specification table RAM capacity
+            if field_path == "memory.capacity_gb" and old_value is not None:
+                src_table = laptop.get("source_table", {})
+                std_mem = src_table.get("Standard Memory") or src_table.get("Memory") or src_table.get("RAM")
+                if std_mem and re.search(rf"\b{old_value}\s*(?:gb|g)\b", str(std_mem), re.IGNORECASE):
+                    logger.info(
+                        "Ignoring LLM correction for %s (%s -> %s): Specification table explicitly confirms %r. Preserving %s.",
+                        field_path, old_value, validated_val, std_mem, old_value
+                    )
+                    continue
 
             cat_dict[sub_field] = validated_val
 
