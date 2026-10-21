@@ -161,6 +161,14 @@ class GenericCatalogPipeline:
             "title": raw_prod.title,
             "price_egp": raw_prod.price,
             "cpu_key": pipeline_res.cpu_key,
+            "is_audited": False,
+            "audit_status": "skipped" if (self.no_audit or not self.auditor) else "pending",
+            "audit_meta": {
+                "provider": None,
+                "has_contradictions": False,
+                "corrections_count": 0,
+                "applied_corrections": [],
+            },
             "specs": pipeline_res.specs,
             "source_table": raw_prod.raw_tables.get("specs", {}),
             "envelopes_count": len(pipeline_res.component_envelopes_generated),
@@ -170,12 +178,35 @@ class GenericCatalogPipeline:
 
         # Optional single-product Layer 8 audit
         if self.auditor and not self.no_audit:
-            try:
-                batch_res = self.auditor.audit_batch([record])
-                if batch_res.audited_laptops and batch_res.audited_laptops[0].corrections:
-                    self.auditor.apply_corrections(record, batch_res.audited_laptops[0].corrections)
-            except Exception as e:
-                logger.warning("Layer 8 single product audit failed: %s", e)
+            if getattr(self.auditor, "is_circuit_broken", False):
+                record["is_audited"] = False
+                record["audit_status"] = "circuit_broken"
+                record["audit_meta"]["reason"] = "circuit_breaker_tripped"
+            else:
+                try:
+                    batch_res = self.auditor.audit_batch([record])
+                    if batch_res.audited_laptops and batch_res.audited_laptops[0].is_audited:
+                        p_res = batch_res.audited_laptops[0]
+                        record["is_audited"] = True
+                        record["audit_status"] = "audited"
+                        record["audit_meta"]["provider"] = batch_res.provider
+                        record["audit_meta"]["has_contradictions"] = p_res.has_contradictions
+                        if p_res.corrections:
+                            applied = self.auditor.apply_corrections(record, p_res.corrections)
+                            record["audit_meta"]["corrections_count"] = len(applied)
+                            record["audit_meta"]["applied_corrections"] = applied
+                    else:
+                        record["is_audited"] = False
+                        record["audit_status"] = getattr(batch_res, "status", "failed")
+                        record["audit_meta"]["reason"] = getattr(batch_res, "error", None) or "audit_failed"
+                except Exception as e:
+                    logger.warning("Layer 8 single product audit failed: %s", e)
+                    record["is_audited"] = False
+                    record["audit_status"] = "failed"
+                    record["audit_meta"]["reason"] = str(e)
+        else:
+            record["is_audited"] = False
+            record["audit_status"] = "skipped"
 
         return record
 
@@ -203,17 +234,43 @@ class GenericCatalogPipeline:
         def flush_buffer():
             if not audit_buffer:
                 return
+
             if self.auditor and not self.no_audit:
-                idents = [it.get("url") or f"lap_{i}" for i, it in enumerate(audit_buffer)]
-                try:
-                    batch_res = self.auditor.audit_batch(audit_buffer, identifiers=idents)
-                    res_map = {r.laptop_id: r for r in batch_res.audited_laptops}
-                    for ident, it in zip(idents, audit_buffer):
-                        p_res = res_map.get(ident)
-                        if p_res and p_res.has_contradictions and p_res.corrections:
-                            self.auditor.apply_corrections(it, p_res.corrections)
-                except Exception as e:
-                    logger.warning("Layer 8 streaming audit failed: %s", e)
+                if getattr(self.auditor, "is_circuit_broken", False):
+                    for item in audit_buffer:
+                        item["is_audited"] = False
+                        item["audit_status"] = "circuit_broken"
+                        item["audit_meta"]["reason"] = "circuit_breaker_tripped"
+                else:
+                    idents = [it.get("url") or f"lap_{i}" for i, it in enumerate(audit_buffer)]
+                    try:
+                        batch_res = self.auditor.audit_batch(audit_buffer, identifiers=idents)
+                        res_map = {r.laptop_id: r for r in batch_res.audited_laptops}
+                        for ident, it in zip(idents, audit_buffer):
+                            p_res = res_map.get(ident)
+                            if p_res and p_res.is_audited:
+                                it["is_audited"] = True
+                                it["audit_status"] = "audited"
+                                it["audit_meta"]["provider"] = batch_res.provider
+                                it["audit_meta"]["has_contradictions"] = p_res.has_contradictions
+                                if p_res.corrections:
+                                    applied = self.auditor.apply_corrections(it, p_res.corrections)
+                                    it["audit_meta"]["corrections_count"] = len(applied)
+                                    it["audit_meta"]["applied_corrections"] = applied
+                            else:
+                                it["is_audited"] = False
+                                it["audit_status"] = getattr(p_res, "status", getattr(batch_res, "status", "failed"))
+                                it["audit_meta"]["reason"] = getattr(batch_res, "error", None) or "audit_failed"
+                    except Exception as e:
+                        logger.warning("Layer 8 streaming audit failed: %s", e)
+                        for item in audit_buffer:
+                            item["is_audited"] = False
+                            item["audit_status"] = "failed"
+                            item["audit_meta"]["reason"] = str(e)
+            else:
+                for item in audit_buffer:
+                    item["is_audited"] = False
+                    item["audit_status"] = "skipped"
 
             for item in audit_buffer:
                 results.append(item)
@@ -238,6 +295,14 @@ class GenericCatalogPipeline:
                 "title": prod.title,
                 "price_egp": prod.price_egp,
                 "cpu_key": pipeline_res.cpu_key,
+                "is_audited": False,
+                "audit_status": "skipped" if (self.no_audit or not self.auditor) else "pending",
+                "audit_meta": {
+                    "provider": None,
+                    "has_contradictions": False,
+                    "corrections_count": 0,
+                    "applied_corrections": [],
+                },
                 "specs": pipeline_res.specs,
                 "source_table": prod.specs or {},
                 "envelopes_count": len(pipeline_res.component_envelopes_generated),

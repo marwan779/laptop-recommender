@@ -70,6 +70,8 @@ def test_compumarts_orchestrator_level2_runs_generic_pipeline(tmp_path):
         assert item["url"] == sample_product.product_url
         assert item["price_egp"] == 75000.0
         assert item["cpu_key"] == "intel_core_i7_14650hx"
+        assert item["is_audited"] is False
+        assert item["audit_status"] == "skipped"
 
         specs = item["specs"]
         assert specs["cpu"]["model"] == "Core i7-14650HX"

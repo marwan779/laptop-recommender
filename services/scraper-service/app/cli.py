@@ -121,6 +121,32 @@ def main():
         help="Upload scraped JSON output files to the configured Object Storage bucket (default: False)",
     )
 
+    parser.add_argument(
+        "--no-audit",
+        action="store_true",
+        default=False,
+        help="Bypass Layer 8 LLM Auditor (run deterministic + CPU anchor + AI fallback only)",
+    )
+    parser.add_argument(
+        "--ai-type",
+        type=str,
+        default="nuextract",
+        choices=["nuextract", "gliner", "none"],
+        help="AI fallback engine to use: 'nuextract', 'gliner', or 'none' (default: nuextract)",
+    )
+    parser.add_argument(
+        "--no-onnx",
+        action="store_true",
+        default=False,
+        help="Disable ONNX runtime acceleration for AI fallback",
+    )
+    parser.add_argument(
+        "--audit-batch-size",
+        type=int,
+        default=1,
+        help="Batch size for Layer 8 LLM Auditor streaming audit (default: 1)",
+    )
+
     args = parser.parse_args()
 
     limit_display = str(args.limit) if args.limit is not None else "Unlimited"
@@ -184,7 +210,13 @@ def main():
     # ── Execute via orchestrator ─────────────────────────────────────────
 
     engine = ScraplingEngine()
-    orchestrator = ScrapeOrchestrator(engine=engine)
+    orchestrator = ScrapeOrchestrator(
+        engine=engine,
+        ai_type=args.ai_type,
+        use_onnx=not args.no_onnx,
+        no_audit=args.no_audit,
+        audit_batch_size=args.audit_batch_size,
+    )
     response = orchestrator.execute(request)
 
     # ── Display results ──────────────────────────────────────────────────

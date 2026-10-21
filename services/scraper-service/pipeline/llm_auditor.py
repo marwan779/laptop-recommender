@@ -175,13 +175,18 @@ class FieldCorrection(BaseModel):
 class ProductAuditResult(BaseModel):
     """The audit outcome for a single laptop."""
     laptop_id: str = Field(description="The unique identifier (URL or index) of the laptop")
-    has_contradictions: bool = Field(description="True if any contradictory or invalid fields were detected, False if 100% accurate")
+    has_contradictions: bool = Field(default=False, description="True if any contradictory or invalid fields were detected, False if 100% accurate")
     corrections: List[FieldCorrection] = Field(default_factory=list, description="List of corrections to apply for this laptop")
+    is_audited: bool = Field(default=True, description="True if the LLM successfully audited this laptop")
+    status: str = Field(default="audited", description="Audit status: 'audited', 'skipped', 'failed', or 'circuit_broken'")
 
 
 class BatchAuditResponse(BaseModel):
     """Batch response containing audit results for multiple laptops."""
     audited_laptops: List[ProductAuditResult] = Field(default_factory=list, description="List of audit results for each laptop in the batch")
+    provider: Optional[str] = Field(default=None, description="The LLM provider endpoint that executed the audit")
+    status: str = Field(default="audited", description="Status of the batch audit: 'audited', 'failed', or 'circuit_broken'")
+    error: Optional[str] = Field(default=None, description="Error message if the audit failed")
 
 
 class RateLimiter:
@@ -339,8 +344,12 @@ class LLMAuditor:
         self,
         endpoints: Optional[List[LLMProviderEndpoint]] = None,
         max_retries: int = 2,
+        max_consecutive_failures: int = 2,
     ):
         self.max_retries = max_retries
+        self.max_consecutive_failures = max(1, max_consecutive_failures)
+        self.consecutive_failures: int = 0
+        self.is_circuit_broken: bool = False
         self._exhausted_endpoints: set = set()
         self._rate_limiters: Dict[str, RateLimiter] = {}
         self._clients: Dict[str, Any] = {}
@@ -408,6 +417,21 @@ class LLMAuditor:
         if self.active_endpoints:
             return f"{self.active_endpoints[0].name} ({self.active_endpoints[0].model})"
         return "none"
+
+    @property
+    def is_available(self) -> bool:
+        """Check if the auditor is ready to process requests and circuit breaker is not tripped."""
+        if self.is_circuit_broken or not self.active_endpoints:
+            return False
+        available = [ep for ep in self.active_endpoints if ep.name not in self._exhausted_endpoints]
+        return len(available) > 0
+
+    def reset_circuit_breaker(self) -> None:
+        """Manually reset the circuit breaker and re-enable endpoints."""
+        self.is_circuit_broken = False
+        self.consecutive_failures = 0
+        self._exhausted_endpoints.clear()
+        logger.info("[LLMAuditor] Circuit breaker manually reset. All endpoints re-enabled.")
 
     def _prepare_laptop_payload(self, laptop: Dict[str, Any], identifier: str) -> Dict[str, Any]:
         """Format a laptop entry for auditing, excluding CPU and GPU to enforce immutability."""
@@ -486,6 +510,38 @@ class LLMAuditor:
             "}\n"
         )
 
+        # Fast-path: Check circuit breaker status
+        if self.is_circuit_broken or not self.active_endpoints:
+            return BatchAuditResponse(
+                audited_laptops=[
+                    ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[], is_audited=False, status="circuit_broken")
+                    for ident in identifiers
+                ],
+                provider=None,
+                status="circuit_broken",
+                error="Circuit breaker is open",
+            )
+
+        available_endpoints = [ep for ep in self.active_endpoints if ep.name not in self._exhausted_endpoints]
+        if not available_endpoints:
+            if not self.is_circuit_broken:
+                self.is_circuit_broken = True
+                logger.warning(
+                    "[LLMAuditor Circuit Breaker TRIPPED] All %d endpoints are exhausted (%s). "
+                    "Bypassing Layer 8 LLM audit for remaining items in this catalog run.",
+                    len(self.active_endpoints),
+                    list(self._exhausted_endpoints),
+                )
+            return BatchAuditResponse(
+                audited_laptops=[
+                    ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[], is_audited=False, status="circuit_broken")
+                    for ident in identifiers
+                ],
+                provider=None,
+                status="circuit_broken",
+                error="All endpoints exhausted",
+            )
+
         last_error = None
         for ep in self.active_endpoints:
             if ep.name in self._exhausted_endpoints:
@@ -502,15 +558,18 @@ class LLMAuditor:
                 try:
                     limiter.wait_if_needed()
 
-                    response = client.chat.completions.create(
-                        model=ep.model,
-                        messages=[
+                    create_params: Dict[str, Any] = {
+                        "model": ep.model,
+                        "messages": [
                             {"role": "system", "content": sys_prompt},
                             {"role": "user", "content": prompt_text},
                         ],
-                        temperature=0.0,
-                        response_format={"type": "json_object"},
-                    )
+                        "temperature": 0.0,
+                        "response_format": {"type": "json_object"},
+                        "max_tokens": 4096,
+                    }
+
+                    response = client.chat.completions.create(**create_params)
 
                     raw_text = response.choices[0].message.content or ""
                     if not raw_text:
@@ -527,13 +586,54 @@ class LLMAuditor:
                             parsed_data = {"audited_laptops": [parsed_data]}
 
                     res = BatchAuditResponse.model_validate(parsed_data)
+                    res.provider = ep.name
+                    res.status = "audited"
+                    for p in res.audited_laptops:
+                        p.is_audited = True
+                        p.status = "audited"
                     logger.debug("Successfully audited batch via %s", ep.name)
+                    self.consecutive_failures = 0
                     return res
 
                 except Exception as e:
                     last_error = e
                     err_str = str(e).lower()
-                    is_payload_too_large = "413" in err_str or "payload too large" in err_str or "request too large" in err_str or "context_length_exceeded" in err_str
+                    status_code = getattr(e, "status_code", None)
+
+                    # Extract official API error message (excluding generated text payload)
+                    err_msg = ""
+                    if hasattr(e, "body") and isinstance(e.body, dict):
+                        err_body = e.body.get("error", {})
+                        if isinstance(err_body, dict):
+                            err_msg = str(err_body.get("message") or "") + " " + str(err_body.get("code") or "")
+                    elif hasattr(e, "message"):
+                        err_msg = str(e.message)
+                    else:
+                        err_msg = str(e)
+                    err_msg_lower = err_msg.lower()
+
+                    # 0. Fatal non-recoverable client errors (401 Bad Key, 403 Forbidden, 404 Model Not Found)
+                    is_fatal_auth_or_model = (
+                        status_code in (401, 403, 404)
+                        or "invalid_api_key" in err_msg_lower
+                        or "model_not_found" in err_msg_lower
+                    )
+                    if is_fatal_auth_or_model:
+                        logger.error(
+                            "Endpoint %s failed with fatal error (HTTP %s: %s). Permanently blacklisting for this run.",
+                            ep.name, status_code, err_msg
+                        )
+                        self._exhausted_endpoints.add(ep.name)
+                        break
+
+                    # 1. Payload / context length too large -> split batch
+                    is_payload_too_large = (
+                        status_code == 413
+                        or "413" in err_str
+                        or "payload too large" in err_msg_lower
+                        or "request too large" in err_msg_lower
+                        or "context_length_exceeded" in err_msg_lower
+                    )
                     if is_payload_too_large and len(laptops) > 1:
                         logger.info("Batch of %d laptops too large for %s (413). Automatically splitting batch...", len(laptops), ep.name)
                         mid = len(laptops) // 2
@@ -541,10 +641,44 @@ class LLMAuditor:
                         res2 = self.audit_batch(laptops[mid:], identifiers[mid:])
                         return BatchAuditResponse(audited_laptops=res1.audited_laptops + res2.audited_laptops)
 
-                    is_rate_limit = "429" in err_str or "rate_limit" in err_str or "quota" in err_str
-                    is_unavailable = "503" in err_str or "unavailable" in err_str or "overloaded" in err_str
+                    # 2. Max completion tokens hit during JSON generation -> split batch if multiple, else failover
+                    is_json_token_limit = (
+                        status_code == 400
+                        and ("max completion tokens reached" in err_str or "json_validate_failed" in err_str)
+                    )
+                    if is_json_token_limit and len(laptops) > 1:
+                        logger.info(
+                            "Batch of %d laptops reached completion token limit on %s (400). Splitting batch...",
+                            len(laptops), ep.name
+                        )
+                        mid = len(laptops) // 2
+                        res1 = self.audit_batch(laptops[:mid], identifiers[:mid])
+                        res2 = self.audit_batch(laptops[mid:], identifiers[mid:])
+                        return BatchAuditResponse(audited_laptops=res1.audited_laptops + res2.audited_laptops)
 
-                    if is_rate_limit and ("day" in err_str or "exceeded your current quota" in err_str):
+                    # 3. Rate limiting (HTTP 429 ONLY)
+                    is_rate_limit = (
+                        status_code == 429
+                        or (status_code is None and ("429" in err_str or "rate_limit" in err_msg_lower))
+                    )
+
+                    # 4. Service unavailable / transient gateway errors
+                    is_unavailable = (
+                        status_code in (502, 503, 504)
+                        or "503" in err_str
+                        or "unavailable" in err_msg_lower
+                        or "overloaded" in err_msg_lower
+                    )
+
+                    # 5. True daily quota exhaustion (must be HTTP 429 with explicit daily quota indicators)
+                    is_daily_quota = is_rate_limit and (
+                        "daily" in err_msg_lower
+                        or "per day" in err_msg_lower
+                        or "rpd" in err_msg_lower
+                        or "exceeded your current quota" in err_msg_lower
+                    )
+
+                    if is_daily_quota:
                         logger.warning("Daily quota reached on %s. Blacklisting and failing over...", ep.name)
                         self._exhausted_endpoints.add(ep.name)
                         break
@@ -562,12 +696,29 @@ class LLMAuditor:
                         logger.warning("Endpoint %s failed: %s. Failing over to next provider...", ep.name, e)
                         break
 
-        logger.error("Audit failed across all configured LLM endpoints: %s", last_error)
+        # If all candidate endpoints failed for this batch
+        self.consecutive_failures += 1
+        all_now_exhausted = len(self._exhausted_endpoints) >= len(self.active_endpoints)
+        if self.consecutive_failures >= self.max_consecutive_failures or all_now_exhausted:
+            self.is_circuit_broken = True
+            logger.warning(
+                "[LLMAuditor Circuit Breaker TRIPPED] LLM auditing failed for %d consecutive batch(es) "
+                "(last error: %s). Bypassing Layer 8 audit for the remainder of this catalog run to prevent stalling. "
+                "Layers 1-7 (Deterministic, Silicon Anchor, NuExtract, Gate 1 & 2) will proceed at full speed.",
+                self.consecutive_failures, last_error
+            )
+        else:
+            logger.error("Audit failed across all configured LLM endpoints: %s", last_error)
+
+        status_str = "circuit_broken" if self.is_circuit_broken else "failed"
         return BatchAuditResponse(
             audited_laptops=[
-                ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[])
+                ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[], is_audited=False, status=status_str)
                 for ident in identifiers
-            ]
+            ],
+            provider=None,
+            status=status_str,
+            error=str(last_error),
         )
 
     def apply_corrections(
