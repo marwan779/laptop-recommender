@@ -165,3 +165,127 @@ def test_catalog_pipeline_populates_audit_flag_and_metadata():
     assert item["audit_meta"]["corrections_count"] == 1
 
 
+def test_qwen_model_clamps_max_tokens_to_800():
+    """Verify models with 'qwen' in their name have max_tokens capped to 800 to prevent Groq OTPM 429."""
+    mock_ep = LLMProviderEndpoint(
+        name="groq-qwen-test",
+        base_url="https://api.groq.com/openai/v1",
+        api_key_env="",
+        model="qwen/qwen3.8-27b",
+    )
+    auditor = LLMAuditor(endpoints=[mock_ep])
+    mock_client = MagicMock()
+    mock_resp = MagicMock()
+    mock_resp.choices = [
+        MagicMock(message=MagicMock(content='{"audited_laptops": [{"laptop_id": "lap_qwen", "has_contradictions": false, "corrections": []}]}'))
+    ]
+    mock_client.chat.completions.create.return_value = mock_resp
+    auditor._clients["groq-qwen-test"] = mock_client
+
+    sample_laptop = {"title": "Test Qwen Laptop", "specs": {}}
+    auditor.audit_batch([sample_laptop], identifiers=["lap_qwen"])
+
+    assert mock_client.chat.completions.create.call_count == 1
+    call_kwargs = mock_client.chat.completions.create.call_args.kwargs
+    assert call_kwargs["max_tokens"] == 800
+
+
+def test_non_qwen_model_uses_4096_max_tokens():
+    """Verify non-Qwen models (e.g. gpt-oss-120b) use max_tokens=4096."""
+    mock_ep = LLMProviderEndpoint(
+        name="groq-gpt-test",
+        base_url="https://api.groq.com/openai/v1",
+        api_key_env="",
+        model="openai/gpt-oss-120b",
+    )
+    auditor = LLMAuditor(endpoints=[mock_ep])
+    mock_client = MagicMock()
+    mock_resp = MagicMock()
+    mock_resp.choices = [
+        MagicMock(message=MagicMock(content='{"audited_laptops": [{"laptop_id": "lap_gpt", "has_contradictions": false, "corrections": []}]}'))
+    ]
+    mock_client.chat.completions.create.return_value = mock_resp
+    auditor._clients["groq-gpt-test"] = mock_client
+
+    sample_laptop = {"title": "Test GPT Laptop", "specs": {}}
+    auditor.audit_batch([sample_laptop], identifiers=["lap_gpt"])
+
+    assert mock_client.chat.completions.create.call_count == 1
+    call_kwargs = mock_client.chat.completions.create.call_args.kwargs
+    assert call_kwargs["max_tokens"] == 4096
+
+
+def test_http_402_payment_required_blacklists_endpoint():
+    """Verify HTTP 402 / payment required immediately blacklists the endpoint."""
+    mock_ep = LLMProviderEndpoint(
+        name="mock-openrouter-unpaid",
+        base_url="https://openrouter.ai/api/v1",
+        api_key_env="",
+        model="meta-llama/llama-3.3-70b-instruct",
+    )
+    auditor = LLMAuditor(endpoints=[mock_ep], max_retries=2, max_consecutive_failures=1)
+    mock_client = MagicMock()
+
+    class MockPaymentError(Exception):
+        status_code = 402
+        body = {"error": {"message": "Payment Required: insufficient credits", "code": "payment_required"}}
+
+    mock_client.chat.completions.create.side_effect = MockPaymentError()
+    auditor._clients["mock-openrouter-unpaid"] = mock_client
+
+    sample_laptop = {"title": "Test Laptop", "specs": {}}
+    res = auditor.audit_batch([sample_laptop])
+
+    assert "mock-openrouter-unpaid" in auditor._exhausted_endpoints
+    assert auditor.is_circuit_broken
+
+
+def test_consecutive_endpoint_failures_blacklists_endpoint():
+    """Verify an individual endpoint that fails across multiple batches gets blacklisted."""
+    ep1 = LLMProviderEndpoint(
+        name="ep-unstable",
+        base_url="https://unstable.api.com",
+        api_key_env="",
+        model="unstable-model",
+    )
+    ep2 = LLMProviderEndpoint(
+        name="ep-backup",
+        base_url="https://backup.api.com",
+        api_key_env="",
+        model="backup-model",
+    )
+    auditor = LLMAuditor(endpoints=[ep1, ep2], max_retries=1, max_consecutive_failures=5)
+
+    client1 = MagicMock()
+    client1.chat.completions.create.side_effect = TimeoutError("Connection timed out")
+    client2 = MagicMock()
+    mock_resp = MagicMock()
+    mock_resp.choices = [
+        MagicMock(message=MagicMock(content='{"audited_laptops": [{"laptop_id": "lap_1", "has_contradictions": false, "corrections": []}]}'))
+    ]
+    client2.chat.completions.create.return_value = mock_resp
+
+    auditor._clients["ep-unstable"] = client1
+    auditor._clients["ep-backup"] = client2
+
+    laptop = {"title": "Test Laptop", "specs": {}}
+
+    # Batch 1: ep1 fails once, failover to ep2 succeeds
+    res1 = auditor.audit_batch([laptop], identifiers=["lap_1"])
+    assert res1.provider == "ep-backup"
+    assert "ep-unstable" not in auditor._exhausted_endpoints
+    assert auditor._consecutive_endpoint_failures["ep-unstable"] == 1
+
+    # Batch 2: ep1 fails second time consecutively -> blacklisted! failover to ep2 succeeds
+    res2 = auditor.audit_batch([laptop], identifiers=["lap_1"])
+    assert res2.provider == "ep-backup"
+    assert "ep-unstable" in auditor._exhausted_endpoints
+
+    # Batch 3: ep1 is exhausted, directly calls ep2 without calling ep1
+    assert client1.chat.completions.create.call_count == 2
+    res3 = auditor.audit_batch([laptop], identifiers=["lap_1"])
+    assert res3.provider == "ep-backup"
+    assert client1.chat.completions.create.call_count == 2  # Still 2, ep1 skipped completely!
+
+
+

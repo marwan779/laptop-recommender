@@ -272,17 +272,37 @@ def _display_store_result(target_result, args) -> None:
     table.add_column("Stock", style="magenta")
     table.add_column("Product URL", style="blue")
 
-    for idx, p in enumerate(catalog.products, 1):
-        stock_str = "[green]In Stock[/green]" if p.in_stock else "[red]Out of Stock[/red]"
-        table.add_row(
-            str(idx),
-            safe_terminal_text(p.title[:50] + ("..." if len(p.title) > 50 else "")),
-            safe_terminal_text(p.retailer_sku or p.mpn or "N/A"),
-            f"{len(p.specs)} fields",
-            safe_terminal_text(p.price_str or str(p.price_egp or "N/A")),
-            stock_str,
-            p.product_url,
-        )
+    if catalog.structured_products:
+        for idx, p in enumerate(catalog.structured_products, 1):
+            in_stock = p.get("in_stock", True)
+            stock_str = "[green]In Stock[/green]" if in_stock else "[red]Out of Stock[/red]"
+            sku = (
+                p.get("retailer_sku")
+                or p.get("mpn")
+                or p.get("specs", {}).get("identity", {}).get("manufacturer_part_number")
+                or "N/A"
+            )
+            table.add_row(
+                str(idx),
+                safe_terminal_text(p.get("title", "")[:50] + ("..." if len(p.get("title", "")) > 50 else "")),
+                safe_terminal_text(sku),
+                f"{len(p.get('source_table', {}))} fields",
+                safe_terminal_text(str(p.get("price_egp") or "N/A")),
+                stock_str,
+                p.get("url", ""),
+            )
+    else:
+        for idx, p in enumerate(catalog.products, 1):
+            stock_str = "[green]In Stock[/green]" if p.in_stock else "[red]Out of Stock[/red]"
+            table.add_row(
+                str(idx),
+                safe_terminal_text(p.title[:50] + ("..." if len(p.title) > 50 else "")),
+                safe_terminal_text(p.retailer_sku or p.mpn or "N/A"),
+                f"{len(p.specs)} fields",
+                safe_terminal_text(p.price_str or str(p.price_egp or "N/A")),
+                stock_str,
+                p.product_url,
+            )
     console.print(table)
 
     pointers_str = ", ".join(catalog.latest_pointers) if catalog.latest_pointers else "None"
@@ -292,6 +312,7 @@ def _display_store_result(target_result, args) -> None:
             f"[yellow]Total Skipped Products (Filtered/Error):[/yellow] [bold red]{catalog.total_skipped}[/bold red]"
         )
 
+    desc = "structured" if catalog.structured_products else "raw"
     if args.save_json:
         if getattr(args, "_total_results", 1) == 1:
             dest_file = args.save_json
@@ -301,13 +322,13 @@ def _display_store_result(target_result, args) -> None:
         Path(dest_file).parent.mkdir(parents=True, exist_ok=True)
         with open(dest_file, "w", encoding="utf-8") as f:
             json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
-        console.print(f"[green][+] Saved {catalog.total_products} raw store products to {dest_file}[/green]")
+        console.print(f"[green][+] Saved {catalog.total_products} {desc} store products to {dest_file}[/green]")
     elif not args.upload_to_bucket:
         dest_file = f"store_{target_result.target_key}.json"
         Path(dest_file).parent.mkdir(parents=True, exist_ok=True)
         with open(dest_file, "w", encoding="utf-8") as f:
             json.dump(catalog.model_dump(), f, indent=2, ensure_ascii=False)
-        console.print(f"[green][+] Saved {catalog.total_products} raw store products to {dest_file}[/green]")
+        console.print(f"[green][+] Saved {catalog.total_products} {desc} store products to {dest_file}[/green]")
 
 
 def _display_brand_result(target_result, args) -> None:

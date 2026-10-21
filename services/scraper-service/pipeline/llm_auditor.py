@@ -272,31 +272,34 @@ class LLMProviderEndpoint:
 
 
 DEFAULT_ENDPOINTS: List[LLMProviderEndpoint] = [
-    # 1. Primary: Groq Qwen 3.8 27B (Top-tier tabular / arithmetic / JSON reasoning at 500+ tok/s)
-    LLMProviderEndpoint(
-        name="groq-qwen-27b",
-        base_url="https://api.groq.com/openai/v1",
-        api_key_env="GROQ_API_KEY",
-        model="qwen/qwen3.8-27b",
-        is_reasoning=True,
-        requests_per_minute=30.0,
-    ),
-    # 2. Fallback 1: Groq GPT-OSS 120B (Massive 120B open weights on Groq LPUs)
+    # 1. Primary: Groq GPT-OSS 120B (Flagship open weights on Groq LPUs, 8,000+ TPM limit, 30 RPM, 1,000 RPD)
     LLMProviderEndpoint(
         name="groq-gpt-120b",
         base_url="https://api.groq.com/openai/v1",
         api_key_env="GROQ_API_KEY",
         model="openai/gpt-oss-120b",
         is_reasoning=False,
+        timeout_seconds=25.0,
         requests_per_minute=30.0,
     ),
-    # 3. Fallback 2: Groq GPT-OSS 20B (High speed, lower latency safety net)
+    # 2. Fallback 1: Groq GPT-OSS 20B (High speed, lower latency safety net, 8,000+ TPM limit)
     LLMProviderEndpoint(
         name="groq-gpt-20b",
         base_url="https://api.groq.com/openai/v1",
         api_key_env="GROQ_API_KEY",
         model="openai/gpt-oss-20b",
         is_reasoning=False,
+        timeout_seconds=20.0,
+        requests_per_minute=30.0,
+    ),
+    # 3. Fallback 2: Groq Qwen 3.8 27B (Top-tier reasoning, max_tokens clamped to <= 800 for 1,000 OTPM ceiling)
+    LLMProviderEndpoint(
+        name="groq-qwen-27b",
+        base_url="https://api.groq.com/openai/v1",
+        api_key_env="GROQ_API_KEY",
+        model="qwen/qwen3.8-27b",
+        is_reasoning=True,
+        timeout_seconds=25.0,
         requests_per_minute=30.0,
     ),
     # 4. Fallback 3: Cerebras Llama 3.3 70B (Wafer-scale speed at 1,000+ tok/s)
@@ -306,6 +309,7 @@ DEFAULT_ENDPOINTS: List[LLMProviderEndpoint] = [
         api_key_env="CEREBRAS_API_KEY",
         model="llama-3.3-70b",
         is_reasoning=False,
+        timeout_seconds=20.0,
         requests_per_minute=30.0,
     ),
     # 5. Fallback 4: SambaNova Llama 3.3 70B (Generous free-tier RDU cluster)
@@ -315,7 +319,18 @@ DEFAULT_ENDPOINTS: List[LLMProviderEndpoint] = [
         api_key_env="SAMBANOVA_API_KEY",
         model="Meta-Llama-3.3-70B-Instruct",
         is_reasoning=False,
+        timeout_seconds=25.0,
         requests_per_minute=30.0,
+    ),
+    # 6. Fallback 5: OpenRouter Llama 3.3 70B (High-reliability multi-cloud router)
+    LLMProviderEndpoint(
+        name="openrouter-llama-70b",
+        base_url="https://openrouter.ai/api/v1",
+        api_key_env="OPENROUTER_API_KEY",
+        model="meta-llama/llama-3.3-70b-instruct",
+        is_reasoning=False,
+        timeout_seconds=25.0,
+        requests_per_minute=20.0,
     ),
 ]
 
@@ -351,6 +366,7 @@ class LLMAuditor:
         self.consecutive_failures: int = 0
         self.is_circuit_broken: bool = False
         self._exhausted_endpoints: set = set()
+        self._consecutive_endpoint_failures: Dict[str, int] = {}
         self._rate_limiters: Dict[str, RateLimiter] = {}
         self._clients: Dict[str, Any] = {}
 
@@ -431,6 +447,7 @@ class LLMAuditor:
         self.is_circuit_broken = False
         self.consecutive_failures = 0
         self._exhausted_endpoints.clear()
+        self._consecutive_endpoint_failures.clear()
         logger.info("[LLMAuditor] Circuit breaker manually reset. All endpoints re-enabled.")
 
     def _prepare_laptop_payload(self, laptop: Dict[str, Any], identifier: str) -> Dict[str, Any]:
@@ -554,6 +571,10 @@ class LLMAuditor:
             if ep.is_reasoning:
                 sys_prompt += "\n/no_think"
 
+            # Enforce strict token limits per provider/model
+            # Groq qwen3.8-27b has a strict 1,000 OTPM limit; clamp max_tokens to 800
+            max_tokens = 800 if "qwen" in ep.model.lower() else 4096
+
             for attempt in range(1, self.max_retries + 1):
                 try:
                     limiter.wait_if_needed()
@@ -566,7 +587,7 @@ class LLMAuditor:
                         ],
                         "temperature": 0.0,
                         "response_format": {"type": "json_object"},
-                        "max_tokens": 4096,
+                        "max_tokens": max_tokens,
                     }
 
                     response = client.chat.completions.create(**create_params)
@@ -593,6 +614,7 @@ class LLMAuditor:
                         p.status = "audited"
                     logger.debug("Successfully audited batch via %s", ep.name)
                     self.consecutive_failures = 0
+                    self._consecutive_endpoint_failures[ep.name] = 0
                     return res
 
                 except Exception as e:
@@ -605,18 +627,24 @@ class LLMAuditor:
                     if hasattr(e, "body") and isinstance(e.body, dict):
                         err_body = e.body.get("error", {})
                         if isinstance(err_body, dict):
-                            err_msg = str(err_body.get("message") or "") + " " + str(err_body.get("code") or "")
-                    elif hasattr(e, "message"):
-                        err_msg = str(e.message)
-                    else:
-                        err_msg = str(e)
+                            msg = str(err_body.get("message") or "").strip()
+                            code = str(err_body.get("code") or "").strip()
+                            err_msg = f"{msg} ({code})" if code else msg
+                        elif isinstance(err_body, str):
+                            err_msg = err_body.strip()
+                    if not err_msg and hasattr(e, "message"):
+                        err_msg = str(getattr(e, "message", "") or "").strip()
+                    if not err_msg:
+                        err_msg = str(e).strip()
                     err_msg_lower = err_msg.lower()
 
-                    # 0. Fatal non-recoverable client errors (401 Bad Key, 403 Forbidden, 404 Model Not Found)
+                    # 0. Fatal non-recoverable client errors (401 Bad Key, 402 Payment Required, 403 Forbidden, 404 Model Not Found)
                     is_fatal_auth_or_model = (
-                        status_code in (401, 403, 404)
+                        status_code in (401, 402, 403, 404)
                         or "invalid_api_key" in err_msg_lower
                         or "model_not_found" in err_msg_lower
+                        or "payment_required" in err_msg_lower
+                        or "insufficient_quota" in err_msg_lower
                     )
                     if is_fatal_auth_or_model:
                         logger.error(
@@ -626,20 +654,36 @@ class LLMAuditor:
                         self._exhausted_endpoints.add(ep.name)
                         break
 
-                    # 1. Payload / context length too large -> split batch
+                    # 1. Payload / context length / OTPM too large -> split batch
                     is_payload_too_large = (
                         status_code == 413
                         or "413" in err_str
                         or "payload too large" in err_msg_lower
                         or "request too large" in err_msg_lower
                         or "context_length_exceeded" in err_msg_lower
+                        or "output tokens per minute" in err_msg_lower
+                        or "reduce max_tokens" in err_msg_lower
                     )
-                    if is_payload_too_large and len(laptops) > 1:
-                        logger.info("Batch of %d laptops too large for %s (413). Automatically splitting batch...", len(laptops), ep.name)
-                        mid = len(laptops) // 2
-                        res1 = self.audit_batch(laptops[:mid], identifiers[:mid])
-                        res2 = self.audit_batch(laptops[mid:], identifiers[mid:])
-                        return BatchAuditResponse(audited_laptops=res1.audited_laptops + res2.audited_laptops)
+                    if is_payload_too_large:
+                        if len(laptops) > 1:
+                            logger.info(
+                                "Batch of %d laptops exceeds model token quota on %s. Automatically splitting batch in half...",
+                                len(laptops), ep.name
+                            )
+                            mid = len(laptops) // 2
+                            res1 = self.audit_batch(laptops[:mid], identifiers[:mid])
+                            res2 = self.audit_batch(laptops[mid:], identifiers[mid:])
+                            return BatchAuditResponse(
+                                audited_laptops=res1.audited_laptops + res2.audited_laptops,
+                                provider=res1.provider or res2.provider,
+                                status="audited" if (res1.status == "audited" or res2.status == "audited") else "failed",
+                            )
+                        else:
+                            logger.warning(
+                                "Single laptop exceeds token quota on %s (%s). Failing over to next provider...",
+                                ep.name, err_msg
+                            )
+                            break
 
                     # 2. Max completion tokens hit during JSON generation -> split batch if multiple, else failover
                     is_json_token_limit = (
@@ -693,7 +737,14 @@ class LLMAuditor:
                         time.sleep(backoff)
                         continue
                     else:
-                        logger.warning("Endpoint %s failed: %s. Failing over to next provider...", ep.name, e)
+                        logger.warning("Endpoint %s failed: %s. Failing over to next provider...", ep.name, err_msg)
+                        self._consecutive_endpoint_failures[ep.name] = self._consecutive_endpoint_failures.get(ep.name, 0) + 1
+                        if self._consecutive_endpoint_failures[ep.name] >= 2:
+                            logger.warning(
+                                "Endpoint %s failed %d times consecutively. Blacklisting for remainder of run.",
+                                ep.name, self._consecutive_endpoint_failures[ep.name]
+                            )
+                            self._exhausted_endpoints.add(ep.name)
                         break
 
         # If all candidate endpoints failed for this batch

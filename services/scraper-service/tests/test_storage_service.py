@@ -47,7 +47,10 @@ def s3_service(storage_settings, mock_s3_client):
 # ── Configuration & Models Tests ─────────────────────────────────────────────
 
 
-def test_storage_settings_defaults():
+def test_storage_settings_defaults(monkeypatch):
+    monkeypatch.delenv("AWS_REGION", raising=False)
+    monkeypatch.delenv("STORAGE_PROVIDER", raising=False)
+    monkeypatch.delenv("AWS_S3_BUCKET", raising=False)
     settings = StorageSettings(_env_file=None)
     assert settings.storage_provider == "s3"
     assert settings.aws_region == "eu-central-1"

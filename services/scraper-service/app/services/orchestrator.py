@@ -287,6 +287,7 @@ class ScrapeOrchestrator:
 
         latest_pointers = [p.title for p in products[:3]]
         skipped_list = list(getattr(store_scraper, "skipped_laptops", []))
+        is_level2 = req.level == 2
 
         store_catalog = StoreCatalogResult(
             store_name=store_scraper.store_name,
@@ -299,9 +300,9 @@ class ScrapeOrchestrator:
                 else (", ".join(req.until_model) if req.until_model else None)
             ),
             latest_pointers=latest_pointers,
-            total_products=len(products),
+            total_products=len(structured_products) if is_level2 else len(products),
             total_skipped=len(skipped_list),
-            products=products,
+            products=[] if is_level2 else products,
             structured_products=structured_products,
             skipped_laptops=skipped_list,
         )
@@ -314,7 +315,7 @@ class ScrapeOrchestrator:
             target_key=key,
             target_name=store_scraper.store_name,
             level=req.level,
-            items_scraped=len(products),
+            items_scraped=len(structured_products) if is_level2 else len(products),
             output_file=str(output_file) if output_file else None,
             store_result=store_catalog,
         )
