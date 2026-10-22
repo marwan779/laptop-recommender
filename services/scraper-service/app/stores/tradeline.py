@@ -168,14 +168,7 @@ class TradelineStoreScraper(BaseStoreScraper):
                     product_url = urljoin(self.base_url, f"/products/{handle}")
 
                     # 1. Filter out accessories and non-laptop/used products
-                    is_valid, reason = self.is_valid_new_laptop(title=title, url=product_url)
-                    if not is_valid:
-                        self.record_skipped(
-                            name=title,
-                            reason=f"Filtered out non-laptop accessory or peripheral: {reason}",
-                            url=product_url,
-                            stage="level1_filter",
-                        )
+                    if self.should_skip_card(title=title, url=product_url):
                         continue
 
                     # 2. Iterate through all variants (changeable options: RAM, SSD, Color, CPU)
@@ -322,19 +315,7 @@ class TradelineStoreScraper(BaseStoreScraper):
                 product_url
             )
             merged_specs = {**specs, **pdp_specs}
-            pdp_valid, pdp_reason = self.is_valid_new_laptop(
-                title=title,
-                specs=merged_specs,
-                url=product_url,
-                description=pdp_desc or raw_desc,
-            )
-            if not pdp_valid:
-                self.record_skipped(
-                    name=title,
-                    url=product_url,
-                    reason=f"Filtered out after PDP inspection: {pdp_reason}",
-                    stage="pdp_filter",
-                )
+            if self.should_skip_pdp(title=title, specs=merged_specs, url=product_url, description=pdp_desc or raw_desc):
                 return None
             specs = merged_specs
             if pdp_desc:
@@ -486,13 +467,7 @@ class TradelineStoreScraper(BaseStoreScraper):
                 handle = item.get("handle", "")
                 product_url = urljoin(self.base_url, item.get("url") or f"/products/{handle}")
 
-                if self._is_standalone_accessory(title):
-                    self.record_skipped(
-                        name=title,
-                        reason="Filtered out non-laptop accessory or peripheral",
-                        url=product_url,
-                        stage="search_filter",
-                    )
+                if self.should_skip_card(title=title, url=product_url):
                     continue
 
                 # Fetch Level 2 details for candidates
@@ -581,13 +556,7 @@ class TradelineStoreScraper(BaseStoreScraper):
             title = title_elem.get_text(strip=True)
             if not title:
                 continue
-            if self._is_standalone_accessory(title):
-                self.record_skipped(
-                    name=title,
-                    reason="Filtered out non-laptop accessory or peripheral",
-                    url=full_url,
-                    stage="html_fallback_filter",
-                )
+            if self.should_skip_card(title=title, url=full_url, stage="html_fallback_filter"):
                 continue
 
             price_elem = card.find(class_=re.compile(r"price", re.I))

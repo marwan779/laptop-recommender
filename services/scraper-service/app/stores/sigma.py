@@ -221,14 +221,7 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
 
                 # Non-laptop accessory and used/refurbished check
                 item_url = f"{self.ITEM_BASE_URL}?id={slug}"
-                is_valid, reason = self.is_valid_new_laptop(title=name, url=item_url)
-                if not is_valid:
-                    self.record_skipped(
-                        name=name,
-                        url=item_url,
-                        reason=f"Filtered out as standalone accessory or non-laptop: {reason}",
-                        stage="accessory_filter",
-                    )
+                if self.should_skip_card(title=name, url=item_url):
                     continue
 
                 # Watermark pre-check before making any PDP request
@@ -391,19 +384,7 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
                 raw_desc = spec_res[1]
                 has_text_specs = bool(specs)
 
-            pdp_valid, pdp_reason = self.is_valid_new_laptop(
-                title=title,
-                specs=specs,
-                url=product_url,
-                description=raw_desc,
-            )
-            if not pdp_valid:
-                self.record_skipped(
-                    name=title,
-                    url=product_url,
-                    reason=f"Filtered out after PDP inspection: {pdp_reason}",
-                    stage="pdp_filter",
-                )
+            if self.should_skip_pdp(title=title, specs=specs, url=product_url, description=raw_desc):
                 return None
 
         # Model normalizer token extraction

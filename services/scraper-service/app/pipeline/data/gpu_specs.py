@@ -16,29 +16,29 @@ from pydantic import BaseModel, Field, model_validator
 
 
 class GPUTDPLimits(BaseModel):
-    min_w: int = Field(..., ge=20, le=175)
-    max_w: int = Field(..., ge=35, le=200)
-    base_max_w: int | None = Field(None, ge=20, le=175)
-    dynamic_boost_w: int | None = Field(None, ge=0, le=50)
+    min_w: float | None = Field(None, ge=10, le=175)
+    max_w: float | None = Field(None, ge=15, le=200)
+    base_max_w: float | None = Field(None, ge=10, le=175)
+    dynamic_boost_w: float | None = Field(None, ge=0, le=50)
 
     @model_validator(mode="after")
     def validate_bounds(self) -> GPUTDPLimits:
-        if self.min_w > self.max_w:
+        if self.min_w is not None and self.max_w is not None and self.min_w > self.max_w:
             raise ValueError(f"min_w ({self.min_w}) cannot exceed max_w ({self.max_w})")
         return self
 
 
 class GPUFeatures(BaseModel):
-    ray_tracing: bool
-    frame_generation: bool
-    av1_encoding: bool
+    ray_tracing: bool | None = None
+    frame_generation: bool | None = None
+    av1_encoding: bool | None = None
 
 
 class GPUSpecificationEntry(BaseModel):
     manufacturer: Literal["NVIDIA", "AMD", "Intel", "Apple", "Qualcomm"]
     model: str
     series: str
-    variant: Literal["Laptop GPU", "Integrated GPU", "SoC Integrated"]
+    variant: str
     chip_codename: str | None = None
     architecture: str
     process_node_nm: int | None = None

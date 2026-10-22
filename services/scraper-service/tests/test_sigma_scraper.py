@@ -152,5 +152,5 @@ def test_sigma_used_laptop_quarantine(monkeypatch):
     items = scraper.scrape_catalog(level=1, max_pages=1)
     assert len(items) == 0
     assert len(scraper.skipped_laptops) == 1
-    assert scraper.skipped_laptops[0].stage == "accessory_filter"
+    assert scraper.skipped_laptops[0].stage in ("accessory_filter", "card_filter")
     assert "used_or_refurbished" in scraper.skipped_laptops[0].reason

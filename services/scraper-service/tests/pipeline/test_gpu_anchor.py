@@ -24,7 +24,8 @@ class TestGPUSpecsValidation:
             else:
                 assert isinstance(obj.vram_gb, int)
                 assert obj.tdp_limits is not None
-                assert obj.tdp_limits.min_w <= obj.tdp_limits.max_w
+                if obj.tdp_limits.min_w is not None and obj.tdp_limits.max_w is not None:
+                    assert obj.tdp_limits.min_w <= obj.tdp_limits.max_w
 
 
 class TestGPUAnchorExtraction:

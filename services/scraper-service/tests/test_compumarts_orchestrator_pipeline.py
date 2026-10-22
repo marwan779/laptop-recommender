@@ -68,6 +68,8 @@ def test_compumarts_orchestrator_level2_runs_generic_pipeline(tmp_path):
         structured = target_res.store_result.structured_products
         assert len(structured) == 1
         item = structured[0]
+        assert item["store_name"] == "Compumarts"
+        assert item["store_key"] == "compumarts"
         assert item["url"] == sample_product.product_url
         assert item["price_egp"] == 75000.0
         assert item["in_stock"] is True

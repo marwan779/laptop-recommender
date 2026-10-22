@@ -164,6 +164,8 @@ def test_catalog_pipeline_populates_audit_flag_and_metadata():
     results = pipeline.process_catalog([p1])
     assert len(results) == 1
     item = results[0]
+    assert item["store_name"] == "Compumarts"
+    assert item["store_key"] == "compumarts"
 
     assert item["is_audited"] is True
     assert item["audit_status"] == "audited"

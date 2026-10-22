@@ -138,9 +138,14 @@ def run_pipeline(
             logger.info("Layer 8 LLM Auditor disabled (%s). Running pipeline without LLM audit.", e)
 
     out_path = Path(output_file)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     ckpt_path = Path(checkpoint_file)
+    ckpt_path.parent.mkdir(parents=True, exist_ok=True)
     trace_path = Path(trace_file)
+    trace_path.parent.mkdir(parents=True, exist_ok=True)
     env_log_path = Path(envelope_log_file) if envelope_log_file else None
+    if env_log_path:
+        env_log_path.parent.mkdir(parents=True, exist_ok=True)
 
     # 1. Single URL Mode
     if target_url:

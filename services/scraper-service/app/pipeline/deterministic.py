@@ -159,14 +159,74 @@ CANONICAL_FAMILIES: dict[str, list[str]] = {
 
 
 class TableKeyRouter:
-    """Routes raw HTML specification table labels to canonical hardware categories.
+    """Generic Multi-Store Specification Table Router.
 
-    Uses compumarts_alias_dict.json to map 879 observed label variations into
-    canonical hardware buckets, completely eliminating table key collisions and
-    regex guesswork.
+    Routes raw retailer specification labels (across CompuMarts, B.Tech, 2B,
+    Sigma, Elbadr, Amazon, etc.) into canonical hardware categories using
+    specs_alias_dict.json, bilingual Arabic mappings, and explicit domain rules.
+    Eliminates table key collisions and regex guesswork.
     """
 
     EXPLICIT_OVERRIDES = {
+        # Bilingual & Arabic Store Overrides (B.Tech, 2B, Sigma, Noon, Amazon.eg)
+        "المعالج": "cpu",
+        "معالج": "cpu",
+        "نوع المعالج": "cpu",
+        "موديل المعالج": "cpu",
+        "سرعة المعالج": "cpu",
+        "كارت الشاشة": "gpu",
+        "بطاقة الرسومات": "gpu",
+        "كارت شاشة": "gpu",
+        "معالج الرسومات": "gpu",
+        "موديل كارت الشاشة": "gpu",
+        "ذاكرة كارت الشاشة": "gpu_vram",
+        "سعة كارت الشاشة": "gpu_vram",
+        "الذاكرة": "memory",
+        "ذاكرة الرام": "memory",
+        "سعة الرام": "memory",
+        "رام": "memory",
+        "الذاكرة العشوائية": "memory",
+        "سعة الذاكرة العشوائية": "memory",
+        "اقصى سعة للذاكرة": "max_memory",
+        "أقصى سعة للذاكرة": "max_memory",
+        "منافذ الذاكرة": "memory_slots",
+        "عدد منافذ الذاكرة": "memory_slots",
+        "سعة التخزين": "storage",
+        "وحدة التخزين": "storage",
+        "القرص الصلب": "storage",
+        "سعة القرص الصلب": "storage",
+        "نوع التخزين": "storage_interface",
+        "نوع القرص الصلب": "storage_interface",
+        "منافذ التخزين": "storage_slots",
+        "اقصى سعة تخزين": "max_storage",
+        "الشاشة": "display",
+        "حجم الشاشة": "display",
+        "دقة الشاشة": "display",
+        "نوع الشاشة": "display",
+        "معدل التحديث": "display_refresh_rate",
+        "سطوع الشاشة": "display_brightness",
+        "شاشة لمس": "display_touchscreen",
+        "البطارية": "power",
+        "سعة البطارية": "power",
+        "الشاحن": "power",
+        "قدرة الشاحن": "power",
+        "الوزن": "weight",
+        "الابعاد": "dimensions",
+        "الأبعاد": "dimensions",
+        "اللون": "color",
+        "المنافذ": "ports",
+        "الاتصال": "connectivity",
+        "واي فاي": "connectivity",
+        "بلوتوث": "connectivity",
+        "نظام التشغيل": "os",
+        "الكاميرا": "camera",
+        "كاميرا الويب": "camera",
+        "الصوت": "audio",
+        "السماعات": "audio",
+        "لوحة المفاتيح": "keyboard",
+        "بصمة الاصبع": "security",
+        "بصمة الإصبع": "security",
+        "قارئ البصمة": "security",
         # Lifecycle / Dates
         "end of support": "lifecycle",
         # Form Factor
@@ -412,35 +472,91 @@ class TableKeyRouter:
         "form_factor": "unrouted",
     }
 
-    def __init__(self, alias_dict_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        alias_dict_path: Path | None = None,
+        store_overlay_path: Path | None = None,
+    ) -> None:
         if alias_dict_path is None:
-            alias_dict_path = Path(__file__).resolve().parent / "data" / "compumarts_alias_dict.json"
+            base_dir = Path(__file__).resolve().parent / "data"
+            candidate = base_dir / "specs_alias_dict.json"
+            if not candidate.exists():
+                candidate = base_dir / "compumarts_alias_dict.json"
+            alias_dict_path = candidate
 
         self.label_to_bucket: dict[str, str] = {}
-        if alias_dict_path and alias_dict_path.exists():
-            try:
-                with open(alias_dict_path, encoding="utf-8") as f:
-                    data = json.load(f)
-                observed = data.get("observed_labels", {})
-                for raw_lbl, meta in observed.items():
-                    canon_field = meta.get("canonical_field", "")
-                    bucket = self.CANONICAL_FIELD_TO_BUCKET.get(canon_field)
-                    if bucket:
-                        norm_k = self._normalize_key(raw_lbl)
-                        self.label_to_bucket[norm_k] = bucket
-            except Exception:
-                pass
+        self._load_alias_dict(alias_dict_path)
+
+        if store_overlay_path:
+            self._load_alias_dict(store_overlay_path)
 
         # Apply explicit overrides (highest precedence)
         for k, b in self.EXPLICIT_OVERRIDES.items():
             self.label_to_bucket[self._normalize_key(k)] = b
+
+    def _load_alias_dict(self, path: Path | None) -> None:
+        if not path or not path.exists():
+            return
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+            observed = data.get("observed_labels", {})
+            for raw_lbl, meta in observed.items():
+                canon_field = meta.get("canonical_field", "")
+                bucket = self.CANONICAL_FIELD_TO_BUCKET.get(canon_field)
+                if bucket:
+                    norm_k = self._normalize_key(raw_lbl)
+                    self.label_to_bucket[norm_k] = bucket
+        except Exception:
+            pass
 
     @staticmethod
     def _normalize_key(k: str) -> str:
         k = k.strip().lower()
         k = re.sub(r"[:\s\t\r\n]+", " ", k).strip()
         k = re.sub(r"[®™©\u200e\u200f\u200b\xa0]", "", k).strip()
+        # Normalize Arabic characters
+        k = re.sub(r"[إأآا]", "ا", k)
+        k = re.sub(r"ة", "ه", k)
+        k = re.sub(r"[\u064b-\u065f]", "", k)  # Tashkeel
         return k
+
+    @classmethod
+    def parse_unstructured_specs(cls, raw_data: list[str] | str | dict[str, Any]) -> dict[str, str]:
+        """Convert semi-structured bullets, key-value lines, or raw text into a key-value spec table.
+
+        Supports formats like:
+          - ["RAM: 16 GB", "Storage: 1TB SSD"]
+          - "• Screen: 15.6 inch\n• CPU: AMD Ryzen 7"
+          - Key - Value or Key: Value
+        """
+        if isinstance(raw_data, dict):
+            return {str(k).strip(): str(v).strip() for k, v in raw_data.items() if str(k).strip()}
+
+        result: dict[str, str] = {}
+        if isinstance(raw_data, str):
+            lines = raw_data.splitlines()
+        elif isinstance(raw_data, list):
+            lines = [str(item) for item in raw_data]
+        else:
+            return result
+
+        delimiters_pattern = re.compile(r"[:\t\u2013\u2014\-]")
+        bullet_prefix_pattern = re.compile(r"^[\s•\-\*\u2022\u25aa\u25cf\u25cb\u25b6#\d\.\)]+")
+
+        for line in lines:
+            cleaned_line = bullet_prefix_pattern.sub("", line).strip()
+            if not cleaned_line:
+                continue
+
+            match = delimiters_pattern.search(cleaned_line)
+            if match:
+                k = cleaned_line[: match.start()].strip()
+                v = cleaned_line[match.end() :].strip()
+                if k and v and len(k) <= 60:
+                    result[k] = v
+
+        return result
 
     def route_key(self, raw_key: str) -> str:
         """Route a single table row key to a canonical bucket."""
@@ -525,9 +641,10 @@ class DeterministicExtractor:
     def __init__(
         self,
         alias_dict_path: Path | None = None,
+        store_overlay_path: Path | None = None,
         gpu_anchor: GPUAnchorExtractor | None = None,
     ) -> None:
-        self.router = TableKeyRouter(alias_dict_path)
+        self.router = TableKeyRouter(alias_dict_path, store_overlay_path=store_overlay_path)
         self.gpu_anchor = gpu_anchor or GPUAnchorExtractor()
 
     def extract(

@@ -66,6 +66,67 @@ class BaseStoreScraper(ABC):
             )
         )
 
+    def should_skip_card(
+        self,
+        title: str | None,
+        url: str | None = None,
+        stage: str = "card_filter",
+    ) -> bool:
+        """Gate 1: Fast card-level validation before making expensive PDP network requests.
+
+        Automatically records to `skipped_laptops` with stage='card_filter' if disqualified.
+        Returns True if the card should be skipped, False if valid.
+        """
+        if not title or len(title.strip()) < 5:
+            self.record_skipped(
+                name=title or "Unknown",
+                url=url,
+                reason="Title too short or missing",
+                stage=stage,
+            )
+            return True
+
+        is_valid, reason = self.is_valid_new_laptop(title=title, url=url)
+        if not is_valid:
+            self.record_skipped(
+                name=title,
+                url=url,
+                reason=f"Filtered out non-laptop accessory: Filtered out as standalone accessory or non-laptop device ({reason})",
+                stage=stage,
+            )
+            return True
+        return False
+
+    def should_skip_pdp(
+        self,
+        title: str | None,
+        specs: dict[str, Any] | None = None,
+        url: str | None = None,
+        description: str | None = None,
+        item_condition: str | None = None,
+    ) -> bool:
+        """Gate 2: Deep PDP validation inspecting full specifications, description, and condition.
+
+        Automatically records to `skipped_laptops` with stage='pdp_filter' if disqualified.
+        Returns True if the product should be skipped, False if valid.
+        """
+        pdp_valid, pdp_reason = self.is_valid_new_laptop(
+            title=title,
+            specs=specs,
+            url=url,
+            description=description,
+            item_condition=item_condition,
+        )
+        if not pdp_valid:
+            self.record_skipped(
+                name=title or "Unknown",
+                url=url,
+                reason=f"Filtered out after PDP inspection: {pdp_reason}",
+                stage="pdp_filter",
+            )
+            return True
+        return False
+
     @classmethod
     def is_valid_new_laptop(
         cls,

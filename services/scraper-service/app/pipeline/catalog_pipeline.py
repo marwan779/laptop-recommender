@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 from collections.abc import Callable
 
+from app.core.classifier import ProductClassifier
 from app.schemas.laptop import RetailerProduct
 from app.pipeline.ai_fallback.base import IAIFallbackExtractor
 from app.pipeline.ai_fallback.gliner_onnx import GLiNERONNXFallbackExtractor
@@ -101,7 +102,7 @@ def retailer_product_to_raw_scraped(
 
     return RawScrapedProduct(
         url=prod.product_url,
-        store=store_key,
+        store=getattr(prod, "store_key", None) or store_key,
         title=prod.title,
         raw_html="",
         raw_tables={"specs": prod_specs},
@@ -147,8 +148,31 @@ class GenericCatalogPipeline:
         self,
         prod: RetailerProduct | RawScrapedProduct,
         store_key: str = "compumarts",
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
         """Process a single product through layers 2 to 7, plus optional Layer 8 audit."""
+        prod_title = prod.title if isinstance(prod, RetailerProduct) else prod.title
+        prod_specs = prod.specs if isinstance(prod, RetailerProduct) else prod.raw_tables.get("specs", {})
+        prod_url = prod.product_url if isinstance(prod, RetailerProduct) else prod.url
+        prod_desc = (
+            prod.raw_description if isinstance(prod, RetailerProduct) else prod.raw_sections.get("Description", "")
+        )
+
+        # Gate 3: Universal Defense-in-depth hardware validation
+        is_valid, reason = ProductClassifier.is_valid_new_laptop(
+            title=prod_title,
+            specs=prod_specs,
+            url=prod_url,
+            description=prod_desc,
+        )
+        if not is_valid:
+            logger.warning(
+                "[Pipeline Gate 3] Dropping non-laptop or used product '%s' (%s): %s",
+                prod_title,
+                prod_url,
+                reason,
+            )
+            return None
+
         if isinstance(prod, RetailerProduct):
             raw_prod = retailer_product_to_raw_scraped(prod, store_key=store_key)
         else:
@@ -158,7 +182,16 @@ class GenericCatalogPipeline:
         pipeline_res = self.pipeline.process_raw_product(raw_prod)
         elapsed = time.time() - t0
 
+        store_k = getattr(prod, "store_key", None) or raw_prod.store or store_key
+        store_n = getattr(prod, "store_name", None) or (
+            raw_prod.store.capitalize() if raw_prod.store else store_key.capitalize()
+        )
+        store_d = getattr(prod, "store_domain", None) or f"{store_k}.com"
+
         record: dict[str, Any] = {
+            "store_name": store_n,
+            "store_key": store_k,
+            "store_domain": store_d,
             "url": raw_prod.url,
             "title": raw_prod.title,
             "price_egp": raw_prod.price,
@@ -286,6 +319,22 @@ class GenericCatalogPipeline:
             audit_buffer.clear()
 
         for idx, prod in enumerate(products, start=1):
+            # Gate 3: Universal Defense-in-depth hardware validation
+            is_valid, reason = ProductClassifier.is_valid_new_laptop(
+                title=prod.title,
+                specs=prod.specs,
+                url=prod.product_url,
+                description=prod.raw_description,
+            )
+            if not is_valid:
+                logger.warning(
+                    "[Pipeline Gate 3] Dropping non-laptop or used product '%s' (%s): %s",
+                    prod.title,
+                    prod.product_url,
+                    reason,
+                )
+                continue
+
             if progress_callback:
                 progress_callback(idx, total, prod.title)
             else:
@@ -296,7 +345,16 @@ class GenericCatalogPipeline:
             pipeline_res = self.pipeline.process_raw_product(raw_prod)
             elapsed = time.time() - t_item
 
+            store_k = getattr(prod, "store_key", None) or raw_prod.store or store_key
+            store_n = getattr(prod, "store_name", None) or (
+                raw_prod.store.capitalize() if raw_prod.store else store_key.capitalize()
+            )
+            store_d = getattr(prod, "store_domain", None) or f"{store_k}.com"
+
             item_record: dict[str, Any] = {
+                "store_name": store_n,
+                "store_key": store_k,
+                "store_domain": store_d,
                 "url": prod.product_url,
                 "title": prod.title,
                 "price_egp": prod.price_egp,
