@@ -11,10 +11,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-try:
-    from app.pipeline.data.cpu_specs import CPU_SPECS, CPUSpecEntry
-except ImportError:
-    from app.pipeline.data.cpu_specs import CPU_SPECS, CPUSpecEntry
+from app.pipeline.data.cpu_specs import CPU_SPECS, CPUSpecEntry
 
 
 class CPUAnchorExtractor:

@@ -1,5 +1,5 @@
-from pipeline.deterministic import DeterministicExtractor, TableKeyRouter
-from pipeline.llm_auditor import LLMAuditor, FieldCorrection
+from app.pipeline.deterministic import DeterministicExtractor, TableKeyRouter
+from app.pipeline.llm_auditor import LLMAuditor, FieldCorrection
 
 
 def test_marketing_keys_not_routed_to_hardware_subsystems():

@@ -140,4 +140,3 @@ class EmailService:
         except Exception as exc:
             logger.warning("Could not write preview HTML file: %s", exc)
         return preview_file
-

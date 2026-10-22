@@ -34,7 +34,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from pipeline.llm_auditor import LLMAuditor
+from app.pipeline.llm_auditor import LLMAuditor
 
 configure_logging()
 logger = get_logger("run_llm_auditor")

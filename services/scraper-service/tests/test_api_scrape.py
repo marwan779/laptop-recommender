@@ -279,18 +279,18 @@ def test_deps_get_scraper_engine_returns_singleton():
 def test_deps_get_email_service_returns_singleton():
     """Verify get_email_service returns an EmailService instance and caches it."""
     from app.api.deps import get_email_service
-    from app.services.email_service import EmailService
+    from app.notifications.service import ScraperNotificationService
 
     service1 = get_email_service()
     service2 = get_email_service()
-    assert isinstance(service1, EmailService)
+    assert isinstance(service1, ScraperNotificationService)
     assert service1 is service2
 
 
 def test_deps_get_storage_returns_storage_service():
     """Verify get_storage returns an object storage service instance."""
     from app.api.deps import get_storage
-    from app.storage.base import IObjectStorageService
+    from app.common.storage.base import IObjectStorageService
 
     storage = get_storage()
     assert isinstance(storage, IObjectStorageService)

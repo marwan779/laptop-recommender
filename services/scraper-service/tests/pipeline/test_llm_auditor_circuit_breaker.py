@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock
 
-from pipeline.llm_auditor import LLMAuditor, LLMProviderEndpoint
+from app.pipeline.llm_auditor import LLMAuditor, LLMProviderEndpoint
 
 
 def test_circuit_breaker_trips_after_consecutive_failures():
@@ -129,7 +129,7 @@ def test_successful_audit_sets_is_audited_true_and_provider():
 def test_catalog_pipeline_populates_audit_flag_and_metadata():
     """Verify GenericCatalogPipeline correctly sets is_audited and audit_meta on catalog records."""
     from app.schemas.laptop import RetailerProduct
-    from pipeline.catalog_pipeline import GenericCatalogPipeline
+    from app.pipeline.catalog_pipeline import GenericCatalogPipeline
 
     mock_ep = LLMProviderEndpoint(
         name="mock-pipeline-provider",

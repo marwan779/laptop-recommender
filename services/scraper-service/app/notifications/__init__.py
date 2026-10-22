@@ -11,4 +11,3 @@ __all__ = [
     "build_batch_finished_email",
     "build_single_finished_email",
 ]
-

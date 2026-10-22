@@ -18,10 +18,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-try:
-    from app.pipeline.data.gpu_specs import GPU_SPECS
-except ImportError:
-    from app.pipeline.data.gpu_specs import GPU_SPECS
+from app.pipeline.data.gpu_specs import GPU_SPECS
 
 
 class GPUAnchorExtractor:

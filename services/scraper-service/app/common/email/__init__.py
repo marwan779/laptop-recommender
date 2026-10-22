@@ -3,4 +3,3 @@
 from app.common.email.service import EmailService
 
 __all__ = ["EmailService"]
-

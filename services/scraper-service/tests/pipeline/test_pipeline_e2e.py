@@ -1,12 +1,12 @@
 """End-to-end and component tests for the rebuilt 7-layer extraction pipeline."""
 
-from pipeline.ai_fallback.base import IAIFallbackExtractor
-from pipeline.cpu_anchor import CPUAnchorExtractor
-from pipeline.deterministic import DeterministicExtractor
-from pipeline.orchestrator import LaptopExtractionPipeline
-from pipeline.physical_validator import PhysicalValidator
-from pipeline.sanitizer import TextSanitizer
-from pipeline.schema import (
+from app.pipeline.ai_fallback.base import IAIFallbackExtractor
+from app.pipeline.cpu_anchor import CPUAnchorExtractor
+from app.pipeline.deterministic import DeterministicExtractor
+from app.pipeline.orchestrator import LaptopExtractionPipeline
+from app.pipeline.physical_validator import PhysicalValidator
+from app.pipeline.sanitizer import TextSanitizer
+from app.pipeline.schema import (
     EnvelopeResult,
     ExtractionEnvelope,
     RawScrapedProduct,
@@ -422,7 +422,7 @@ def test_pipeline_log_envelopes_with_unresolved_field(caplog):
 
 def test_provenance_format_envelope_text_report():
     """Verify that format_envelope_text_report produces the full human-readable audit text block."""
-    from pipeline.provenance import ProvenanceTracker
+    from app.pipeline.provenance import ProvenanceTracker
 
     mock_ai = MockAIExtractor(return_values={"display.panel_type": "IPS"})
     pipeline = LaptopExtractionPipeline(ai_fallback=mock_ai)

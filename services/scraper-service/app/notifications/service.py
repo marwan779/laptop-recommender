@@ -96,4 +96,3 @@ class ScraperNotificationService(EmailService):
             from_name=self.settings.smtp_from_name,
         )
         return self.send_email(req)
-

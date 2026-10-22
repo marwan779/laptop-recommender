@@ -23,8 +23,5 @@ ignore = [
 "**/tests/**" = ["F401", "E501", "F841", "B007", "E402"]
 # Standalone CLI and analysis scripts adjust sys.path before internal imports
 "**/scripts/**" = ["E402", "F841", "B007"]
-"**/pipeline/run_compumarts.py" = ["E402", "F841"]
-# Backward-compatibility proxy facades re-export full module namespaces
-"**/pipeline/**" = ["F401", "F403"]
-"**/app/storage/**" = ["F401", "F403"]
-"**/app/email/**" = ["F401", "F403"]
+"**/app/pipeline/run_compumarts.py" = ["E402", "F841"]
+

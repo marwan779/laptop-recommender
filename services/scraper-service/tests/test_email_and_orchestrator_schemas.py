@@ -5,7 +5,7 @@ import smtplib
 from unittest.mock import MagicMock, patch
 
 from app.core.email_config import EmailSettings
-from app.email.templates import (
+from app.notifications.templates import (
     build_batch_finished_email,
     build_single_finished_email,
 )
@@ -17,7 +17,7 @@ from app.schemas.email import (
 )
 from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult
 from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
-from app.services.email_service import EmailService
+from app.notifications.service import ScraperNotificationService as EmailService
 
 
 # =============================================================================

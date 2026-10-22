@@ -7,14 +7,14 @@ from unittest.mock import MagicMock, patch
 
 
 from app.core.email_config import EmailSettings
-from app.email.templates import build_single_finished_email
+from app.notifications.templates import build_single_finished_email
 from app.schemas.email import (
     EmailSendRequest,
     ScraperFinishedReport,
 )
 from app.schemas.laptop import BrandCatalogResult, LaptopSummary
 from app.schemas.orchestrator import ScrapeRequest, ScrapeTargetResult
-from app.services.email_service import EmailService
+from app.notifications.service import ScraperNotificationService as EmailService
 from app.services.orchestrator import ScrapeOrchestrator
 
 
