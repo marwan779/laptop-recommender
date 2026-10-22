@@ -39,7 +39,11 @@ from app.services.email_service import EmailService
 from app.storage.base import IObjectStorageService
 from app.storage.factory import get_storage_service
 from app.stores.compumarts import CompumartsStoreScraper
-from pipeline.catalog_pipeline import GenericCatalogPipeline, setup_ai_fallback
+
+try:
+    from app.pipeline.catalog_pipeline import GenericCatalogPipeline, setup_ai_fallback
+except ImportError:
+    from pipeline.catalog_pipeline import GenericCatalogPipeline, setup_ai_fallback
 
 logger = get_logger("scraper.orchestrator")
 
