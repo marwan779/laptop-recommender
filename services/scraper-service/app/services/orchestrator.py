@@ -35,9 +35,9 @@ from app.engine.scrapling_engine import ScraplingEngine
 from app.schemas.email import ScraperFinishedReport
 from app.schemas.laptop import StoreCatalogResult, utcnow_str
 from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
-from app.services.email_service import EmailService
-from app.storage.base import IObjectStorageService
-from app.storage.factory import get_storage_service
+from app.notifications.service import ScraperNotificationService
+from app.common.storage.base import IObjectStorageService
+from app.common.storage.factory import get_storage_service
 from app.stores.compumarts import CompumartsStoreScraper
 
 try:
@@ -76,7 +76,7 @@ class ScrapeOrchestrator:
     def __init__(
         self,
         engine: IScraperEngine | None = None,
-        email_service: EmailService | None = None,
+        email_service: ScraperNotificationService | None = None,
         send_email: bool = False,
         storage_service: IObjectStorageService | None = None,
         upload_to_bucket: bool = False,
@@ -86,7 +86,7 @@ class ScrapeOrchestrator:
         audit_batch_size: int = 1,
     ) -> None:
         self.engine = engine or ScraplingEngine()
-        self.email_service = email_service or EmailService()
+        self.email_service = email_service or ScraperNotificationService()
         self.send_email = send_email
         self.storage_service = storage_service or get_storage_service()
         self.upload_to_bucket = upload_to_bucket

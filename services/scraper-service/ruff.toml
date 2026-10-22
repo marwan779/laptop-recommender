@@ -26,3 +26,5 @@ ignore = [
 "**/pipeline/run_compumarts.py" = ["E402", "F841"]
 # Backward-compatibility proxy facades re-export full module namespaces
 "**/pipeline/**" = ["F401", "F403"]
+"**/app/storage/**" = ["F401", "F403"]
+"**/app/email/**" = ["F401", "F403"]
