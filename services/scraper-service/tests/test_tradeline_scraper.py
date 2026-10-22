@@ -1,7 +1,5 @@
-import pytest
 from app.stores.tradeline import TradelineStoreScraper
-from app.stores.registry import STORE_REGISTRY, get_store_scraper
-from app.schemas.laptop import RetailerProduct
+from app.stores.registry import STORE_REGISTRY
 
 
 def test_tradeline_properties():

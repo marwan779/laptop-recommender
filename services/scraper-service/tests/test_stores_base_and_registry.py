@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from app.engine.base import IScraperEngine
-from app.schemas.laptop import ConfigurationItem, RetailerProduct, SkippedLaptop
+from app.schemas.laptop import ConfigurationItem, RetailerProduct
 from app.stores.base import BaseStoreScraper
 from app.stores.registry import STORE_REGISTRY, get_all_store_scrapers, get_store_scraper
 

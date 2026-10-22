@@ -1,8 +1,4 @@
-import pytest
-from bs4 import BeautifulSoup
-
 from app.stores.elbadr import ElBadrStoreScraper
-from app.schemas.laptop import RetailerProduct
 
 
 def test_elbadr_properties():

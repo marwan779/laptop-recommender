@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import pytest
 
 from app.core.patterns.engine import PatternEngine
 from app.core.patterns.models import SpecExtractionResult
@@ -18,7 +17,7 @@ def test_spec_extraction_result_legacy_tuple():
     # Check to_legacy_tuple
     tup = res.to_legacy_tuple()
     assert tup == ({"CPU": "Intel"}, "Desc", "MPN123", "MOD123", 50000.0, "50,000 EGP")
-    
+
     # Check unpacking
     specs, desc, mpn, mod, price, price_str = res
     assert specs == {"CPU": "Intel"}
@@ -32,10 +31,10 @@ def test_spec_extraction_result_legacy_tuple():
 def test_title_extractor_modern_hardware():
     title = (
         "Acer Predator Helios Neo 16 AI Gaming Laptop – Ultra 9 275HX, "
-        "RTX 5070 8GB GDDR7, 32GB DDR5, 1TB SSD, 16\" QHD 240Hz, FreeDOS"
+        'RTX 5070 8GB GDDR7, 32GB DDR5, 1TB SSD, 16" QHD 240Hz, FreeDOS'
     )
     specs = TitleSpecExtractor.extract(title)
-    
+
     assert specs["Brand"] == "Acer"
     assert "Ultra 9 275HX" in specs["Processor"]
     assert "RTX 5070" in specs["Graphics"]
@@ -51,7 +50,7 @@ def test_title_extractor_snapdragon_and_ryzen_ai():
     specs_snap = TitleSpecExtractor.extract(title_snap)
     assert specs_snap["Brand"] == "DELL"
     assert "Snapdragon X Elite" in specs_snap["Processor"]
-    
+
     # Ryzen AI 9
     title_ryzen = "ASUS ROG Zephyrus G16 – AMD Ryzen AI 9 HX 370, RTX 4070, 32GB RAM, 1TB SSD"
     specs_ryzen = TitleSpecExtractor.extract(title_ryzen)
@@ -63,10 +62,9 @@ def test_pattern_engine_field_sources():
     soup = BeautifulSoup("<table><tr><td>Processor</td><td>Intel Core i7-13700H</td></tr></table>", "html.parser")
     title = "Gaming Laptop – 16GB RAM, 1TB SSD"
     res = PatternEngine.extract_specs(soup, title, store_key="compumarts")
-    
+
     assert "title_specs" in res.model_dump()
     assert "field_sources" in res.model_dump()
     assert res.field_sources.get("Processor") == "dom"
     # RAM was missing in table, so backfilled from title
     assert res.field_sources.get("Memory") == "title"
-

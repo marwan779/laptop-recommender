@@ -127,7 +127,7 @@ class RetailerProduct(BaseModel):
     price_str: str | None = None
     in_stock: bool = True
     thumbnail_url: str | None = None
-    specs: dict[str, str] = Field(default_factory=dict)
+    specs: dict[str, Any] = Field(default_factory=dict)
     raw_description: str | None = None
     has_text_specs: bool = True
     specs_extraction_source: str = "dom"  # "dom", "title_fallback", or "hybrid"
@@ -154,6 +154,7 @@ class StoreCatalogResult(BaseModel):
     anomalies: list[dict[str, Any]] = Field(default_factory=list)
     scraped_at: str = Field(default_factory=utcnow_str)
     products: list[RetailerProduct] = Field(default_factory=list)
+    structured_products: list[dict[str, Any]] = Field(default_factory=list)
     skipped_laptops: list[SkippedLaptop] = Field(default_factory=list)
 
 
@@ -175,7 +176,7 @@ class RetailOffer(BaseModel):
     match_method: MatchMethod = MatchMethod.NONE
     match_confidence: float = 0.0
     match_reason: str | None = None
-    specs: dict[str, str] = Field(default_factory=dict)
+    specs: dict[str, Any] = Field(default_factory=dict)
     raw_description: str | None = None
     scraped_at: str = Field(default_factory=utcnow_str)
 

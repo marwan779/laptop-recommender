@@ -12,9 +12,7 @@ Covers:
 import json
 from unittest.mock import MagicMock
 from bs4 import BeautifulSoup
-import pytest
 
-from app.schemas.laptop import RetailerProduct
 from app.stores.amazon import AmazonStoreScraper
 from app.stores.btech import BTechStoreScraper
 from app.stores.compumarts import CompumartsStoreScraper
@@ -532,22 +530,24 @@ def test_stores_level2_pdp_filter_rejects_used_or_non_laptop():
 
     # 2. Noon Level 2 PDP used rejection
     noon = NoonStoreScraper()
-    cat_noon = json.dumps({
-        "props": {
-            "pageProps": {
-                "catalog": {
-                    "hits": [
-                        {
-                            "title": "HP EliteBook 840 G5",
-                            "sku": "N123456",
-                            "price": 14000,
-                            "url": "/hp-840/N123456/p/",
-                        }
-                    ]
+    cat_noon = json.dumps(
+        {
+            "props": {
+                "pageProps": {
+                    "catalog": {
+                        "hits": [
+                            {
+                                "title": "HP EliteBook 840 G5",
+                                "sku": "N123456",
+                                "price": 14000,
+                                "url": "/hp-840/N123456/p/",
+                            }
+                        ]
+                    }
                 }
             }
         }
-    })
+    )
     noon_html = f"<html><script id='__NEXT_DATA__'>{cat_noon}</script></html>"
     noon._fetch_html = MagicMock(return_value=noon_html)
     noon._extract_product_specs = MagicMock(
@@ -590,20 +590,20 @@ def test_stores_level2_pdp_filter_rejects_used_or_non_laptop():
     sigma._decode_rsc_payload = MagicMock(return_value="")
     sigma._extract_products_from_rsc = MagicMock(return_value=raw_sigma)
     sigma._fetch_html = MagicMock(return_value="<html>data</html>")
-    sigma._extract_product_specs = MagicMock(
-        return_value=({"Device Condition": "Refurbished"}, "Clean device")
-    )
+    sigma._extract_product_specs = MagicMock(return_value=({"Device Condition": "Refurbished"}, "Clean device"))
     sigma_prods = sigma.scrape_catalog(level=2, max_pages=1)
     assert len(sigma_prods) == 0
     assert any("Filtered out after PDP inspection" in s.reason for s in sigma.skipped_laptops)
 
     # 5. Tradeline Level 2 PDP used rejection
     tradeline = TradelineStoreScraper()
-    raw_tl_items = [{
-        "title": "Apple MacBook Pro 14-inch M3",
-        "handle": "apple-macbook-pro-14-m3",
-        "variants": [{"id": 999, "sku": "MRX33", "price": 95000, "available": True}],
-    }]
+    raw_tl_items = [
+        {
+            "title": "Apple MacBook Pro 14-inch M3",
+            "handle": "apple-macbook-pro-14-m3",
+            "variants": [{"id": 999, "sku": "MRX33", "price": 95000, "available": True}],
+        }
+    ]
     tradeline.COLLECTIONS = ["macbook-pro"]
     tradeline._fetch_json = MagicMock(return_value={"products": raw_tl_items})
     tradeline._extract_product_specs = MagicMock(
@@ -692,4 +692,3 @@ def test_stores_level2_pdp_filter_rejects_used_or_non_laptop():
     p_el = elbadr._parse_product_card(soup_el.find("div", class_="product-layout"), level=2)
     assert p_el is None
     assert any("Filtered out after PDP inspection" in s.reason for s in elbadr.skipped_laptops)
-

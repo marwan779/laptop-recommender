@@ -1,4 +1,3 @@
-import pytest
 from app.scrapers.hp import HpDateExtractor, clean_spec_text, HpBrandScraper
 from app.schemas.laptop import LaptopSummary
 

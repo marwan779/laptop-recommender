@@ -29,9 +29,9 @@ import logging
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Ensure project root is in sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -41,7 +41,8 @@ if str(PROJECT_ROOT) not in sys.path:
 from app.stores.compumarts import CompumartsStoreScraper
 from pipeline.ai_fallback.gliner_onnx import GLiNERONNXFallbackExtractor
 from pipeline.ai_fallback.nuextract import NuExtractFallbackExtractor
-from pipeline.orchestrator import LaptopExtractionPipeline, PipelineResult
+from pipeline.llm_auditor import GeminiAuditor
+from pipeline.orchestrator import LaptopExtractionPipeline
 from pipeline.provenance import ProvenanceTracker
 from pipeline.raw_storage import RawScrapeStorage
 from pipeline.schema import RawScrapedProduct
@@ -54,9 +55,7 @@ logging.basicConfig(
 logger = logging.getLogger("compumarts_pipeline")
 
 
-def setup_ai_fallback(
-    ai_type: str, use_onnx: bool, onnx_dir: Optional[str] = None, device: str = "auto"
-) -> Optional[Any]:
+def setup_ai_fallback(ai_type: str, use_onnx: bool, onnx_dir: str | None = None, device: str = "auto") -> Any | None:
     """Initialize the chosen AI fallback model."""
     if ai_type == "none":
         logger.info("AI fallback disabled (--ai none). Running deterministic + CPU anchor only.")
@@ -91,11 +90,14 @@ def setup_ai_fallback(
     elif ai_type == "nuextract":
         try:
             import torch
+
             has_cuda = torch.cuda.is_available()
         except ImportError:
             has_cuda = False
-        exec_provider = "CUDAExecutionProvider" if device == "cuda" or (device == "auto" and has_cuda) else "CPUExecutionProvider"
-        logger.info("Initializing NuExtract-v1.5 (3.8B) fallback (provider=%s)...", exec_provider)
+        exec_provider = (
+            "CUDAExecutionProvider" if device == "cuda" or (device == "auto" and has_cuda) else "CPUExecutionProvider"
+        )
+        logger.info("Initializing NuExtract-2.0 (2B) fallback (provider=%s)...", exec_provider)
         return NuExtractFallbackExtractor(
             onnx_model_dir=onnx_dir,
             execution_provider=exec_provider,
@@ -106,23 +108,38 @@ def setup_ai_fallback(
 
 
 def run_pipeline(
-    limit: Optional[int] = None,
-    target_url: Optional[str] = None,
-    ai_type: str = "gliner",
+    limit: int | None = None,
+    target_url: str | None = None,
+    ai_type: str = "nuextract",
     use_onnx: bool = True,
-    onnx_dir: Optional[str] = None,
+    onnx_dir: str | None = None,
     device: str = "auto",
     output_file: str = "pipeline_results_compumarts.json",
     checkpoint_file: str = "pipeline_results_compumarts.checkpoint.jsonl",
     trace_file: str = "pipeline_trace_compumarts.jsonl",
     envelope_log_file: str = "pipeline_envelopes.txt",
     log_envelopes: bool = False,
+    audit_batch_size: int = 1,
+    no_audit: bool = False,
 ) -> None:
     """Execute live scraping and pipeline processing."""
     ai_backend = setup_ai_fallback(ai_type, use_onnx, onnx_dir=onnx_dir, device=device)
     enable_env_logging = log_envelopes or (target_url is not None)
     pipeline = LaptopExtractionPipeline(ai_fallback=ai_backend, log_envelopes=enable_env_logging)
     storage = RawScrapeStorage()
+
+    # Initialize Layer 8 Streaming Ground-Truth LLM Auditor
+    auditor = None
+    if not no_audit:
+        try:
+            auditor = GeminiAuditor()
+            logger.info(
+                "Layer 8 Streaming Ground-Truth LLM Auditor active (batch_size=%d, model=%s).",
+                audit_batch_size,
+                auditor.model,
+            )
+        except Exception as e:
+            logger.info("Layer 8 LLM Auditor disabled (%s). Running pipeline without LLM audit.", e)
 
     out_path = Path(output_file)
     ckpt_path = Path(checkpoint_file)
@@ -171,9 +188,7 @@ def run_pipeline(
             print("COMPONENT ENVELOPE & FALLBACK RESOLUTION SUMMARY:")
             print("-" * 60)
             comp_res_by_name = {r.component_name: r for r in result.component_results}
-            gate2_rej_by_field = {
-                r["field_path"]: r for r in result.validation_rejections if r.get("gate") == 2
-            }
+            gate2_rej_by_field = {r["field_path"]: r for r in result.validation_rejections if r.get("gate") == 2}
             for env in result.component_envelopes_generated:
                 comp_res = comp_res_by_name.get(env.component_name)
                 print(f"  Subsystem:  {env.component_name.upper()}")
@@ -183,7 +198,7 @@ def run_pipeline(
                     print(f"  AI Model:   {comp_res.model_name}")
                     print(f"  Extracted:  {comp_res.extracted_fields}")
                 else:
-                    print(f"  AI Model:   None")
+                    print("  AI Model:   None")
                 for k, v in env.sub_schema.items():
                     if v is None:
                         full_k = f"{env.component_name}.{k}"
@@ -195,6 +210,31 @@ def run_pipeline(
                             print(f"    - {k}: UNRESOLVED / NULL")
                 print()
             print("-" * 60)
+
+        if auditor:
+            logger.info("Executing Layer 8 Ground-Truth LLM Audit on single product...")
+            single_record = {
+                "url": target_url,
+                "title": result.raw_product.title
+                if (result.raw_product and result.raw_product.title)
+                else (result.specs.get("identity", {}).get("laptop_model") or target_url),
+                "specs": result.specs,
+                "source_table": (result.raw_product.raw_tables.get("specs") if result.raw_product else {}) or {},
+            }
+            try:
+                batch_res = auditor.audit_batch([single_record])
+                if batch_res.audited_laptops and batch_res.audited_laptops[0].corrections:
+                    applied = auditor.apply_corrections(single_record, batch_res.audited_laptops[0].corrections)
+                    for app in applied:
+                        logger.info(
+                            "  [Layer 8 Healed] %s: %s -> %s (Reason: %s)",
+                            app["field_path"],
+                            app["old_value"],
+                            app["new_value"],
+                            app["reason"],
+                        )
+            except Exception as e:
+                logger.warning("Layer 8 single product audit failed: %s", e)
 
         print("\n" + "=" * 60)
         print("STRUCTURED EXTRACTION RESULT:")
@@ -209,7 +249,8 @@ def run_pipeline(
     total_found = len(catalog_products)
     logger.info("Discovered %d in-stock laptop products from CompuMarts.", total_found)
 
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
+    audit_buffer: list[dict[str, Any]] = []
     stats = {
         "total": total_found,
         "processed": 0,
@@ -218,20 +259,60 @@ def run_pipeline(
         "ai_resolved": 0,
         "gate1_rejections": 0,
         "gate2_rejections": 0,
+        "layer8_corrections": 0,
     }
 
     # Open checkpoint, trace, and envelope text streams
-    with ckpt_path.open("w", encoding="utf-8") as ckpt_f, \
-         trace_path.open("w", encoding="utf-8") as trace_f, \
-         (env_log_path.open("w", encoding="utf-8") if env_log_path else open(os.devnull, "w")) as env_f:
+    with (
+        ckpt_path.open("w", encoding="utf-8") as ckpt_f,
+        trace_path.open("w", encoding="utf-8") as trace_f,
+        env_log_path.open("w", encoding="utf-8") if env_log_path else open(os.devnull, "w") as env_f,
+    ):
+
+        def flush_audit_buffer():
+            if not audit_buffer:
+                return
+            if auditor:
+                logger.info(
+                    "Executing Layer 8 Streaming LLM Audit on buffer of %d laptops...",
+                    len(audit_buffer),
+                )
+                idents = [it.get("url") or f"lap_{i}" for i, it in enumerate(audit_buffer)]
+                try:
+                    batch_res = auditor.audit_batch(audit_buffer, identifiers=idents)
+                    res_map = {r.laptop_id: r for r in batch_res.audited_laptops}
+                    for ident, it in zip(idents, audit_buffer):
+                        p_res = res_map.get(ident)
+                        if p_res and p_res.has_contradictions and p_res.corrections:
+                            applied = auditor.apply_corrections(it, p_res.corrections)
+                            stats["layer8_corrections"] += len(applied)
+                            for app in applied:
+                                logger.info(
+                                    "  [Layer 8 Healed %s] %s: %s -> %s (Reason: %s)",
+                                    it.get("title", "")[:35],
+                                    app["field_path"],
+                                    app["old_value"],
+                                    app["new_value"],
+                                    app["reason"],
+                                )
+                except Exception as e:
+                    logger.warning("Layer 8 Streaming LLM Audit batch failed: %s", e)
+
+            for it in audit_buffer:
+                results.append(it)
+                ckpt_f.write(json.dumps(it, ensure_ascii=False) + "\n")
+            ckpt_f.flush()
+            audit_buffer.clear()
 
         if env_log_path:
             env_f.write(
-                "=" * 80 + "\n"
+                "=" * 80
+                + "\n"
                 + "COMPUMARTS SPECIFICATION EXTRACTION - DETAILED ENVELOPE AUDIT LOG\n"
-                + f"Generated At: {datetime.now(timezone.utc).isoformat()}\n"
+                + f"Generated At: {datetime.now(UTC).isoformat()}\n"
                 + f"AI Fallback Backend: {ai_type} (onnx={use_onnx})\n"
-                + "=" * 80 + "\n\n"
+                + "=" * 80
+                + "\n\n"
             )
 
         for idx, prod in enumerate(catalog_products, start=1):
@@ -282,11 +363,11 @@ def run_pipeline(
                 "rejections_count": len(res.validation_rejections),
                 "elapsed_s": round(elapsed, 3),
             }
-            results.append(item_record)
+            audit_buffer.append(item_record)
 
-            # Write stream checkpoint
-            ckpt_f.write(json.dumps(item_record, ensure_ascii=False) + "\n")
-            ckpt_f.flush()
+            # Flush buffer when batch size is reached (or immediately if auditor is disabled)
+            if not auditor or len(audit_buffer) >= audit_batch_size:
+                flush_audit_buffer()
 
             # Stream audit trace record to separate file
             if res.provenance_record:
@@ -307,15 +388,22 @@ def run_pipeline(
                 env_f.write(report + "\n\n")
                 env_f.flush()
 
+        # Flush any remaining laptops in the Layer 8 audit buffer
+        if audit_buffer:
+            flush_audit_buffer()
+
         if env_log_path:
             env_f.write(
-                "\n" + "=" * 80 + "\n"
+                "\n"
+                + "=" * 80
+                + "\n"
                 + "ENVELOPE AUDIT SUMMARY:\n"
                 + f"Total Laptops Processed:     {stats['processed']}\n"
                 + f"Total Component Envelopes:   {stats['envelopes_total']}\n"
                 + f"AI Fallback Resolved:        {stats['ai_resolved']}\n"
                 + f"Gate 2 AI Rejections:        {stats['gate2_rejections']}\n"
-                + "=" * 80 + "\n"
+                + "=" * 80
+                + "\n"
             )
 
     # Save final output
@@ -330,11 +418,15 @@ def run_pipeline(
     print("PIPELINE EXECUTION SUMMARY:")
     print("=" * 60)
     print(f"Total Laptops Processed:     {stats['processed']}")
-    print(f"CPU Anchor Match Rate:       {stats['cpu_identified']} / {stats['processed']} ({stats['cpu_identified']/max(stats['processed'],1):.1%})")
+    print(
+        f"CPU Anchor Match Rate:       {stats['cpu_identified']} / {stats['processed']} ({stats['cpu_identified'] / max(stats['processed'], 1):.1%})"
+    )
     print(f"Total Envelopes Generated:   {stats['envelopes_total']}")
     print(f"AI Fallback Resolved:        {stats['ai_resolved']}")
     print(f"Gate 1 Physical Rejections:  {stats['gate1_rejections']}")
     print(f"Gate 2 AI Rejections:        {stats['gate2_rejections']}")
+    if auditor:
+        print(f"Layer 8 Healed Fields:       {stats['layer8_corrections']}")
     print(f"Output File:                 {out_path.resolve()}")
     print(f"Audit Trace Log:             {trace_path.resolve()}")
     if env_log_path:
@@ -347,7 +439,7 @@ def export_envelopes_from_results(
     envelope_log_file: str = "pipeline_envelopes.txt",
     ai_type: str = "gliner",
     use_onnx: bool = True,
-    onnx_dir: Optional[str] = None,
+    onnx_dir: str | None = None,
 ) -> None:
     """Generate comprehensive pipeline_envelopes.txt from existing results file using captured source tables."""
     rf = Path(results_path)
@@ -370,13 +462,15 @@ def export_envelopes_from_results(
 
     with env_log_path.open("w", encoding="utf-8") as env_f:
         env_f.write(
-            "=" * 80 + "\n"
+            "=" * 80
+            + "\n"
             + "COMPUMARTS SPECIFICATION EXTRACTION - DETAILED ENVELOPE AUDIT LOG\n"
-            + f"Generated At: {datetime.now(timezone.utc).isoformat()}\n"
+            + f"Generated At: {datetime.now(UTC).isoformat()}\n"
             + f"Source Results File: {rf.resolve()}\n"
             + f"Total Catalog Laptops: {len(products_data)}\n"
             + f"AI Fallback Backend: {ai_type} (onnx={use_onnx})\n"
-            + "=" * 80 + "\n\n"
+            + "=" * 80
+            + "\n\n"
         )
 
         for idx, item in enumerate(products_data, start=1):
@@ -394,10 +488,9 @@ def export_envelopes_from_results(
             if res.component_envelopes_generated:
                 laptops_with_envelopes += 1
                 envelopes_count += len(res.component_envelopes_generated)
-                resolved_count += len([
-                    r for r in res.component_results
-                    if any(v is not None for v in r.extracted_fields.values())
-                ])
+                resolved_count += len(
+                    [r for r in res.component_results if any(v is not None for v in r.extracted_fields.values())]
+                )
                 rejected_count += sum(1 for r in res.validation_rejections if r.get("gate") == 2)
 
                 report = ProvenanceTracker.format_component_envelope_text_report(
@@ -412,7 +505,9 @@ def export_envelopes_from_results(
                 env_f.write(report + "\n\n")
 
         env_f.write(
-            "\n" + "=" * 80 + "\n"
+            "\n"
+            + "=" * 80
+            + "\n"
             + "ENVELOPE AUDIT SUMMARY:\n"
             + f"Total Catalog Laptops Evaluated:  {len(products_data)}\n"
             + f"Laptops Generating Envelopes:     {laptops_with_envelopes}\n"
@@ -420,23 +515,42 @@ def export_envelopes_from_results(
             + f"Total Component Envelopes:        {envelopes_count}\n"
             + f"Component AI Fallbacks Extracted: {resolved_count}\n"
             + f"Gate 2 AI Rejections:             {rejected_count}\n"
-            + "=" * 80 + "\n"
+            + "=" * 80
+            + "\n"
         )
 
-    logger.info("Saved complete envelope audit log to %s (%d laptops generated %d envelopes).", env_log_path, laptops_with_envelopes, envelopes_count)
+    logger.info(
+        "Saved complete envelope audit log to %s (%d laptops generated %d envelopes).",
+        env_log_path,
+        laptops_with_envelopes,
+        envelopes_count,
+    )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Live CompuMarts Laptop Extraction Pipeline")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of laptops to scrape/process")
     parser.add_argument("--url", type=str, default=None, help="Process a single laptop PDP URL directly")
-    parser.add_argument("--ai", choices=["gliner", "nuextract", "none"], default="gliner", help="AI Fallback backend")
+    parser.add_argument(
+        "--ai", choices=["nuextract", "gliner", "none"], default="nuextract", help="AI Fallback backend"
+    )
     parser.add_argument("--no-onnx", action="store_true", help="Disable ONNX and run GLiNER with PyTorch")
     parser.add_argument("--output", type=str, default="pipeline_results_compumarts.json", help="Output JSON path")
-    parser.add_argument("--onnx-dir", type=str, default=None, help="Path to local ONNX model directory (e.g. for NuExtract ONNX GenAI)")
-    parser.add_argument("--device", choices=["auto", "cuda", "cpu"], default="auto", help="Execution device for AI fallback (auto/cuda/cpu)")
-    parser.add_argument("--checkpoint", type=str, default="pipeline_results_compumarts.checkpoint.jsonl", help="Checkpoint JSONL path")
-    parser.add_argument("--trace-file", type=str, default="pipeline_trace_compumarts.jsonl", help="Provenance audit trace JSONL path")
+    parser.add_argument(
+        "--onnx-dir", type=str, default=None, help="Path to local ONNX model directory (e.g. for NuExtract ONNX GenAI)"
+    )
+    parser.add_argument(
+        "--device",
+        choices=["auto", "cuda", "cpu"],
+        default="auto",
+        help="Execution device for AI fallback (auto/cuda/cpu)",
+    )
+    parser.add_argument(
+        "--checkpoint", type=str, default="pipeline_results_compumarts.checkpoint.jsonl", help="Checkpoint JSONL path"
+    )
+    parser.add_argument(
+        "--trace-file", type=str, default="pipeline_trace_compumarts.jsonl", help="Provenance audit trace JSONL path"
+    )
     parser.add_argument(
         "--envelope-log",
         type=str,
@@ -456,6 +570,18 @@ def main() -> None:
         action="store_true",
         default=False,
         help="Log created extraction envelopes, AI fallback predictions, and Gate 2 decisions in real-time",
+    )
+    parser.add_argument(
+        "--no-audit",
+        action="store_true",
+        default=False,
+        help="Disable Layer 8 Ground-Truth LLM Auditor",
+    )
+    parser.add_argument(
+        "--audit-batch-size",
+        type=int,
+        default=1,
+        help="Batch size for Layer 8 Ground-Truth LLM Auditor (default: 1)",
     )
 
     args = parser.parse_args()
@@ -482,9 +608,10 @@ def main() -> None:
         trace_file=args.trace_file,
         envelope_log_file=args.envelope_log,
         log_envelopes=args.log_envelopes,
+        audit_batch_size=args.audit_batch_size,
+        no_audit=args.no_audit,
     )
 
 
 if __name__ == "__main__":
     main()
-

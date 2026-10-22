@@ -9,7 +9,6 @@ from curl_cffi import requests as cffi_requests
 from app.core.normalizer import ModelNormalizer
 from app.core.patterns.engine import PatternEngine
 from app.core.patterns.models import SpecExtractionResult
-from app.core.patterns.registry import PatternRegistry
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import RetailerProduct
 from app.stores.base import BaseStoreScraper
@@ -49,7 +48,6 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
     LAPTOPS_CATEGORY_ID = "9f5039de-5c80-46f3-9fe4-6e8f94189b8c"
     SEARCH_BASE_URL = "https://www.sigma-computer.com/en/search"
     ITEM_BASE_URL = "https://www.sigma-computer.com/en/item"
-
 
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
@@ -145,7 +143,6 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
                 return True
         return False
 
-
     def scrape_catalog(
         self,
         level: int = 2,
@@ -224,9 +221,7 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
 
                 # Non-laptop accessory and used/refurbished check
                 item_url = f"{self.ITEM_BASE_URL}?id={slug}"
-                is_valid, reason = self.is_valid_new_laptop(
-                    title=name, url=item_url
-                )
+                is_valid, reason = self.is_valid_new_laptop(title=name, url=item_url)
                 if not is_valid:
                     self.record_skipped(
                         name=name,

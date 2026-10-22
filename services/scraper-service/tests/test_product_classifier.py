@@ -1,4 +1,3 @@
-from unittest.mock import MagicMock
 import pytest
 
 from app.core.classifier import ProductClassifier
@@ -99,7 +98,7 @@ class TestProductClassifierUnits:
             ("USED HP Pro x360 Fortis 11 G10 2-in-1 Touch Laptop – Core i5-1230U", "used_or_refurbished"),
             ("Used HP ZBook 17 G6 Workstation Laptop – Core i5-9400H 32GB RAM", "used_or_refurbished"),
             ("USED Dell Latitude 7410 – Core i5-10310U – 8GB RAM – 256GB SSD", "used_or_refurbished"),
-            ("as new Apple MacBook Pro 2019 Touchbar i9-9980HK 2.90GHz 15.4\" Retina", "used_or_refurbished"),
+            ('as new Apple MacBook Pro 2019 Touchbar i9-9980HK 2.90GHz 15.4" Retina', "used_or_refurbished"),
             ("Lenovo ThinkPad X1 Carbon Gen 9 Like New with original charger", "used_or_refurbished"),
             ("Apple MacBook Air 13-inch M1 - Renewed Grade A", "used_or_refurbished"),
             ("Lenovo ThinkPad T14 Gen 2 (Refurbished)", "used_or_refurbished"),
@@ -139,7 +138,7 @@ class TestProductClassifierUnits:
         "title",
         [
             # Legitimate laptops with bundled accessories
-            "ASUS Vivobook 16 X1605VA – Intel Core i7-13620H, 16GB DDR4, 512GB SSD, 16\" OLED, Includes Mouse & Bag",
+            'ASUS Vivobook 16 X1605VA – Intel Core i7-13620H, 16GB DDR4, 512GB SSD, 16" OLED, Includes Mouse & Bag',
             "HP Laptop 15-fd2022ne - Intel Core Ultra 7-225U - 8GB DDR5 - 512GB SSD - 15.6-inch FHD - HP Backpack Bag and HP Bluetooth Mouse",
             "HP 15-fd1063ne - Intel Core Ultra 5-125H - 8GB DDR5 - 512GB SSD - 15.6-inch FHD - HP BackPack Bag, HP Bluetooth Mouse",
             "ASUS ROG Strix G16 G614PR-RV132W Gaming Laptop – Ryzen 9 8940HX, RTX 5070 Ti, 32GB, 1TB SSD, ROG Backpack",

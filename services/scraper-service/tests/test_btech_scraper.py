@@ -1,8 +1,4 @@
-import pytest
-from bs4 import BeautifulSoup
-
 from app.stores.btech import BTechStoreScraper
-from app.schemas.laptop import RetailerProduct
 
 
 def test_btech_properties():

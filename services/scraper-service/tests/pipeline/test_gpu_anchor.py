@@ -1,6 +1,5 @@
 """Unit tests for Layer 3.5 GPU Anchor Extraction and TDP protocol rules."""
 
-from typing import Any, Dict
 import pytest
 
 from gpu_specs import GPU_SPECS, GPUSpecificationEntry
@@ -90,10 +89,18 @@ class TestGPUAnchorExtraction:
     def test_integrated_gpus(self, extractor: GPUAnchorExtractor):
         """Integrated GPUs have integrated=True, vram_gb=None, tdp_w=None."""
         cases = [
-            ("ASUS Zenbook S 14 UX5406SA Intel Core Ultra 7 258V Intel Arc 140V", "Intel_Arc_140V_Shared", "Intel Arc 140V"),
+            (
+                "ASUS Zenbook S 14 UX5406SA Intel Core Ultra 7 258V Intel Arc 140V",
+                "Intel_Arc_140V_Shared",
+                "Intel Arc 140V",
+            ),
             ("Acer Swift Go 14 AMD Ryzen 7 7840U AMD Radeon 780M", "Radeon_780M_Shared", "AMD Radeon 780M"),
             ("Apple MacBook Pro 14 M4 chip 10-core GPU 16GB", "Apple_M4_GPU_Unified", "Apple M4 GPU"),
-            ("Microsoft Surface Laptop 7 Snapdragon X Elite Adreno X1-85", "Qualcomm_Adreno_X1_85_Shared", "Qualcomm Adreno X1-85"),
+            (
+                "Microsoft Surface Laptop 7 Snapdragon X Elite Adreno X1-85",
+                "Qualcomm_Adreno_X1_85_Shared",
+                "Qualcomm Adreno X1-85",
+            ),
         ]
         for text, exp_key, exp_model in cases:
             specs, _, key = extractor.extract(title=text)
@@ -157,7 +164,5 @@ class TestOrchestratorTDPProtocol:
         assert specs["gpu"]["tdp_w"] is None
 
         # Verify no GPU component envelope was dispatched
-        gpu_envelopes = [
-            e for e in result.component_envelopes_generated if e.component_name == "gpu"
-        ]
+        gpu_envelopes = [e for e in result.component_envelopes_generated if e.component_name == "gpu"]
         assert len(gpu_envelopes) == 0, "Missing tdp_w alone should NEVER trigger an AI envelope!"

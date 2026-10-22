@@ -10,88 +10,89 @@ Defines the data structures for:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
-
-from gpu_specs import GPUFeatures, GPUSpecificationEntry, GPUTDPLimits
+from datetime import datetime, UTC
+from typing import Any
 
 
 @dataclass
 class ExtractionEnvelope:
     """An envelope containing context and requirements for an unresolved field.
-    
+
     Sent to the AI fallback layer when deterministic extraction fails or is incomplete.
     """
-    field_path: str                           # e.g., 'gpu.vram_gb', 'display.refresh_rate_hz'
-    field_description: str                    # Human-readable prompt for AI (e.g., 'Discrete GPU VRAM capacity in GB')
-    raw_context: str                          # Section-level sanitized text context
-    failure_reason: str                       # 'missing_key' | 'regex_failed' | 'validation_failed'
-    expected_type: str                        # 'int' | 'float' | 'str' | 'bool' | 'list[str]'
-    allowed_values: Optional[List[str]] = None # Optional enum candidates (e.g., ['IPS', 'OLED', 'TN'])
-    cpu_context: Optional[Dict[str, Any]] = None # CPU constraints to assist resolution
-    section_name: Optional[str] = None        # Name of the section (e.g., 'Display', 'Graphics')
+
+    field_path: str  # e.g., 'gpu.vram_gb', 'display.refresh_rate_hz'
+    field_description: str  # Human-readable prompt for AI (e.g., 'Discrete GPU VRAM capacity in GB')
+    raw_context: str  # Section-level sanitized text context
+    failure_reason: str  # 'missing_key' | 'regex_failed' | 'validation_failed'
+    expected_type: str  # 'int' | 'float' | 'str' | 'bool' | 'list[str]'
+    allowed_values: list[str] | None = None  # Optional enum candidates (e.g., ['IPS', 'OLED', 'TN'])
+    cpu_context: dict[str, Any] | None = None  # CPU constraints to assist resolution
+    section_name: str | None = None  # Name of the section (e.g., 'Display', 'Graphics')
 
 
 @dataclass
 class EnvelopeResult:
     """The result produced by an AI fallback extractor for a single envelope."""
+
     field_path: str
     extracted_value: Any
-    raw_span: Optional[str] = None
+    raw_span: str | None = None
     confidence: float = 1.0
     model_name: str = "unknown"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ComponentEnvelope:
     """An envelope containing a complete component sub-schema and raw context for AI extraction.
-    
+
     Groups all fields of a hardware subsystem (e.g., 'display', 'memory', 'power_battery')
     with pre-filled Layer 4 validated values and None for missing fields.
     """
-    component_name: str                                  # 'display', 'memory', 'power_battery', etc.
-    raw_spec: str                                        # Full section/table text for this component
-    sub_schema: Dict[str, Any]                           # Dict of field_name -> value (pre-filled or None)
-    locked_fields: Set[str]                              # Immutable fields already validated in L4
-    field_descriptions: Dict[str, str] = field(default_factory=dict) # Field descriptions / hints
-    enum_constraints: Dict[str, List[str]] = field(default_factory=dict) # Allowed enums
-    cpu_context: Optional[Dict[str, Any]] = None         # Hardware constraints
+
+    component_name: str  # 'display', 'memory', 'power_battery', etc.
+    raw_spec: str  # Full section/table text for this component
+    sub_schema: dict[str, Any]  # Dict of field_name -> value (pre-filled or None)
+    locked_fields: set[str]  # Immutable fields already validated in L4
+    field_descriptions: dict[str, str] = field(default_factory=dict)  # Field descriptions / hints
+    enum_constraints: dict[str, list[str]] = field(default_factory=dict)  # Allowed enums
+    cpu_context: dict[str, Any] | None = None  # Hardware constraints
 
 
 @dataclass
 class ComponentEnvelopeResult:
     """The result produced by an AI fallback extractor for a component envelope."""
+
     component_name: str
-    extracted_fields: Dict[str, Any]                     # Dict of field_name -> extracted value
+    extracted_fields: dict[str, Any]  # Dict of field_name -> extracted value
     model_name: str = "unknown"
     confidence: float = 1.0
-    raw_output: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    raw_output: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class RawScrapedProduct:
     """Raw scrape artifact captured from the retailer page."""
+
     url: str
     store: str
     title: str
     raw_html: str
-    raw_tables: Dict[str, Dict[str, str]] = field(default_factory=dict)
-    raw_sections: Dict[str, str] = field(default_factory=dict)
-    price: Optional[float] = None
-    currency: Optional[str] = "EGP"
+    raw_tables: dict[str, dict[str, str]] = field(default_factory=dict)
+    raw_sections: dict[str, str] = field(default_factory=dict)
+    price: float | None = None
+    currency: str | None = "EGP"
     in_stock: bool = True
-    retailer_sku: Optional[str] = None
-    mpn: Optional[str] = None
-    scraped_at: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    retailer_sku: str | None = None
+    mpn: str | None = None
+    scraped_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
-def empty_laptop_specifications() -> Dict[str, Any]:
+def empty_laptop_specifications() -> dict[str, Any]:
     """Return the empty canonical structured laptop dictionary skeleton.
-    
+
     Covers all 35+ specification dimensions required for catalog ingestion and live audit.
     """
     return {
@@ -220,4 +221,3 @@ def empty_laptop_specifications() -> Dict[str, Any]:
             "raw_spec": None,
         },
     }
-

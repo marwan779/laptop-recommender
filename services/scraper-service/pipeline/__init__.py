@@ -12,6 +12,8 @@ Rebuilt from the ground up:
 
 from pipeline.cpu_anchor import CPUAnchorExtractor
 from pipeline.deterministic import DeterministicExtractor
+from pipeline.envelope_normalizer import EnvelopePromptNormalizer
+from pipeline.llm_auditor import FieldCorrection, GeminiAuditor, LLMAuditor, LLMProviderEndpoint
 from pipeline.orchestrator import LaptopExtractionPipeline, PipelineResult
 from pipeline.physical_validator import PhysicalValidator
 from pipeline.raw_storage import RawScrapeStorage
@@ -29,11 +31,15 @@ __all__ = [
     "TextSanitizer",
     "CPUAnchorExtractor",
     "DeterministicExtractor",
+    "EnvelopePromptNormalizer",
     "PhysicalValidator",
+    "LLMAuditor",
+    "LLMProviderEndpoint",
+    "GeminiAuditor",
+    "FieldCorrection",
     "RawScrapeStorage",
     "ExtractionEnvelope",
     "EnvelopeResult",
     "RawScrapedProduct",
     "empty_laptop_specifications",
 ]
-

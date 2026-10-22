@@ -5,12 +5,10 @@ from pathlib import Path
 import threading
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from app.core.email_config import EmailSettings
-from app.email.templates import build_batch_finished_email, build_single_finished_email
+from app.email.templates import build_single_finished_email
 from app.schemas.email import (
-    BatchScrapeReport,
     EmailSendRequest,
     ScraperFinishedReport,
 )

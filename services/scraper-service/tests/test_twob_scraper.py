@@ -1,8 +1,4 @@
-import pytest
-from bs4 import BeautifulSoup
-
 from app.stores.twob import TwoBStoreScraper
-from app.schemas.laptop import RetailerProduct
 
 
 def test_twob_properties():

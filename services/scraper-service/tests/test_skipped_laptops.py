@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock
 from bs4 import BeautifulSoup
 
@@ -10,9 +9,7 @@ from app.scrapers.hp import HpBrandScraper
 from app.stores.amazon import AmazonStoreScraper
 from app.stores.btech import BTechStoreScraper
 from app.stores.compumarts import CompumartsStoreScraper
-from app.stores.elbadr import ElBadrStoreScraper
 from app.stores.noon import NoonStoreScraper
-from app.stores.sigma import SigmaComputerStoreScraper
 from app.stores.twob import TwoBStoreScraper
 from app.stores.tradeline import TradelineStoreScraper
 

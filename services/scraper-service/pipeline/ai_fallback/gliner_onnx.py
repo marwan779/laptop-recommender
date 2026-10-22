@@ -9,7 +9,8 @@ from __future__ import annotations
 import logging
 import os
 import re
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
+from collections.abc import Sequence
 
 from pipeline.ai_fallback.base import IAIFallbackExtractor
 from pipeline.schema import EnvelopeResult, ExtractionEnvelope
@@ -17,7 +18,7 @@ from pipeline.schema import EnvelopeResult, ExtractionEnvelope
 logger = logging.getLogger(__name__)
 
 # Field path to specialized GLiNER prompt labels
-FIELD_LABELS_MAP: Dict[str, List[str]] = {
+FIELD_LABELS_MAP: dict[str, list[str]] = {
     "gpu.vram_gb": ["vram capacity", "video memory", "gpu memory"],
     "gpu.model": ["graphics card", "gpu model", "nvidia geforce rtx"],
     "display.size_inches": ["screen size", "display size", "screen diagonal"],
@@ -51,7 +52,7 @@ class GLiNERONNXFallbackExtractor(IAIFallbackExtractor):
         self._onnx_model_file = onnx_model_file
         self.threshold = threshold
         self._model = None
-        
+
         if not lazy_load:
             self._ensure_loaded()
 
@@ -77,6 +78,7 @@ class GLiNERONNXFallbackExtractor(IAIFallbackExtractor):
             if "/" in self._model_id and not os.path.exists(self._model_id):
                 try:
                     from huggingface_hub import snapshot_download
+
                     target_file = self._onnx_model_file or "onnx/model_int8.onnx"
                     logger.info("Fetching target ONNX checkpoint (%s) and configs...", target_file)
                     local_dir = snapshot_download(
@@ -98,9 +100,7 @@ class GLiNERONNXFallbackExtractor(IAIFallbackExtractor):
         """Verify model can execute a basic inference pass."""
         try:
             self._ensure_loaded()
-            test_res = self._model.predict_entities(
-                "Display: 16-inch 165Hz IPS", ["screen size"], threshold=0.3
-            )
+            test_res = self._model.predict_entities("Display: 16-inch 165Hz IPS", ["screen size"], threshold=0.3)
             return isinstance(test_res, list)
         except Exception as e:
             logger.error("GLiNER health check failed: %s", e)
@@ -120,9 +120,7 @@ class GLiNERONNXFallbackExtractor(IAIFallbackExtractor):
             )
 
         try:
-            entities = self._model.predict_entities(
-                envelope.raw_context, labels, threshold=self.threshold
-            )
+            entities = self._model.predict_entities(envelope.raw_context, labels, threshold=self.threshold)
         except Exception as e:
             logger.warning("GLiNER prediction failed for %s: %s", envelope.field_path, e)
             return EnvelopeResult(
@@ -156,9 +154,7 @@ class GLiNERONNXFallbackExtractor(IAIFallbackExtractor):
             model_name=self.model_name,
         )
 
-    def batch_extract_envelopes(
-        self, envelopes: Sequence[ExtractionEnvelope]
-    ) -> List[EnvelopeResult]:
+    def batch_extract_envelopes(self, envelopes: Sequence[ExtractionEnvelope]) -> list[EnvelopeResult]:
         """Process envelopes sequentially or in batches."""
         return [self.extract_envelope(env) for env in envelopes]
 
@@ -189,4 +185,3 @@ class GLiNERONNXFallbackExtractor(IAIFallbackExtractor):
             return any(pos in text_clean.lower() for pos in ["yes", "true", "supported"])
 
         return text_clean
-

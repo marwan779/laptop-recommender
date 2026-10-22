@@ -12,10 +12,15 @@ select = [
 ignore = [
     "E501",  # line length (handled by formatter or long URLs/regexes)
     "B008",  # function call in argument defaults (FastAPI Depends() pattern)
+    "E741",  # ambiguous variable name (e.g. single letter l in list comprehensions)
+    "B905",  # zip() without explicit strict= (standard zip behavior is intended)
 ]
 
 [lint.per-file-ignores]
 # Unused imports in __init__.py are intentional re-exports
 "**/__init__.py" = ["F401"]
-# Test files often import fixtures, mocks, or classes used in monkeypatching
-"tests/*" = ["F401", "E501"]
+# Test files often import fixtures, mocks, or classes used in monkeypatching, or assign mock results
+"**/tests/**" = ["F401", "E501", "F841", "B007", "E402"]
+# Standalone CLI and analysis scripts adjust sys.path before internal imports
+"**/scripts/**" = ["E402", "F841", "B007"]
+"**/pipeline/run_compumarts.py" = ["E402", "F841"]

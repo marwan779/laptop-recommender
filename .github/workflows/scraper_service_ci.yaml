@@ -55,7 +55,7 @@ jobs:
       - name: Ruff lint
         uses: astral-sh/ruff-action@v4.1.0
         with:
-          args: "check -v --output-format sarif --output-file ruff-results.sarif"
+          args: "check -v --config services/scraper-service/ruff.toml --output-format sarif --output-file ruff-results.sarif"
           src: ${{ env.SERVICE_DIRECTORY }}
 
       - name: Upload Ruff SARIF report
@@ -68,7 +68,7 @@ jobs:
       - name: Ruff format check
         uses: astral-sh/ruff-action@v4.1.0
         with:
-          args: "format --check"
+          args: "format --check --config services/scraper-service/ruff.toml"
           src: ${{ env.SERVICE_DIRECTORY }}
 
       - name: Compile Python files (syntax check)

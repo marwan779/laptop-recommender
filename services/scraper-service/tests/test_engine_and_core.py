@@ -1,11 +1,10 @@
 """Unit tests for app.core.constants, app.core.normalizer, app.engine.base, and app.engine.scrapling_engine."""
 
 from unittest.mock import MagicMock, patch
-import pytest
 
-from app.core.constants import BRAND_CATALOGS, BrandConfig
+from app.core.constants import BRAND_CATALOGS
 from app.core.normalizer import ModelNormalizer
-from app.engine.base import IScraperEngine, ScrapedDocument
+from app.engine.base import ScrapedDocument
 from app.engine.scrapling_engine import ScraplingEngine
 
 

@@ -29,7 +29,6 @@ class BTechStoreScraper(BaseStoreScraper):
     )
     SEARCH_URL_TEMPLATE = "https://btech.com/en/catalogsearch/result/?q={query}"
 
-
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
         self._session = cffi_requests.Session()

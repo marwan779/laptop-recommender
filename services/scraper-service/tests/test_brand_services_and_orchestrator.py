@@ -1,7 +1,5 @@
 """Unit tests for brand scraper services (ASUS, GigaByte, HP, Lenovo) and orchestrator dispatching."""
 
-from datetime import datetime
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 import pytest
 
@@ -14,9 +12,8 @@ from app.schemas.laptop import (
     LenovoBrandCatalogResult,
     RetailerProduct,
     SkippedLaptop,
-    StoreCatalogResult,
 )
-from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
+from app.schemas.orchestrator import ScrapeRequest, ScrapeTargetResult
 from app.scrapers.asus import AsusBrandScraper
 from app.scrapers.gigabyte import GigabyteBrandScraper
 from app.scrapers.hp import HpBrandScraper
@@ -230,7 +227,8 @@ def test_orchestrator_resolve_targets_stores_and_both():
     # store with 'all'
     req_store_all = ScrapeRequest(target_type="store", targets="all")
     targets_store_all = orchestrator._resolve_targets(req_store_all)
-    assert len(targets_store_all) == 8
+    assert len(targets_store_all) == 1
+    assert targets_store_all == [("store", "compumarts")]
     assert all(t[0] == "store" for t in targets_store_all)
 
     # store with specific targets
@@ -241,7 +239,7 @@ def test_orchestrator_resolve_targets_stores_and_both():
     # both with 'all'
     req_both_all = ScrapeRequest(target_type="both", targets="all")
     targets_both_all = orchestrator._resolve_targets(req_both_all)
-    assert len(targets_both_all) == 4 + 8  # 4 brands + 8 stores
+    assert len(targets_both_all) == 4 + 1  # 4 legacy brands + 1 active store (compumarts)
 
     # both with specific mixed targets
     req_both_mixed = ScrapeRequest(target_type="both", targets=["asus", "noon", "compumarts", "unknown_xyz"])
@@ -404,11 +402,15 @@ def test_brand_scrapers_level2_reject_used_or_non_laptop():
     # 1. ASUS
     asus_scraper = AsusBrandScraper(engine=MagicMock())
     doc = MagicMock()
-    doc.markdown.return_value = "## Specifications\nProcessor: Intel Core i7\nOperating System: Windows 11\nCondition: Refurbished Grade A"
+    doc.markdown.return_value = (
+        "## Specifications\nProcessor: Intel Core i7\nOperating System: Windows 11\nCondition: Refurbished Grade A"
+    )
     doc.raw = MagicMock()
     doc.get_meta.return_value = ""
     asus_scraper.engine.fetch.return_value = doc
-    asus_scraper._parse_specs_from_markdown = MagicMock(return_value={"Processor": "Intel Core i7", "Condition": "Refurbished"})
+    asus_scraper._parse_specs_from_markdown = MagicMock(
+        return_value={"Processor": "Intel Core i7", "Condition": "Refurbished"}
+    )
     sum_asus = LaptopSummary(brand="ASUS", name="ASUS ROG Strix G16", product_url="https://asus.com/laptop")
     res_asus = asus_scraper.get_laptop_detail(sum_asus)
     assert res_asus is None
@@ -419,7 +421,9 @@ def test_brand_scrapers_level2_reject_used_or_non_laptop():
     hp_scraper._fetch_page = MagicMock(
         return_value="<html><table class='c-product-all-details-table__table'><tr><td>Processor</td><td>Intel Core i5</td></tr><tr><td>Condition</td><td>Refurbished</td></tr></table></html>"
     )
-    sum_hp = LaptopSummary(brand="HP", name="HP Pavilion 15", product_url="https://hp.com/laptop", specs_url="https://hp.com/specs")
+    sum_hp = LaptopSummary(
+        brand="HP", name="HP Pavilion 15", product_url="https://hp.com/laptop", specs_url="https://hp.com/specs"
+    )
     res_hp = hp_scraper.get_laptop_detail(sum_hp)
     assert res_hp is None
     assert any("Rejected after deep specs inspection" in s.reason for s in hp_scraper.skipped_laptops)
@@ -431,9 +435,19 @@ def test_brand_scrapers_level2_reject_used_or_non_laptop():
     doc_l.markdown.return_value = "Used laptop description"
     lenovo_scraper.engine.fetch.return_value = doc_l
     lenovo_scraper._extract_tables_from_html = MagicMock(
-        return_value=[{"groupHeadline": "General", "specs": [{"headline": "Processor", "text": "Intel Core i7"}, {"headline": "Condition", "text": "Used - Like New"}]}]
+        return_value=[
+            {
+                "groupHeadline": "General",
+                "specs": [
+                    {"headline": "Processor", "text": "Intel Core i7"},
+                    {"headline": "Condition", "text": "Used - Like New"},
+                ],
+            }
+        ]
     )
-    sum_lenovo = LaptopSummary(brand="Lenovo", name="Lenovo ThinkPad T14", product_url="https://lenovo.com/p/1234567890")
+    sum_lenovo = LaptopSummary(
+        brand="Lenovo", name="Lenovo ThinkPad T14", product_url="https://lenovo.com/p/1234567890"
+    )
     res_lenovo = lenovo_scraper.get_laptop_detail(sum_lenovo)
     assert res_lenovo is None
     assert any("Rejected after deep specs inspection" in s.reason for s in lenovo_scraper.skipped_laptops)
@@ -453,4 +467,3 @@ def test_brand_scrapers_level2_reject_used_or_non_laptop():
     res_giga = giga_scraper.get_laptop_detail(sum_giga)
     assert res_giga is None
     assert any("Rejected after deep specs inspection" in s.reason for s in giga_scraper.skipped_laptops)
-

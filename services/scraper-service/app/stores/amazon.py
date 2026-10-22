@@ -26,7 +26,6 @@ class AmazonStoreScraper(BaseStoreScraper):
     )
     SEARCH_URL_TEMPLATE = "https://www.amazon.eg/s?k={query}&language=en_AE"
 
-
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
         self._session = cffi_requests.Session()

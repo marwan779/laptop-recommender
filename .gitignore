@@ -20,3 +20,18 @@ htmlcov/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Raw Scrapes and Local Data Caches
+raw_scrapes/
+scraping-results/
+
+# Scraper Runtime Outputs & Audit Dumps
+pipeline_results_*.json
+pipeline_trace_*.jsonl
+pipeline_envelopes.txt
+*.checkpoint.jsonl
+*.bak
+latest_scraper_report.html
+store_*.json
+!store_compumarts.json
+

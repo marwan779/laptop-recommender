@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, UTC
+from datetime import datetime, UTC
 import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -13,13 +13,12 @@ from app.services.orchestrator import ScrapeOrchestrator
 from app.storage.base import IObjectStorageService
 from app.storage.exceptions import (
     StorageConnectionError,
-    StorageError,
     StorageNotFoundError,
     StorageOperationError,
     StoragePermissionError,
 )
-from app.storage.factory import StorageFactory, get_storage_service
-from app.storage.models import BatchDeleteResult, ObjectMetadata, ObjectSummary, StorageObject
+from app.storage.factory import StorageFactory
+from app.storage.models import BatchDeleteResult, ObjectMetadata, StorageObject
 from app.storage.s3 import S3StorageService
 
 
@@ -47,7 +46,10 @@ def s3_service(storage_settings, mock_s3_client):
 # ── Configuration & Models Tests ─────────────────────────────────────────────
 
 
-def test_storage_settings_defaults():
+def test_storage_settings_defaults(monkeypatch):
+    monkeypatch.delenv("AWS_REGION", raising=False)
+    monkeypatch.delenv("STORAGE_PROVIDER", raising=False)
+    monkeypatch.delenv("AWS_S3_BUCKET", raising=False)
     settings = StorageSettings(_env_file=None)
     assert settings.storage_provider == "s3"
     assert settings.aws_region == "eu-central-1"

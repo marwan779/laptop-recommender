@@ -4,7 +4,6 @@ from app.core.normalizer import ModelNormalizer
 from app.core.patterns import (
     PatternEngine,
     PatternRegistry,
-    SpecExtractionResult,
     StorePatternConfig,
     TitleSpecExtractor,
 )
@@ -12,7 +11,7 @@ from app.core.patterns import (
 
 def test_title_spec_extractor():
     title = (
-        'Asus ROG Strix G16 G614PH-RV161W Gaming Laptop, AMD R9 8940HX, '
+        "Asus ROG Strix G16 G614PH-RV161W Gaming Laptop, AMD R9 8940HX, "
         '16GB RAM, 1TB SSD, RTX 5050 8GB, 16" FHD+ WUXGA 165Hz, Win11, Gray, 90NR0KX7-M001J0'
     )
     specs = TitleSpecExtractor.extract(title)
@@ -31,7 +30,9 @@ def test_title_spec_extractor():
 
 
 def test_title_spec_extractor_rog_strix_subbrand():
-    title = "ROG Strix SCAR 18 (2025) GAMING LAPTOP G835LW-AI642W Intel Core Ultra 9 275HX RTX 5080 32GB 2TB SSD 18 Inch"
+    title = (
+        "ROG Strix SCAR 18 (2025) GAMING LAPTOP G835LW-AI642W Intel Core Ultra 9 275HX RTX 5080 32GB 2TB SSD 18 Inch"
+    )
     specs = TitleSpecExtractor.extract(title)
     assert specs.get("Brand") == "ASUS"
 
@@ -208,7 +209,11 @@ def test_pattern_engine_capacity_collision_prevention():
     title = "Acer Nitro V 15 Gaming Laptop - 16GB RAM - 512GB SSD"
     res = PatternEngine.extract_specs(soup=soup, title=title, store_key="elbadr")
     # Storage Capacity must NOT be overwritten by Battery Capacity
-    assert res.specs.get("Storage Capacity") == "512 GB" or res.specs.get("Capacity") == "512 GB" or "512" in str(res.specs.get("Storage", ""))
+    assert (
+        res.specs.get("Storage Capacity") == "512 GB"
+        or res.specs.get("Capacity") == "512 GB"
+        or "512" in str(res.specs.get("Storage", ""))
+    )
     assert "76 Wh" in str(res.specs.get("Battery Capacity", "")) or "76 Wh" in str(res.specs.get("Battery", ""))
 
 
@@ -248,7 +253,9 @@ def test_autonomous_discovery_data_attribute():
     """
     soup = BeautifulSoup(html, "html.parser")
     # Using a store with zero pre-registered selectors for this attribute
-    store_cfg = StorePatternConfig(store_key="brand_new_store", name="Brand New Store", container_selectors=[".unrelated"])
+    store_cfg = StorePatternConfig(
+        store_key="brand_new_store", name="Brand New Store", container_selectors=[".unrelated"]
+    )
     PatternRegistry.register(store_cfg)
 
     res = PatternEngine.extract_specs(
@@ -388,5 +395,3 @@ def test_pattern_anomaly_alerting():
     assert res.is_anomaly is True
     assert res.anomaly_reason is not None
     assert "neither text specs nor flyer images" in res.anomaly_reason
-
-
