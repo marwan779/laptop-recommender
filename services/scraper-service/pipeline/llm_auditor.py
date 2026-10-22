@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import copy
 import json
-import logging
+from common.logger import get_logger
 import os
 import re
 import time
@@ -37,7 +37,7 @@ from pipeline.physical_validator import PhysicalValidator
 # Load environment variables (.env in services/scraper-service or current working directory)
 load_dotenv()
 
-logger = logging.getLogger("llm_auditor")
+logger = get_logger("llm_auditor")
 
 AUDITOR_SYSTEM_INSTRUCTION = """
 You are a Semantic Ground-Truth Auditor for laptop specifications scraped from Egyptian retailer stores.

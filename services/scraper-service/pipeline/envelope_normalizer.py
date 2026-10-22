@@ -13,12 +13,12 @@ models can extract accurate integer counts and boolean flags without arithmetic 
 from __future__ import annotations
 
 import copy
-import logging
+from common.logger import get_logger
 import re
 
 from pipeline.schema import ComponentEnvelope
 
-logger = logging.getLogger("envelope_normalizer")
+logger = get_logger("envelope_normalizer")
 
 
 class EnvelopePromptNormalizer:

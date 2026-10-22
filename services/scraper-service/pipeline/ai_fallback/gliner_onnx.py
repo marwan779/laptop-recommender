@@ -6,7 +6,7 @@ to achieve ~35ms latency and low memory footprint.
 
 from __future__ import annotations
 
-import logging
+from common.logger import get_logger
 import os
 import re
 from typing import Any
@@ -15,7 +15,7 @@ from collections.abc import Sequence
 from pipeline.ai_fallback.base import IAIFallbackExtractor
 from pipeline.schema import EnvelopeResult, ExtractionEnvelope
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Field path to specialized GLiNER prompt labels
 FIELD_LABELS_MAP: dict[str, list[str]] = {

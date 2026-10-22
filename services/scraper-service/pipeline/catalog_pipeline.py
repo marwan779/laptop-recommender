@@ -14,7 +14,7 @@ Executes the 8-layer hardware extraction pipeline across any store's scraped pro
 from __future__ import annotations
 
 import json
-import logging
+from common.logger import get_logger
 import time
 from pathlib import Path
 from typing import Any
@@ -28,7 +28,7 @@ from pipeline.llm_auditor import LLMAuditor
 from pipeline.orchestrator import LaptopExtractionPipeline
 from pipeline.schema import RawScrapedProduct
 
-logger = logging.getLogger("pipeline.catalog")
+logger = get_logger("pipeline.catalog")
 
 
 def setup_ai_fallback(

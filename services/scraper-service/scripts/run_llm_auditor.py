@@ -23,7 +23,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
-import logging
+from common.logger import configure_logging, get_logger
 import shutil
 import sys
 from pathlib import Path
@@ -36,12 +36,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from pipeline.llm_auditor import LLMAuditor
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
-logger = logging.getLogger("run_llm_auditor")
+configure_logging()
+logger = get_logger("run_llm_auditor")
 
 
 def generate_markdown_report(

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 
-class LogLevel(str, Enum):
+class LogLevel(StrEnum):
     """Supported logging severity levels."""
 
     DEBUG = "DEBUG"
@@ -27,7 +27,7 @@ class LogLevel(str, Enum):
             return cls.INFO
 
 
-class Environment(str, Enum):
+class Environment(StrEnum):
     """Runtime execution environment."""
 
     DEVELOPMENT = "development"
@@ -76,15 +76,8 @@ class LoggerConfig:
             - LOG_LEVEL: Desired minimum log level (DEBUG, INFO, WARNING, ERROR).
             - LOG_JSON_FORMAT: Force JSON output ("true" / "1" / "false" / "0").
         """
-        service_name = (
-            os.getenv("SERVICE_NAME") or os.getenv("DD_SERVICE") or "laptop-service"
-        )
-        env_raw = (
-            os.getenv("ENVIRONMENT")
-            or os.getenv("ENV")
-            or os.getenv("DD_ENV")
-            or "development"
-        )
+        service_name = os.getenv("SERVICE_NAME") or os.getenv("DD_SERVICE") or "laptop-service"
+        env_raw = os.getenv("ENVIRONMENT") or os.getenv("ENV") or os.getenv("DD_ENV") or "development"
         env = Environment.from_string(env_raw)
         version = os.getenv("APP_VERSION") or os.getenv("DD_VERSION") or "1.0.0"
 

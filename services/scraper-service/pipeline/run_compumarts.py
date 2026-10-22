@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import logging
+from common.logger import configure_logging, get_logger
 import os
 import sys
 import time
@@ -47,12 +47,8 @@ from pipeline.provenance import ProvenanceTracker
 from pipeline.raw_storage import RawScrapeStorage
 from pipeline.schema import RawScrapedProduct
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
-logger = logging.getLogger("compumarts_pipeline")
+configure_logging()
+logger = get_logger("compumarts_pipeline")
 
 
 def setup_ai_fallback(ai_type: str, use_onnx: bool, onnx_dir: str | None = None, device: str = "auto") -> Any | None:

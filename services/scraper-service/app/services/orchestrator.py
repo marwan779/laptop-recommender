@@ -25,7 +25,7 @@ Usage::
 from __future__ import annotations
 
 import json
-import logging
+from common.logger import get_logger
 from pathlib import Path
 import time
 from typing import Any
@@ -41,7 +41,7 @@ from app.storage.factory import get_storage_service
 from app.stores.compumarts import CompumartsStoreScraper
 from pipeline.catalog_pipeline import GenericCatalogPipeline, setup_ai_fallback
 
-logger = logging.getLogger("scraper.orchestrator")
+logger = get_logger("scraper.orchestrator")
 
 
 # ---------------------------------------------------------------------------

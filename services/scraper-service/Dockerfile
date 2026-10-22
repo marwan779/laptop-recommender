@@ -2,11 +2,12 @@ FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY packages/common ./packages/common
+COPY services/scraper-service/requirements.txt .
 
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt ./packages/common
 
-COPY app ./app
+COPY services/scraper-service/app ./app
 
 
 FROM python:3.13-slim AS runner

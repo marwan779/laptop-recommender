@@ -13,7 +13,7 @@ Wires all 7 layers together into a coherent, robust extraction pipeline:
 from __future__ import annotations
 
 import json
-import logging
+from common.logger import get_logger
 import copy
 import re
 import time
@@ -37,7 +37,7 @@ from pipeline.schema import (
     RawScrapedProduct,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass

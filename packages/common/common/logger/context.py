@@ -8,11 +8,9 @@ from contextlib import contextmanager
 from typing import Any
 
 # Global context variables for correlation tracking
-_correlation_id_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar(
-    "correlation_id", default=None
-)
-_request_context_ctx: contextvars.ContextVar[dict[str, Any] | None] = (
-    contextvars.ContextVar("request_context", default=None)
+_correlation_id_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar("correlation_id", default=None)
+_request_context_ctx: contextvars.ContextVar[dict[str, Any] | None] = contextvars.ContextVar(
+    "request_context", default=None
 )
 
 

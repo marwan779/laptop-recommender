@@ -11,7 +11,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
-import logging
+from common.logger import get_logger
 from pathlib import Path
 import smtplib
 
@@ -26,7 +26,7 @@ from app.schemas.email import (
     ScraperFinishedReport,
 )
 
-logger = logging.getLogger("scraper.email")
+logger = get_logger("scraper.email")
 
 
 class EmailService:

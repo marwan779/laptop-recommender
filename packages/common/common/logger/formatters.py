@@ -34,6 +34,7 @@ _STANDARD_LOGRECORD_ATTRS: frozenset[str] = frozenset(
         "processName",
         "relativeCreated",
         "stack_info",
+        "taskName",
         "thread",
         "threadName",
     }
@@ -72,10 +73,7 @@ class DatadogJSONFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         # 1. Base Datadog log payload
         log_entry: dict[str, Any] = {
-            "timestamp": datetime.fromtimestamp(record.created, tz=UTC).strftime(
-                "%Y-%m-%dT%H:%M:%S.%f"
-            )[:-3]
-            + "Z",
+            "timestamp": datetime.fromtimestamp(record.created, tz=UTC).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z",
             "status": record.levelname,
             "message": record.getMessage(),
             "service": self.config.service_name,
@@ -182,9 +180,7 @@ class DevelopmentConsoleFormatter(logging.Formatter):
                 f"- {msg}"
             )
         else:
-            formatted = (
-                f"{time_str} {level:<7} [{record.name}] ({location}){cid_badge} - {msg}"
-            )
+            formatted = f"{time_str} {level:<7} [{record.name}] ({location}){cid_badge} - {msg}"
 
         # Extra attributes
         extra_attrs: dict[str, Any] = {}
@@ -197,11 +193,7 @@ class DevelopmentConsoleFormatter(logging.Formatter):
             extra_attrs.update(bound_context)
 
         if extra_attrs:
-            formatted += (
-                f" {self._DIM}| {extra_attrs}{self._RESET}"
-                if self.use_colors
-                else f" | {extra_attrs}"
-            )
+            formatted += f" {self._DIM}| {extra_attrs}{self._RESET}" if self.use_colors else f" | {extra_attrs}"
 
         # Exceptions
         if record.exc_info:

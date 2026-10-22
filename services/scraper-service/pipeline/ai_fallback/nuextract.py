@@ -8,7 +8,7 @@ optimized for structured JSON extraction on CUDA GPU and server CPU environments
 from __future__ import annotations
 
 import json
-import logging
+from common.logger import get_logger
 import os
 import re
 from typing import Any
@@ -22,7 +22,7 @@ from pipeline.schema import (
     ExtractionEnvelope,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):

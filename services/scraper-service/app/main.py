@@ -3,7 +3,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from common.logger import configure_logging, get_logger
+
 from app.api.routes.scrape import router as scrape_router
+
+configure_logging()
+logger = get_logger("scraper.main")
 
 app = FastAPI(
     title="Laptop Scraper Service",
