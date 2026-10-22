@@ -22,8 +22,8 @@ Verifies:
 """
 
 import pytest
-from pipeline.deterministic import DeterministicExtractor
-from pipeline.sanitizer import TextSanitizer
+from app.pipeline.deterministic import DeterministicExtractor
+from app.pipeline.sanitizer import TextSanitizer
 
 
 @pytest.fixture
@@ -425,8 +425,8 @@ def test_hyphenated_speaker_count(extractor: DeterministicExtractor, sanitizer: 
 
 # 23. Connectivity component envelope dispatched when fields missing
 def test_connectivity_component_envelope_dispatched():
-    from pipeline.orchestrator import LaptopExtractionPipeline
-    from pipeline.schema import RawScrapedProduct
+    from app.pipeline.orchestrator import LaptopExtractionPipeline
+    from app.pipeline.schema import RawScrapedProduct
 
     orchestrator = LaptopExtractionPipeline(log_envelopes=False)
     product = RawScrapedProduct(

@@ -9,9 +9,9 @@ Verifies:
 
 from unittest.mock import MagicMock
 
-from pipeline.ai_fallback.base import IAIFallbackExtractor
-from pipeline.ai_fallback.nuextract import NuExtractFallbackExtractor, NuExtractONNXFallbackExtractor
-from pipeline.schema import EnvelopeResult, ExtractionEnvelope
+from app.pipeline.ai_fallback.base import IAIFallbackExtractor
+from app.pipeline.ai_fallback.nuextract import NuExtractFallbackExtractor, NuExtractONNXFallbackExtractor
+from app.pipeline.schema import EnvelopeResult, ExtractionEnvelope
 
 
 def test_nuextract_onnx_implements_interface():

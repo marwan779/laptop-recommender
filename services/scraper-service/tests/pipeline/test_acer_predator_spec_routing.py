@@ -1,5 +1,5 @@
-from pipeline.deterministic import DeterministicExtractor, TableKeyRouter
-from pipeline.llm_auditor import LLMAuditor, FieldCorrection
+from app.pipeline.deterministic import DeterministicExtractor, TableKeyRouter
+from app.pipeline.llm_auditor import LLMAuditor, FieldCorrection
 
 
 def test_marketing_keys_not_routed_to_hardware_subsystems():
@@ -99,3 +99,59 @@ def test_llm_auditor_preserves_table_memory_capacity():
     # The programmatic table precedence guard must reject the 32GB override
     assert len(applied) == 0
     assert laptop["specs"]["memory"]["capacity_gb"] == 16
+
+
+def test_table_key_router_default_loads_specs_alias_dict():
+    """Verify TableKeyRouter defaults to loading specs_alias_dict.json with full coverage."""
+    router = TableKeyRouter()
+    assert len(router.label_to_bucket) > 500
+    assert router.route_key("solid state drive interface") == "storage_interface"
+
+
+def test_generic_multi_store_routing_arabic_keys():
+    """Verify TableKeyRouter properly routes Arabic keys from Egyptian retailers."""
+    router = TableKeyRouter()
+
+    # Core components in Arabic
+    assert router.route_key("المعالج") == "cpu"
+    assert router.route_key("نوع المعالج") == "cpu"
+    assert router.route_key("كارت الشاشة") == "gpu"
+    assert router.route_key("بطاقة الرسومات") == "gpu"
+    assert router.route_key("الذاكرة") == "memory"
+    assert router.route_key("سعة الرام") == "memory"
+    assert router.route_key("أقصى سعة للذاكرة") == "max_memory"
+    assert router.route_key("سعة التخزين") == "storage"
+    assert router.route_key("القرص الصلب") == "storage"
+    assert router.route_key("الشاشة") == "display"
+    assert router.route_key("حجم الشاشة") == "display"
+    assert router.route_key("البطارية") == "power"
+    assert router.route_key("الوزن") == "weight"
+    assert router.route_key("المنافذ") == "ports"
+
+
+def test_unstructured_specs_parser():
+    """Verify TableKeyRouter.parse_unstructured_specs correctly converts bullets and text blocks."""
+    # 1. Bullet list
+    bullets = [
+        "• Processor: Intel Core i7-13700H",
+        "• RAM: 16 GB DDR5",
+        "• Storage - 1TB NVMe SSD",
+        "• Display: 15.6 inch FHD 144Hz",
+        "Just a random marketing sentence without key value",
+    ]
+    parsed = TableKeyRouter.parse_unstructured_specs(bullets)
+    assert parsed.get("Processor") == "Intel Core i7-13700H"
+    assert parsed.get("RAM") == "16 GB DDR5"
+    assert parsed.get("Storage") == "1TB NVMe SSD"
+    assert parsed.get("Display") == "15.6 inch FHD 144Hz"
+
+    # 2. Text block
+    text_block = """
+    CPU: AMD Ryzen 7 7840HS
+    Memory: 32GB
+    GPU: NVIDIA GeForce RTX 4070
+    """
+    parsed_text = TableKeyRouter.parse_unstructured_specs(text_block)
+    assert parsed_text.get("CPU") == "AMD Ryzen 7 7840HS"
+    assert parsed_text.get("Memory") == "32GB"
+    assert parsed_text.get("GPU") == "NVIDIA GeForce RTX 4070"

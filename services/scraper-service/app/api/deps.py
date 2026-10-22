@@ -4,9 +4,9 @@ from functools import lru_cache
 
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
-from app.services.email_service import EmailService
+from app.notifications.service import ScraperNotificationService
 from app.services.orchestrator import ScrapeOrchestrator
-from app.storage.base import IObjectStorageService
+from app.common.storage.base import IObjectStorageService
 
 
 @lru_cache(maxsize=1)
@@ -16,9 +16,9 @@ def get_scraper_engine() -> IScraperEngine:
 
 
 @lru_cache(maxsize=1)
-def get_email_service() -> EmailService:
+def get_email_service() -> ScraperNotificationService:
     """Singleton provider for email service."""
-    return EmailService()
+    return ScraperNotificationService()
 
 
 def get_orchestrator() -> ScrapeOrchestrator:
@@ -38,6 +38,6 @@ def get_orchestrator() -> ScrapeOrchestrator:
 
 def get_storage() -> "IObjectStorageService":
     """Provider for object storage service (AWS S3 / S3-compatible)."""
-    from app.storage.factory import get_storage_service
+    from app.common.storage.factory import get_storage_service
 
     return get_storage_service()

@@ -282,24 +282,8 @@ class CompumartsStoreScraper(BaseStoreScraper):
         if not title:
             title = link_elem.get("aria-label", "").strip() or link_elem.get_text(strip=True)
 
-        if not title or len(title) < 5:
-            self.record_skipped(
-                name=title or "Unknown",
-                url=full_url,
-                reason="Title too short or missing",
-                stage="card_filter",
-            )
-            return None
-
-        # Filter out non-laptop accessories and used/refurbished items
-        is_valid, reason = self.is_valid_new_laptop(title=title, url=full_url)
-        if not is_valid:
-            self.record_skipped(
-                name=title,
-                url=full_url,
-                reason=f"Filtered out as standalone accessory or non-laptop: {reason}",
-                stage="card_filter",
-            )
+        # Gate 1: Fast card-level validation
+        if self.should_skip_card(title=title, url=full_url):
             return None
 
         # Extract price
@@ -375,20 +359,8 @@ class CompumartsStoreScraper(BaseStoreScraper):
                 pattern_learned = getattr(spec_res, "pattern_learned", False)
                 learned_pattern_type = getattr(spec_res, "learned_pattern_type", None)
 
-            # Level 2 validation: Verify PDP specs/condition do not reveal a used/refurbished or non-laptop product
-            pdp_valid, pdp_reason = self.is_valid_new_laptop(
-                title=title,
-                specs=specs,
-                url=full_url,
-                description=raw_desc,
-            )
-            if not pdp_valid:
-                self.record_skipped(
-                    name=title,
-                    url=full_url,
-                    reason=f"Filtered out after PDP inspection: {pdp_reason}",
-                    stage="pdp_filter",
-                )
+            # Gate 2: Deep PDP validation
+            if self.should_skip_pdp(title=title, specs=specs, url=full_url, description=raw_desc):
                 return None
 
             if pdp_price_val is not None:

@@ -10,16 +10,16 @@ from app.core.storage_config import StorageSettings
 from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult
 from app.schemas.orchestrator import ScrapeRequest, ScrapeTargetResult
 from app.services.orchestrator import ScrapeOrchestrator
-from app.storage.base import IObjectStorageService
-from app.storage.exceptions import (
+from app.common.storage.base import IObjectStorageService
+from app.common.storage.exceptions import (
     StorageConnectionError,
     StorageNotFoundError,
     StorageOperationError,
     StoragePermissionError,
 )
-from app.storage.factory import StorageFactory
-from app.storage.models import BatchDeleteResult, ObjectMetadata, StorageObject
-from app.storage.s3 import S3StorageService
+from app.common.storage.factory import StorageFactory
+from app.common.storage.models import BatchDeleteResult, ObjectMetadata, StorageObject
+from app.common.storage.s3 import S3StorageService
 
 
 @pytest.fixture

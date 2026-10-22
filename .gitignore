@@ -32,6 +32,7 @@ pipeline_envelopes.txt
 *.checkpoint.jsonl
 *.bak
 latest_scraper_report.html
+*.egg-info/
 store_*.json
 !store_compumarts.json
 

@@ -144,14 +144,7 @@ class ElBadrStoreScraper(BaseStoreScraper):
                     continue
 
                 # Filter out standalone accessories and non-laptop/used items
-                is_valid, reason = self.is_valid_new_laptop(title=title, url=clean_url)
-                if not is_valid:
-                    self.record_skipped(
-                        name=title,
-                        url=clean_url,
-                        reason=f"Filtered out as standalone accessory or non-laptop: {reason}",
-                        stage="accessory_filter",
-                    )
+                if self.should_skip_card(title=title, url=clean_url):
                     continue
 
                 slug = clean_url.rstrip("/").split("/")[-1]
@@ -349,19 +342,7 @@ class ElBadrStoreScraper(BaseStoreScraper):
                 pattern_learned = getattr(spec_res, "pattern_learned", False)
                 learned_pattern_type = getattr(spec_res, "learned_pattern_type", None)
 
-            pdp_valid, pdp_reason = self.is_valid_new_laptop(
-                title=title,
-                specs=pdp_specs,
-                url=clean_url,
-                description=pdp_desc,
-            )
-            if not pdp_valid:
-                self.record_skipped(
-                    name=title,
-                    url=clean_url,
-                    reason=f"Filtered out after PDP inspection: {pdp_reason}",
-                    stage="pdp_filter",
-                )
+            if self.should_skip_pdp(title=title, specs=pdp_specs, url=clean_url, description=pdp_desc):
                 return None
             specs = pdp_specs
             raw_desc = pdp_desc

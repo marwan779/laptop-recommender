@@ -2,7 +2,7 @@
 
 from bs4 import BeautifulSoup
 from app.core.patterns.engine import PatternEngine
-from pipeline.orchestrator import LaptopExtractionPipeline, RawScrapedProduct
+from app.pipeline.orchestrator import LaptopExtractionPipeline, RawScrapedProduct
 
 
 def test_compumarts_html_parsing_and_pipeline_execution():

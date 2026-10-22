@@ -159,14 +159,7 @@ class AmazonStoreScraper(BaseStoreScraper):
                     break
 
                 # Level 1 Validation: Non-laptop and used/refurbished check
-                is_valid, reason = self.is_valid_new_laptop(title=title, url=clean_url)
-                if not is_valid:
-                    self.record_skipped(
-                        name=title,
-                        url=clean_url,
-                        reason=f"Filtered out non-laptop accessory or device: {reason}",
-                        stage="level1_filter",
-                    )
+                if self.should_skip_card(title=title, url=clean_url):
                     continue
 
                 seen_asins.add(asin)
@@ -211,19 +204,7 @@ class AmazonStoreScraper(BaseStoreScraper):
                         self._extract_product_specs(clean_url)
                     )
                     # Level 2 validation: Verify PDP specs/condition
-                    pdp_valid, pdp_reason = self.is_valid_new_laptop(
-                        title=title,
-                        specs=pdp_specs,
-                        url=clean_url,
-                        description=pdp_desc,
-                    )
-                    if not pdp_valid:
-                        self.record_skipped(
-                            name=title,
-                            url=clean_url,
-                            reason=f"Filtered out after PDP inspection: {pdp_reason}",
-                            stage="pdp_filter",
-                        )
+                    if self.should_skip_pdp(title=title, specs=pdp_specs, url=clean_url, description=pdp_desc):
                         continue
 
                     specs = pdp_specs

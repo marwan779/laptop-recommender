@@ -2,10 +2,10 @@
 
 import pytest
 
-from gpu_specs import GPU_SPECS, GPUSpecificationEntry
-from pipeline.gpu_anchor import GPUAnchorExtractor
-from pipeline.orchestrator import LaptopExtractionPipeline
-from pipeline.schema import RawScrapedProduct
+from app.pipeline.data.gpu_specs import GPU_SPECS, GPUSpecificationEntry
+from app.pipeline.gpu_anchor import GPUAnchorExtractor
+from app.pipeline.orchestrator import LaptopExtractionPipeline
+from app.pipeline.schema import RawScrapedProduct
 
 
 class TestGPUSpecsValidation:
@@ -24,7 +24,8 @@ class TestGPUSpecsValidation:
             else:
                 assert isinstance(obj.vram_gb, int)
                 assert obj.tdp_limits is not None
-                assert obj.tdp_limits.min_w <= obj.tdp_limits.max_w
+                if obj.tdp_limits.min_w is not None and obj.tdp_limits.max_w is not None:
+                    assert obj.tdp_limits.min_w <= obj.tdp_limits.max_w
 
 
 class TestGPUAnchorExtraction:

@@ -168,14 +168,7 @@ class BTechStoreScraper(BaseStoreScraper):
                         break
 
                     # Level 1 Validation: Non-laptop and used/refurbished check
-                    is_valid, reason = self.is_valid_new_laptop(title=title, url=clean_url)
-                    if not is_valid:
-                        self.record_skipped(
-                            name=title,
-                            url=clean_url,
-                            reason=f"Filtered out non-laptop accessory or device: {reason}",
-                            stage="level1_filter",
-                        )
+                    if self.should_skip_card(title=title, url=clean_url, stage="level1_filter"):
                         continue
 
                     seen_urls.add(clean_url)
@@ -204,19 +197,7 @@ class BTechStoreScraper(BaseStoreScraper):
                             self._extract_product_specs(clean_url)
                         )
                         # Level 2 validation: Verify PDP specs/condition
-                        pdp_valid, pdp_reason = self.is_valid_new_laptop(
-                            title=title,
-                            specs=pdp_specs,
-                            url=clean_url,
-                            description=pdp_desc,
-                        )
-                        if not pdp_valid:
-                            self.record_skipped(
-                                name=title,
-                                url=clean_url,
-                                reason=f"Filtered out after PDP inspection: {pdp_reason}",
-                                stage="pdp_filter",
-                            )
+                        if self.should_skip_pdp(title=title, specs=pdp_specs, url=clean_url, description=pdp_desc):
                             continue
 
                         specs = pdp_specs
@@ -314,14 +295,7 @@ class BTechStoreScraper(BaseStoreScraper):
                     break
 
                 # Level 1 Validation: Non-laptop and used/refurbished check
-                is_valid, reason = self.is_valid_new_laptop(title=title, url=clean_url)
-                if not is_valid:
-                    self.record_skipped(
-                        name=title,
-                        url=clean_url,
-                        reason=f"Filtered out non-laptop accessory or device: {reason}",
-                        stage="level1_filter",
-                    )
+                if self.should_skip_card(title=title, url=clean_url):
                     continue
 
                 seen_urls.add(clean_url)
@@ -358,19 +332,7 @@ class BTechStoreScraper(BaseStoreScraper):
                         self._extract_product_specs(clean_url)
                     )
                     # Level 2 validation: Verify PDP specs/condition
-                    pdp_valid, pdp_reason = self.is_valid_new_laptop(
-                        title=title,
-                        specs=pdp_specs,
-                        url=clean_url,
-                        description=pdp_desc,
-                    )
-                    if not pdp_valid:
-                        self.record_skipped(
-                            name=title,
-                            url=clean_url,
-                            reason=f"Filtered out after PDP inspection: {pdp_reason}",
-                            stage="pdp_filter",
-                        )
+                    if self.should_skip_pdp(title=title, specs=pdp_specs, url=clean_url, description=pdp_desc):
                         continue
 
                     specs = pdp_specs
@@ -449,7 +411,7 @@ class BTechStoreScraper(BaseStoreScraper):
             product_url = urljoin(self.base_url, link_el.get("href", ""))
             clean_url = urlparse(product_url)._replace(query="", fragment="").geturl()
 
-            if not title or len(title) < 5 or clean_url in seen_urls or self._is_standalone_accessory(title):
+            if clean_url in seen_urls or self.should_skip_card(title=title, url=clean_url):
                 continue
 
             seen_urls.add(clean_url)
@@ -472,13 +434,7 @@ class BTechStoreScraper(BaseStoreScraper):
 
             # Enrich with Level 2 PDP specs
             specs, raw_desc, pdp_mpn, pdp_model, pdp_pval, pdp_pstr, pdp_stock = self._extract_product_specs(clean_url)
-            pdp_valid, _ = self.is_valid_new_laptop(
-                title=title,
-                specs=specs,
-                url=clean_url,
-                description=raw_desc,
-            )
-            if not pdp_valid:
+            if self.should_skip_pdp(title=title, specs=specs, url=clean_url, description=raw_desc):
                 continue
 
             final_price_val = price_val if price_val is not None else pdp_pval

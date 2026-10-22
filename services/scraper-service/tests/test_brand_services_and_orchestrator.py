@@ -23,8 +23,8 @@ from app.services.gigabyte_scraper_service import GigabyteScraperService
 from app.services.hp_scraper_service import HpScraperService
 from app.services.lenovo_scraper_service import LenovoScraperService
 from app.services.orchestrator import ScrapeOrchestrator
-from app.storage.base import IObjectStorageService
-from app.storage.models import StorageObject
+from app.common.storage.base import IObjectStorageService
+from app.common.storage.models import StorageObject
 
 
 # =============================================================================

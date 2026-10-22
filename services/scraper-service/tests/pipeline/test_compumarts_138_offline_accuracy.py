@@ -15,8 +15,8 @@ from typing import Any
 
 import pytest
 
-from pipeline.deterministic import DeterministicExtractor, TableKeyRouter
-from pipeline.sanitizer import TextSanitizer
+from app.pipeline.deterministic import DeterministicExtractor, TableKeyRouter
+from app.pipeline.sanitizer import TextSanitizer
 
 
 @pytest.fixture(scope="module")
@@ -181,7 +181,7 @@ def test_multidimm_ram_precedence(raw_catalog: dict[str, Any]):
 
 def test_raw_spec_populated_and_formatted_across_all_categories(raw_catalog: dict[str, Any]):
     """Verify that raw_spec is present in all 12 categories and properly formatted as {Key}: {Value}."""
-    from pipeline.schema import empty_laptop_specifications
+    from app.pipeline.schema import empty_laptop_specifications
 
     # 1. Schema check: All 12 categories MUST contain raw_spec
     skeleton = empty_laptop_specifications()
