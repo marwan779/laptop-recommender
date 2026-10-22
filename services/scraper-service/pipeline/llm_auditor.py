@@ -447,13 +447,19 @@ class LLMAuditor:
             if key or not ep.api_key_env:
                 self.active_endpoints.append(ep)
                 self._rate_limiters[ep.name] = RateLimiter(requests_per_minute=ep.requests_per_minute)
-                import openai
+                try:
+                    import openai
 
-                self._clients[ep.name] = openai.OpenAI(
-                    base_url=ep.base_url,
-                    api_key=key or "none",
-                    timeout=ep.timeout_seconds,
-                )
+                    self._clients[ep.name] = openai.OpenAI(
+                        base_url=ep.base_url,
+                        api_key=key or "none",
+                        timeout=ep.timeout_seconds,
+                    )
+                except ImportError:
+                    logger.warning(
+                        "openai package not installed. LLM client for %s could not be initialized.",
+                        ep.name,
+                    )
 
         if not self.active_endpoints:
             logger.warning(
