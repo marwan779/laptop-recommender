@@ -24,19 +24,18 @@ import json
 import logging
 import os
 import re
-import sys
 import time
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any
+from collections.abc import Callable
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
+from pipeline.physical_validator import PhysicalValidator
+
 # Load environment variables (.env in services/scraper-service or current working directory)
 load_dotenv()
-
-from pipeline.physical_validator import PhysicalValidator
 
 logger = logging.getLogger("llm_auditor")
 
@@ -165,28 +164,52 @@ The goal is trustworthy structured data, not perfect literal agreement between s
 
 class FieldCorrection(BaseModel):
     """A proposed correction for an extracted specification field."""
-    field_path: str = Field(description="Canonical dot-delimited field path, e.g. memory.slot_count, display.color_gamut, storage.form_factor")
-    current_value: Optional[Any] = Field(default=None, description="The current incorrect value present in the catalog specs")
-    corrected_value: Optional[Any] = Field(default=None, description="The strictly verified corrected value from raw_spec, or null if it must be cleared/unset")
-    reason: str = Field(description="Detailed technical rationale explaining why the current value is contradictory or invalid based on raw_spec")
-    evidence_quote: str = Field(description="Exact verbatim quote from the raw spec table or product title supporting this correction")
+
+    field_path: str = Field(
+        description="Canonical dot-delimited field path, e.g. memory.slot_count, display.color_gamut, storage.form_factor"
+    )
+    current_value: Any | None = Field(
+        default=None, description="The current incorrect value present in the catalog specs"
+    )
+    corrected_value: Any | None = Field(
+        default=None,
+        description="The strictly verified corrected value from raw_spec, or null if it must be cleared/unset",
+    )
+    reason: str = Field(
+        description="Detailed technical rationale explaining why the current value is contradictory or invalid based on raw_spec"
+    )
+    evidence_quote: str = Field(
+        description="Exact verbatim quote from the raw spec table or product title supporting this correction"
+    )
 
 
 class ProductAuditResult(BaseModel):
     """The audit outcome for a single laptop."""
+
     laptop_id: str = Field(description="The unique identifier (URL or index) of the laptop")
-    has_contradictions: bool = Field(default=False, description="True if any contradictory or invalid fields were detected, False if 100% accurate")
-    corrections: List[FieldCorrection] = Field(default_factory=list, description="List of corrections to apply for this laptop")
+    has_contradictions: bool = Field(
+        default=False, description="True if any contradictory or invalid fields were detected, False if 100% accurate"
+    )
+    corrections: list[FieldCorrection] = Field(
+        default_factory=list, description="List of corrections to apply for this laptop"
+    )
     is_audited: bool = Field(default=True, description="True if the LLM successfully audited this laptop")
-    status: str = Field(default="audited", description="Audit status: 'audited', 'skipped', 'failed', or 'circuit_broken'")
+    status: str = Field(
+        default="audited", description="Audit status: 'audited', 'skipped', 'failed', or 'circuit_broken'"
+    )
 
 
 class BatchAuditResponse(BaseModel):
     """Batch response containing audit results for multiple laptops."""
-    audited_laptops: List[ProductAuditResult] = Field(default_factory=list, description="List of audit results for each laptop in the batch")
-    provider: Optional[str] = Field(default=None, description="The LLM provider endpoint that executed the audit")
-    status: str = Field(default="audited", description="Status of the batch audit: 'audited', 'failed', or 'circuit_broken'")
-    error: Optional[str] = Field(default=None, description="Error message if the audit failed")
+
+    audited_laptops: list[ProductAuditResult] = Field(
+        default_factory=list, description="List of audit results for each laptop in the batch"
+    )
+    provider: str | None = Field(default=None, description="The LLM provider endpoint that executed the audit")
+    status: str = Field(
+        default="audited", description="Status of the batch audit: 'audited', 'failed', or 'circuit_broken'"
+    )
+    error: str | None = Field(default=None, description="Error message if the audit failed")
 
 
 class RateLimiter:
@@ -222,23 +245,39 @@ def cast_value_to_field_type(field_path: str, value: Any) -> Any:
             return False
 
     int_fields = {
-        "memory.slot_count", "memory.capacity_gb", "memory.speed", "memory.max_supported_gb",
-        "storage.slot_count", "storage.capacity_gb", "storage.max_supported_gb",
-        "display.refresh_rate_hz", "display.brightness_nits",
-        "power_battery.battery_cells", "power_battery.power_adapter_w",
-        "audio_webcam.speaker_count", "identity.warranty_years"
+        "memory.slot_count",
+        "memory.capacity_gb",
+        "memory.speed",
+        "memory.max_supported_gb",
+        "storage.slot_count",
+        "storage.capacity_gb",
+        "storage.max_supported_gb",
+        "display.refresh_rate_hz",
+        "display.brightness_nits",
+        "power_battery.battery_cells",
+        "power_battery.power_adapter_w",
+        "audio_webcam.speaker_count",
+        "identity.warranty_years",
     }
     float_fields = {
-        "display.size_inches", "display.response_time_ms",
+        "display.size_inches",
+        "display.response_time_ms",
         "power_battery.battery_capacity_wh",
-        "physical.weight_kg", "physical.width_mm", "physical.depth_mm", "physical.height_mm",
-        "cpu.npu_tops"
+        "physical.weight_kg",
+        "physical.width_mm",
+        "physical.depth_mm",
+        "physical.height_mm",
+        "cpu.npu_tops",
     }
     bool_fields = {
-        "memory.is_soldered", "display.touchscreen",
-        "build_security.has_backlit_keyboard", "build_security.has_fingerprint",
-        "build_security.has_numpad", "audio_webcam.has_privacy_shutter",
-        "audio_webcam.has_ir_camera", "connectivity.has_card_reader"
+        "memory.is_soldered",
+        "display.touchscreen",
+        "build_security.has_backlit_keyboard",
+        "build_security.has_fingerprint",
+        "build_security.has_numpad",
+        "audio_webcam.has_privacy_shutter",
+        "audio_webcam.has_ir_camera",
+        "connectivity.has_card_reader",
     }
 
     if field_path in int_fields:
@@ -262,6 +301,7 @@ def cast_value_to_field_type(field_path: str, value: Any) -> Any:
 @dataclass
 class LLMProviderEndpoint:
     """Configuration for an OpenAI-compatible LLM provider endpoint."""
+
     name: str
     base_url: str
     api_key_env: str
@@ -271,7 +311,7 @@ class LLMProviderEndpoint:
     is_reasoning: bool = False
 
 
-DEFAULT_ENDPOINTS: List[LLMProviderEndpoint] = [
+DEFAULT_ENDPOINTS: list[LLMProviderEndpoint] = [
     # 1. Primary: Groq GPT-OSS 120B (Flagship open weights on Groq LPUs, 8,000+ TPM limit, 30 RPM, 1,000 RPD)
     LLMProviderEndpoint(
         name="groq-gpt-120b",
@@ -350,14 +390,14 @@ def _clean_json_text(text: str) -> str:
 
 class LLMAuditor:
     """Universal High-Speed Ground-Truth LLM Auditor.
-    
+
     Supports seamless multi-provider failover across OpenAI-compatible inference engines:
     Groq (Qwen 32B / Llama 70B) -> OpenRouter (Qwen 72B) -> Cerebras (Llama 70B) -> SambaNova.
     """
 
     def __init__(
         self,
-        endpoints: Optional[List[LLMProviderEndpoint]] = None,
+        endpoints: list[LLMProviderEndpoint] | None = None,
         max_retries: int = 2,
         max_consecutive_failures: int = 2,
     ):
@@ -366,9 +406,9 @@ class LLMAuditor:
         self.consecutive_failures: int = 0
         self.is_circuit_broken: bool = False
         self._exhausted_endpoints: set = set()
-        self._consecutive_endpoint_failures: Dict[str, int] = {}
-        self._rate_limiters: Dict[str, RateLimiter] = {}
-        self._clients: Dict[str, Any] = {}
+        self._consecutive_endpoint_failures: dict[str, int] = {}
+        self._rate_limiters: dict[str, RateLimiter] = {}
+        self._clients: dict[str, Any] = {}
 
         candidate_endpoints = list(endpoints or DEFAULT_ENDPOINTS)
 
@@ -401,13 +441,14 @@ class LLMAuditor:
             )
 
         # Discover active endpoints with valid keys
-        self.active_endpoints: List[LLMProviderEndpoint] = []
+        self.active_endpoints: list[LLMProviderEndpoint] = []
         for ep in candidate_endpoints:
             key = os.getenv(ep.api_key_env, "") if ep.api_key_env else "none"
             if key or not ep.api_key_env:
                 self.active_endpoints.append(ep)
                 self._rate_limiters[ep.name] = RateLimiter(requests_per_minute=ep.requests_per_minute)
                 import openai
+
                 self._clients[ep.name] = openai.OpenAI(
                     base_url=ep.base_url,
                     api_key=key or "none",
@@ -450,12 +491,12 @@ class LLMAuditor:
         self._consecutive_endpoint_failures.clear()
         logger.info("[LLMAuditor] Circuit breaker manually reset. All endpoints re-enabled.")
 
-    def _prepare_laptop_payload(self, laptop: Dict[str, Any], identifier: str) -> Dict[str, Any]:
+    def _prepare_laptop_payload(self, laptop: dict[str, Any], identifier: str) -> dict[str, Any]:
         """Format a laptop entry for auditing, excluding CPU and GPU to enforce immutability."""
         specs = laptop.get("specs", {})
-        
-        group_raw_specs: Dict[str, str] = {}
-        auditable_specs: Dict[str, Any] = {}
+
+        group_raw_specs: dict[str, str] = {}
+        auditable_specs: dict[str, Any] = {}
 
         for group_name, group_data in specs.items():
             if group_name == "cpu":
@@ -477,15 +518,10 @@ class LLMAuditor:
             "specs": auditable_specs,
         }
 
-    def audit_batch(
-        self, laptops: List[Dict[str, Any]], identifiers: Optional[List[str]] = None
-    ) -> BatchAuditResponse:
+    def audit_batch(self, laptops: list[dict[str, Any]], identifiers: list[str] | None = None) -> BatchAuditResponse:
         """Audit a batch of laptops against their raw specs using the failover chain."""
         if identifiers is None:
-            identifiers = [
-                laptop.get("url") or f"laptop_{idx}"
-                for idx, laptop in enumerate(laptops)
-            ]
+            identifiers = [laptop.get("url") or f"laptop_{idx}" for idx, laptop in enumerate(laptops)]
 
         if not self.active_endpoints:
             logger.warning("No active LLM provider endpoints configured. Skipping audit.")
@@ -496,10 +532,7 @@ class LLMAuditor:
                 ]
             )
 
-        batch_payload = [
-            self._prepare_laptop_payload(lap, ident)
-            for lap, ident in zip(laptops, identifiers)
-        ]
+        batch_payload = [self._prepare_laptop_payload(lap, ident) for lap, ident in zip(laptops, identifiers)]
 
         prompt_text = (
             "Hi, this is the result of scraping + structuring of Egyptian laptop stores. "
@@ -531,7 +564,13 @@ class LLMAuditor:
         if self.is_circuit_broken or not self.active_endpoints:
             return BatchAuditResponse(
                 audited_laptops=[
-                    ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[], is_audited=False, status="circuit_broken")
+                    ProductAuditResult(
+                        laptop_id=ident,
+                        has_contradictions=False,
+                        corrections=[],
+                        is_audited=False,
+                        status="circuit_broken",
+                    )
                     for ident in identifiers
                 ],
                 provider=None,
@@ -551,7 +590,13 @@ class LLMAuditor:
                 )
             return BatchAuditResponse(
                 audited_laptops=[
-                    ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[], is_audited=False, status="circuit_broken")
+                    ProductAuditResult(
+                        laptop_id=ident,
+                        has_contradictions=False,
+                        corrections=[],
+                        is_audited=False,
+                        status="circuit_broken",
+                    )
                     for ident in identifiers
                 ],
                 provider=None,
@@ -579,7 +624,7 @@ class LLMAuditor:
                 try:
                     limiter.wait_if_needed()
 
-                    create_params: Dict[str, Any] = {
+                    create_params: dict[str, Any] = {
                         "model": ep.model,
                         "messages": [
                             {"role": "system", "content": sys_prompt},
@@ -649,7 +694,9 @@ class LLMAuditor:
                     if is_fatal_auth_or_model:
                         logger.error(
                             "Endpoint %s failed with fatal error (HTTP %s: %s). Permanently blacklisting for this run.",
-                            ep.name, status_code, err_msg
+                            ep.name,
+                            status_code,
+                            err_msg,
                         )
                         self._exhausted_endpoints.add(ep.name)
                         break
@@ -668,7 +715,8 @@ class LLMAuditor:
                         if len(laptops) > 1:
                             logger.info(
                                 "Batch of %d laptops exceeds model token quota on %s. Automatically splitting batch in half...",
-                                len(laptops), ep.name
+                                len(laptops),
+                                ep.name,
                             )
                             mid = len(laptops) // 2
                             res1 = self.audit_batch(laptops[:mid], identifiers[:mid])
@@ -676,24 +724,27 @@ class LLMAuditor:
                             return BatchAuditResponse(
                                 audited_laptops=res1.audited_laptops + res2.audited_laptops,
                                 provider=res1.provider or res2.provider,
-                                status="audited" if (res1.status == "audited" or res2.status == "audited") else "failed",
+                                status="audited"
+                                if (res1.status == "audited" or res2.status == "audited")
+                                else "failed",
                             )
                         else:
                             logger.warning(
                                 "Single laptop exceeds token quota on %s (%s). Failing over to next provider...",
-                                ep.name, err_msg
+                                ep.name,
+                                err_msg,
                             )
                             break
 
                     # 2. Max completion tokens hit during JSON generation -> split batch if multiple, else failover
-                    is_json_token_limit = (
-                        status_code == 400
-                        and ("max completion tokens reached" in err_str or "json_validate_failed" in err_str)
+                    is_json_token_limit = status_code == 400 and (
+                        "max completion tokens reached" in err_str or "json_validate_failed" in err_str
                     )
                     if is_json_token_limit and len(laptops) > 1:
                         logger.info(
                             "Batch of %d laptops reached completion token limit on %s (400). Splitting batch...",
-                            len(laptops), ep.name
+                            len(laptops),
+                            ep.name,
                         )
                         mid = len(laptops) // 2
                         res1 = self.audit_batch(laptops[:mid], identifiers[:mid])
@@ -701,9 +752,8 @@ class LLMAuditor:
                         return BatchAuditResponse(audited_laptops=res1.audited_laptops + res2.audited_laptops)
 
                     # 3. Rate limiting (HTTP 429 ONLY)
-                    is_rate_limit = (
-                        status_code == 429
-                        or (status_code is None and ("429" in err_str or "rate_limit" in err_msg_lower))
+                    is_rate_limit = status_code == 429 or (
+                        status_code is None and ("429" in err_str or "rate_limit" in err_msg_lower)
                     )
 
                     # 4. Service unavailable / transient gateway errors
@@ -732,17 +782,23 @@ class LLMAuditor:
                         logger.warning(
                             "Transient %s on %s (attempt %d/%d). Backing off %.1fs...",
                             "RateLimit" if is_rate_limit else "Unavailable",
-                            ep.name, attempt, self.max_retries, backoff
+                            ep.name,
+                            attempt,
+                            self.max_retries,
+                            backoff,
                         )
                         time.sleep(backoff)
                         continue
                     else:
                         logger.warning("Endpoint %s failed: %s. Failing over to next provider...", ep.name, err_msg)
-                        self._consecutive_endpoint_failures[ep.name] = self._consecutive_endpoint_failures.get(ep.name, 0) + 1
+                        self._consecutive_endpoint_failures[ep.name] = (
+                            self._consecutive_endpoint_failures.get(ep.name, 0) + 1
+                        )
                         if self._consecutive_endpoint_failures[ep.name] >= 2:
                             logger.warning(
                                 "Endpoint %s failed %d times consecutively. Blacklisting for remainder of run.",
-                                ep.name, self._consecutive_endpoint_failures[ep.name]
+                                ep.name,
+                                self._consecutive_endpoint_failures[ep.name],
                             )
                             self._exhausted_endpoints.add(ep.name)
                         break
@@ -756,7 +812,8 @@ class LLMAuditor:
                 "[LLMAuditor Circuit Breaker TRIPPED] LLM auditing failed for %d consecutive batch(es) "
                 "(last error: %s). Bypassing Layer 8 audit for the remainder of this catalog run to prevent stalling. "
                 "Layers 1-7 (Deterministic, Silicon Anchor, NuExtract, Gate 1 & 2) will proceed at full speed.",
-                self.consecutive_failures, last_error
+                self.consecutive_failures,
+                last_error,
             )
         else:
             logger.error("Audit failed across all configured LLM endpoints: %s", last_error)
@@ -764,7 +821,9 @@ class LLMAuditor:
         status_str = "circuit_broken" if self.is_circuit_broken else "failed"
         return BatchAuditResponse(
             audited_laptops=[
-                ProductAuditResult(laptop_id=ident, has_contradictions=False, corrections=[], is_audited=False, status=status_str)
+                ProductAuditResult(
+                    laptop_id=ident, has_contradictions=False, corrections=[], is_audited=False, status=status_str
+                )
                 for ident in identifiers
             ],
             provider=None,
@@ -772,11 +831,9 @@ class LLMAuditor:
             error=str(last_error),
         )
 
-    def apply_corrections(
-        self, laptop: Dict[str, Any], corrections: List[FieldCorrection]
-    ) -> List[Dict[str, Any]]:
+    def apply_corrections(self, laptop: dict[str, Any], corrections: list[FieldCorrection]) -> list[dict[str, Any]]:
         """Validate and apply corrections to a laptop's specifications dictionary.
-        
+
         Returns:
             List of successfully applied change records.
         """
@@ -805,8 +862,7 @@ class LLMAuditor:
             is_valid, validated_val, err_msg = PhysicalValidator.validate_field(field_path, typed_value)
             if not is_valid:
                 logger.warning(
-                    "PhysicalValidator rejected correction for %s: %r (%s). Skipping.",
-                    field_path, typed_value, err_msg
+                    "PhysicalValidator rejected correction for %s: %r (%s). Skipping.", field_path, typed_value, err_msg
                 )
                 continue
 
@@ -824,7 +880,11 @@ class LLMAuditor:
                 if std_mem and re.search(rf"\b{old_value}\s*(?:gb|g)\b", str(std_mem), re.IGNORECASE):
                     logger.info(
                         "Ignoring LLM correction for %s (%s -> %s): Specification table explicitly confirms %r. Preserving %s.",
-                        field_path, old_value, validated_val, std_mem, old_value
+                        field_path,
+                        old_value,
+                        validated_val,
+                        std_mem,
+                        old_value,
                     )
                     continue
 
@@ -847,13 +907,13 @@ class LLMAuditor:
 
     def audit_catalog(
         self,
-        catalog: List[Dict[str, Any]],
+        catalog: list[dict[str, Any]],
         batch_size: int = 1,
         apply_patches: bool = True,
-        progress_callback: Optional[Callable[[int, int, int], None]] = None,
-    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        progress_callback: Callable[[int, int, int], None] | None = None,
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         """Audit the entire catalog in batches, optionally patching contradictions.
-        
+
         Args:
             catalog: List of all laptop entries.
             batch_size: Number of laptops per Gemini request.
@@ -868,11 +928,8 @@ class LLMAuditor:
         total_laptops = len(catalog)
 
         for i in range(0, total_laptops, batch_size):
-            batch = updated_catalog[i:i + batch_size]
-            identifiers = [
-                item.get("url") or f"index_{i + idx}"
-                for idx, item in enumerate(batch)
-            ]
+            batch = updated_catalog[i : i + batch_size]
+            identifiers = [item.get("url") or f"index_{i + idx}" for idx, item in enumerate(batch)]
 
             batch_res = self.audit_batch(batch, identifiers=identifiers)
 
@@ -892,7 +949,9 @@ class LLMAuditor:
                     applied = [
                         {
                             "field_path": c.field_path,
-                            "old_value": item.get("specs", {}).get(c.field_path.split(".")[0], {}).get(c.field_path.split(".")[1]),
+                            "old_value": item.get("specs", {})
+                            .get(c.field_path.split(".")[0], {})
+                            .get(c.field_path.split(".")[1]),
                             "new_value": cast_value_to_field_type(c.field_path, c.corrected_value),
                             "reason": c.reason,
                             "evidence_quote": c.evidence_quote,
@@ -901,12 +960,14 @@ class LLMAuditor:
                     ]
 
                 for app in applied:
-                    all_corrections_log.append({
-                        "laptop_index": i + idx,
-                        "url": item.get("url", ""),
-                        "title": item.get("title", ""),
-                        **app,
-                    })
+                    all_corrections_log.append(
+                        {
+                            "laptop_index": i + idx,
+                            "url": item.get("url", ""),
+                            "title": item.get("title", ""),
+                            **app,
+                        }
+                    )
 
             if progress_callback:
                 progress_callback(min(i + batch_size, total_laptops), total_laptops, len(all_corrections_log))

@@ -1,5 +1,4 @@
 from unittest.mock import MagicMock
-import pytest
 
 from app.schemas.laptop import LaptopSummary
 from app.scrapers.gigabyte import GigabyteBrandScraper, GigabyteDateExtractor

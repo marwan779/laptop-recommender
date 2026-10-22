@@ -24,18 +24,17 @@ import argparse
 import datetime
 import json
 import logging
-import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Ensure project root is in sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from pipeline.llm_auditor import GeminiAuditor, LLMAuditor
+from pipeline.llm_auditor import LLMAuditor
 
 logging.basicConfig(
     level=logging.INFO,
@@ -46,7 +45,7 @@ logger = logging.getLogger("run_llm_auditor")
 
 
 def generate_markdown_report(
-    corrections_log: List[Dict[str, Any]],
+    corrections_log: list[dict[str, Any]],
     total_audited: int,
     laptops_with_issues: int,
     output_path: Path,
@@ -56,11 +55,11 @@ def generate_markdown_report(
     """Generate a GitHub-flavored Markdown audit report."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    timestamp = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
     mode_str = "APPLIED & SAVED" if applied else "DRY-RUN (NO CHANGES SAVED)"
 
     # Count by field
-    field_counts: Dict[str, int] = {}
+    field_counts: dict[str, int] = {}
     for entry in corrections_log:
         f = entry.get("field_path", "unknown")
         field_counts[f] = field_counts.get(f, 0) + 1
@@ -84,14 +83,18 @@ def generate_markdown_report(
     for f, count in sorted(field_counts.items(), key=lambda x: -x[1]):
         lines.append(f"| `{f}` | {count} |")
 
-    lines.extend([
-        "",
-        "## Itemized Corrections Ledger",
-        "",
-    ])
+    lines.extend(
+        [
+            "",
+            "## Itemized Corrections Ledger",
+            "",
+        ]
+    )
 
     if not corrections_log:
-        lines.append("> [!NOTE]\n> Zero contradictions detected. All audited laptop specifications strictly match raw ground truth!")
+        lines.append(
+            "> [!NOTE]\n> Zero contradictions detected. All audited laptop specifications strictly match raw ground truth!"
+        )
     else:
         for idx, item in enumerate(corrections_log, start=1):
             title = item.get("title", "Unknown Laptop")
@@ -107,7 +110,7 @@ def generate_markdown_report(
             lines.append(f"- **Field**: `{fpath}`")
             lines.append(f"- **Catalog Value**: `{json.dumps(old_val)}`")
             lines.append(f"- **Corrected Value**: `{json.dumps(new_val)}`")
-            lines.append(f"- **Raw Spec Evidence**: *\"{evidence}\"*")
+            lines.append(f'- **Raw Spec Evidence**: *"{evidence}"*')
             lines.append(f"- **Technical Rationale**: {reason}")
             lines.append("")
 
@@ -117,13 +120,13 @@ def generate_markdown_report(
     logger.info("Saved Markdown audit report to %s", output_path)
 
 
-def save_jsonl_trace(corrections_log: List[Dict[str, Any]], trace_path: Path) -> None:
+def save_jsonl_trace(corrections_log: list[dict[str, Any]], trace_path: Path) -> None:
     """Save machine-readable JSONL audit trace."""
     trace_path.parent.mkdir(parents=True, exist_ok=True)
     with open(trace_path, "w", encoding="utf-8") as f:
         for record in corrections_log:
             record_copy = dict(record)
-            record_copy["timestamp"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            record_copy["timestamp"] = datetime.datetime.now(datetime.UTC).isoformat()
             f.write(json.dumps(record_copy, ensure_ascii=False) + "\n")
     logger.info("Saved JSONL audit trace to %s (%d records)", trace_path, len(corrections_log))
 
@@ -223,13 +226,13 @@ def main() -> None:
 
     # Load catalog
     logger.info("Loading catalog from %s...", input_path)
-    with open(input_path, "r", encoding="utf-8") as f:
-        catalog: List[Dict[str, Any]] = json.load(f)
+    with open(input_path, encoding="utf-8") as f:
+        catalog: list[dict[str, Any]] = json.load(f)
     logger.info("Loaded %d laptops from catalog.", len(catalog))
 
     # Target specific cases if requested
     items_to_audit = catalog
-    index_mapping: List[int] = list(range(len(catalog)))
+    index_mapping: list[int] = list(range(len(catalog)))
 
     if args.cases:
         target_patterns = [c.strip().lower() for c in args.cases.split(",") if c.strip()]
@@ -246,12 +249,14 @@ def main() -> None:
         index_mapping = matched_indices
         logger.info(
             "Filtered catalog using --cases patterns (%s): %d laptops matched (indices: %s).",
-            args.cases, len(items_to_audit), matched_indices
+            args.cases,
+            len(items_to_audit),
+            matched_indices,
         )
 
     if args.limit:
-        items_to_audit = items_to_audit[:args.limit]
-        index_mapping = index_mapping[:args.limit]
+        items_to_audit = items_to_audit[: args.limit]
+        index_mapping = index_mapping[: args.limit]
         logger.info("Limited audit to first %d laptops.", len(items_to_audit))
 
     if not items_to_audit:
@@ -267,11 +272,16 @@ def main() -> None:
 
     logger.info(
         "Starting Ground-Truth LLM Audit (total: %d laptops, batch_size: %d, provider: %s, mode: %s)...",
-        len(items_to_audit), args.batch_size, auditor.model, "APPLY" if should_apply else "DRY-RUN"
+        len(items_to_audit),
+        args.batch_size,
+        auditor.model,
+        "APPLY" if should_apply else "DRY-RUN",
     )
 
     def progress_callback(processed: int, total: int, corrections_count: int) -> None:
-        logger.info("Progress: %d/%d laptops audited | Contradictions detected: %d", processed, total, corrections_count)
+        logger.info(
+            "Progress: %d/%d laptops audited | Contradictions detected: %d", processed, total, corrections_count
+        )
 
     # Execute audit
     updated_items, corrections_log = auditor.audit_catalog(
@@ -329,4 +339,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

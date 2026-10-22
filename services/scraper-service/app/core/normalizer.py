@@ -84,13 +84,44 @@ class ModelNormalizer:
         if clean.startswith("90") and len(clean) >= 12:
             return clean
         return None
+
     COMPONENT_PREFIXES = (
-        "MX", "RTX", "GTX", "RX", "IRIS", "ARC", "UHD",
-        "DDR", "GDDR", "LPDDR", "SSD", "HDD", "NVME", "PCIE", "SATA",
-        "FHD", "QHD", "WUXGA", "WQXGA", "OLED", "IPS",
-        "WATT", "GEN", "CORE", "INTEL", "AMD",
-        "CELERON", "ATHLON", "RYZEN", "TI", "VRAM", "RAM",
-        "HM", "QM", "WM", "CM",
+        "MX",
+        "RTX",
+        "GTX",
+        "RX",
+        "IRIS",
+        "ARC",
+        "UHD",
+        "DDR",
+        "GDDR",
+        "LPDDR",
+        "SSD",
+        "HDD",
+        "NVME",
+        "PCIE",
+        "SATA",
+        "FHD",
+        "QHD",
+        "WUXGA",
+        "WQXGA",
+        "OLED",
+        "IPS",
+        "WATT",
+        "GEN",
+        "CORE",
+        "INTEL",
+        "AMD",
+        "CELERON",
+        "ATHLON",
+        "RYZEN",
+        "TI",
+        "VRAM",
+        "RAM",
+        "HM",
+        "QM",
+        "WM",
+        "CM",
     )
 
     @classmethod
@@ -140,7 +171,9 @@ class ModelNormalizer:
             return result
 
         # Dell 4-digit model series (e.g. DELL 3510, DELL Vostro 3520)
-        dell_match = re.search(r"\bDELL\s+(?:(?:VOSTRO|INSPIRON|LATITUDE|PRECISION|XPS|G\d+)\s+)?([1-9]\d{3})\b", text, re.I)
+        dell_match = re.search(
+            r"\bDELL\s+(?:(?:VOSTRO|INSPIRON|LATITUDE|PRECISION|XPS|G\d+)\s+)?([1-9]\d{3})\b", text, re.I
+        )
         if dell_match:
             dell_code = dell_match.group(1)
             fam_match = re.search(r"\bDELL\s+([A-Za-z]+)\s+" + dell_code, text, re.I)

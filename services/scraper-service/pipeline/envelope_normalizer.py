@@ -1,7 +1,7 @@
 """Envelope Prompt Normalizer Layer.
 
 Acts as a pre-AI prompt adapter that intercepts ComponentEnvelopes before they reach
-Layer 6 (NuExtract-2.0-2B). 
+Layer 6 (NuExtract-2.0-2B).
 
 Strictly scopes to 'storage' and 'memory' envelopes only.
 Uses non-destructive semantic annotation: detects colloquial hardware idioms
@@ -15,7 +15,6 @@ from __future__ import annotations
 import copy
 import logging
 import re
-from typing import Optional
 
 from pipeline.schema import ComponentEnvelope
 
@@ -66,7 +65,9 @@ class EnvelopePromptNormalizer:
                 re.IGNORECASE,
             )
             if len(m_and_slots) >= 2:
-                annotations.append(f"Total physical storage slots: {len(m_and_slots)} ({len(m_and_slots)} separate drive slots).")
+                annotations.append(
+                    f"Total physical storage slots: {len(m_and_slots)} ({len(m_and_slots)} separate drive slots)."
+                )
             # 2. Additive Expansion Pattern: installed drive + extra / expansion / secondary slot
             elif re.search(
                 r"\b(?:extra\s+(?:m\.2|slot|bay)|second\s+m\.2|plus\s+1x|additional\s+(?:m\.2|storage|slot)|with\s+an\s+extra|expansion\s+slot|free\s+m\.2\s+slot|extra\s+m\.2\s+2230\s+slot)\b",
@@ -83,17 +84,23 @@ class EnvelopePromptNormalizer:
             elif re.search(r"\b(?:2x\s*m\.2|two\s+m\.2|2\s*(?:m\.2\s*)?slots?)\b", text_lower, re.I):
                 annotations.append("Total physical storage slots: 2.")
             # 4. Explicit Single Slot only
-            elif re.search(r"\b(?:only\s+one\s+m\.2|single\s+m\.2|one\s+m\.2\s+slot|no\s+expansion\s+slot)\b", text_lower, re.I):
+            elif re.search(
+                r"\b(?:only\s+one\s+m\.2|single\s+m\.2|one\s+m\.2\s+slot|no\s+expansion\s+slot)\b", text_lower, re.I
+            ):
                 annotations.append("Total physical storage slots: 1 (single slot only, no expansion).")
 
         if needs_max:
             # Maximum storage ceiling: e.g. "Up to 2TB" or "Up to 4TB"
-            m_max_tb = re.search(r"\b(?:up\s+to|supports\s+up\s+to|expandable\s+up\s+to)\s*([1-8])\s*tb\b", text_lower, re.I)
+            m_max_tb = re.search(
+                r"\b(?:up\s+to|supports\s+up\s+to|expandable\s+up\s+to)\s*([1-8])\s*tb\b", text_lower, re.I
+            )
             if m_max_tb:
                 cap_gb = int(m_max_tb.group(1)) * 1024
                 annotations.append(f"Maximum supported storage capacity: {cap_gb} GB.")
             else:
-                m_max_gb = re.search(r"\b(?:up\s+to|supports\s+up\s+to|expandable\s+up\s+to)\s*(\d{3,4})\s*gb\b", text_lower, re.I)
+                m_max_gb = re.search(
+                    r"\b(?:up\s+to|supports\s+up\s+to|expandable\s+up\s+to)\s*(\d{3,4})\s*gb\b", text_lower, re.I
+                )
                 if m_max_gb:
                     cap_gb = int(m_max_gb.group(1))
                     annotations.append(f"Maximum supported storage capacity: {cap_gb} GB.")
@@ -186,4 +193,3 @@ class EnvelopePromptNormalizer:
             return raw_spec + summary_block
 
         return raw_spec
-

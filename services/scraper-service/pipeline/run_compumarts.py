@@ -29,9 +29,9 @@ import logging
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Ensure project root is in sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -42,7 +42,7 @@ from app.stores.compumarts import CompumartsStoreScraper
 from pipeline.ai_fallback.gliner_onnx import GLiNERONNXFallbackExtractor
 from pipeline.ai_fallback.nuextract import NuExtractFallbackExtractor
 from pipeline.llm_auditor import GeminiAuditor
-from pipeline.orchestrator import LaptopExtractionPipeline, PipelineResult
+from pipeline.orchestrator import LaptopExtractionPipeline
 from pipeline.provenance import ProvenanceTracker
 from pipeline.raw_storage import RawScrapeStorage
 from pipeline.schema import RawScrapedProduct
@@ -55,9 +55,7 @@ logging.basicConfig(
 logger = logging.getLogger("compumarts_pipeline")
 
 
-def setup_ai_fallback(
-    ai_type: str, use_onnx: bool, onnx_dir: Optional[str] = None, device: str = "auto"
-) -> Optional[Any]:
+def setup_ai_fallback(ai_type: str, use_onnx: bool, onnx_dir: str | None = None, device: str = "auto") -> Any | None:
     """Initialize the chosen AI fallback model."""
     if ai_type == "none":
         logger.info("AI fallback disabled (--ai none). Running deterministic + CPU anchor only.")
@@ -92,10 +90,13 @@ def setup_ai_fallback(
     elif ai_type == "nuextract":
         try:
             import torch
+
             has_cuda = torch.cuda.is_available()
         except ImportError:
             has_cuda = False
-        exec_provider = "CUDAExecutionProvider" if device == "cuda" or (device == "auto" and has_cuda) else "CPUExecutionProvider"
+        exec_provider = (
+            "CUDAExecutionProvider" if device == "cuda" or (device == "auto" and has_cuda) else "CPUExecutionProvider"
+        )
         logger.info("Initializing NuExtract-2.0 (2B) fallback (provider=%s)...", exec_provider)
         return NuExtractFallbackExtractor(
             onnx_model_dir=onnx_dir,
@@ -107,11 +108,11 @@ def setup_ai_fallback(
 
 
 def run_pipeline(
-    limit: Optional[int] = None,
-    target_url: Optional[str] = None,
+    limit: int | None = None,
+    target_url: str | None = None,
     ai_type: str = "nuextract",
     use_onnx: bool = True,
-    onnx_dir: Optional[str] = None,
+    onnx_dir: str | None = None,
     device: str = "auto",
     output_file: str = "pipeline_results_compumarts.json",
     checkpoint_file: str = "pipeline_results_compumarts.checkpoint.jsonl",
@@ -132,7 +133,11 @@ def run_pipeline(
     if not no_audit:
         try:
             auditor = GeminiAuditor()
-            logger.info("Layer 8 Streaming Ground-Truth LLM Auditor active (batch_size=%d, model=%s).", audit_batch_size, auditor.model)
+            logger.info(
+                "Layer 8 Streaming Ground-Truth LLM Auditor active (batch_size=%d, model=%s).",
+                audit_batch_size,
+                auditor.model,
+            )
         except Exception as e:
             logger.info("Layer 8 LLM Auditor disabled (%s). Running pipeline without LLM audit.", e)
 
@@ -183,9 +188,7 @@ def run_pipeline(
             print("COMPONENT ENVELOPE & FALLBACK RESOLUTION SUMMARY:")
             print("-" * 60)
             comp_res_by_name = {r.component_name: r for r in result.component_results}
-            gate2_rej_by_field = {
-                r["field_path"]: r for r in result.validation_rejections if r.get("gate") == 2
-            }
+            gate2_rej_by_field = {r["field_path"]: r for r in result.validation_rejections if r.get("gate") == 2}
             for env in result.component_envelopes_generated:
                 comp_res = comp_res_by_name.get(env.component_name)
                 print(f"  Subsystem:  {env.component_name.upper()}")
@@ -195,7 +198,7 @@ def run_pipeline(
                     print(f"  AI Model:   {comp_res.model_name}")
                     print(f"  Extracted:  {comp_res.extracted_fields}")
                 else:
-                    print(f"  AI Model:   None")
+                    print("  AI Model:   None")
                 for k, v in env.sub_schema.items():
                     if v is None:
                         full_k = f"{env.component_name}.{k}"
@@ -212,7 +215,9 @@ def run_pipeline(
             logger.info("Executing Layer 8 Ground-Truth LLM Audit on single product...")
             single_record = {
                 "url": target_url,
-                "title": result.raw_product.title if (result.raw_product and result.raw_product.title) else (result.specs.get("identity", {}).get("laptop_model") or target_url),
+                "title": result.raw_product.title
+                if (result.raw_product and result.raw_product.title)
+                else (result.specs.get("identity", {}).get("laptop_model") or target_url),
                 "specs": result.specs,
                 "source_table": (result.raw_product.raw_tables.get("specs") if result.raw_product else {}) or {},
             }
@@ -221,7 +226,13 @@ def run_pipeline(
                 if batch_res.audited_laptops and batch_res.audited_laptops[0].corrections:
                     applied = auditor.apply_corrections(single_record, batch_res.audited_laptops[0].corrections)
                     for app in applied:
-                        logger.info("  [Layer 8 Healed] %s: %s -> %s (Reason: %s)", app["field_path"], app["old_value"], app["new_value"], app["reason"])
+                        logger.info(
+                            "  [Layer 8 Healed] %s: %s -> %s (Reason: %s)",
+                            app["field_path"],
+                            app["old_value"],
+                            app["new_value"],
+                            app["reason"],
+                        )
             except Exception as e:
                 logger.warning("Layer 8 single product audit failed: %s", e)
 
@@ -238,8 +249,8 @@ def run_pipeline(
     total_found = len(catalog_products)
     logger.info("Discovered %d in-stock laptop products from CompuMarts.", total_found)
 
-    results: List[Dict[str, Any]] = []
-    audit_buffer: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
+    audit_buffer: list[dict[str, Any]] = []
     stats = {
         "total": total_found,
         "processed": 0,
@@ -252,9 +263,11 @@ def run_pipeline(
     }
 
     # Open checkpoint, trace, and envelope text streams
-    with ckpt_path.open("w", encoding="utf-8") as ckpt_f, \
-         trace_path.open("w", encoding="utf-8") as trace_f, \
-         (env_log_path.open("w", encoding="utf-8") if env_log_path else open(os.devnull, "w")) as env_f:
+    with (
+        ckpt_path.open("w", encoding="utf-8") as ckpt_f,
+        trace_path.open("w", encoding="utf-8") as trace_f,
+        env_log_path.open("w", encoding="utf-8") if env_log_path else open(os.devnull, "w") as env_f,
+    ):
 
         def flush_audit_buffer():
             if not audit_buffer:
@@ -293,11 +306,13 @@ def run_pipeline(
 
         if env_log_path:
             env_f.write(
-                "=" * 80 + "\n"
+                "=" * 80
+                + "\n"
                 + "COMPUMARTS SPECIFICATION EXTRACTION - DETAILED ENVELOPE AUDIT LOG\n"
-                + f"Generated At: {datetime.now(timezone.utc).isoformat()}\n"
+                + f"Generated At: {datetime.now(UTC).isoformat()}\n"
                 + f"AI Fallback Backend: {ai_type} (onnx={use_onnx})\n"
-                + "=" * 80 + "\n\n"
+                + "=" * 80
+                + "\n\n"
             )
 
         for idx, prod in enumerate(catalog_products, start=1):
@@ -379,13 +394,16 @@ def run_pipeline(
 
         if env_log_path:
             env_f.write(
-                "\n" + "=" * 80 + "\n"
+                "\n"
+                + "=" * 80
+                + "\n"
                 + "ENVELOPE AUDIT SUMMARY:\n"
                 + f"Total Laptops Processed:     {stats['processed']}\n"
                 + f"Total Component Envelopes:   {stats['envelopes_total']}\n"
                 + f"AI Fallback Resolved:        {stats['ai_resolved']}\n"
                 + f"Gate 2 AI Rejections:        {stats['gate2_rejections']}\n"
-                + "=" * 80 + "\n"
+                + "=" * 80
+                + "\n"
             )
 
     # Save final output
@@ -400,7 +418,9 @@ def run_pipeline(
     print("PIPELINE EXECUTION SUMMARY:")
     print("=" * 60)
     print(f"Total Laptops Processed:     {stats['processed']}")
-    print(f"CPU Anchor Match Rate:       {stats['cpu_identified']} / {stats['processed']} ({stats['cpu_identified']/max(stats['processed'],1):.1%})")
+    print(
+        f"CPU Anchor Match Rate:       {stats['cpu_identified']} / {stats['processed']} ({stats['cpu_identified'] / max(stats['processed'], 1):.1%})"
+    )
     print(f"Total Envelopes Generated:   {stats['envelopes_total']}")
     print(f"AI Fallback Resolved:        {stats['ai_resolved']}")
     print(f"Gate 1 Physical Rejections:  {stats['gate1_rejections']}")
@@ -419,7 +439,7 @@ def export_envelopes_from_results(
     envelope_log_file: str = "pipeline_envelopes.txt",
     ai_type: str = "gliner",
     use_onnx: bool = True,
-    onnx_dir: Optional[str] = None,
+    onnx_dir: str | None = None,
 ) -> None:
     """Generate comprehensive pipeline_envelopes.txt from existing results file using captured source tables."""
     rf = Path(results_path)
@@ -442,13 +462,15 @@ def export_envelopes_from_results(
 
     with env_log_path.open("w", encoding="utf-8") as env_f:
         env_f.write(
-            "=" * 80 + "\n"
+            "=" * 80
+            + "\n"
             + "COMPUMARTS SPECIFICATION EXTRACTION - DETAILED ENVELOPE AUDIT LOG\n"
-            + f"Generated At: {datetime.now(timezone.utc).isoformat()}\n"
+            + f"Generated At: {datetime.now(UTC).isoformat()}\n"
             + f"Source Results File: {rf.resolve()}\n"
             + f"Total Catalog Laptops: {len(products_data)}\n"
             + f"AI Fallback Backend: {ai_type} (onnx={use_onnx})\n"
-            + "=" * 80 + "\n\n"
+            + "=" * 80
+            + "\n\n"
         )
 
         for idx, item in enumerate(products_data, start=1):
@@ -466,10 +488,9 @@ def export_envelopes_from_results(
             if res.component_envelopes_generated:
                 laptops_with_envelopes += 1
                 envelopes_count += len(res.component_envelopes_generated)
-                resolved_count += len([
-                    r for r in res.component_results
-                    if any(v is not None for v in r.extracted_fields.values())
-                ])
+                resolved_count += len(
+                    [r for r in res.component_results if any(v is not None for v in r.extracted_fields.values())]
+                )
                 rejected_count += sum(1 for r in res.validation_rejections if r.get("gate") == 2)
 
                 report = ProvenanceTracker.format_component_envelope_text_report(
@@ -484,7 +505,9 @@ def export_envelopes_from_results(
                 env_f.write(report + "\n\n")
 
         env_f.write(
-            "\n" + "=" * 80 + "\n"
+            "\n"
+            + "=" * 80
+            + "\n"
             + "ENVELOPE AUDIT SUMMARY:\n"
             + f"Total Catalog Laptops Evaluated:  {len(products_data)}\n"
             + f"Laptops Generating Envelopes:     {laptops_with_envelopes}\n"
@@ -492,23 +515,42 @@ def export_envelopes_from_results(
             + f"Total Component Envelopes:        {envelopes_count}\n"
             + f"Component AI Fallbacks Extracted: {resolved_count}\n"
             + f"Gate 2 AI Rejections:             {rejected_count}\n"
-            + "=" * 80 + "\n"
+            + "=" * 80
+            + "\n"
         )
 
-    logger.info("Saved complete envelope audit log to %s (%d laptops generated %d envelopes).", env_log_path, laptops_with_envelopes, envelopes_count)
+    logger.info(
+        "Saved complete envelope audit log to %s (%d laptops generated %d envelopes).",
+        env_log_path,
+        laptops_with_envelopes,
+        envelopes_count,
+    )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Live CompuMarts Laptop Extraction Pipeline")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of laptops to scrape/process")
     parser.add_argument("--url", type=str, default=None, help="Process a single laptop PDP URL directly")
-    parser.add_argument("--ai", choices=["nuextract", "gliner", "none"], default="nuextract", help="AI Fallback backend")
+    parser.add_argument(
+        "--ai", choices=["nuextract", "gliner", "none"], default="nuextract", help="AI Fallback backend"
+    )
     parser.add_argument("--no-onnx", action="store_true", help="Disable ONNX and run GLiNER with PyTorch")
     parser.add_argument("--output", type=str, default="pipeline_results_compumarts.json", help="Output JSON path")
-    parser.add_argument("--onnx-dir", type=str, default=None, help="Path to local ONNX model directory (e.g. for NuExtract ONNX GenAI)")
-    parser.add_argument("--device", choices=["auto", "cuda", "cpu"], default="auto", help="Execution device for AI fallback (auto/cuda/cpu)")
-    parser.add_argument("--checkpoint", type=str, default="pipeline_results_compumarts.checkpoint.jsonl", help="Checkpoint JSONL path")
-    parser.add_argument("--trace-file", type=str, default="pipeline_trace_compumarts.jsonl", help="Provenance audit trace JSONL path")
+    parser.add_argument(
+        "--onnx-dir", type=str, default=None, help="Path to local ONNX model directory (e.g. for NuExtract ONNX GenAI)"
+    )
+    parser.add_argument(
+        "--device",
+        choices=["auto", "cuda", "cpu"],
+        default="auto",
+        help="Execution device for AI fallback (auto/cuda/cpu)",
+    )
+    parser.add_argument(
+        "--checkpoint", type=str, default="pipeline_results_compumarts.checkpoint.jsonl", help="Checkpoint JSONL path"
+    )
+    parser.add_argument(
+        "--trace-file", type=str, default="pipeline_trace_compumarts.jsonl", help="Provenance audit trace JSONL path"
+    )
     parser.add_argument(
         "--envelope-log",
         type=str,
@@ -573,4 +615,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

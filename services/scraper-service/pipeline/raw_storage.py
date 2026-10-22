@@ -9,11 +9,9 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
-from typing import Any, Dict, Optional
 
 from pipeline.schema import RawScrapedProduct
 
@@ -29,7 +27,7 @@ class RawScrapeStorage:
 
     def save(self, product: RawScrapedProduct) -> Path:
         """Save raw product HTML and metadata to disk.
-        
+
         Returns:
             Path to the saved metadata JSON file.
         """
@@ -38,7 +36,7 @@ class RawScrapeStorage:
         store_dir.mkdir(parents=True, exist_ok=True)
 
         url_hash = hashlib.sha256(product.url.encode("utf-8")).hexdigest()[:12]
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         file_prefix = f"{timestamp}_{url_hash}"
 
         html_file = store_dir / f"{file_prefix}.html"
@@ -83,4 +81,3 @@ class RawScrapeStorage:
             in_stock=meta.get("in_stock", True),
             scraped_at=meta.get("scraped_at", ""),
         )
-

@@ -43,4 +43,3 @@ __all__ = [
     "RawScrapedProduct",
     "empty_laptop_specifications",
 ]
-

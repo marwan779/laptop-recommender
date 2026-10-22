@@ -1,10 +1,8 @@
 """Unit tests for email schemas, templates, email service edge cases, and orchestrator request normalization."""
 
 from datetime import datetime, timedelta
-from pathlib import Path
 import smtplib
 from unittest.mock import MagicMock, patch
-import pytest
 
 from app.core.email_config import EmailSettings
 from app.email.templates import (
@@ -17,7 +15,7 @@ from app.schemas.email import (
     ScraperFinishedReport,
     TargetSummaryItem,
 )
-from app.schemas.laptop import BrandCatalogResult, LaptopSummary, StoreCatalogResult
+from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult
 from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
 from app.services.email_service import EmailService
 

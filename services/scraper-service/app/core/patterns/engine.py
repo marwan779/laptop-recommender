@@ -145,7 +145,8 @@ class PatternEngine:
                             and v
                             and len(k) < 60
                             and len(v) < 600
-                            and k.lower() not in ("category", "specification", "specification details", "specifications")
+                            and k.lower()
+                            not in ("category", "specification", "specification details", "specifications")
                         ):
                             if k not in dom_specs or len(v) > len(dom_specs[k]):
                                 dom_specs[k] = v
@@ -153,7 +154,9 @@ class PatternEngine:
                 # D. Parse Headings with Sibling Lists/Paragraphs (h2, h3, h4 followed by ul, ol, p, div)
                 for h in block.select("h2, h3, h4"):
                     h_text = h.get_text(" ", strip=True).rstrip(":")
-                    if 2 < len(h_text) < 40 and not any(h_text.lower().startswith(x) for x in ["about", "review", "related", "write a"]):
+                    if 2 < len(h_text) < 40 and not any(
+                        h_text.lower().startswith(x) for x in ["about", "review", "related", "write a"]
+                    ):
                         sibling = h.find_next_sibling()
                         if sibling and sibling.name in ["ul", "ol", "p", "div"]:
                             sib_text = sibling.get_text(" ", strip=True)
@@ -166,28 +169,52 @@ class PatternEngine:
                 for idx, line_clean in enumerate(lines):
                     # Check if line acts as a section header
                     clean_lower = line_clean.lower().strip(":")
-                    if any(
-                        clean_lower.startswith(sec)
-                        for sec in [
-                            "processor", "cpu", "graphics", "gpu", "memory", "ram",
-                            "storage", "display", "screen", "battery", "power", "audio",
-                            "operating system", "ports", "connectivity", "physical"
-                        ]
-                    ) and len(line_clean) < 40 and ":" not in line_clean:
+                    if (
+                        any(
+                            clean_lower.startswith(sec)
+                            for sec in [
+                                "processor",
+                                "cpu",
+                                "graphics",
+                                "gpu",
+                                "memory",
+                                "ram",
+                                "storage",
+                                "display",
+                                "screen",
+                                "battery",
+                                "power",
+                                "audio",
+                                "operating system",
+                                "ports",
+                                "connectivity",
+                                "physical",
+                            ]
+                        )
+                        and len(line_clean) < 40
+                        and ":" not in line_clean
+                    ):
                         current_section = line_clean.strip(":")
                         # Lookahead: If next line has no colon and looks like hardware value, capture it
                         if idx + 1 < len(lines):
                             next_l = lines[idx + 1]
                             if ":" not in next_l and 3 < len(next_l) < 120:
-                                if any(x in clean_lower for x in ["processor", "cpu"]) and any(x in next_l.lower() for x in ["intel", "amd", "core", "ryzen", "celeron", "athlon"]):
+                                if any(x in clean_lower for x in ["processor", "cpu"]) and any(
+                                    x in next_l.lower() for x in ["intel", "amd", "core", "ryzen", "celeron", "athlon"]
+                                ):
                                     if "Processor" not in dom_specs or len(next_l) > len(dom_specs["Processor"]):
                                         dom_specs["Processor"] = next_l
-                                elif any(x in clean_lower for x in ["graphics", "gpu"]) and any(x in next_l.lower() for x in ["nvidia", "geforce", "rtx", "gtx", "radeon", "intel", "arc", "iris"]):
+                                elif any(x in clean_lower for x in ["graphics", "gpu"]) and any(
+                                    x in next_l.lower()
+                                    for x in ["nvidia", "geforce", "rtx", "gtx", "radeon", "intel", "arc", "iris"]
+                                ):
                                     if "Graphics" not in dom_specs or len(next_l) > len(dom_specs["Graphics"]):
                                         dom_specs["Graphics"] = next_l
                         continue
 
-                    cls._parse_delimited_text(line_clean, pattern_cfg.delimiters, dom_specs, current_section=current_section)
+                    cls._parse_delimited_text(
+                        line_clean, pattern_cfg.delimiters, dom_specs, current_section=current_section
+                    )
 
                 # F. Raw Description Accumulation
                 desc_chunk = block.get_text("\n", strip=True)
@@ -288,9 +315,15 @@ class PatternEngine:
         # Storage capacity enrichment from raw description if lost or missing
         if not slots["storage"] and raw_desc_parts:
             full_desc = " ".join(raw_desc_parts)
-            st_m = re.search(r"Storage\s+(?:Capacity\s*)?[:\s]+(\d{3,4}\s*GB|\d\s*TB(?:\s*PCIe|\s*SSD|\s*NVMe)?)", full_desc, re.I)
+            st_m = re.search(
+                r"Storage\s+(?:Capacity\s*)?[:\s]+(\d{3,4}\s*GB|\d\s*TB(?:\s*PCIe|\s*SSD|\s*NVMe)?)", full_desc, re.I
+            )
             if not st_m:
-                st_m = re.search(r"\b(\d{1,2}\s*TB|\d{3,4}\s*GB)\s*(?:PCIe\s*(?:\d\.\d\s*)?SSD|NVMe\s*SSD|SSD|HDD)\b", full_desc, re.I)
+                st_m = re.search(
+                    r"\b(\d{1,2}\s*TB|\d{3,4}\s*GB)\s*(?:PCIe\s*(?:\d\.\d\s*)?SSD|NVMe\s*SSD|SSD|HDD)\b",
+                    full_desc,
+                    re.I,
+                )
             if st_m:
                 dom_specs["Storage"] = st_m.group(0).strip()
                 slots["storage"] = dom_specs["Storage"]
@@ -300,7 +333,9 @@ class PatternEngine:
             full_desc = " ".join(raw_desc_parts)
             disp_m = re.search(r"Display:\s*(\d{2}(?:\.\d)?-inch[^\n\r]+)", full_desc, re.I)
             if not disp_m:
-                disp_m = re.search(r"\b(\d{2}(?:\.\d)?-inch\s*(?:WQXGA|WUXGA|FHD\+?|QHD\+?|OLED|IPS)[^\n\r]*)", full_desc, re.I)
+                disp_m = re.search(
+                    r"\b(\d{2}(?:\.\d)?-inch\s*(?:WQXGA|WUXGA|FHD\+?|QHD\+?|OLED|IPS)[^\n\r]*)", full_desc, re.I
+                )
             if disp_m:
                 dom_specs["Display"] = disp_m.group(1).strip()
                 slots["display"] = dom_specs["Display"]
@@ -358,7 +393,9 @@ class PatternEngine:
             else:
                 specs_fallback_reason = "No text specs found in PDP"
                 is_anomaly = True
-                anomaly_reason = f"Store '{store_key}' PDP has neither text specs nor flyer images across all discovery tiers"
+                anomaly_reason = (
+                    f"Store '{store_key}' PDP has neither text specs nor flyer images across all discovery tiers"
+                )
                 print(
                     f"[{pattern_cfg.name}] [Pattern Anomaly] Store '{store_key}' on '{title[:50]}' "
                     f"failed all DOM discovery tiers. Fallback to title."
@@ -412,13 +449,24 @@ class PatternEngine:
                     k_lower = k_clean.lower()
 
                     # Prevent destructive overwriting of generic keys (e.g. Capacity, Type, Model)
-                    if current_section and k_lower in ("capacity", "type", "speed", "slots", "installed", "interface", "form factor", "size"):
+                    if current_section and k_lower in (
+                        "capacity",
+                        "type",
+                        "speed",
+                        "slots",
+                        "installed",
+                        "interface",
+                        "form factor",
+                        "size",
+                    ):
                         target_key = f"{current_section} {k_clean}"
                     elif k_clean in specs_dict and specs_dict[k_clean] != v_clean:
                         if k_lower == "capacity":
                             existing_val = specs_dict[k_clean].lower()
                             new_val = v_clean.lower()
-                            if ("wh" in existing_val and any(s in new_val for s in ["gb", "tb", "ssd", "nvme"])) or ("wh" in new_val and any(s in existing_val for s in ["gb", "tb", "ssd", "nvme"])):
+                            if ("wh" in existing_val and any(s in new_val for s in ["gb", "tb", "ssd", "nvme"])) or (
+                                "wh" in new_val and any(s in existing_val for s in ["gb", "tb", "ssd", "nvme"])
+                            ):
                                 if "wh" in existing_val:
                                     specs_dict["Battery Capacity"] = specs_dict.pop(k_clean)
                                     specs_dict["Storage Capacity"] = v_clean
@@ -427,7 +475,9 @@ class PatternEngine:
                                     specs_dict["Storage Capacity"] = specs_dict.pop(k_clean)
                                     specs_dict["Battery Capacity"] = v_clean
                                     return True
-                        target_key = f"{current_section} {k_clean}" if current_section else f"{k_clean} ({v_clean[:15]})"
+                        target_key = (
+                            f"{current_section} {k_clean}" if current_section else f"{k_clean} ({v_clean[:15]})"
+                        )
 
                     specs_dict[target_key] = v_clean
                     return True
@@ -530,14 +580,24 @@ class PatternEngine:
                         k, v = l.split(d, 1)
                         k, v = k.strip().rstrip(":"), v.strip()
                         if k and v and len(k) < 60 and len(v) < 600:
-                            if k.lower() not in ("category", "specification", "specification details", "specifications"):
+                            if k.lower() not in (
+                                "category",
+                                "specification",
+                                "specification details",
+                                "specifications",
+                            ):
                                 specs_dict[k] = v
                             break
             return
 
         # 3. Alternating lines: Key, Value, Key, Value
         start_idx = 0
-        if len(lines) > 1 and lines[0].lower() in ("category", "specification", "specification details", "specifications"):
+        if len(lines) > 1 and lines[0].lower() in (
+            "category",
+            "specification",
+            "specification details",
+            "specifications",
+        ):
             start_idx = 1
             if len(lines) > 2 and lines[1].lower() in ("specification details", "specifications", "value"):
                 start_idx = 2
@@ -601,8 +661,18 @@ class PatternEngine:
                     hw_hits = sum(
                         1
                         for hw in [
-                            "processor", "cpu", "memory", "ram", "storage", "ssd",
-                            "graphics", "gpu", "display", "screen", "resolution", "part no"
+                            "processor",
+                            "cpu",
+                            "memory",
+                            "ram",
+                            "storage",
+                            "ssd",
+                            "graphics",
+                            "gpu",
+                            "display",
+                            "screen",
+                            "resolution",
+                            "part no",
                         ]
                         if hw in val_lower
                     )
@@ -640,14 +710,30 @@ class PatternEngine:
                         and v_clean
                         and len(k_clean) < 60
                         and len(v_clean) < 600
-                        and k_clean.lower() not in ("category", "specification", "specification details", "specifications")
+                        and k_clean.lower()
+                        not in ("category", "specification", "specification details", "specifications")
                     ):
                         table_specs[k_clean] = v_clean
 
             has_hw = sum(
                 1
                 for k in table_specs
-                if any(hw in k.lower() for hw in ["processor", "cpu", "memory", "ram", "storage", "ssd", "graphics", "gpu", "display", "screen", "part no"])
+                if any(
+                    hw in k.lower()
+                    for hw in [
+                        "processor",
+                        "cpu",
+                        "memory",
+                        "ram",
+                        "storage",
+                        "ssd",
+                        "graphics",
+                        "gpu",
+                        "display",
+                        "screen",
+                        "part no",
+                    ]
+                )
             )
             if has_hw >= 2:
                 dom_specs.update(table_specs)
@@ -678,7 +764,21 @@ class PatternEngine:
             has_hw = sum(
                 1
                 for k in panel_specs
-                if any(hw in k.lower() for hw in ["processor", "cpu", "memory", "ram", "storage", "ssd", "graphics", "gpu", "display", "screen"])
+                if any(
+                    hw in k.lower()
+                    for hw in [
+                        "processor",
+                        "cpu",
+                        "memory",
+                        "ram",
+                        "storage",
+                        "ssd",
+                        "graphics",
+                        "gpu",
+                        "display",
+                        "screen",
+                    ]
+                )
             )
             if has_hw >= 2:
                 dom_specs.update(panel_specs)

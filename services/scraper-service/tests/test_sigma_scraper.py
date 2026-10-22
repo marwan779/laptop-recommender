@@ -1,4 +1,3 @@
-import pytest
 from app.stores.sigma import SigmaComputerStoreScraper
 
 
@@ -155,4 +154,3 @@ def test_sigma_used_laptop_quarantine(monkeypatch):
     assert len(scraper.skipped_laptops) == 1
     assert scraper.skipped_laptops[0].stage == "accessory_filter"
     assert "used_or_refurbished" in scraper.skipped_laptops[0].reason
-

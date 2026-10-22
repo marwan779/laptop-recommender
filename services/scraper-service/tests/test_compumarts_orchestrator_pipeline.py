@@ -1,7 +1,6 @@
 """Unit test verifying ScrapeOrchestrator integration with the generic 8-layer pipeline for CompuMarts."""
 
 from unittest.mock import MagicMock, patch
-import pytest
 
 from app.schemas.laptop import RetailerProduct
 from app.schemas.orchestrator import ScrapeRequest

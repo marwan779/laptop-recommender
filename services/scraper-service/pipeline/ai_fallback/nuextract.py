@@ -11,7 +11,8 @@ import json
 import logging
 import os
 import re
-from typing import Any, Dict, List, Optional, Sequence, Set
+from typing import Any
+from collections.abc import Sequence
 
 from pipeline.ai_fallback.base import IAIFallbackExtractor
 from pipeline.schema import (
@@ -30,7 +31,7 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
     def __init__(
         self,
         model_id: str = "numind/NuExtract-2.0-2B",
-        onnx_model_dir: Optional[str] = None,
+        onnx_model_dir: str | None = None,
         execution_provider: str = "CPUExecutionProvider",
         max_new_tokens: int = 256,
         lazy_load: bool = True,
@@ -40,10 +41,10 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
         self.execution_provider = execution_provider
         self.max_new_tokens = max_new_tokens
 
-        self._genai_model: Optional[Any] = None
-        self._genai_tokenizer: Optional[Any] = None
-        self._hf_model: Optional[Any] = None
-        self._hf_tokenizer: Optional[Any] = None
+        self._genai_model: Any | None = None
+        self._genai_tokenizer: Any | None = None
+        self._hf_model: Any | None = None
+        self._hf_tokenizer: Any | None = None
         self._backend: str = "uninitialized"
 
         if not lazy_load:
@@ -92,19 +93,23 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
 
             if is_vlm:
                 from transformers import Qwen2VLForConditionalGeneration
+
                 model_cls = Qwen2VLForConditionalGeneration
             else:
                 from transformers import AutoModelForCausalLM
+
                 model_cls = AutoModelForCausalLM
 
-            device = "cuda" if torch.cuda.is_available() and self.execution_provider != "CPUExecutionProvider" else "cpu"
-            model_kwargs: Dict[str, Any] = {
+            device = (
+                "cuda" if torch.cuda.is_available() and self.execution_provider != "CPUExecutionProvider" else "cpu"
+            )
+            model_kwargs: dict[str, Any] = {
                 "low_cpu_mem_usage": True,
                 "trust_remote_code": False,
             }
 
             if device == "cuda":
-                total_vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)
+                total_vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
                 # 2B models require ~4.1 GB in FP16, which fits natively and at maximum accuracy on 6GB+ GPUs.
                 # Use 4-bit quantization only when GPU VRAM < 6GB or for larger models (>3B).
                 use_4bit = total_vram_gb < 5.5 or (not is_vlm and total_vram_gb <= 12.0)
@@ -122,12 +127,18 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
                         model_kwargs["device_map"] = "auto"
                         logger.info("Enabling 4-bit NF4 quantization for GPU (%.1f GB VRAM detected)", total_vram_gb)
                     except Exception as q_err:
-                        logger.warning("Could not enable bitsandbytes 4-bit quantization (%s). Falling back to float16.", q_err)
+                        logger.warning(
+                            "Could not enable bitsandbytes 4-bit quantization (%s). Falling back to float16.", q_err
+                        )
                         model_kwargs["torch_dtype"] = torch.float16
                 else:
                     model_kwargs["torch_dtype"] = torch.float16
                     model_kwargs["device_map"] = "auto"
-                    logger.info("Using native float16 precision for %s on GPU (%.1f GB VRAM detected)", self._model_id, total_vram_gb)
+                    logger.info(
+                        "Using native float16 precision for %s on GPU (%.1f GB VRAM detected)",
+                        self._model_id,
+                        total_vram_gb,
+                    )
 
                 self._hf_model = model_cls.from_pretrained(
                     self._model_id,
@@ -159,12 +170,14 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
             return False
 
     @staticmethod
-    def format_prompt(text: str, field_name: str, model_id: Optional[str] = None) -> str:
+    def format_prompt(text: str, field_name: str, model_id: str | None = None) -> str:
         """Format input text and template into the official NuExtract prompt."""
         template = {field_name: None}
         template_str = json.dumps(template, indent=2)
         if model_id and ("2.0" in model_id or "qwen" in model_id.lower() or "nuextract3" in model_id.lower()):
-            return f"<|im_start|>user\n# Template:\n{template_str}\n# Context:\n{text}<|im_end|>\n<|im_start|>assistant\n"
+            return (
+                f"<|im_start|>user\n# Template:\n{template_str}\n# Context:\n{text}<|im_end|>\n<|im_start|>assistant\n"
+            )
         return f"<|input|>\n### Template:\n{template_str}\n### Text:\n{text}\n\n<|output|>\n"
 
     def _generate_onnx_genai(self, prompt: str) -> str:
@@ -209,7 +222,7 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
         return self._hf_tokenizer.decode(generated_tokens, skip_special_tokens=True).strip()
 
     @staticmethod
-    def _parse_extracted_value(raw_output: str, field_name: str) -> Optional[Any]:
+    def _parse_extracted_value(raw_output: str, field_name: str) -> Any | None:
         """Parse structured output emitted by NuExtract into target scalar value."""
         if not raw_output or not raw_output.strip():
             return None
@@ -314,14 +327,12 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
                 model_name=self.model_name,
             )
 
-    def batch_extract_envelopes(
-        self, envelopes: Sequence[ExtractionEnvelope]
-    ) -> List[EnvelopeResult]:
+    def batch_extract_envelopes(self, envelopes: Sequence[ExtractionEnvelope]) -> list[EnvelopeResult]:
         """Process a batch of envelopes sequentially."""
         return [self.extract_envelope(env) for env in envelopes]
 
     @staticmethod
-    def format_component_prompt(envelope: ComponentEnvelope, model_id: Optional[str] = None) -> str:
+    def format_component_prompt(envelope: ComponentEnvelope, model_id: str | None = None) -> str:
         """Format a ComponentEnvelope into official NuExtract hierarchical template prompt."""
         template = {envelope.component_name: envelope.sub_schema}
         template_str = json.dumps(template, indent=2)
@@ -330,9 +341,7 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
         return f"<|input|>\n### Template:\n{template_str}\n### Text:\n{envelope.raw_spec}\n\n<|output|>\n"
 
     @staticmethod
-    def _parse_component_output(
-        raw_output: str, component_name: str, locked_fields: Set[str]
-    ) -> Dict[str, Any]:
+    def _parse_component_output(raw_output: str, component_name: str, locked_fields: set[str]) -> dict[str, Any]:
         """Safely parse NuExtract multi-field JSON output, rejecting modifications to locked fields."""
         if not raw_output or not raw_output.strip():
             return {}
@@ -369,9 +378,7 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
 
         return extracted
 
-    def extract_component_envelope(
-        self, envelope: ComponentEnvelope
-    ) -> ComponentEnvelopeResult:
+    def extract_component_envelope(self, envelope: ComponentEnvelope) -> ComponentEnvelopeResult:
         """Process a ComponentEnvelope using NuExtract native multi-field JSON generation."""
         if not envelope.raw_spec or not envelope.raw_spec.strip():
             return ComponentEnvelopeResult(
@@ -423,7 +430,7 @@ class NuExtractONNXFallbackExtractor(IAIFallbackExtractor):
 
     def batch_extract_component_envelopes(
         self, envelopes: Sequence[ComponentEnvelope]
-    ) -> List[ComponentEnvelopeResult]:
+    ) -> list[ComponentEnvelopeResult]:
         """Process a batch of component envelopes sequentially."""
         return [self.extract_component_envelope(env) for env in envelopes]
 

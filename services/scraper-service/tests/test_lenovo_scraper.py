@@ -4,9 +4,8 @@ from datetime import date, datetime
 import json
 from unittest.mock import MagicMock, patch
 import urllib.error
-import pytest
 
-from app.schemas.laptop import LaptopDetail, LaptopSummary
+from app.schemas.laptop import LaptopSummary
 from app.scrapers.lenovo import (
     LenovoBrandScraper,
     LenovoDateExtractor,

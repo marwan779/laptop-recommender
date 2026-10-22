@@ -1,8 +1,6 @@
-import pytest
 from bs4 import BeautifulSoup
 
 from app.stores.compumarts import CompumartsStoreScraper
-from app.schemas.laptop import RetailerProduct
 
 
 def test_compumarts_properties():
@@ -321,9 +319,8 @@ def test_compumarts_as_new_macbook_filtered():
     scraper = CompumartsStoreScraper()
     title = (
         'as new Apple MacBook Pro 2019 Touchbar i9-9980HK 2.90GHz 15.4" Retina (2880x1800) '
-        'USB-C INTEL UHD Graphics 630 - AMD Radeon Pro 560X 4 GB 32GB DDR4 512GB NVMe Silver'
+        "USB-C INTEL UHD Graphics 630 - AMD Radeon Pro 560X 4 GB 32GB DDR4 512GB NVMe Silver"
     )
     is_valid, reason = scraper.is_valid_new_laptop(title=title)
     assert is_valid is False
     assert reason == "used_or_refurbished"
-

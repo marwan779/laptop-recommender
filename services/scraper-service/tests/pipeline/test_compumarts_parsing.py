@@ -85,4 +85,3 @@ def test_compumarts_html_parsing_and_pipeline_execution():
     assert result.specs["power_battery"]["battery_capacity_wh"] == 90.0
     assert result.specs["power_battery"]["power_adapter_w"] == 240
     assert result.specs["physical"]["weight_kg"] == 2.2
-

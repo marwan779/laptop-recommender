@@ -9,7 +9,7 @@ for downstream deterministic extraction and physical validation.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from cpu_specs import CPU_SPECS, CPUSpecEntry
 
@@ -17,9 +17,9 @@ from cpu_specs import CPU_SPECS, CPUSpecEntry
 class CPUAnchorExtractor:
     """Extracts and populates CPU specifications using CPU_SPECS as ground truth."""
 
-    def __init__(self, specs_db: Optional[Dict[str, CPUSpecEntry]] = None) -> None:
-        self.specs_db: Dict[str, CPUSpecEntry] = specs_db or CPU_SPECS
-        self._compiled_aliases: List[Tuple[str, re.Pattern, CPUSpecEntry]] = []
+    def __init__(self, specs_db: dict[str, CPUSpecEntry] | None = None) -> None:
+        self.specs_db: dict[str, CPUSpecEntry] = specs_db or CPU_SPECS
+        self._compiled_aliases: list[tuple[str, re.Pattern, CPUSpecEntry]] = []
         self._build_index()
 
     def _build_index(self) -> None:
@@ -45,10 +45,10 @@ class CPUAnchorExtractor:
     def match(
         self,
         title: str,
-        spec_texts: Optional[List[str]] = None,
-    ) -> Optional[Tuple[str, CPUSpecEntry]]:
+        spec_texts: list[str] | None = None,
+    ) -> tuple[str, CPUSpecEntry] | None:
         """Match the CPU SKU from the product title and specification texts.
-        
+
         Returns:
             Tuple of (cpu_key, cpu_entry) or None if no match found.
         """
@@ -61,7 +61,7 @@ class CPUAnchorExtractor:
 
         return None
 
-    def populate_cpu_specs(self, entry: CPUSpecEntry) -> Dict[str, Any]:
+    def populate_cpu_specs(self, entry: CPUSpecEntry) -> dict[str, Any]:
         """Populate the canonical structured CPU specification fields from ground truth."""
         return {
             "manufacturer": entry["brand"],
@@ -84,7 +84,7 @@ class CPUAnchorExtractor:
             "raw_spec": None,
         }
 
-    def get_hardware_constraints(self, entry: CPUSpecEntry) -> Dict[str, Any]:
+    def get_hardware_constraints(self, entry: CPUSpecEntry) -> dict[str, Any]:
         """Extract hardware boundaries used to validate memory, power, and GPU."""
         return {
             "cpu_key": entry["model"].lower().replace(" ", "_"),
@@ -98,10 +98,10 @@ class CPUAnchorExtractor:
     def extract(
         self,
         title: str,
-        spec_texts: Optional[List[str]] = None,
-    ) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]], Optional[str]]:
+        spec_texts: list[str] | None = None,
+    ) -> tuple[dict[str, Any] | None, dict[str, Any] | None, str | None]:
         """Perform full CPU identification and constraint extraction.
-        
+
         Returns:
             (canonical_cpu_dict, hardware_constraints_dict, matched_key)
         """
@@ -111,4 +111,3 @@ class CPUAnchorExtractor:
 
         key, entry = match_result
         return self.populate_cpu_specs(entry), self.get_hardware_constraints(entry), key
-

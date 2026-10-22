@@ -7,8 +7,7 @@ Verifies:
 4. End-to-end envelope extraction and batch processing.
 """
 
-from unittest.mock import MagicMock, patch
-import pytest
+from unittest.mock import MagicMock
 
 from pipeline.ai_fallback.base import IAIFallbackExtractor
 from pipeline.ai_fallback.nuextract import NuExtractFallbackExtractor, NuExtractONNXFallbackExtractor

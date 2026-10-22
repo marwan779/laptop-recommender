@@ -1,7 +1,6 @@
 """Unit tests verifying LLMAuditor Circuit Breaker and fast-fail behavior."""
 
 from unittest.mock import MagicMock
-import pytest
 
 from pipeline.llm_auditor import LLMAuditor, LLMProviderEndpoint
 
@@ -108,7 +107,11 @@ def test_successful_audit_sets_is_audited_true_and_provider():
     mock_client = MagicMock()
     mock_resp = MagicMock()
     mock_resp.choices = [
-        MagicMock(message=MagicMock(content='{"audited_laptops": [{"laptop_id": "lap_0", "has_contradictions": false, "corrections": []}]}'))
+        MagicMock(
+            message=MagicMock(
+                content='{"audited_laptops": [{"laptop_id": "lap_0", "has_contradictions": false, "corrections": []}]}'
+            )
+        )
     ]
     mock_client.chat.completions.create.return_value = mock_resp
     auditor._clients["mock-provider"] = mock_client
@@ -138,7 +141,11 @@ def test_catalog_pipeline_populates_audit_flag_and_metadata():
     mock_client = MagicMock()
     mock_resp = MagicMock()
     mock_resp.choices = [
-        MagicMock(message=MagicMock(content='{"audited_laptops": [{"laptop_id": "https://compumarts.com/1", "has_contradictions": true, "corrections": [{"field_path": "display.refresh_rate_hz", "current_value": null, "corrected_value": 165, "reason": "test", "evidence_quote": "165Hz"}]}]}'))
+        MagicMock(
+            message=MagicMock(
+                content='{"audited_laptops": [{"laptop_id": "https://compumarts.com/1", "has_contradictions": true, "corrections": [{"field_path": "display.refresh_rate_hz", "current_value": null, "corrected_value": 165, "reason": "test", "evidence_quote": "165Hz"}]}]}'
+            )
+        )
     ]
     mock_client.chat.completions.create.return_value = mock_resp
     auditor._clients["mock-pipeline-provider"] = mock_client
@@ -177,7 +184,11 @@ def test_qwen_model_clamps_max_tokens_to_800():
     mock_client = MagicMock()
     mock_resp = MagicMock()
     mock_resp.choices = [
-        MagicMock(message=MagicMock(content='{"audited_laptops": [{"laptop_id": "lap_qwen", "has_contradictions": false, "corrections": []}]}'))
+        MagicMock(
+            message=MagicMock(
+                content='{"audited_laptops": [{"laptop_id": "lap_qwen", "has_contradictions": false, "corrections": []}]}'
+            )
+        )
     ]
     mock_client.chat.completions.create.return_value = mock_resp
     auditor._clients["groq-qwen-test"] = mock_client
@@ -202,7 +213,11 @@ def test_non_qwen_model_uses_4096_max_tokens():
     mock_client = MagicMock()
     mock_resp = MagicMock()
     mock_resp.choices = [
-        MagicMock(message=MagicMock(content='{"audited_laptops": [{"laptop_id": "lap_gpt", "has_contradictions": false, "corrections": []}]}'))
+        MagicMock(
+            message=MagicMock(
+                content='{"audited_laptops": [{"laptop_id": "lap_gpt", "has_contradictions": false, "corrections": []}]}'
+            )
+        )
     ]
     mock_client.chat.completions.create.return_value = mock_resp
     auditor._clients["groq-gpt-test"] = mock_client
@@ -261,7 +276,11 @@ def test_consecutive_endpoint_failures_blacklists_endpoint():
     client2 = MagicMock()
     mock_resp = MagicMock()
     mock_resp.choices = [
-        MagicMock(message=MagicMock(content='{"audited_laptops": [{"laptop_id": "lap_1", "has_contradictions": false, "corrections": []}]}'))
+        MagicMock(
+            message=MagicMock(
+                content='{"audited_laptops": [{"laptop_id": "lap_1", "has_contradictions": false, "corrections": []}]}'
+            )
+        )
     ]
     client2.chat.completions.create.return_value = mock_resp
 
@@ -286,6 +305,3 @@ def test_consecutive_endpoint_failures_blacklists_endpoint():
     res3 = auditor.audit_batch([laptop], identifiers=["lap_1"])
     assert res3.provider == "ep-backup"
     assert client1.chat.completions.create.call_count == 2  # Still 2, ep1 skipped completely!
-
-
-

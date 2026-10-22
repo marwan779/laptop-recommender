@@ -1,8 +1,4 @@
-import pytest
-from bs4 import BeautifulSoup
-
 from app.stores.amazon import AmazonStoreScraper
-from app.schemas.laptop import RetailerProduct
 
 
 def test_amazon_properties():

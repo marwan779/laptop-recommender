@@ -28,7 +28,7 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.engine.base import IScraperEngine
 from app.engine.scrapling_engine import ScraplingEngine
@@ -160,17 +160,31 @@ class ScrapeOrchestrator:
                         items.append(("store", k_clean))
 
         elif request.target_type == "brand":
-            keys = list(BRAND_SERVICE_REGISTRY.keys()) if BRAND_SERVICE_REGISTRY else ["asus", "hp", "lenovo", "gigabyte"]
+            keys = (
+                list(BRAND_SERVICE_REGISTRY.keys()) if BRAND_SERVICE_REGISTRY else ["asus", "hp", "lenovo", "gigabyte"]
+            )
             items_keys = keys if request.targets == "all" else request.targets
             items.extend([("brand", k.strip().lower()) for k in items_keys if k.strip()])
 
         elif request.target_type == "both":
             if request.targets == "all":
-                keys = list(BRAND_SERVICE_REGISTRY.keys()) if BRAND_SERVICE_REGISTRY else ["asus", "hp", "lenovo", "gigabyte"]
+                keys = (
+                    list(BRAND_SERVICE_REGISTRY.keys())
+                    if BRAND_SERVICE_REGISTRY
+                    else ["asus", "hp", "lenovo", "gigabyte"]
+                )
                 items.extend([("brand", k) for k in keys])
                 items.extend([("store", k) for k in STORE_REGISTRY.keys()])
             else:
-                known_stores = set(STORE_REGISTRY.keys()) | {"elbadr", "sigma", "twob", "tradeline", "amazon", "noon", "btech"}
+                known_stores = set(STORE_REGISTRY.keys()) | {
+                    "elbadr",
+                    "sigma",
+                    "twob",
+                    "tradeline",
+                    "amazon",
+                    "noon",
+                    "btech",
+                }
                 for t in request.targets:
                     k = t.strip().lower()
                     if not k:
@@ -271,7 +285,8 @@ class ScrapeOrchestrator:
         if req.level == 2 and products:
             logger.info(
                 "[Orchestrator] Running generic 8-layer hardware pipeline on %d products from '%s'...",
-                len(products), key
+                len(products),
+                key,
             )
             ai_backend = setup_ai_fallback(self.ai_type, use_onnx=self.use_onnx)
             generic_pipeline = GenericCatalogPipeline(

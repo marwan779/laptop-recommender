@@ -11,15 +11,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Union
+from typing import Literal
 from pydantic import BaseModel, Field, model_validator
 
 
 class GPUTDPLimits(BaseModel):
     min_w: int = Field(..., ge=20, le=175)
     max_w: int = Field(..., ge=35, le=200)
-    base_max_w: Optional[int] = Field(None, ge=20, le=175)
-    dynamic_boost_w: Optional[int] = Field(None, ge=0, le=50)
+    base_max_w: int | None = Field(None, ge=20, le=175)
+    dynamic_boost_w: int | None = Field(None, ge=0, le=50)
 
     @model_validator(mode="after")
     def validate_bounds(self) -> GPUTDPLimits:
@@ -39,24 +39,24 @@ class GPUSpecificationEntry(BaseModel):
     model: str
     series: str
     variant: Literal["Laptop GPU", "Integrated GPU", "SoC Integrated"]
-    chip_codename: Optional[str] = None
+    chip_codename: str | None = None
     architecture: str
-    process_node_nm: Optional[int] = None
+    process_node_nm: int | None = None
     integrated: bool
 
-    vram_gb: Optional[Union[int, List[int]]] = None
+    vram_gb: int | list[int] | None = None
     memory_type: str
-    bus_width_bits: Optional[int] = None
-    memory_speed_gbps: Optional[float] = None
+    bus_width_bits: int | None = None
+    memory_speed_gbps: float | None = None
 
-    cuda_cores: Optional[int] = None
-    tensor_cores: Optional[int] = None
-    rt_cores: Optional[int] = None
-    ai_tops: Optional[int] = None
+    cuda_cores: int | None = None
+    tensor_cores: int | None = None
+    rt_cores: int | None = None
+    ai_tops: int | None = None
 
-    tdp_limits: Optional[GPUTDPLimits] = None
+    tdp_limits: GPUTDPLimits | None = None
     features: GPUFeatures
-    match_patterns: List[str] = Field(..., min_length=1)
+    match_patterns: list[str] = Field(..., min_length=1)
 
     @model_validator(mode="after")
     def enforce_discrete_vs_integrated(self) -> GPUSpecificationEntry:
@@ -77,7 +77,7 @@ class GPUSpecificationEntry(BaseModel):
         return self
 
 
-def load_gpu_specs() -> Dict[str, dict]:
+def load_gpu_specs() -> dict[str, dict]:
     """Load canonical GPU specifications dictionary from json file."""
     candidates = [
         Path(__file__).parent / "pipeline" / "data" / "gpu_specs.json",
@@ -86,10 +86,9 @@ def load_gpu_specs() -> Dict[str, dict]:
     ]
     for p in candidates:
         if p.exists():
-            with open(p, "r", encoding="utf-8") as f:
+            with open(p, encoding="utf-8") as f:
                 return json.load(f)
     raise FileNotFoundError(f"Could not locate gpu_specs.json in candidates: {candidates}")
 
 
-GPU_SPECS: Dict[str, dict] = load_gpu_specs()
-
+GPU_SPECS: dict[str, dict] = load_gpu_specs()

@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 from pipeline.gpu_anchor import GPUAnchorExtractor
 from pipeline.physical_validator import PhysicalValidator
@@ -32,50 +32,130 @@ CANONICAL_BRANDS = {
     "microsoft": "Microsoft",
 }
 
-CANONICAL_FAMILIES: Dict[str, List[str]] = {
+CANONICAL_FAMILIES: dict[str, list[str]] = {
     "HP": [
-        "Victus", "Omen Transcend", "Omen", "Pavilion Plus", "Pavilion Aero", "Pavilion",
-        "Envy x360", "Envy", "Spectre x360", "Spectre", "ProBook", "EliteBook", "ZBook",
-        "Essential", "250", "255", "15s", "14s", "15-fd", "15-fc", "15-da", "15-dw", "14-ep"
+        "Victus",
+        "Omen Transcend",
+        "Omen",
+        "Pavilion Plus",
+        "Pavilion Aero",
+        "Pavilion",
+        "Envy x360",
+        "Envy",
+        "Spectre x360",
+        "Spectre",
+        "ProBook",
+        "EliteBook",
+        "ZBook",
+        "Essential",
+        "250",
+        "255",
+        "15s",
+        "14s",
+        "15-fd",
+        "15-fc",
+        "15-da",
+        "15-dw",
+        "14-ep",
     ],
     "Lenovo": [
-        "Legion Pro", "Legion Slim", "Legion", "LOQ Essential", "LOQ", "IdeaPad Pro",
-        "IdeaPad Slim", "IdeaPad Gaming", "IdeaPad Flex", "IdeaPad", "ThinkPad P",
-        "ThinkPad X", "ThinkPad T", "ThinkPad E", "ThinkPad L", "ThinkPad", "ThinkBook",
-        "Yoga Slim", "Yoga Pro", "Yoga", "Slim", "V15", "V14"
+        "Legion Pro",
+        "Legion Slim",
+        "Legion",
+        "LOQ Essential",
+        "LOQ",
+        "IdeaPad Pro",
+        "IdeaPad Slim",
+        "IdeaPad Gaming",
+        "IdeaPad Flex",
+        "IdeaPad",
+        "ThinkPad P",
+        "ThinkPad X",
+        "ThinkPad T",
+        "ThinkPad E",
+        "ThinkPad L",
+        "ThinkPad",
+        "ThinkBook",
+        "Yoga Slim",
+        "Yoga Pro",
+        "Yoga",
+        "Slim",
+        "V15",
+        "V14",
     ],
     "Dell": [
-        "Alienware", "XPS", "Inspiron 16 Plus", "Inspiron", "Vostro", "Latitude",
-        "Precision", "G15", "G16", "Pro 15"
+        "Alienware",
+        "XPS",
+        "Inspiron 16 Plus",
+        "Inspiron",
+        "Vostro",
+        "Latitude",
+        "Precision",
+        "G15",
+        "G16",
+        "Pro 15",
     ],
     "ASUS": [
-        "ROG Strix SCAR", "ROG Strix", "ROG Zephyrus Duo", "ROG Zephyrus", "ROG Flow", "ROG Ally", "ROG",
-        "TUF Gaming", "TUF", "Zenbook Pro", "Zenbook Duo", "Zenbook S", "Zenbook",
-        "Vivobook Pro", "Vivobook S", "Vivobook Go", "Vivobook", "ExpertBook", "ProArt", "V16"
+        "ROG Strix SCAR",
+        "ROG Strix",
+        "ROG Zephyrus Duo",
+        "ROG Zephyrus",
+        "ROG Flow",
+        "ROG Ally",
+        "ROG",
+        "TUF Gaming",
+        "TUF",
+        "Zenbook Pro",
+        "Zenbook Duo",
+        "Zenbook S",
+        "Zenbook",
+        "Vivobook Pro",
+        "Vivobook S",
+        "Vivobook Go",
+        "Vivobook",
+        "ExpertBook",
+        "ProArt",
+        "V16",
     ],
     "Acer": [
-        "Predator Triton", "Predator Helios Neo", "Predator Helios", "Predator",
-        "Nitro V", "Nitro", "Swift Go", "Swift X", "Swift", "Aspire Vero", "Aspire Go",
-        "Aspire", "Spin", "TravelMate", "Extensa"
+        "Predator Triton",
+        "Predator Helios Neo",
+        "Predator Helios",
+        "Predator",
+        "Nitro V",
+        "Nitro",
+        "Swift Go",
+        "Swift X",
+        "Swift",
+        "Aspire Vero",
+        "Aspire Go",
+        "Aspire",
+        "Spin",
+        "TravelMate",
+        "Extensa",
     ],
     "MSI": [
-        "Titan", "Raider", "Stealth", "Vector", "Crosshair", "Pulse", "Katana",
-        "Sword", "Cyborg", "Thin", "Bravo", "Prestige", "Modern", "Creator", "Claw"
+        "Titan",
+        "Raider",
+        "Stealth",
+        "Vector",
+        "Crosshair",
+        "Pulse",
+        "Katana",
+        "Sword",
+        "Cyborg",
+        "Thin",
+        "Bravo",
+        "Prestige",
+        "Modern",
+        "Creator",
+        "Claw",
     ],
-    "Gigabyte": [
-        "AERO", "Aorus", "Gaming A16", "G5", "G6"
-    ],
-    "Apple": [
-        "MacBook Pro", "MacBook Air", "MacBook"
-    ],
-    "Huawei": [
-        "MateBook X Pro", "MateBook X", "MateBook D", "MateBook"
-    ],
-    "Microsoft": [
-        "Surface Laptop Studio", "Surface Laptop", "Surface Pro"
-    ],
+    "Gigabyte": ["AERO", "Aorus", "Gaming A16", "G5", "G6"],
+    "Apple": ["MacBook Pro", "MacBook Air", "MacBook"],
+    "Huawei": ["MateBook X Pro", "MateBook X", "MateBook D", "MateBook"],
+    "Microsoft": ["Surface Laptop Studio", "Surface Laptop", "Surface Pro"],
 }
-
 
 
 class TableKeyRouter:
@@ -190,9 +270,6 @@ class TableKeyRouter:
         # AI Performance & NPU overrides
         "ai tops": "ai_performance",
         "ai performance": "ai_performance",
-        # Storage overrides
-        "storage support": "max_storage",
-        "storage capability": "max_storage",
         # Keyboard & Stylus overrides
         "numeric keypad": "keyboard",
         "stylus support": "stylus",
@@ -306,7 +383,7 @@ class TableKeyRouter:
         "Included Accessories / Package": "identity",
     }
 
-    PARENT_DOMAINS: Dict[str, str] = {
+    PARENT_DOMAINS: dict[str, str] = {
         "display_brightness": "display",
         "display_gamut": "display",
         "display_response_time": "display",
@@ -335,11 +412,11 @@ class TableKeyRouter:
         "form_factor": "unrouted",
     }
 
-    def __init__(self, alias_dict_path: Optional[Path] = None) -> None:
+    def __init__(self, alias_dict_path: Path | None = None) -> None:
         if alias_dict_path is None:
             alias_dict_path = Path(__file__).resolve().parent / "data" / "compumarts_alias_dict.json"
 
-        self.label_to_bucket: Dict[str, str] = {}
+        self.label_to_bucket: dict[str, str] = {}
         if alias_dict_path and alias_dict_path.exists():
             try:
                 with open(alias_dict_path, encoding="utf-8") as f:
@@ -391,7 +468,9 @@ class TableKeyRouter:
             return "storage"
         if any(term in norm for term in ["graphics memory", "video memory", "gpu memory", "vram", "gddr"]):
             return "gpu_vram"
-        if any(term in norm for term in ["gpu power", "graphics power", "tgp"]) or (re.search(r"\bpower\b", norm) and re.search(r"\b(?:gpu|rtx|gtx|graphics|geforce|radeon)\b", norm)):
+        if any(term in norm for term in ["gpu power", "graphics power", "tgp"]) or (
+            re.search(r"\bpower\b", norm) and re.search(r"\b(?:gpu|rtx|gtx|graphics|geforce|radeon)\b", norm)
+        ):
             return "gpu_power"
         if any(term in norm for term in ["max memory", "maximum memory", "max ram"]):
             return "max_memory"
@@ -403,18 +482,22 @@ class TableKeyRouter:
             return "memory"
         if re.search(r"\b(?:cpu|processor)\b", norm):
             return "cpu"
-        if re.search(r"\b(?:battery|adapter|charging|charger)\b", norm) or (re.search(r"\bpower\b", norm) and not re.search(r"\b(?:gpu|rtx|gtx|graphics|geforce|radeon)\b", norm)):
+        if re.search(r"\b(?:battery|adapter|charging|charger)\b", norm) or (
+            re.search(r"\bpower\b", norm) and not re.search(r"\b(?:gpu|rtx|gtx|graphics|geforce|radeon)\b", norm)
+        ):
             return "power"
         if re.search(r"\b(?:operating\s+system|os)\b", norm):
             return "os"
-        if re.search(r"\b(?:display|screen|resolution|refresh\s+rate|panel|aspect\s+ratio|touchscreen|oled|amoled|ips)\b", norm):
+        if re.search(
+            r"\b(?:display|screen|resolution|refresh\s+rate|panel|aspect\s+ratio|touchscreen|oled|amoled|ips)\b", norm
+        ):
             return "display"
 
         return "unrouted"
 
-    def route_table(self, table: Dict[str, str]) -> Dict[str, List[Tuple[str, str]]]:
+    def route_table(self, table: dict[str, str]) -> dict[str, list[tuple[str, str]]]:
         """Route all rows in a table to canonical buckets."""
-        routed: Dict[str, List[Tuple[str, str]]] = {}
+        routed: dict[str, list[tuple[str, str]]] = {}
         for k, v in table.items():
             bucket = self.route_key(k)
             # 1. Store in the exact O(1) specific bucket
@@ -441,8 +524,8 @@ class DeterministicExtractor:
 
     def __init__(
         self,
-        alias_dict_path: Optional[Path] = None,
-        gpu_anchor: Optional[GPUAnchorExtractor] = None,
+        alias_dict_path: Path | None = None,
+        gpu_anchor: GPUAnchorExtractor | None = None,
     ) -> None:
         self.router = TableKeyRouter(alias_dict_path)
         self.gpu_anchor = gpu_anchor or GPUAnchorExtractor()
@@ -450,17 +533,17 @@ class DeterministicExtractor:
     def extract(
         self,
         title: str,
-        sanitized_table: Dict[str, str],
-        sanitized_sections: Dict[str, str],
-        cpu_context: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[Dict[str, Any], List[ExtractionEnvelope]]:
+        sanitized_table: dict[str, str],
+        sanitized_sections: dict[str, str],
+        cpu_context: dict[str, Any] | None = None,
+    ) -> tuple[dict[str, Any], list[ExtractionEnvelope]]:
         """Run deterministic extraction across all categories.
-        
+
         Returns:
             Tuple of (partially_populated_specs, list_of_envelopes)
         """
         specs = empty_laptop_specifications()
-        envelopes: List[ExtractionEnvelope] = []
+        envelopes: list[ExtractionEnvelope] = []
 
         # Route table keys into canonical hardware buckets
         routed_table = self.router.route_table(sanitized_table)
@@ -469,12 +552,22 @@ class DeterministicExtractor:
         display_sec = self._find_section_context(["display", "screen"], sanitized_sections, sanitized_table)
         gpu_sec = self._find_section_context(["graphics", "gpu", "vga", "video"], sanitized_sections, sanitized_table)
         mem_sec = self._find_section_context(["memory", "ram"], sanitized_sections, sanitized_table)
-        storage_sec = self._find_section_context(["storage", "ssd", "hard drive", "hdd"], sanitized_sections, sanitized_table)
+        storage_sec = self._find_section_context(
+            ["storage", "ssd", "hard drive", "hdd"], sanitized_sections, sanitized_table
+        )
         power_sec = self._find_section_context(["battery", "power", "adapter"], sanitized_sections, sanitized_table)
-        physical_sec = self._find_section_context(["dimension", "weight", "physical"], sanitized_sections, sanitized_table)
-        conn_sec = self._find_section_context(["connectivity", "network", "port", "wireless"], sanitized_sections, sanitized_table)
-        audio_sec = self._find_section_context(["audio", "sound", "speaker", "webcam", "camera", "microphone"], sanitized_sections, sanitized_table)
-        sec_sec = self._find_section_context(["security", "keyboard", "touchpad", "pointing", "fingerprint"], sanitized_sections, sanitized_table)
+        physical_sec = self._find_section_context(
+            ["dimension", "weight", "physical"], sanitized_sections, sanitized_table
+        )
+        conn_sec = self._find_section_context(
+            ["connectivity", "network", "port", "wireless"], sanitized_sections, sanitized_table
+        )
+        audio_sec = self._find_section_context(
+            ["audio", "sound", "speaker", "webcam", "camera", "microphone"], sanitized_sections, sanitized_table
+        )
+        sec_sec = self._find_section_context(
+            ["security", "keyboard", "touchpad", "pointing", "fingerprint"], sanitized_sections, sanitized_table
+        )
 
         # 1. Identity
         self._extract_identity(title, sanitized_table, routed_table, specs, envelopes)
@@ -519,15 +612,15 @@ class DeterministicExtractor:
     # -------------------------------------------------------------------------
     @staticmethod
     def _format_raw_spec(
-        entries: Optional[List[Tuple[str, str]]] = None,
-        fallback_text: Optional[str] = None,
-    ) -> Optional[str]:
+        entries: list[tuple[str, str]] | None = None,
+        fallback_text: str | None = None,
+    ) -> str | None:
         """Format gathered raw specification entries as "{Key}: {Value}" joined by " | ".
 
         Preserves original table keys and values, de-duplicates identical pairs,
         and falls back to section/title context if no table rows exist.
         """
-        parts: List[str] = []
+        parts: list[str] = []
         seen = set()
 
         if entries:
@@ -559,17 +652,17 @@ class DeterministicExtractor:
 
     def _collect_raw_spec(
         self,
-        table: Dict[str, str],
-        target_buckets: Set[str],
-        fallback_text: Optional[str] = None,
-        prefix_entries: Optional[List[Tuple[str, str]]] = None,
-    ) -> Optional[str]:
+        table: dict[str, str],
+        target_buckets: set[str],
+        fallback_text: str | None = None,
+        prefix_entries: list[tuple[str, str]] | None = None,
+    ) -> str | None:
         """Collect all table rows mapped to target_buckets in their original table order.
 
         Returns:
             A formatted string "{Key}: {Value}" joined by " | ", or None if empty.
         """
-        entries: List[Tuple[str, str]] = []
+        entries: list[tuple[str, str]] = []
         if prefix_entries:
             entries.extend(prefix_entries)
 
@@ -581,7 +674,10 @@ class DeterministicExtractor:
                 bucket in target_buckets
                 or (parent and parent in target_buckets)
                 or (bucket == "camera_and_audio" and ("camera" in target_buckets or "audio" in target_buckets))
-                or (bucket == "connectivity_and_ports" and ("ports" in target_buckets or "connectivity" in target_buckets))
+                or (
+                    bucket == "connectivity_and_ports"
+                    and ("ports" in target_buckets or "connectivity" in target_buckets)
+                )
             ):
                 entries.append((k, v))
 
@@ -589,9 +685,9 @@ class DeterministicExtractor:
 
     def _find_section_context(
         self,
-        keywords: List[str],
-        sanitized_sections: Dict[str, str],
-        sanitized_table: Dict[str, str],
+        keywords: list[str],
+        sanitized_sections: dict[str, str],
+        sanitized_table: dict[str, str],
     ) -> str:
         """Find matching section-level context for envelopes."""
         # Check dedicated sections first
@@ -605,7 +701,10 @@ class DeterministicExtractor:
         for k, v in sanitized_table.items():
             k_lower = k.lower()
             if any(kw in k_lower for kw in keywords):
-                if any(bad in k_lower for bad in ["max storage", "maximum storage", "storage support", "max memory", "maximum memory"]):
+                if any(
+                    bad in k_lower
+                    for bad in ["max storage", "maximum storage", "storage support", "max memory", "maximum memory"]
+                ):
                     continue
                 matching_rows.append(f"{k}: {v}")
 
@@ -644,10 +743,10 @@ class DeterministicExtractor:
     def _extract_identity(
         self,
         title: str,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -720,9 +819,14 @@ class DeterministicExtractor:
         if not table_mpn:
             for k, v in table.items():
                 kl = k.lower()
-                if any(term in kl for term in ["part number", "part no", "machine type", "mpn", "product number", "base unit"]) and not any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
+                if any(
+                    term in kl
+                    for term in ["part number", "part no", "machine type", "mpn", "product number", "base unit"]
+                ) and not any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
                     v_clean = v.strip()
-                    if v_clean and not any(bad in v_clean.lower() for bad in ["n/a", "none", "ssd", "ram", "rtx", "gtx"]):
+                    if v_clean and not any(
+                        bad in v_clean.lower() for bad in ["n/a", "none", "ssd", "ram", "rtx", "gtx"]
+                    ):
                         if "machine type" in kl or len(v_clean) <= 4:
                             table_mpn = v_clean
                             is_machine_type = True
@@ -783,7 +887,9 @@ class DeterministicExtractor:
                     return False
                 if re.match(r"^(?:i[3579]|r[3579]|core|ryzen|ultra)[-_]\w+", m, re.I):
                     return False
-                if any(k in m.upper() for k in ["RTX", "GTX", "DDR", "SSD", "HDD", "IPS", "FHD", "QHD", "WUXGA", "OLED"]):
+                if any(
+                    k in m.upper() for k in ["RTX", "GTX", "DDR", "SSD", "HDD", "IPS", "FHD", "QHD", "WUXGA", "OLED"]
+                ):
                     return False
                 return len(m) >= 6
 
@@ -801,7 +907,9 @@ class DeterministicExtractor:
         # Check table first
         for k, v in table.items():
             kl = k.lower()
-            if any(term in kl for term in ["series", "laptop family", "family"]) and not any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
+            if any(term in kl for term in ["series", "laptop family", "family"]) and not any(
+                bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]
+            ):
                 v_clean = v.strip()
                 if v_clean and not any(bad in v_clean.lower() for bad in ["n/a", "none", "laptop"]):
                     specs["identity"]["laptop_family"] = v_clean
@@ -827,15 +935,37 @@ class DeterministicExtractor:
         if not specs["identity"]["laptop_model"]:
             for k, v in table.items():
                 kl = k.lower()
-                if any(term in kl for term in ["model / series", "model"]) and not any(bad in kl for bad in [
-                    "processor", "cpu", "gpu", "graphic", "video", "wireless", "lan", "wifi", "wi-fi", "wlan",
-                    "network", "bluetooth", "adapter", "battery", "camera", "display", "panel", "audio", "speaker"
-                ]):
+                if any(term in kl for term in ["model / series", "model"]) and not any(
+                    bad in kl
+                    for bad in [
+                        "processor",
+                        "cpu",
+                        "gpu",
+                        "graphic",
+                        "video",
+                        "wireless",
+                        "lan",
+                        "wifi",
+                        "wi-fi",
+                        "wlan",
+                        "network",
+                        "bluetooth",
+                        "adapter",
+                        "battery",
+                        "camera",
+                        "display",
+                        "panel",
+                        "audio",
+                        "speaker",
+                    ]
+                ):
                     v_clean = v.strip()
                     # Do not treat network cards, Wi-Fi models, or pure MPN codes as the marketing laptop model
                     if re.search(r"\b(?:killer|wi-fi|wifi|wlan|ax\d{3,4}|1750x|2x2\s*ax)\b", v_clean, re.I):
                         continue
-                    if not re.match(r"^(?:9S7-[A-Za-z0-9]+-[A-Za-z0-9]+|90N[A-Za-z0-9]{5}-[A-Za-z0-9]+)$", v_clean, re.I):
+                    if not re.match(
+                        r"^(?:9S7-[A-Za-z0-9]+-[A-Za-z0-9]+|90N[A-Za-z0-9]{5}-[A-Za-z0-9]+)$", v_clean, re.I
+                    ):
                         if v_clean and not any(bad in v_clean.lower() for bad in ["n/a", "none"]):
                             specs["identity"]["laptop_model"] = v_clean
                             break
@@ -844,7 +974,9 @@ class DeterministicExtractor:
         if not specs["identity"]["laptop_model"] and specs["identity"]["laptop_family"]:
             fam = specs["identity"]["laptop_family"]
             m_sz = re.search(
-                r"\b" + re.escape(fam) + r"(?:\s+(\d{1,2}(?:\.\d)?|\bpro\s*\d{1,2}|\bhx|\bmax|\bplus|\bultra|\bgo|\bs))?\b",
+                r"\b"
+                + re.escape(fam)
+                + r"(?:\s+(\d{1,2}(?:\.\d)?|\bpro\s*\d{1,2}|\bhx|\bmax|\bplus|\bultra|\bgo|\bs))?\b",
                 clean_name,
                 re.IGNORECASE,
             )
@@ -860,7 +992,11 @@ class DeterministicExtractor:
         for k, v in table.items():
             kl = k.lower()
             vl = str(v).strip().lower()
-            if any(b in kl for b in ["bundled accessories", "bundle", "gift"]) and vl and vl not in ("none", "no", "n/a"):
+            if (
+                any(b in kl for b in ["bundled accessories", "bundle", "gift"])
+                and vl
+                and vl not in ("none", "no", "n/a")
+            ):
                 is_bundle = True
                 break
         specs["identity"]["is_bundle"] = is_bundle
@@ -873,9 +1009,21 @@ class DeterministicExtractor:
         if not color_cands:
             for k, v in table.items():
                 kl = k.lower()
-                if "color" in kl and not any(bad in kl for bad in [
-                    "gamut", "coverage", "accuracy", "depth", "calibration", "space", "rgb", "hdr", "display", "screen"
-                ]):
+                if "color" in kl and not any(
+                    bad in kl
+                    for bad in [
+                        "gamut",
+                        "coverage",
+                        "accuracy",
+                        "depth",
+                        "calibration",
+                        "space",
+                        "rgb",
+                        "hdr",
+                        "display",
+                        "screen",
+                    ]
+                ):
                     color_cands.append((k, v))
 
         for _, cv in color_cands:
@@ -956,7 +1104,19 @@ class DeterministicExtractor:
         w_cand = None
         for _, v in warranty_rows:
             vs = v.strip()
-            if vs and not any(bad in vs.lower() for bad in ["http", "click/pwe", "register within", "dropbox", "cloud service", "cloud storage", "onedrive", "google drive"]):
+            if vs and not any(
+                bad in vs.lower()
+                for bad in [
+                    "http",
+                    "click/pwe",
+                    "register within",
+                    "dropbox",
+                    "cloud service",
+                    "cloud storage",
+                    "onedrive",
+                    "google drive",
+                ]
+            ):
                 w_cand = vs
                 break
         if not w_cand:
@@ -964,7 +1124,19 @@ class DeterministicExtractor:
                 kl = k.lower()
                 if "warranty" in kl and not any(bad in kl for bad in ["activate", "note"]):
                     vs = v.strip()
-                    if vs and not any(bad in vs.lower() for bad in ["http", "click/pwe", "register within", "dropbox", "cloud service", "cloud storage", "onedrive", "google drive"]):
+                    if vs and not any(
+                        bad in vs.lower()
+                        for bad in [
+                            "http",
+                            "click/pwe",
+                            "register within",
+                            "dropbox",
+                            "cloud service",
+                            "cloud storage",
+                            "onedrive",
+                            "google drive",
+                        ]
+                    ):
                         w_cand = vs
                         break
         if w_cand:
@@ -1016,9 +1188,9 @@ class DeterministicExtractor:
     def _extract_cpu(
         self,
         title: str,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
-        specs: Dict[str, Any],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
+        specs: dict[str, Any],
     ) -> None:
         """Extract raw CPU specification rows into specs['cpu']['raw_spec'] and resolve unanchored fields."""
         if routed_table is None:
@@ -1050,19 +1222,21 @@ class DeterministicExtractor:
 
         # Base Power (W) fallback if not populated
         if specs["cpu"]["base_power_w"] is None:
-            m_bp = re.search(r"\b(\d{2,3})\s*w\s*(?:tdp|base\s*power|processor\s*base\s*power)\b", cpu_text, re.IGNORECASE)
+            m_bp = re.search(
+                r"\b(\d{2,3})\s*w\s*(?:tdp|base\s*power|processor\s*base\s*power)\b", cpu_text, re.IGNORECASE
+            )
             if m_bp:
                 specs["cpu"]["base_power_w"] = int(m_bp.group(1))
 
     def _extract_gpu(
         self,
         title: str,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
-        cpu_context: Optional[Dict[str, Any]] = None,
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
+        cpu_context: dict[str, Any] | None = None,
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -1164,7 +1338,11 @@ class DeterministicExtractor:
             return
 
         # 2. Check for integrated GPU
-        if re.search(r"\b(integrated|intel\s+uhd|intel\s+iris|intel\s+arc|radeon\s+graphics|adreno)\b", full_search, re.IGNORECASE):
+        if re.search(
+            r"\b(integrated|intel\s+uhd|intel\s+iris|intel\s+arc|radeon\s+graphics|adreno)\b",
+            full_search,
+            re.IGNORECASE,
+        ):
             specs["gpu"]["integrated"] = True
             if cpu_context and cpu_context.get("integrated_gpu"):
                 specs["gpu"]["model"] = cpu_context["integrated_gpu"]
@@ -1196,8 +1374,8 @@ class DeterministicExtractor:
         gpu_text: str,
         full_search: str,
         context: str,
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
     ) -> None:
         """Helper to extract and validate discrete VRAM."""
         vram_search = f"{gpu_text} {full_search}"
@@ -1224,8 +1402,8 @@ class DeterministicExtractor:
         self,
         gpu_text: str,
         full_search: str,
-        routed_table: Dict[str, List[Tuple[str, str]]],
-        specs: Dict[str, Any],
+        routed_table: dict[str, list[tuple[str, str]]],
+        specs: dict[str, Any],
     ) -> None:
         """Extract TGP (tdp_w), GPU Boost Clock (MHz), and AI TOPS."""
         pwr_rows = routed_table.get("gpu_power", [])
@@ -1257,12 +1435,12 @@ class DeterministicExtractor:
     def _extract_memory(
         self,
         title: str,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
-        cpu_context: Optional[Dict[str, Any]] = None,
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
+        cpu_context: dict[str, Any] | None = None,
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -1279,7 +1457,22 @@ class DeterministicExtractor:
         if not mem_text:
             for k, v in table.items():
                 kl = k.lower()
-                if ("ram" in kl or "memory" in kl) and not any(bad in kl for bad in ["graphic", "graphics", "gpu", "vga", "video", "dedicated", "optane", "cache", "rom", "max", "support"]):
+                if ("ram" in kl or "memory" in kl) and not any(
+                    bad in kl
+                    for bad in [
+                        "graphic",
+                        "graphics",
+                        "gpu",
+                        "vga",
+                        "video",
+                        "dedicated",
+                        "optane",
+                        "cache",
+                        "rom",
+                        "max",
+                        "support",
+                    ]
+                ):
                     mem_text += f" {v}"
 
         primary_text = f"{mem_text} {context}".strip()
@@ -1380,7 +1573,9 @@ class DeterministicExtractor:
         # Type: Check memory_type bucket, then primary text, then title
         type_targets = [v for _, v in routed_table.get("memory_type", [])] + search_targets
         for target in type_targets:
-            type_match = re.search(r"\b(lpddr5x|lpddr5|lpddr4x|lpddr4|ddr5|ddr4|unified memory)\b", target, re.IGNORECASE)
+            type_match = re.search(
+                r"\b(lpddr5x|lpddr5|lpddr4x|lpddr4|ddr5|ddr4|unified memory)\b", target, re.IGNORECASE
+            )
             if type_match:
                 ram_type = type_match.group(1)
                 valid, type_clean, _ = PhysicalValidator.validate_memory_type(ram_type, cpu_context)
@@ -1429,16 +1624,27 @@ class DeterministicExtractor:
             m_sod = re.search(r"\b(\d+)\s*(?:ddr[45]\s*)?(?:csodimm|so-?dimm)\b", slot_text, re.IGNORECASE)
             if m_sod:
                 specs["memory"]["slot_count"] = int(m_sod.group(1))
-            elif any(term in slot_text.lower() for term in ["no slots", "no expansion", "not upgradable", "0 slots", "zero slots"]):
+            elif any(
+                term in slot_text.lower()
+                for term in ["no slots", "no expansion", "not upgradable", "0 slots", "zero slots"]
+            ):
                 specs["memory"]["slot_count"] = 0
-            elif "soldered to systemboard" in slot_text.lower() and not re.search(r"\b(?:sodimm|so-dimm|slot)\b", slot_text.lower()):
+            elif "soldered to systemboard" in slot_text.lower() and not re.search(
+                r"\b(?:sodimm|so-dimm|slot)\b", slot_text.lower()
+            ):
                 specs["memory"]["slot_count"] = 0
-            elif re.search(r"\b(two|dual)\b", slot_text, re.IGNORECASE) and re.search(r"\b(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b", slot_text, re.IGNORECASE):
+            elif re.search(r"\b(two|dual)\b", slot_text, re.IGNORECASE) and re.search(
+                r"\b(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b", slot_text, re.IGNORECASE
+            ):
                 specs["memory"]["slot_count"] = 2
             elif re.search(r"\b(one|single)\b\s+(?:ddr[45]\s*)?(?:sodimm|so-dimm|slot)", slot_text, re.IGNORECASE):
                 specs["memory"]["slot_count"] = 1
             else:
-                m_sl = re.search(r"\b([1-4])\s*(?:x\s*)?(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b|ram,\s*number\s*of\s*slots:\s*([1-4])", slot_text, re.IGNORECASE)
+                m_sl = re.search(
+                    r"\b([1-4])\s*(?:x\s*)?(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b|ram,\s*number\s*of\s*slots:\s*([1-4])",
+                    slot_text,
+                    re.IGNORECASE,
+                )
                 if m_sl:
                     cnt = m_sl.group(1) or m_sl.group(2)
                     specs["memory"]["slot_count"] = int(cnt)
@@ -1449,28 +1655,44 @@ class DeterministicExtractor:
 
         max_mem_rows = list(routed_table.get("max_memory", []))
         if not max_mem_rows:
-            max_mem_rows = [(k, v) for k, v in table.items() if any(term in k.lower() for term in ["max memory", "maximum memory", "maximum supported system memory"])]
+            max_mem_rows = [
+                (k, v)
+                for k, v in table.items()
+                if any(
+                    term in k.lower() for term in ["max memory", "maximum memory", "maximum supported system memory"]
+                )
+            ]
         if max_mem_rows:
             max_text = " ".join(v for _, v in max_mem_rows)
-            m_max = re.search(r"\b(?:up\s+to\s*|max(?:imum)?\s*(?:supported\s*(?:system\s*)?memory|memory|ram)?\s*[:\s]*|^)\s*(\d{1,3})\s*(?:gb|g)\b", max_text, re.IGNORECASE)
+            m_max = re.search(
+                r"\b(?:up\s+to\s*|max(?:imum)?\s*(?:supported\s*(?:system\s*)?memory|memory|ram)?\s*[:\s]*|^)\s*(\d{1,3})\s*(?:gb|g)\b",
+                max_text,
+                re.IGNORECASE,
+            )
             if m_max:
                 specs["memory"]["max_supported_gb"] = int(m_max.group(1))
 
         # Soldered vs Upgradeable
         mem_all = f"{mem_text} {' '.join(v for _, v in slot_rows)} {' '.join(v for _, v in routed_table.get('memory_type', []))}"
-        if re.search(r"\b(soldered|on-board|onboard|on\s+board|integrated|unified\s+memory|lpddr[45]x?)\b", mem_all, re.IGNORECASE):
+        if re.search(
+            r"\b(soldered|on-board|onboard|on\s+board|integrated|unified\s+memory|lpddr[45]x?)\b",
+            mem_all,
+            re.IGNORECASE,
+        ):
             specs["memory"]["is_soldered"] = True
-        elif re.search(r"\b(sodimm|so-dimm|upgradeable|removable)\b", mem_all, re.IGNORECASE) or (specs["memory"]["slot_count"] and specs["memory"]["slot_count"] > 0):
+        elif re.search(r"\b(sodimm|so-dimm|upgradeable|removable)\b", mem_all, re.IGNORECASE) or (
+            specs["memory"]["slot_count"] and specs["memory"]["slot_count"] > 0
+        ):
             specs["memory"]["is_soldered"] = False
 
     def _extract_storage(
         self,
         title: str,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -1487,7 +1709,9 @@ class DeterministicExtractor:
         if not storage_text:
             for k, v in table.items():
                 kl = k.lower()
-                if any(s in kl for s in ["storage", "ssd", "hdd", "disk", "hard drive"]) and not any(bad in kl for bad in ["max", "support", "slot", "expansion", "upgrade"]):
+                if any(s in kl for s in ["storage", "ssd", "hdd", "disk", "hard drive"]) and not any(
+                    bad in kl for bad in ["max", "support", "slot", "expansion", "upgrade"]
+                ):
                     storage_text += f" {v}"
 
         # Prioritize specification table text first! Only fallback to context/title if table is empty
@@ -1495,12 +1719,16 @@ class DeterministicExtractor:
 
         for target in search_targets:
             # Strip expansion limit phrases like "up to 4TB" or "supports up to 4TB"
-            clean_tgt = re.sub(r"\b(?:up\s+to|support(?:s)?\s*(?:up\s+to)?)\s*\d+\s*(?:tb|gb)\b", "", target, flags=re.I)
+            clean_tgt = re.sub(
+                r"\b(?:up\s+to|support(?:s)?\s*(?:up\s+to)?)\s*\d+\s*(?:tb|gb)\b", "", target, flags=re.I
+            )
 
             # Check HDD vs SSD
             if re.search(r"\b\d+\s*(?:tb|gb)\s*hdd\b", clean_tgt, re.I):
                 st_type = "HDD"
-            elif bool(re.search(r"\b(?:hdd|hard\s*drive|hard\s*disk)\b", clean_tgt, re.I)) and not bool(re.search(r"\b(?:ssd|nvme)\b", re.sub(r"\bsupport[a-z]*\s+nvme\b", "", clean_tgt, flags=re.I), re.I)):
+            elif bool(re.search(r"\b(?:hdd|hard\s*drive|hard\s*disk)\b", clean_tgt, re.I)) and not bool(
+                re.search(r"\b(?:ssd|nvme)\b", re.sub(r"\bsupport[a-z]*\s+nvme\b", "", clean_tgt, flags=re.I), re.I)
+            ):
                 st_type = "HDD"
             else:
                 st_type = "SSD"
@@ -1573,7 +1801,12 @@ class DeterministicExtractor:
                     all_slot_text += f" {v}"
 
         # Clean out "GEN 4 slot" or "PCIe 4.0 slot" or "Gen4 Slot" false triggers
-        clean_slot_text = re.sub(r"\b(?:gen|pcie|pcie\s*gen)\s*[345](?:\.0)?(?:\s*[xX×]\s*[24])?\s*(?:m\.2\s*)?slots?\b", "m.2 slot", all_slot_text, flags=re.I)
+        clean_slot_text = re.sub(
+            r"\b(?:gen|pcie|pcie\s*gen)\s*[345](?:\.0)?(?:\s*[xX×]\s*[24])?\s*(?:m\.2\s*)?slots?\b",
+            "m.2 slot",
+            all_slot_text,
+            flags=re.I,
+        )
 
         # Look for multi-slot sum e.g. "1 × M.2 ... Slot and 1 × M.2 ... Slot"
         m_and_slots = re.findall(r"\b1\s*[^a-zA-Z0-9\s]?\s*m\.2[^\n,]*?slot", all_slot_text, re.I)
@@ -1581,7 +1814,9 @@ class DeterministicExtractor:
             specs["storage"]["slot_count"] = len(m_and_slots)
         elif re.search(r"\b(?:supports\s+only\s+one|only\s+one|one\s+m\.2)\b", all_slot_text, re.I):
             specs["storage"]["slot_count"] = 1
-        elif re.search(r"\b(?:extra\s+m\.2\s+slot|second\s+m\.2|two\s+drives|2x\s*m\.2|two\s+m\.2)\b", all_slot_text, re.I):
+        elif re.search(
+            r"\b(?:extra\s+m\.2\s+slot|second\s+m\.2|two\s+drives|2x\s*m\.2|two\s+m\.2)\b", all_slot_text, re.I
+        ):
             specs["storage"]["slot_count"] = 2
         else:
             m_sc = re.search(
@@ -1600,7 +1835,9 @@ class DeterministicExtractor:
                     specs["storage"]["slot_count"] = 2
 
         if specs["storage"].get("slot_count") is None:
-            m_cnt = re.search(r"\b(?:ssd\s*count|number\s*of\s*ssds?(?:\s*installed)?)\s*[:=]?\s*([1-4])\b", str(table), re.IGNORECASE)
+            m_cnt = re.search(
+                r"\b(?:ssd\s*count|number\s*of\s*ssds?(?:\s*installed)?)\s*[:=]?\s*([1-4])\b", str(table), re.IGNORECASE
+            )
             if m_cnt:
                 specs["storage"]["slot_count"] = int(m_cnt.group(1))
 
@@ -1608,7 +1845,9 @@ class DeterministicExtractor:
         if max_st_rows:
             max_text = " ".join(v for _, v in max_st_rows)
             # Up to two drives... up to 1TB each
-            m_two_each = re.search(r"(?:two\s+drives|2x\s+m\.2)[^,\n]*?up to\s*(\d+)\s*tb\s*each", max_text, re.IGNORECASE)
+            m_two_each = re.search(
+                r"(?:two\s+drives|2x\s+m\.2)[^,\n]*?up to\s*(\d+)\s*tb\s*each", max_text, re.IGNORECASE
+            )
             if m_two_each:
                 specs["storage"]["max_supported_gb"] = 2 * int(m_two_each.group(1)) * 1024
             else:
@@ -1639,11 +1878,11 @@ class DeterministicExtractor:
     def _extract_display(
         self,
         title: str,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -1764,7 +2003,11 @@ class DeterministicExtractor:
                 specs["display"]["aspect_ratio"] = ar_match.group(1)
                 break
 
-        if not specs["display"]["aspect_ratio"] and specs["display"]["resolution_width"] and specs["display"]["resolution_height"]:
+        if (
+            not specs["display"]["aspect_ratio"]
+            and specs["display"]["resolution_width"]
+            and specs["display"]["resolution_height"]
+        ):
             ratio = specs["display"]["resolution_width"] / specs["display"]["resolution_height"]
             if abs(ratio - 16 / 9) < 0.03:
                 specs["display"]["aspect_ratio"] = "16:9"
@@ -1798,7 +2041,11 @@ class DeterministicExtractor:
         # Color Gamut
         gamut_rows = routed_table.get("display_gamut", [])
         gamut_text = " ".join(v for _, v in gamut_rows)
-        m_gamut = re.search(r"\b(\d{2,3}(?:\.\d+)?%\s*(?:sRGB|NTSC|DCI-P3|Adobe\s*RGB))\b", f"{gamut_text} {primary_text}", re.IGNORECASE)
+        m_gamut = re.search(
+            r"\b(\d{2,3}(?:\.\d+)?%\s*(?:sRGB|NTSC|DCI-P3|Adobe\s*RGB))\b",
+            f"{gamut_text} {primary_text}",
+            re.IGNORECASE,
+        )
         if m_gamut:
             specs["display"]["color_gamut"] = m_gamut.group(1).strip()
         elif gamut_rows:
@@ -1846,7 +2093,10 @@ class DeterministicExtractor:
                 hvs = hv.strip()
                 if not hvs or any(bad in hvs.lower() for bad in ["no", "none", "false", "n/a"]):
                     continue
-                if any(bad in hvs.lower() for bad in ["srgb", "ntsc", "dci-p3", "adobe rgb", "%", "color", "gamut", "depth"]):
+                if any(
+                    bad in hvs.lower()
+                    for bad in ["srgb", "ntsc", "dci-p3", "adobe rgb", "%", "color", "gamut", "depth"]
+                ):
                     continue
                 if re.search(r"\bhdr\b", hvs, re.I):
                     specs["display"]["hdr"] = hvs
@@ -1857,11 +2107,17 @@ class DeterministicExtractor:
         for tt in touch_targets:
             if not tt:
                 continue
-            if re.search(r"\b(?:touchscreen|touch\s*screen|multi-touch|touch\s+display|touch\s+\d+hz|dual\s+16[″\"]\s+3k\s+oled\s+touch)\b", tt, re.I):
+            if re.search(
+                r"\b(?:touchscreen|touch\s*screen|multi-touch|touch\s+display|touch\s+\d+hz|dual\s+16[″\"]\s+3k\s+oled\s+touch)\b",
+                tt,
+                re.I,
+            ):
                 if not re.search(r"\b(?:non-touch|no\s+touch)\b", tt, re.I):
                     specs["display"]["touchscreen"] = True
                     break
-            elif re.search(r"\btouch\b", tt, re.I) and not re.search(r"\b(?:touchpad|touch\s*pad|non-touch|no\s+touch)\b", tt, re.I):
+            elif re.search(r"\btouch\b", tt, re.I) and not re.search(
+                r"\b(?:touchpad|touch\s*pad|non-touch|no\s+touch)\b", tt, re.I
+            ):
                 specs["display"]["touchscreen"] = True
                 break
 
@@ -1890,12 +2146,12 @@ class DeterministicExtractor:
 
     def _extract_power(
         self,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
-        cpu_context: Optional[Dict[str, Any]] = None,
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
+        cpu_context: dict[str, Any] | None = None,
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -1944,7 +2200,11 @@ class DeterministicExtractor:
             )
 
         # Power Adapter W (strictly require adapter/charger context; reject CPU/GPU turbo/PL2 power)
-        adapter_rows = [v for k, v in table.items() if any(t in k.lower() for t in ["adapter", "charger", "power supply", "power adapter"])]
+        adapter_rows = [
+            v
+            for k, v in table.items()
+            if any(t in k.lower() for t in ["adapter", "charger", "power supply", "power adapter"])
+        ]
         adapter_text = " ".join(adapter_rows)
         w_match = None
         if adapter_text:
@@ -1952,8 +2212,12 @@ class DeterministicExtractor:
 
         if not w_match:
             clean_pwr_lines = [
-                line for line in full_search.split("\n")
-                if not any(bad in line.lower() for bad in ["turbo power", "base power", "tgp", "tdp", "pl1", "pl2", "cpu power", "graphics power"])
+                line
+                for line in full_search.split("\n")
+                if not any(
+                    bad in line.lower()
+                    for bad in ["turbo power", "base power", "tgp", "tdp", "pl1", "pl2", "cpu power", "graphics power"]
+                )
             ]
             clean_pwr_search = " ".join(clean_pwr_lines)
             w_match = re.search(
@@ -2007,11 +2271,11 @@ class DeterministicExtractor:
     def _extract_physical(
         self,
         title: str,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -2033,7 +2297,11 @@ class DeterministicExtractor:
         if not dim_text or not weight_text or not color_text:
             for k, v in table.items():
                 kl = k.lower()
-                if not dim_text and any(p in kl for p in ["dimension", "dimensions (wxdxh)", "size"]) and "package" not in kl:
+                if (
+                    not dim_text
+                    and any(p in kl for p in ["dimension", "dimensions (wxdxh)", "size"])
+                    and "package" not in kl
+                ):
                     dim_text += f" {v}"
                 if not weight_text and "weight" in kl and "package" not in kl:
                     weight_text += f" {v}"
@@ -2054,7 +2322,12 @@ class DeterministicExtractor:
                     break
 
         if specs["physical"]["weight_kg"] is None:
-            clean_search = re.sub(r"\b(?:package\s*weight|packaging\s*weight|weight\s*in\s*packaging)[^|\n]*", "", full_search, flags=re.IGNORECASE)
+            clean_search = re.sub(
+                r"\b(?:package\s*weight|packaging\s*weight|weight\s*in\s*packaging)[^|\n]*",
+                "",
+                full_search,
+                flags=re.IGNORECASE,
+            )
             wt_match = re.search(r"\b([0-4]\.\d{1,2})\s*kg\b", clean_search, re.IGNORECASE)
             if wt_match:
                 valid, clean_wt, _ = PhysicalValidator.validate_weight(wt_match.group(1))
@@ -2106,7 +2379,7 @@ class DeterministicExtractor:
             if m_col:
                 specs["identity"]["color"] = m_col.group(1).strip()
 
-    def _parse_dimensions_text(self, text: str) -> Tuple[Optional[float], Optional[float], Optional[float]]:
+    def _parse_dimensions_text(self, text: str) -> tuple[float | None, float | None, float | None]:
         if not text:
             return None, None, None
 
@@ -2120,9 +2393,12 @@ class DeterministicExtractor:
             d_val = float(m_d.group(1))
             h_unit = m_h.group(2)
             if h_unit == "cm" or "cm" in text.lower():
-                if h_val < 10: h_val *= 10.0
-                if w_val < 60: w_val *= 10.0
-                if d_val < 60: d_val *= 10.0
+                if h_val < 10:
+                    h_val *= 10.0
+                if w_val < 60:
+                    w_val *= 10.0
+                if d_val < 60:
+                    d_val *= 10.0
             return w_val, d_val, h_val
 
         # 2. Triple measurement (e.g. 359.86 x 258.7 x 21.9-23.9 mm or 36.9 x 25.94 x 2.29 cm)
@@ -2145,10 +2421,10 @@ class DeterministicExtractor:
 
     def _extract_connectivity(
         self,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
+        specs: dict[str, Any],
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -2210,13 +2486,23 @@ class DeterministicExtractor:
                     if re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", p_clean):
                         continue
                     # Reject lifecycle or support dates/metadata
-                    if re.search(r"\b(?:20\d\d[-/]\d\d[-/]\d\d|end of support|lifecycle|warranty)\b", p_clean, re.IGNORECASE):
+                    if re.search(
+                        r"\b(?:20\d\d[-/]\d\d[-/]\d\d|end of support|lifecycle|warranty)\b", p_clean, re.IGNORECASE
+                    ):
                         continue
                     # Reject marketing phrases or non-port claims
-                    if any(bad in p_clean.lower() for bad in [
-                        "all the ports you need", "built to dominate", "connect with ease",
-                        "support dolby vision", "stylus support", "supported ssd", "support list"
-                    ]):
+                    if any(
+                        bad in p_clean.lower()
+                        for bad in [
+                            "all the ports you need",
+                            "built to dominate",
+                            "connect with ease",
+                            "support dolby vision",
+                            "stylus support",
+                            "supported ssd",
+                            "support list",
+                        ]
+                    ):
                         continue
                     cleaned_ports.append(p_clean)
 
@@ -2246,7 +2532,9 @@ class DeterministicExtractor:
         m_tb = re.search(r"\bthunderbolt\s*([345])\b", tb_text, re.IGNORECASE)
         if m_tb:
             specs["connectivity"]["thunderbolt_version"] = f"Thunderbolt {m_tb.group(1)}"
-        elif re.search(r"\bthunderbolt\b", tb_text, re.IGNORECASE) and not any(bad in tb_text.lower() for bad in ["no thunderbolt", "without thunderbolt"]):
+        elif re.search(r"\bthunderbolt\b", tb_text, re.IGNORECASE) and not any(
+            bad in tb_text.lower() for bad in ["no thunderbolt", "without thunderbolt"]
+        ):
             if not any(k.lower() == "interfaces, thunderbolt" and v.lower() == "no" for k, v in table.items()):
                 specs["connectivity"]["thunderbolt_version"] = "Thunderbolt"
 
@@ -2290,10 +2578,10 @@ class DeterministicExtractor:
     def _extract_operating_system(
         self,
         title: str,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
+        specs: dict[str, Any],
     ) -> None:
         specs["operating_system"]["raw_spec"] = self._collect_raw_spec(
             table=table,
@@ -2301,7 +2589,7 @@ class DeterministicExtractor:
             fallback_text=context,
         )
 
-        os_rows = (routed_table.get("os", []) if routed_table else [])
+        os_rows = routed_table.get("os", []) if routed_table else []
         table_os_text = " ".join(v for _, v in os_rows)
         if not table_os_text:
             for k, v in table.items():
@@ -2335,7 +2623,11 @@ class DeterministicExtractor:
             elif re.search(r"\bfreedos\b|\bfree\s*dos\b", clean_tgt, re.IGNORECASE):
                 specs["operating_system"]["name"] = "FreeDOS"
                 break
-            elif re.search(r"\b(?:no\s*operating\s*system|no\s*preloaded|no\s*preinstalled|no\s*os|without\s*os|eshell)\b", clean_tgt, re.IGNORECASE):
+            elif re.search(
+                r"\b(?:no\s*operating\s*system|no\s*preloaded|no\s*preinstalled|no\s*os|without\s*os|eshell)\b",
+                clean_tgt,
+                re.IGNORECASE,
+            ):
                 specs["operating_system"]["name"] = "No OS"
                 break
             elif re.search(r"\bdos\b", clean_tgt, re.IGNORECASE):
@@ -2351,11 +2643,11 @@ class DeterministicExtractor:
     def _extract_build_security(
         self,
         title: str,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -2375,7 +2667,9 @@ class DeterministicExtractor:
         if not sec_rows:
             sec_rows = [(k, v) for k, v in table.items() if any(w in k.lower() for w in ["security", "fingerprint"])]
         if not pad_rows:
-            pad_rows = [(k, v) for k, v in table.items() if any(w in k.lower() for w in ["touchpad", "pointing device"])]
+            pad_rows = [
+                (k, v) for k, v in table.items() if any(w in k.lower() for w in ["touchpad", "pointing device"])
+            ]
 
         # 1. Backlit keyboard & Backlight Type
         kb_text = " ".join(v for _, v in kb_rows) + " " + title
@@ -2385,7 +2679,11 @@ class DeterministicExtractor:
             is_non_backlit = True
         for _, v in kb_rows:
             vl = v.strip().lower()
-            if any(bad in vl for bad in ["non-backlit", "no backlight", "not backlit", "without backlight"]) or vl in ("no", "none", "false"):
+            if any(bad in vl for bad in ["non-backlit", "no backlight", "not backlit", "without backlight"]) or vl in (
+                "no",
+                "none",
+                "false",
+            ):
                 is_non_backlit = True
                 break
         for k, v in table.items():
@@ -2410,7 +2708,9 @@ class DeterministicExtractor:
         elif re.search(r"\brgb\b", kb_text, re.IGNORECASE):
             specs["build_security"]["keyboard_backlight_type"] = "RGB Backlit"
             specs["build_security"]["has_backlit_keyboard"] = True
-        elif re.search(r"\bamber\s+(?:backlit|backlight)\b|\bamber\b", kb_text, re.IGNORECASE) and any("amber" in v.lower() for _, v in kb_rows):
+        elif re.search(r"\bamber\s+(?:backlit|backlight)\b|\bamber\b", kb_text, re.IGNORECASE) and any(
+            "amber" in v.lower() for _, v in kb_rows
+        ):
             specs["build_security"]["keyboard_backlight_type"] = "Amber Backlit"
             specs["build_security"]["has_backlit_keyboard"] = True
         elif re.search(r"\bwhite\s+(?:backlit|backlight)\b", kb_text, re.IGNORECASE):
@@ -2429,7 +2729,11 @@ class DeterministicExtractor:
                         break
 
         # 2. Numpad
-        numpad_rows = [v for k, v in table.items() if any(nk in k.lower() for nk in ["numeric keypad", "numpad", "num-key", "number pad"])]
+        numpad_rows = [
+            v
+            for k, v in table.items()
+            if any(nk in k.lower() for nk in ["numeric keypad", "numpad", "num-key", "number pad"])
+        ]
         if numpad_rows:
             np_val = " ".join(numpad_rows).lower()
             if any(bad in np_val for bad in ["no", "none", "without", "false"]):
@@ -2444,7 +2748,9 @@ class DeterministicExtractor:
         # 3. Fingerprint reader
         for sk, vs in sec_rows:
             row_str = f"{sk}: {vs}"
-            if re.search(r"\b(?:no\s+fingerprint|without\s+fingerprint)\b", row_str, re.IGNORECASE) or vs.strip().lower() in ("no", "none", "n/a"):
+            if re.search(
+                r"\b(?:no\s+fingerprint|without\s+fingerprint)\b", row_str, re.IGNORECASE
+            ) or vs.strip().lower() in ("no", "none", "n/a"):
                 specs["build_security"]["has_fingerprint"] = False
                 break
             elif re.search(r"\bfingerprint\b", row_str, re.IGNORECASE):
@@ -2460,7 +2766,11 @@ class DeterministicExtractor:
             if not clean_pad or any(bad in clean_pad.lower() for bad in ["none", "n/a"]):
                 continue
             # Reject stylus / pen negative disclaimers
-            if re.search(r"\b(?:pen\s+not\s+supported|not\s+supported|no\s+support|not\s+included|without\s+pen|no\s+stylus)\b", clean_pad, re.IGNORECASE):
+            if re.search(
+                r"\b(?:pen\s+not\s+supported|not\s+supported|no\s+support|not\s+included|without\s+pen|no\s+stylus)\b",
+                clean_pad,
+                re.IGNORECASE,
+            ):
                 continue
             if clean_pad.strip().lower() in ("pen", "stylus"):
                 continue
@@ -2470,7 +2780,11 @@ class DeterministicExtractor:
         # 5. Chassis material
         mat_rows = routed_table.get("materials", [])
         if not mat_rows:
-            mat_rows = [(k, v) for k, v in table.items() if any(m in k.lower() for m in ["case material", "chassis material", "build material", "material"])]
+            mat_rows = [
+                (k, v)
+                for k, v in table.items()
+                if any(m in k.lower() for m in ["case material", "chassis material", "build material", "material"])
+            ]
         for mk, mv in mat_rows:
             if "sustainable" in mk.lower():
                 continue
@@ -2478,10 +2792,24 @@ class DeterministicExtractor:
             if not mv_clean or any(bad in mv_clean.lower() for bad in ["none", "n/a"]):
                 continue
             # Reject form-factor, security certs, and panel terms
-            if any(bad in mv_clean.lower() for bad in [
-                "secured-core", "security", "tpm", "password", "fingerprint", "clamshell",
-                "convertible", "classical", "gaming laptop", "notebook", "2-in-1", "detachable", "ips"
-            ]):
+            if any(
+                bad in mv_clean.lower()
+                for bad in [
+                    "secured-core",
+                    "security",
+                    "tpm",
+                    "password",
+                    "fingerprint",
+                    "clamshell",
+                    "convertible",
+                    "classical",
+                    "gaming laptop",
+                    "notebook",
+                    "2-in-1",
+                    "detachable",
+                    "ips",
+                ]
+            ):
                 continue
             specs["build_security"]["chassis_material"] = mv_clean
             break
@@ -2497,11 +2825,11 @@ class DeterministicExtractor:
 
     def _extract_audio_webcam(
         self,
-        table: Dict[str, str],
-        routed_table: Optional[Dict[str, List[Tuple[str, str]]]],
+        table: dict[str, str],
+        routed_table: dict[str, list[tuple[str, str]]] | None,
         context: str,
-        specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
+        specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
     ) -> None:
         if routed_table is None:
             routed_table = self.router.route_table(table)
@@ -2518,7 +2846,11 @@ class DeterministicExtractor:
         if not cam_rows:
             cam_rows = [(k, v) for k, v in table.items() if any(w in k.lower() for w in ["camera", "webcam"])]
         if not audio_rows:
-            audio_rows = [(k, v) for k, v in table.items() if any(w in k.lower() for w in ["speaker", "audio", "microphone", "mic"])]
+            audio_rows = [
+                (k, v)
+                for k, v in table.items()
+                if any(w in k.lower() for w in ["speaker", "audio", "microphone", "mic"])
+            ]
 
         # Webcam
         for _, vs in cam_rows:
@@ -2533,26 +2865,34 @@ class DeterministicExtractor:
             m_named = re.search(r"\b(QHD|UHD|4K|HD)\b", vs, re.IGNORECASE)
             if m_named:
                 named_map = {"HD": "720p", "QHD": "1440p", "UHD": "2160p", "4K": "2160p"}
-                specs["audio_webcam"]["webcam_resolution"] = named_map.get(m_named.group(1).upper(), m_named.group(1).upper())
+                specs["audio_webcam"]["webcam_resolution"] = named_map.get(
+                    m_named.group(1).upper(), m_named.group(1).upper()
+                )
                 break
 
         # Webcam Shutter & IR Camera
         cam_text = " ".join(v for _, v in cam_rows) + " " + " ".join(v for _, v in audio_rows)
         if re.search(r"\b(?:without|no)\s+(?:privacy\s*shutter|e-?shutter)\b", cam_text, re.IGNORECASE):
             specs["audio_webcam"]["has_privacy_shutter"] = False
-        elif re.search(r"\b(privacy\s*shutter|e-?shutter|camera\s*shutter|webcam\s*shutter)\b", cam_text, re.IGNORECASE):
+        elif re.search(
+            r"\b(privacy\s*shutter|e-?shutter|camera\s*shutter|webcam\s*shutter)\b", cam_text, re.IGNORECASE
+        ):
             specs["audio_webcam"]["has_privacy_shutter"] = True
 
         if re.search(r"\b(?:without|no)\s+(?:ir|infrared)\b", cam_text, re.IGNORECASE):
             specs["audio_webcam"]["has_ir_camera"] = False
-        elif re.search(r"\b(ir\s*camera|ir\s*webcam|infrared|windows\s*hello\s*camera|ir\s*function)\b", cam_text, re.IGNORECASE):
+        elif re.search(
+            r"\b(ir\s*camera|ir\s*webcam|infrared|windows\s*hello\s*camera|ir\s*function)\b", cam_text, re.IGNORECASE
+        ):
             specs["audio_webcam"]["has_ir_camera"] = True
 
         # Microphone & Speakers
         for k, vs in audio_rows:
             combined_entry = f"{k}: {vs}"
             if not specs["audio_webcam"]["microphone"]:
-                if re.search(r"\bbuilt-in\s*microphones?\s*[:=]?\s*2\b|\bdual\s*array\b", combined_entry, re.IGNORECASE):
+                if re.search(
+                    r"\bbuilt-in\s*microphones?\s*[:=]?\s*2\b|\bdual\s*array\b", combined_entry, re.IGNORECASE
+                ):
                     specs["audio_webcam"]["microphone"] = "Dual array microphone"
                 elif re.search(r"\bmicrophone\s*[:=]?\s*(?:yes|1|built-in)\b", combined_entry, re.IGNORECASE):
                     specs["audio_webcam"]["microphone"] = "Built-in microphone"
@@ -2567,12 +2907,14 @@ class DeterministicExtractor:
                 if len(m_wt) >= 2:
                     specs["audio_webcam"]["speaker_count"] = sum(int(c) for c in m_wt)
                 else:
-                    m_sp = re.search(r"(\d+)[-\s]*(?:stereo\s*)?(?:x\s*\d+(?:\.\d+)?\s*W|speakers?|speaker\s*system)", vs, re.IGNORECASE)
+                    m_sp = re.search(
+                        r"(\d+)[-\s]*(?:stereo\s*)?(?:x\s*\d+(?:\.\d+)?\s*W|speakers?|speaker\s*system)",
+                        vs,
+                        re.IGNORECASE,
+                    )
                     if m_sp:
                         specs["audio_webcam"]["speaker_count"] = int(m_sp.group(1))
                     elif re.search(r"\b(?:quad|four|4x)\b", vs, re.IGNORECASE):
                         specs["audio_webcam"]["speaker_count"] = 4
                     elif re.search(r"\b(?:dual|stereo|two|2x)\b", vs, re.IGNORECASE):
                         specs["audio_webcam"]["speaker_count"] = 2
-
-

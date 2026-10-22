@@ -92,7 +92,20 @@ class TitleSpecExtractor:
         specs: dict[str, str] = {}
 
         # 0. Brand (supports direct brands and sub-brands like ROG Strix -> ASUS, Alienware -> DELL)
-        for b in ["acer", "asus", "lenovo", "hp", "dell", "msi", "apple", "samsung", "huawei", "gigabyte", "razer", "microsoft"]:
+        for b in [
+            "acer",
+            "asus",
+            "lenovo",
+            "hp",
+            "dell",
+            "msi",
+            "apple",
+            "samsung",
+            "huawei",
+            "gigabyte",
+            "razer",
+            "microsoft",
+        ]:
             if re.search(rf"\b{b}\b", title, re.I):
                 specs["Brand"] = b.upper() if b in ("hp", "msi", "dell", "asus") else b.capitalize()
                 break
@@ -162,11 +175,13 @@ class TitleSpecExtractor:
                 break
 
         # 4. Storage (supports dual-drive setups e.g. 1TB HDD + 256GB SSD)
-        storage_matches = list(re.finditer(
-            r"\b(\d{1,4}(?:\.\d+)?\s*(?:TB|GB))\s*(?:SSD|HDD|HHD|NVMe|PCIe|M\.2|Gen\d[x\d]*)\b",
-            title,
-            re.I,
-        ))
+        storage_matches = list(
+            re.finditer(
+                r"\b(\d{1,4}(?:\.\d+)?\s*(?:TB|GB))\s*(?:SSD|HDD|HHD|NVMe|PCIe|M\.2|Gen\d[x\d]*)\b",
+                title,
+                re.I,
+            )
+        )
         if storage_matches:
             specs["Storage"] = " + ".join(m.group(0).strip() for m in storage_matches)
         else:
@@ -187,7 +202,11 @@ class TitleSpecExtractor:
         )
         if disp_m:
             disp_val = disp_m.group(0).strip().rstrip("-")
-            feat_m = re.search(r"\b(FHD(?:\s*Touch)?|QHD(?:\s*Touch)?|UHD(?:\s*Touch)?|WUXGA(?:\s*Touch)?|OLED(?:\s*Touch)?|Touch)\b", title, re.I)
+            feat_m = re.search(
+                r"\b(FHD(?:\s*Touch)?|QHD(?:\s*Touch)?|UHD(?:\s*Touch)?|WUXGA(?:\s*Touch)?|OLED(?:\s*Touch)?|Touch)\b",
+                title,
+                re.I,
+            )
             if feat_m and feat_m.group(0).lower() not in disp_val.lower():
                 disp_val = f"{disp_val} {feat_m.group(0).strip()}"
             hz_m = re.search(r"\b(\d{2,3}\s*Hz)\b", title, re.I)
@@ -196,7 +215,9 @@ class TitleSpecExtractor:
             specs["Display"] = disp_val
 
         # 6. Operating System
-        os_m = re.search(r"\b(Win(?:dows)?\s*(?:11|10)(?:\s*(?:Home|Pro))?|FreeDOS|DOS|Ubuntu|Linux|macOS)\b", title, re.I)
+        os_m = re.search(
+            r"\b(Win(?:dows)?\s*(?:11|10)(?:\s*(?:Home|Pro))?|FreeDOS|DOS|Ubuntu|Linux|macOS)\b", title, re.I
+        )
         if os_m:
             specs["Operating System"] = os_m.group(0).strip()
 
@@ -253,7 +274,9 @@ class TitleSpecExtractor:
             v_low = vs.lower()
             comb = f"{ks}: {vs}".lower()
             if not cpu:
-                if any(w in k_low for w in ["cpu", "processor", "cores/threads", "base clock speed"]) and not any(w in k_low for w in ["gpu", "graphics", "audio"]):
+                if any(w in k_low for w in ["cpu", "processor", "cores/threads", "base clock speed"]) and not any(
+                    w in k_low for w in ["gpu", "graphics", "audio"]
+                ):
                     cpu = vs
                 elif k_low == "type" and any(w in v_low for w in ["core", "ryzen", "celeron", "athlon"]):
                     cpu = vs
@@ -273,7 +296,24 @@ class TitleSpecExtractor:
                     continue
                 if any(w in k_low for w in ["installed ram", "system memory", "ram", "memory"]):
                     ram = vs
-                elif k_low in ("installed", "capacity", "type") and any(w in v_low for w in ["ddr", "so-dimm", "2x8gb", "2x16gb", "16gb", "32gb", "64gb", "8gb", "4gb", "lpddr", "16g", "32g", "64g"]):
+                elif k_low in ("installed", "capacity", "type") and any(
+                    w in v_low
+                    for w in [
+                        "ddr",
+                        "so-dimm",
+                        "2x8gb",
+                        "2x16gb",
+                        "16gb",
+                        "32gb",
+                        "64gb",
+                        "8gb",
+                        "4gb",
+                        "lpddr",
+                        "16g",
+                        "32g",
+                        "64g",
+                    ]
+                ):
                     ram = vs
 
         # 3. Storage Slot
@@ -285,10 +325,28 @@ class TitleSpecExtractor:
             if not storage:
                 if any(w in k_low for w in ["slots", "expansion", "support", "interface", "form factor"]):
                     continue
-                if any(w in k_low for w in ["storage", "primary drive", "ssd", "hard drive", "storage capacity", "solid state drive", "state drive", "drive capacity"]):
+                if any(
+                    w in k_low
+                    for w in [
+                        "storage",
+                        "primary drive",
+                        "ssd",
+                        "hard drive",
+                        "storage capacity",
+                        "solid state drive",
+                        "state drive",
+                        "drive capacity",
+                    ]
+                ):
                     if any(c in v_low for c in ["gb", "tb", "512", "256", "1tb", "2tb", "ssd", "hdd"]):
                         storage = vs
-                elif "capacity" in k_low and any(w in v_low for w in ["ssd", "nvme", "hdd", "pcie", "1tb", "2tb", "512gb", "256gb", "gb", "tb"]) and "wh" not in v_low:
+                elif (
+                    "capacity" in k_low
+                    and any(
+                        w in v_low for w in ["ssd", "nvme", "hdd", "pcie", "1tb", "2tb", "512gb", "256gb", "gb", "tb"]
+                    )
+                    and "wh" not in v_low
+                ):
                     storage = vs
 
         # 4. GPU Slot
@@ -299,7 +357,25 @@ class TitleSpecExtractor:
             v_low = vs.lower()
             comb = f"{ks}: {vs}".lower()
             if not gpu:
-                if any(w in comb for w in ["gpu", "graphic", "graphics", "video card", "vga", "geforce", "rtx", "gtx", "radeon", "intel iris", "intel arc", "intel graphics", "integrated graphics", "adreno"]):
+                if any(
+                    w in comb
+                    for w in [
+                        "gpu",
+                        "graphic",
+                        "graphics",
+                        "video card",
+                        "vga",
+                        "geforce",
+                        "rtx",
+                        "gtx",
+                        "radeon",
+                        "intel iris",
+                        "intel arc",
+                        "intel graphics",
+                        "integrated graphics",
+                        "adreno",
+                    ]
+                ):
                     gpu = vs
                 elif k_low == "controller" and any(w in v_low for w in ["intel", "nvidia", "amd"]):
                     gpu = vs
@@ -313,10 +389,42 @@ class TitleSpecExtractor:
             if not display:
                 if any(w in k_low for w in ["support", "port", "output"]):
                     continue
-                if any(w in k_low for w in ["screen size", "display size", "display", "resolution", "panel type", "screen"]):
-                    if any(c in v_low or c in k_low for c in ['"', "inch", "cm", "15", "16", "14", "17", "18", "13", "11", "12", "fhd", "qhd", "wqxga", "wuxga", "oled", "ips", "hz", "touch", "full hd", "1920", "1080", "2560", "1200"]):
+                if any(
+                    w in k_low for w in ["screen size", "display size", "display", "resolution", "panel type", "screen"]
+                ):
+                    if any(
+                        c in v_low or c in k_low
+                        for c in [
+                            '"',
+                            "inch",
+                            "cm",
+                            "15",
+                            "16",
+                            "14",
+                            "17",
+                            "18",
+                            "13",
+                            "11",
+                            "12",
+                            "fhd",
+                            "qhd",
+                            "wqxga",
+                            "wuxga",
+                            "oled",
+                            "ips",
+                            "hz",
+                            "touch",
+                            "full hd",
+                            "1920",
+                            "1080",
+                            "2560",
+                            "1200",
+                        ]
+                    ):
                         display = vs
-                elif k_low == "size" and any(w in v_low for w in ['"', "inch", "cm", "15", "16", "14", "17", "18", "13", "11", "12"]):
+                elif k_low == "size" and any(
+                    w in v_low for w in ['"', "inch", "cm", "15", "16", "14", "17", "18", "13", "11", "12"]
+                ):
                     display = vs
                 elif any(w in k_low for w in ["15.6", "16-inch", "14-inch", "17.3", "18-inch", "13.3", "13.4"]):
                     display = f"{ks} {vs}".strip()

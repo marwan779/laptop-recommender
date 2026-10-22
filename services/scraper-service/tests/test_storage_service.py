@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, UTC
+from datetime import datetime, UTC
 import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -13,13 +13,12 @@ from app.services.orchestrator import ScrapeOrchestrator
 from app.storage.base import IObjectStorageService
 from app.storage.exceptions import (
     StorageConnectionError,
-    StorageError,
     StorageNotFoundError,
     StorageOperationError,
     StoragePermissionError,
 )
-from app.storage.factory import StorageFactory, get_storage_service
-from app.storage.models import BatchDeleteResult, ObjectMetadata, ObjectSummary, StorageObject
+from app.storage.factory import StorageFactory
+from app.storage.models import BatchDeleteResult, ObjectMetadata, StorageObject
 from app.storage.s3 import S3StorageService
 
 

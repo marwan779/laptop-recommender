@@ -1,10 +1,10 @@
-import pytest
 from pipeline.deterministic import DeterministicExtractor, TableKeyRouter
 from pipeline.llm_auditor import LLMAuditor, FieldCorrection
 
+
 def test_marketing_keys_not_routed_to_hardware_subsystems():
     router = TableKeyRouter()
-    
+
     # 1. Marketing headlines ending with period or containing promotional prose
     assert router.route_key("Every Frame Looks Unbelievable.") == "unrouted"
     assert router.route_key("RTX 5090 Power. No Half Measures.") == "unrouted"
@@ -13,7 +13,7 @@ def test_marketing_keys_not_routed_to_hardware_subsystems():
     assert router.route_key("Ready for Your Complete Setup.") == "unrouted"
     assert router.route_key("Built Around the Player.") == "unrouted"
     assert router.route_key("The Ultimate Predator Has Arrived.") == "unrouted"
-    
+
     # 2. Legitimate technical keys are properly routed
     assert router.route_key("Standard Memory") == "memory_type"
     assert router.route_key("Maximum Supported System Memory") == "max_memory"
@@ -52,7 +52,7 @@ def test_acer_predator_memory_and_power_raw_specs():
         "Performance That Stays Unlocked.": "The advanced thermal system...",
         "Ready for Your Complete Setup.": "Dual Thunderbolt...",
         "Built Around the Player.": "Customize every detail...",
-        "The Ultimate Predator Has Arrived.": "Get the Acer Predator..."
+        "The Ultimate Predator Has Arrived.": "Get the Acer Predator...",
     }
     title = 'Acer Predator Helios 16 AI PH16-73-92V4 16" WQXGA OLED 240Hz Intel Core Ultra 9 275HX 32GB RAM 1TB SSD GeForce RTX 5090 24GB Black NH.QW2EM.001'
 
@@ -74,34 +74,28 @@ def test_acer_predator_memory_and_power_raw_specs():
 
 def test_llm_auditor_preserves_table_memory_capacity():
     auditor = LLMAuditor(endpoints=[])
-    
+
     laptop = {
         "title": 'Acer Predator Helios 16 AI PH16-73-92V4 16" WQXGA OLED 240Hz Intel Core Ultra 9 275HX 32GB RAM 1TB SSD GeForce RTX 5090 24GB Black NH.QW2EM.001',
         "source_table": {
             "Standard Memory": "16 GB",
             "Memory": "16GB DDR5 6400MT/s, supports up to 64GB",
-            "32GB DDR5 + 1TB SSD": "DDR5 6400MT/s • PCIe Gen 5 NVMe"
+            "32GB DDR5 + 1TB SSD": "DDR5 6400MT/s • PCIe Gen 5 NVMe",
         },
-        "specs": {
-            "memory": {
-                "capacity_gb": 16,
-                "memory_type": "DDR5"
-            }
-        }
+        "specs": {"memory": {"capacity_gb": 16, "memory_type": "DDR5"}},
     }
-    
+
     # Simulate an LLM attempting to override 16 with 32 due to title / promo banner
     correction = FieldCorrection(
         field_path="memory.capacity_gb",
         current_value=16,
         corrected_value=32,
         reason="Title explicitly states 32GB RAM and banner states 32GB DDR5",
-        evidence_quote="32GB RAM"
+        evidence_quote="32GB RAM",
     )
-    
+
     applied = auditor.apply_corrections(laptop, [correction])
-    
+
     # The programmatic table precedence guard must reject the 32GB override
     assert len(applied) == 0
     assert laptop["specs"]["memory"]["capacity_gb"] == 16
-

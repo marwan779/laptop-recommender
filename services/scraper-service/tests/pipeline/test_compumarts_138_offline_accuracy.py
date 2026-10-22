@@ -11,7 +11,7 @@ import json
 import re
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -20,14 +20,14 @@ from pipeline.sanitizer import TextSanitizer
 
 
 @pytest.fixture(scope="module")
-def raw_catalog() -> Dict[str, Any]:
+def raw_catalog() -> dict[str, Any]:
     catalog_path = Path(__file__).resolve().parent.parent / "fixtures" / "compumarts_138_raw_catalog.json"
     assert catalog_path.exists(), f"Missing fixture file: {catalog_path}"
     with open(catalog_path, encoding="utf-8") as f:
         return json.load(f)
 
 
-def test_compumarts_138_raw_catalog_fixture_integrity(raw_catalog: Dict[str, Any]):
+def test_compumarts_138_raw_catalog_fixture_integrity(raw_catalog: dict[str, Any]):
     """Verify fixture contains all 138 products with valid specification rows."""
     products = raw_catalog.get("products", [])
     assert len(products) == 138, f"Expected 138 products in fixture, found {len(products)}"
@@ -61,7 +61,7 @@ def test_table_key_router_storage_separation():
     assert any("1TB" in v for v in max_storage_entries)
 
 
-def test_compumarts_138_core_specs_extraction_accuracy(raw_catalog: Dict[str, Any]):
+def test_compumarts_138_core_specs_extraction_accuracy(raw_catalog: dict[str, Any]):
     """Assert >98% accuracy on core specifications across all 138 catalog laptops."""
     products = raw_catalog.get("products", [])
     total_products = len(products)
@@ -122,7 +122,7 @@ def test_compumarts_138_core_specs_extraction_accuracy(raw_catalog: Dict[str, An
     assert (display_resolved / total_products) >= 0.95
 
 
-def test_zero_storage_collisions_on_max_support_laptops(raw_catalog: Dict[str, Any]):
+def test_zero_storage_collisions_on_max_support_laptops(raw_catalog: dict[str, Any]):
     """Verify that all 16 laptops with Max Storage Support rows extract installed 512GB with zero collisions."""
     products = raw_catalog.get("products", [])
     extractor = DeterministicExtractor()
@@ -152,7 +152,7 @@ def test_zero_storage_collisions_on_max_support_laptops(raw_catalog: Dict[str, A
     assert verified_cases >= 16, f"Expected at least 16 collision cases from catalog audit, found {verified_cases}"
 
 
-def test_multidimm_ram_precedence(raw_catalog: Dict[str, Any]):
+def test_multidimm_ram_precedence(raw_catalog: dict[str, Any]):
     """Verify that 2x 16GB multi-DIMM configurations extract 32GB instead of 16GB."""
     products = raw_catalog.get("products", [])
     extractor = DeterministicExtractor()
@@ -179,7 +179,7 @@ def test_multidimm_ram_precedence(raw_catalog: Dict[str, Any]):
     assert verified_cases >= 5, f"Expected to verify at least 5 multi-DIMM cases, found {verified_cases}"
 
 
-def test_raw_spec_populated_and_formatted_across_all_categories(raw_catalog: Dict[str, Any]):
+def test_raw_spec_populated_and_formatted_across_all_categories(raw_catalog: dict[str, Any]):
     """Verify that raw_spec is present in all 12 categories and properly formatted as {Key}: {Value}."""
     from pipeline.schema import empty_laptop_specifications
 
@@ -233,7 +233,7 @@ def test_raw_spec_populated_and_formatted_across_all_categories(raw_catalog: Dic
     assert cat_counts["operating_system"] >= 136, "OS raw_spec coverage must be >= 98%"
 
 
-def test_expanded_specification_fields_extraction(raw_catalog: Dict[str, Any]):
+def test_expanded_specification_fields_extraction(raw_catalog: dict[str, Any]):
     """Verify high-yield extraction and physical validity for all 23 newly added specification fields."""
     products = raw_catalog.get("products", [])
     total_products = len(products)
@@ -331,7 +331,13 @@ def test_expanded_specification_fields_extraction(raw_catalog: Dict[str, Any]):
         if bs["keyboard_backlight_type"] is not None:
             counts["backlight_type"] += 1
             assert bs["keyboard_backlight_type"] in {
-                "Per-Key RGB", "4-Zone RGB", "1-Zone RGB", "RGB Backlit", "White Backlit", "Backlit", "Amber Backlit"
+                "Per-Key RGB",
+                "4-Zone RGB",
+                "1-Zone RGB",
+                "RGB Backlit",
+                "White Backlit",
+                "Backlit",
+                "Amber Backlit",
             }
         if bs["has_numpad"] is not None:
             counts["numpad"] += 1
@@ -371,5 +377,3 @@ def test_expanded_specification_fields_extraction(raw_catalog: Dict[str, Any]):
     assert counts["thunderbolt"] >= 20, f"Thunderbolt yield too low: {counts['thunderbolt']}/138"
     assert counts["material"] >= 30, f"Material yield too low: {counts['material']}/138"
     assert counts["max_storage"] >= 15, f"Max storage yield too low: {counts['max_storage']}/138"
-
-

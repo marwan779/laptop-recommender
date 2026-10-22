@@ -18,7 +18,7 @@ import copy
 import re
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.engine.scrapling_engine import ScraplingEngine
 from pipeline.ai_fallback.base import IAIFallbackExtractor
@@ -43,15 +43,16 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PipelineResult:
     """End-to-end extraction result with full auditability."""
-    specs: Dict[str, Any]
-    cpu_key: Optional[str]
-    envelopes_generated: List[ExtractionEnvelope] = field(default_factory=list)
-    component_envelopes_generated: List[ComponentEnvelope] = field(default_factory=list)
-    component_results: List[ComponentEnvelopeResult] = field(default_factory=list)
-    ai_results: List[EnvelopeResult] = field(default_factory=list)
-    validation_rejections: List[Dict[str, Any]] = field(default_factory=list)
-    raw_product: Optional[RawScrapedProduct] = None
-    provenance_record: Optional[Dict[str, Any]] = None
+
+    specs: dict[str, Any]
+    cpu_key: str | None
+    envelopes_generated: list[ExtractionEnvelope] = field(default_factory=list)
+    component_envelopes_generated: list[ComponentEnvelope] = field(default_factory=list)
+    component_results: list[ComponentEnvelopeResult] = field(default_factory=list)
+    ai_results: list[EnvelopeResult] = field(default_factory=list)
+    validation_rejections: list[dict[str, Any]] = field(default_factory=list)
+    raw_product: RawScrapedProduct | None = None
+    provenance_record: dict[str, Any] | None = None
 
 
 class LaptopExtractionPipeline:
@@ -59,9 +60,9 @@ class LaptopExtractionPipeline:
 
     def __init__(
         self,
-        ai_fallback: Optional[IAIFallbackExtractor] = None,
-        scraper_engine: Optional[ScraplingEngine] = None,
-        raw_storage: Optional[RawScrapeStorage] = None,
+        ai_fallback: IAIFallbackExtractor | None = None,
+        scraper_engine: ScraplingEngine | None = None,
+        raw_storage: RawScrapeStorage | None = None,
         log_envelopes: bool = False,
     ) -> None:
         self.ai_fallback = ai_fallback
@@ -138,13 +139,16 @@ class LaptopExtractionPipeline:
                 if m_boost:
                     b_ghz = float(m_boost.group(1))
                     specs["cpu"]["clock_boost_ghz"] = b_ghz
-                    if isinstance(specs["cpu"].get("performance_cores"), dict) and specs["cpu"]["performance_cores"] is not None:
+                    if (
+                        isinstance(specs["cpu"].get("performance_cores"), dict)
+                        and specs["cpu"]["performance_cores"] is not None
+                    ):
                         specs["cpu"]["performance_cores"]["boost_clock_ghz"] = b_ghz
 
         deterministic_specs = copy.deepcopy(specs)
 
         # --- Layer 5: Physical Validation Gate 1 (Deterministic specs) ---
-        validation_rejections: List[Dict[str, Any]] = []
+        validation_rejections: list[dict[str, Any]] = []
         for cat, cat_dict in list(specs.items()):
             if cat == "cpu":
                 continue  # CPU is already verified ground truth
@@ -156,12 +160,14 @@ class LaptopExtractionPipeline:
                     cpu_context=cpu_context,
                 )
                 if not is_valid:
-                    validation_rejections.append({
-                        "gate": 1,
-                        "field_path": field_path,
-                        "rejected_value": f_val,
-                        "reason": reason,
-                    })
+                    validation_rejections.append(
+                        {
+                            "gate": 1,
+                            "field_path": field_path,
+                            "rejected_value": f_val,
+                            "reason": reason,
+                        }
+                    )
                     # Clear invalid deterministic value
                     specs[cat][f_name] = None
                     # Package into envelope for AI resolution
@@ -197,26 +203,41 @@ class LaptopExtractionPipeline:
             "memory": ["capacity_gb", "memory_type", "speed", "slot_count", "max_supported_gb", "is_soldered"],
             "storage": ["capacity_gb", "storage_type", "interface", "form_factor", "slot_count"],
             "display": [
-                "size_inches", "resolution", "refresh_rate_hz", "panel_type",
-                "aspect_ratio", "touchscreen", "brightness_nits", "color_gamut", "response_time_ms"
+                "size_inches",
+                "resolution",
+                "refresh_rate_hz",
+                "panel_type",
+                "aspect_ratio",
+                "touchscreen",
+                "brightness_nits",
+                "color_gamut",
+                "response_time_ms",
             ],
             "power_battery": ["battery_capacity_wh", "power_adapter_w", "battery_cells", "fast_charging"],
             "physical": ["weight_kg", "width_mm", "depth_mm", "height_mm"],
             "connectivity": [
-                "wifi", "bluetooth", "ethernet", "has_card_reader",
-                "card_reader_type", "thunderbolt_version"
+                "wifi",
+                "bluetooth",
+                "ethernet",
+                "has_card_reader",
+                "card_reader_type",
+                "thunderbolt_version",
             ],
             "audio_webcam": [
-                "speaker_count", "webcam_resolution", "has_ir_camera",
-                "has_privacy_shutter", "microphone"
+                "speaker_count",
+                "webcam_resolution",
+                "has_ir_camera",
+                "has_privacy_shutter",
+                "microphone",
             ],
             "build_security": [
-                "has_backlit_keyboard", "keyboard_backlight_type",
-                "has_fingerprint", "has_numpad", "chassis_material"
+                "has_backlit_keyboard",
+                "keyboard_backlight_type",
+                "has_fingerprint",
+                "has_numpad",
+                "chassis_material",
             ],
-            "operating_system": [
-                "name"
-            ],
+            "operating_system": ["name"],
         }
 
         COMPONENT_ENUMS = {
@@ -232,18 +253,30 @@ class LaptopExtractionPipeline:
                 "form_factor": ["M.2 2280", "M.2 2242", "2.5-inch"],
             },
             "connectivity": {
-                "card_reader_type": ["MicroSD", "SD Card Reader", "SD Express", "4-in-1 Card Reader", "3-in-1 Card Reader"],
+                "card_reader_type": [
+                    "MicroSD",
+                    "SD Card Reader",
+                    "SD Express",
+                    "4-in-1 Card Reader",
+                    "3-in-1 Card Reader",
+                ],
                 "thunderbolt_version": ["Thunderbolt 3", "Thunderbolt 4", "Thunderbolt 5"],
             },
             "build_security": {
-                "keyboard_backlight_type": ["Single Color (White)", "Single Color (Blue)", "RGB 4-Zone", "Per-Key RGB", "RGB"],
+                "keyboard_backlight_type": [
+                    "Single Color (White)",
+                    "Single Color (Blue)",
+                    "RGB 4-Zone",
+                    "Per-Key RGB",
+                    "RGB",
+                ],
             },
             "operating_system": {
                 "name": ["Windows 11 Home", "Windows 11 Pro", "FreeDOS", "macOS", "Ubuntu", "ChromeOS"],
             },
         }
 
-        component_envelopes: List[ComponentEnvelope] = []
+        component_envelopes: list[ComponentEnvelope] = []
         for comp_name, comp_fields in COMPONENT_DEFINITIONS.items():
             comp_dict = specs.get(comp_name, {})
             unresolved = [f for f in comp_fields if comp_dict.get(f) is None]
@@ -267,19 +300,41 @@ class LaptopExtractionPipeline:
                 if comp_name == "identity":
                     raw_spec = sanitized_title
                 elif comp_name == "power_battery":
-                    raw_spec = sanitized_sections.get("Battery & Power", "") or sanitized_sections.get("Power", "") or ""
+                    raw_spec = (
+                        sanitized_sections.get("Battery & Power", "") or sanitized_sections.get("Power", "") or ""
+                    )
                 elif comp_name == "display":
                     raw_spec = sanitized_sections.get("Display", "") or ""
                 elif comp_name == "gpu":
                     raw_spec = sanitized_sections.get("Graphics", "") or sanitized_sections.get("GPU", "") or ""
                 elif comp_name == "connectivity":
-                    raw_spec = sanitized_sections.get("Connectivity", "") or sanitized_sections.get("Ports", "") or sanitized_sections.get("I/O Ports", "") or ""
+                    raw_spec = (
+                        sanitized_sections.get("Connectivity", "")
+                        or sanitized_sections.get("Ports", "")
+                        or sanitized_sections.get("I/O Ports", "")
+                        or ""
+                    )
                 elif comp_name == "audio_webcam":
-                    raw_spec = sanitized_sections.get("Audio & Camera", "") or sanitized_sections.get("Audio", "") or sanitized_sections.get("Camera", "") or ""
+                    raw_spec = (
+                        sanitized_sections.get("Audio & Camera", "")
+                        or sanitized_sections.get("Audio", "")
+                        or sanitized_sections.get("Camera", "")
+                        or ""
+                    )
                 elif comp_name == "build_security":
-                    raw_spec = sanitized_sections.get("Design & Keyboard", "") or sanitized_sections.get("Keyboard", "") or sanitized_sections.get("Security", "") or ""
+                    raw_spec = (
+                        sanitized_sections.get("Design & Keyboard", "")
+                        or sanitized_sections.get("Keyboard", "")
+                        or sanitized_sections.get("Security", "")
+                        or ""
+                    )
                 elif comp_name == "operating_system":
-                    raw_spec = sanitized_sections.get("Operating System", "") or sanitized_sections.get("OS", "") or sanitized_title or ""
+                    raw_spec = (
+                        sanitized_sections.get("Operating System", "")
+                        or sanitized_sections.get("OS", "")
+                        or sanitized_title
+                        or ""
+                    )
 
             # Rule: If raw_spec is empty, skip envelope
             if not raw_spec or not raw_spec.strip():
@@ -322,8 +377,8 @@ class LaptopExtractionPipeline:
             component_envelopes = [self.prompt_normalizer.normalize_envelope(env) for env in component_envelopes]
 
         # --- Layer 6: AI Fallback Layer ---
-        ai_results: List[EnvelopeResult] = []
-        component_results: List[ComponentEnvelopeResult] = []
+        ai_results: list[EnvelopeResult] = []
+        component_results: list[ComponentEnvelopeResult] = []
         if component_envelopes and self.ai_fallback:
             try:
                 component_results = self.ai_fallback.batch_extract_component_envelopes(component_envelopes)
@@ -331,9 +386,17 @@ class LaptopExtractionPipeline:
                 logger.error("AI Fallback execution error: %s", e)
 
             if self.log_envelopes and component_results:
-                logger.info("[AI RESULT] Received %d component prediction(s) from %s:", len(component_results), self.ai_fallback.model_name)
+                logger.info(
+                    "[AI RESULT] Received %d component prediction(s) from %s:",
+                    len(component_results),
+                    self.ai_fallback.model_name,
+                )
                 for cr in component_results:
-                    logger.info("  -> [AI RESULT] subsystem=%s | extracted=%s", cr.component_name, json.dumps(cr.extracted_fields))
+                    logger.info(
+                        "  -> [AI RESULT] subsystem=%s | extracted=%s",
+                        cr.component_name,
+                        json.dumps(cr.extracted_fields),
+                    )
         elif self.log_envelopes and component_envelopes and not self.ai_fallback:
             logger.info("[AI RESULT] Skipped AI fallback (no fallback model configured).")
 
@@ -380,16 +443,23 @@ class LaptopExtractionPipeline:
                         )
                     )
                     if self.log_envelopes:
-                        logger.info("  -> [GATE 2] %s: candidate=%r -> ACCEPTED (value=%r)", field_path, candidate_val, cleaned_val)
+                        logger.info(
+                            "  -> [GATE 2] %s: candidate=%r -> ACCEPTED (value=%r)",
+                            field_path,
+                            candidate_val,
+                            cleaned_val,
+                        )
                 else:
                     rej_reason = reason or "invalid_candidate"
-                    validation_rejections.append({
-                        "gate": 2,
-                        "field_path": field_path,
-                        "rejected_value": candidate_val,
-                        "model": cr.model_name,
-                        "reason": rej_reason,
-                    })
+                    validation_rejections.append(
+                        {
+                            "gate": 2,
+                            "field_path": field_path,
+                            "rejected_value": candidate_val,
+                            "model": cr.model_name,
+                            "reason": rej_reason,
+                        }
+                    )
                     ai_results.append(
                         EnvelopeResult(
                             field_path=field_path,
@@ -399,7 +469,12 @@ class LaptopExtractionPipeline:
                         )
                     )
                     if self.log_envelopes:
-                        logger.warning("  -> [GATE 2] %s: candidate=%r -> REJECTED (reason=%s)", field_path, candidate_val, rej_reason)
+                        logger.warning(
+                            "  -> [GATE 2] %s: candidate=%r -> REJECTED (reason=%s)",
+                            field_path,
+                            candidate_val,
+                            rej_reason,
+                        )
 
         # Build complete provenance & lineage audit record
         elapsed = time.time() - t0
@@ -513,4 +588,3 @@ class LaptopExtractionPipeline:
 
         # 4. Run pipeline
         return self.process_raw_product(raw_product)
-

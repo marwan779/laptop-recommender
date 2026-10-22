@@ -1,4 +1,3 @@
-import html
 import itertools
 import json
 import re
@@ -62,7 +61,6 @@ class CompumartsStoreScraper(BaseStoreScraper):
         "https://www.compumarts.com/collections/laptop?filter.v.availability=1&sort_by=created-descending&page={page}"
     )
 
-
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
         self._session = cffi_requests.Session()
@@ -105,7 +103,7 @@ class CompumartsStoreScraper(BaseStoreScraper):
                     return r.text
                 elif r.status_code == 429:
                     time.sleep((attempt + 1) * 1.5)
-            except Exception as e:
+            except Exception:
                 time.sleep(0.5)
         return ""
 
@@ -433,9 +431,7 @@ class CompumartsStoreScraper(BaseStoreScraper):
             learned_pattern_type=learned_pattern_type,
         )
 
-    def _extract_product_specs(
-        self, product_url: str, title: str = ""
-    ) -> CompumartsSpecResult:
+    def _extract_product_specs(self, product_url: str, title: str = "") -> CompumartsSpecResult:
         """Fetch Compumarts PDP to extract Schema.org JSON-LD, specs table, and description.
 
         Returns CompumartsSpecResult (unpacks as 6-tuple for backward compatibility).

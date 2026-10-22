@@ -22,7 +22,7 @@ Verifies:
 """
 
 import pytest
-from pipeline.deterministic import DeterministicExtractor, TableKeyRouter
+from pipeline.deterministic import DeterministicExtractor
 from pipeline.sanitizer import TextSanitizer
 
 
@@ -56,7 +56,9 @@ def test_end_of_support_date_rejected_from_ports(extractor: DeterministicExtract
 
 
 # 2. Clamshell / Classical form factors rejected from chassis_material
-def test_clamshell_form_factor_rejected_from_chassis_material(extractor: DeterministicExtractor, sanitizer: TextSanitizer):
+def test_clamshell_form_factor_rejected_from_chassis_material(
+    extractor: DeterministicExtractor, sanitizer: TextSanitizer
+):
     raw_table = {
         "Form Factor": "Clamshell",
         "Case Material": "Aluminium (Top), PC-ABS (Bottom)",
@@ -132,7 +134,9 @@ def test_cpu_turbo_pl2_rejected_from_power_adapter_w(extractor: DeterministicExt
 
 
 # 5. Stylus disclaimers rejected from pointing_device
-def test_stylus_negative_disclaimers_rejected_from_pointing_device(extractor: DeterministicExtractor, sanitizer: TextSanitizer):
+def test_stylus_negative_disclaimers_rejected_from_pointing_device(
+    extractor: DeterministicExtractor, sanitizer: TextSanitizer
+):
     raw_table = {
         "Pen": "Pen Not Supported",
         "Pointing Device": "Buttonless Mylar surface multi-touch touchpad",
@@ -150,7 +154,9 @@ def test_stylus_negative_disclaimers_rejected_from_pointing_device(extractor: De
 
 
 # 6. ASUS marketing recommendation blurbs stripped from operating_system.name
-def test_operating_system_marketing_recommendation_blurb_stripped(extractor: DeterministicExtractor, sanitizer: TextSanitizer):
+def test_operating_system_marketing_recommendation_blurb_stripped(
+    extractor: DeterministicExtractor, sanitizer: TextSanitizer
+):
     raw_table = {
         "Operating System": "Windows 11 Home (ASUS recommends Windows 11 Pro for business)",
     }
@@ -447,4 +453,3 @@ def test_connectivity_component_envelope_dispatched():
     assert len(conn_envelopes) == 1
     targets = [k for k, v in conn_envelopes[0].sub_schema.items() if v is None]
     assert "bluetooth" in targets
-

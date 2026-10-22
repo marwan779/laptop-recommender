@@ -9,10 +9,9 @@ Tracks complete field-level data lineage and layer-by-layer diagnostic traces:
 
 from __future__ import annotations
 
-import copy
 import json
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
+from datetime import datetime, UTC
+from typing import Any
 
 from pipeline.schema import (
     ComponentEnvelope,
@@ -28,7 +27,7 @@ class ProvenanceTracker:
     """Builds a complete, audit-grade provenance and execution trace for a laptop extraction."""
 
     # Keywords to test if source context even mentions a given category
-    CATEGORY_KEYWORDS: Dict[str, List[str]] = {
+    CATEGORY_KEYWORDS: dict[str, list[str]] = {
         "identity": ["model", "series", "brand", "part number", "sku", "color"],
         "cpu": ["cpu", "processor", "intel", "amd", "ryzen", "core"],
         "gpu": ["gpu", "graphic", "vga", "nvidia", "rtx", "gtx", "radeon", "geforce"],
@@ -48,21 +47,21 @@ class ProvenanceTracker:
         cls,
         raw_product: RawScrapedProduct,
         sanitized_title: str,
-        sanitized_table: Dict[str, str],
-        sanitized_sections: Dict[str, str],
-        cpu_key: Optional[str],
-        cpu_specs: Optional[Dict[str, Any]],
-        cpu_context: Optional[Dict[str, Any]],
-        deterministic_specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
-        gate1_rejections: List[Dict[str, Any]],
-        ai_results: List[EnvelopeResult],
-        gate2_rejections: List[Dict[str, Any]],
-        final_specs: Dict[str, Any],
+        sanitized_table: dict[str, str],
+        sanitized_sections: dict[str, str],
+        cpu_key: str | None,
+        cpu_specs: dict[str, Any] | None,
+        cpu_context: dict[str, Any] | None,
+        deterministic_specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
+        gate1_rejections: list[dict[str, Any]],
+        ai_results: list[EnvelopeResult],
+        gate2_rejections: list[dict[str, Any]],
+        final_specs: dict[str, Any],
         elapsed_s: float = 0.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Construct the complete provenance and diagnostic record."""
-        timestamp = datetime.now(timezone.utc).isoformat()
+        timestamp = datetime.now(UTC).isoformat()
 
         # Build layer execution timeline
         timeline = cls._build_layer_timeline(
@@ -124,17 +123,17 @@ class ProvenanceTracker:
         cls,
         raw_product: RawScrapedProduct,
         sanitized_title: str,
-        sanitized_table: Dict[str, str],
-        sanitized_sections: Dict[str, str],
-        cpu_key: Optional[str],
-        cpu_context: Optional[Dict[str, Any]],
-        deterministic_specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
-        gate1_rejections: List[Dict[str, Any]],
-        ai_results: List[EnvelopeResult],
-        gate2_rejections: List[Dict[str, Any]],
+        sanitized_table: dict[str, str],
+        sanitized_sections: dict[str, str],
+        cpu_key: str | None,
+        cpu_context: dict[str, Any] | None,
+        deterministic_specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
+        gate1_rejections: list[dict[str, Any]],
+        ai_results: list[EnvelopeResult],
+        gate2_rejections: list[dict[str, Any]],
         elapsed_s: float,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Log key actions taken at each of the 7 layers."""
         return [
             {
@@ -225,19 +224,19 @@ class ProvenanceTracker:
     def _build_field_provenance(
         cls,
         raw_product: RawScrapedProduct,
-        sanitized_table: Dict[str, str],
-        sanitized_sections: Dict[str, str],
-        cpu_key: Optional[str],
-        deterministic_specs: Dict[str, Any],
-        envelopes: List[ExtractionEnvelope],
-        gate1_rejections: List[Dict[str, Any]],
-        ai_results: List[EnvelopeResult],
-        gate2_rejections: List[Dict[str, Any]],
-        final_specs: Dict[str, Any],
-    ) -> Dict[str, Dict[str, Any]]:
+        sanitized_table: dict[str, str],
+        sanitized_sections: dict[str, str],
+        cpu_key: str | None,
+        deterministic_specs: dict[str, Any],
+        envelopes: list[ExtractionEnvelope],
+        gate1_rejections: list[dict[str, Any]],
+        ai_results: list[EnvelopeResult],
+        gate2_rejections: list[dict[str, Any]],
+        final_specs: dict[str, Any],
+    ) -> dict[str, dict[str, Any]]:
         """Inspect every schema field to determine resolution origin or failure cause."""
         schema_skel = empty_laptop_specifications()
-        provenance: Dict[str, Dict[str, Any]] = {}
+        provenance: dict[str, dict[str, Any]] = {}
 
         gate1_rejection_map = {r["field_path"]: r for r in gate1_rejections}
         gate2_rejection_map = {r["field_path"]: r for r in gate2_rejections}
@@ -297,9 +296,7 @@ class ProvenanceTracker:
                         }
                     # Case 3: Populated via Layer 4 Deterministic Extractor
                     else:
-                        source_detail = cls._find_deterministic_source(
-                            cat, f_name, sanitized_table, raw_product.title
-                        )
+                        source_detail = cls._find_deterministic_source(cat, f_name, sanitized_table, raw_product.title)
                         provenance[field_path] = {
                             "status": "populated",
                             "value": val,
@@ -325,9 +322,7 @@ class ProvenanceTracker:
         return provenance
 
     @classmethod
-    def _find_deterministic_source(
-        cls, cat: str, f_name: str, table: Dict[str, str], title: str
-    ) -> Dict[str, str]:
+    def _find_deterministic_source(cls, cat: str, f_name: str, table: dict[str, str], title: str) -> dict[str, str]:
         """Identify which table key or title pattern produced the value."""
         if f_name == "raw_spec":
             return {"source": "aggregated_raw_spec", "evidence": None}
@@ -336,7 +331,9 @@ class ProvenanceTracker:
         sub_terms = [t for t in f_name.split("_") if len(t) > 3]
         for k, v in table.items():
             kl = k.lower()
-            if cat == "memory" and any(bad in kl for bad in ["graphic", "graphics", "gpu", "vga", "video", "dedicated"]):
+            if cat == "memory" and any(
+                bad in kl for bad in ["graphic", "graphics", "gpu", "vga", "video", "dedicated"]
+            ):
                 continue
             if cat == "identity" and any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
                 continue
@@ -346,7 +343,9 @@ class ProvenanceTracker:
         # Fallback to general category key
         for k, v in table.items():
             kl = k.lower()
-            if cat == "memory" and any(bad in kl for bad in ["graphic", "graphics", "gpu", "vga", "video", "dedicated"]):
+            if cat == "memory" and any(
+                bad in kl for bad in ["graphic", "graphics", "gpu", "vga", "video", "dedicated"]
+            ):
                 continue
             if cat == "identity" and any(bad in kl for bad in ["processor", "cpu", "gpu", "graphic", "video"]):
                 continue
@@ -362,11 +361,11 @@ class ProvenanceTracker:
         cat: str,
         f_name: str,
         all_source_text: str,
-        envelope_field_set: Set[str],
-        ai_result_map: Dict[str, EnvelopeResult],
-        gate1_rejection_map: Dict[str, Dict[str, Any]],
-        gate2_rejection_map: Dict[str, Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        envelope_field_set: set[str],
+        ai_result_map: dict[str, EnvelopeResult],
+        gate1_rejection_map: dict[str, dict[str, Any]],
+        gate2_rejection_map: dict[str, dict[str, Any]],
+    ) -> dict[str, Any]:
         """Diagnose why an unpopulated field is empty."""
         # 1. Was it rejected at Gate 2 (AI hallucination/invalid)?
         if field_path in gate2_rejection_map:
@@ -428,15 +427,15 @@ class ProvenanceTracker:
     def format_envelope_text_report(
         cls,
         raw_product: RawScrapedProduct,
-        envelopes: List[ExtractionEnvelope],
-        ai_results: List[EnvelopeResult],
-        validation_rejections: List[Dict[str, Any]],
-        final_specs: Dict[str, Any],
-        product_index: Optional[int] = None,
-        total_products: Optional[int] = None,
+        envelopes: list[ExtractionEnvelope],
+        ai_results: list[EnvelopeResult],
+        validation_rejections: list[dict[str, Any]],
+        final_specs: dict[str, Any],
+        product_index: int | None = None,
+        total_products: int | None = None,
     ) -> str:
         """Format an exhaustive, human-readable audit text block for all envelopes of a laptop."""
-        lines: List[str] = []
+        lines: list[str] = []
         idx_str = f" [{product_index}/{total_products}]" if product_index and total_products else ""
         lines.append("=" * 80)
         lines.append(f"LAPTOP{idx_str}: {raw_product.title}")
@@ -471,7 +470,9 @@ class ProvenanceTracker:
             lines.append(f"Expected Type       : {env.expected_type}")
             lines.append(f"Failure Reason      : {env.failure_reason}")
             lines.append(f"Section Name        : {env.section_name or 'N/A'}")
-            lines.append(f"Allowed Values      : {env.allowed_values if env.allowed_values else 'None (unconstrained)'}")
+            lines.append(
+                f"Allowed Values      : {env.allowed_values if env.allowed_values else 'None (unconstrained)'}"
+            )
             if env.cpu_context:
                 cpu_info = ", ".join(f"{k}={v}" for k, v in env.cpu_context.items() if v is not None)
                 lines.append(f"CPU Constraints     : {cpu_info}")
@@ -522,15 +523,15 @@ class ProvenanceTracker:
     def format_component_envelope_text_report(
         cls,
         raw_product: RawScrapedProduct,
-        component_envelopes: List[ComponentEnvelope],
-        component_results: List[ComponentEnvelopeResult],
-        validation_rejections: List[Dict[str, Any]],
-        final_specs: Dict[str, Any],
-        product_index: Optional[int] = None,
-        total_products: Optional[int] = None,
+        component_envelopes: list[ComponentEnvelope],
+        component_results: list[ComponentEnvelopeResult],
+        validation_rejections: list[dict[str, Any]],
+        final_specs: dict[str, Any],
+        product_index: int | None = None,
+        total_products: int | None = None,
     ) -> str:
         """Format an exhaustive audit text block for all component-level envelopes of a laptop."""
-        lines: List[str] = []
+        lines: list[str] = []
         idx_str = f" [{product_index}/{total_products}]" if product_index and total_products else ""
         lines.append("=" * 80)
         lines.append(f"LAPTOP{idx_str}: {raw_product.title}")
@@ -595,14 +596,21 @@ class ProvenanceTracker:
                 full_path = f"{env.component_name}.{target_field}"
                 if full_path in gate2_rej_map:
                     rej = gate2_rej_map[full_path]
-                    lines.append(f"  * {full_path}: REJECTED candidate={rej.get('rejected_value')!r} (reason: {rej.get('reason')}) -> Final: null")
-                elif c_res and target_field in c_res.extracted_fields and c_res.extracted_fields[target_field] is not None:
+                    lines.append(
+                        f"  * {full_path}: REJECTED candidate={rej.get('rejected_value')!r} (reason: {rej.get('reason')}) -> Final: null"
+                    )
+                elif (
+                    c_res
+                    and target_field in c_res.extracted_fields
+                    and c_res.extracted_fields[target_field] is not None
+                ):
                     final_val = final_specs.get(env.component_name, {}).get(target_field)
-                    lines.append(f"  * {full_path}: ACCEPTED candidate={c_res.extracted_fields[target_field]!r} -> Final: {final_val!r}")
+                    lines.append(
+                        f"  * {full_path}: ACCEPTED candidate={c_res.extracted_fields[target_field]!r} -> Final: {final_val!r}"
+                    )
                 else:
                     lines.append(f"  * {full_path}: UNRESOLVED / null (model returned no extraction)")
 
         lines.append("")
         lines.append("=" * 80)
         return "\n".join(lines)
-

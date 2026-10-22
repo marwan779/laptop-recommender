@@ -40,7 +40,6 @@ class TradelineStoreScraper(BaseStoreScraper):
         "https://tradelinestores.com/collections/{collection}?sort_by=created-descending&page={page}"
     )
 
-
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
         self._session = cffi_requests.Session()

@@ -1,10 +1,9 @@
 """End-to-end and component tests for the rebuilt 7-layer extraction pipeline."""
 
-import pytest
 from pipeline.ai_fallback.base import IAIFallbackExtractor
 from pipeline.cpu_anchor import CPUAnchorExtractor
 from pipeline.deterministic import DeterministicExtractor
-from pipeline.orchestrator import LaptopExtractionPipeline, PipelineResult
+from pipeline.orchestrator import LaptopExtractionPipeline
 from pipeline.physical_validator import PhysicalValidator
 from pipeline.sanitizer import TextSanitizer
 from pipeline.schema import (
@@ -460,7 +459,3 @@ def test_provenance_format_envelope_text_report():
         assert "--- [FULL RAW CONTEXT PROVIDED TO AI] ---" in report
         assert "--- [AI FALLBACK RESOLUTION] ---" in report
         assert "--- [GATE 2 PHYSICAL VALIDATION] ---" in report
-
-
-
-

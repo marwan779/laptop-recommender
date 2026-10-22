@@ -1,9 +1,6 @@
 import json
-import pytest
-from bs4 import BeautifulSoup
 
 from app.stores.noon import NoonStoreScraper
-from app.schemas.laptop import RetailerProduct
 
 
 def test_noon_properties():

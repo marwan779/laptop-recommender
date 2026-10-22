@@ -13,20 +13,19 @@ Executes the 8-layer hardware extraction pipeline across any store's scraped pro
 
 from __future__ import annotations
 
-import copy
 import json
 import logging
-import os
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
+from collections.abc import Callable
 
 from app.schemas.laptop import RetailerProduct
 from pipeline.ai_fallback.base import IAIFallbackExtractor
 from pipeline.ai_fallback.gliner_onnx import GLiNERONNXFallbackExtractor
 from pipeline.ai_fallback.nuextract import NuExtractFallbackExtractor
 from pipeline.llm_auditor import LLMAuditor
-from pipeline.orchestrator import LaptopExtractionPipeline, PipelineResult
+from pipeline.orchestrator import LaptopExtractionPipeline
 from pipeline.schema import RawScrapedProduct
 
 logger = logging.getLogger("pipeline.catalog")
@@ -35,9 +34,9 @@ logger = logging.getLogger("pipeline.catalog")
 def setup_ai_fallback(
     ai_type: str = "nuextract",
     use_onnx: bool = True,
-    onnx_dir: Optional[str] = None,
+    onnx_dir: str | None = None,
     device: str = "auto",
-) -> Optional[IAIFallbackExtractor]:
+) -> IAIFallbackExtractor | None:
     """Initialize the chosen AI fallback model safely."""
     if ai_type == "none":
         logger.info("AI fallback disabled. Running deterministic + CPU anchor only.")
@@ -66,10 +65,13 @@ def setup_ai_fallback(
     elif ai_type == "nuextract":
         try:
             import torch
+
             has_cuda = torch.cuda.is_available()
         except ImportError:
             has_cuda = False
-        exec_provider = "CUDAExecutionProvider" if device == "cuda" or (device == "auto" and has_cuda) else "CPUExecutionProvider"
+        exec_provider = (
+            "CUDAExecutionProvider" if device == "cuda" or (device == "auto" and has_cuda) else "CPUExecutionProvider"
+        )
         logger.info("Initializing NuExtract-2.0 (2B) fallback (provider=%s)...", exec_provider)
         try:
             return NuExtractFallbackExtractor(
@@ -117,8 +119,8 @@ class GenericCatalogPipeline:
 
     def __init__(
         self,
-        ai_fallback: Optional[IAIFallbackExtractor] = None,
-        auditor: Optional[LLMAuditor] = None,
+        ai_fallback: IAIFallbackExtractor | None = None,
+        auditor: LLMAuditor | None = None,
         no_audit: bool = False,
         audit_batch_size: int = 1,
         log_envelopes: bool = False,
@@ -129,7 +131,7 @@ class GenericCatalogPipeline:
         )
         self.no_audit = no_audit
         self.audit_batch_size = max(1, audit_batch_size)
-        self.auditor: Optional[LLMAuditor] = None
+        self.auditor: LLMAuditor | None = None
         if not no_audit:
             try:
                 self.auditor = auditor or LLMAuditor()
@@ -145,7 +147,7 @@ class GenericCatalogPipeline:
         self,
         prod: RetailerProduct | RawScrapedProduct,
         store_key: str = "compumarts",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Process a single product through layers 2 to 7, plus optional Layer 8 audit."""
         if isinstance(prod, RetailerProduct):
             raw_prod = retailer_product_to_raw_scraped(prod, store_key=store_key)
@@ -156,7 +158,7 @@ class GenericCatalogPipeline:
         pipeline_res = self.pipeline.process_raw_product(raw_prod)
         elapsed = time.time() - t0
 
-        record: Dict[str, Any] = {
+        record: dict[str, Any] = {
             "url": raw_prod.url,
             "title": raw_prod.title,
             "price_egp": raw_prod.price,
@@ -216,16 +218,16 @@ class GenericCatalogPipeline:
 
     def process_catalog(
         self,
-        products: List[RetailerProduct],
+        products: list[RetailerProduct],
         store_key: str = "compumarts",
-        checkpoint_file: Optional[Path | str] = None,
-        trace_file: Optional[Path | str] = None,
-        progress_callback: Optional[Callable[[int, int, str], None]] = None,
-    ) -> List[Dict[str, Any]]:
+        checkpoint_file: Path | str | None = None,
+        trace_file: Path | str | None = None,
+        progress_callback: Callable[[int, int, str], None] | None = None,
+    ) -> list[dict[str, Any]]:
         """Process an entire catalog through the 8 layers with streaming audit and checkpoints."""
         total = len(products)
-        results: List[Dict[str, Any]] = []
-        audit_buffer: List[Dict[str, Any]] = []
+        results: list[dict[str, Any]] = []
+        audit_buffer: list[dict[str, Any]] = []
 
         ckpt_path = Path(checkpoint_file) if checkpoint_file else None
         trace_path = Path(trace_file) if trace_file else None
@@ -294,7 +296,7 @@ class GenericCatalogPipeline:
             pipeline_res = self.pipeline.process_raw_product(raw_prod)
             elapsed = time.time() - t_item
 
-            item_record: Dict[str, Any] = {
+            item_record: dict[str, Any] = {
                 "url": prod.product_url,
                 "title": prod.title,
                 "price_egp": prod.price_egp,
@@ -332,4 +334,3 @@ class GenericCatalogPipeline:
             flush_buffer()
 
         return results
-

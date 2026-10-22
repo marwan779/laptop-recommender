@@ -7,7 +7,7 @@ Provides a unified interface for plug-and-play AI backends
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, Sequence
+from collections.abc import Sequence
 
 from pipeline.schema import (
     ComponentEnvelope,
@@ -32,18 +32,14 @@ class IAIFallbackExtractor(ABC):
         ...
 
     @abstractmethod
-    def batch_extract_envelopes(
-        self, envelopes: Sequence[ExtractionEnvelope]
-    ) -> List[EnvelopeResult]:
+    def batch_extract_envelopes(self, envelopes: Sequence[ExtractionEnvelope]) -> list[EnvelopeResult]:
         """Process a batch of envelopes together for optimal throughput."""
         ...
 
-    def extract_component_envelope(
-        self, envelope: ComponentEnvelope
-    ) -> ComponentEnvelopeResult:
+    def extract_component_envelope(self, envelope: ComponentEnvelope) -> ComponentEnvelopeResult:
         """Process a component envelope (filling null fields in sub_schema)."""
         extracted = {}
-        for f_name, f_val in envelope.sub_schema.items():
+        for f_name, _f_val in envelope.sub_schema.items():
             if f_name in envelope.locked_fields:
                 continue
             field_path = f"{envelope.component_name}.{f_name}"
@@ -67,7 +63,7 @@ class IAIFallbackExtractor(ABC):
 
     def batch_extract_component_envelopes(
         self, envelopes: Sequence[ComponentEnvelope]
-    ) -> List[ComponentEnvelopeResult]:
+    ) -> list[ComponentEnvelopeResult]:
         """Process a batch of component envelopes."""
         return [self.extract_component_envelope(e) for e in envelopes]
 
@@ -75,4 +71,3 @@ class IAIFallbackExtractor(ABC):
     def health_check(self) -> bool:
         """Verify that the model weights or backend service are initialized and healthy."""
         ...
-

@@ -16,7 +16,7 @@ TDP Handling Protocol:
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from gpu_specs import GPU_SPECS
 
@@ -24,10 +24,10 @@ from gpu_specs import GPU_SPECS
 class GPUAnchorExtractor:
     """Extracts and populates GPU specifications using GPU_SPECS as ground truth."""
 
-    def __init__(self, specs_db: Optional[Dict[str, dict]] = None) -> None:
-        self.specs_db: Dict[str, dict] = specs_db or GPU_SPECS
-        self._discrete_patterns: List[Tuple[str, re.Pattern, dict]] = []
-        self._integrated_patterns: List[Tuple[str, re.Pattern, dict]] = []
+    def __init__(self, specs_db: dict[str, dict] | None = None) -> None:
+        self.specs_db: dict[str, dict] = specs_db or GPU_SPECS
+        self._discrete_patterns: list[tuple[str, re.Pattern, dict]] = []
+        self._integrated_patterns: list[tuple[str, re.Pattern, dict]] = []
         self._build_index()
 
     def _build_index(self) -> None:
@@ -58,11 +58,11 @@ class GPUAnchorExtractor:
     def match(
         self,
         title: str,
-        spec_texts: Optional[List[str]] = None,
-        cpu_context: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Tuple[str, dict]]:
+        spec_texts: list[str] | None = None,
+        cpu_context: dict[str, Any] | None = None,
+    ) -> tuple[str, dict] | None:
         """Match the GPU SKU from product title and specification texts.
-        
+
         Discrete GPUs are ALWAYS searched and prioritized first so dedicated gaming/creator
         GPUs (e.g. RTX 4050) are never masked by CPU integrated graphics (e.g. Intel UHD Graphics).
         Supports VRAM disambiguation for SKUs with multiple capacities (e.g. RTX 3050 4GB vs 6GB)
@@ -72,7 +72,7 @@ class GPUAnchorExtractor:
         combined_text = " ".join([t for t in search_targets if t])
 
         # 1. First pass: Search discrete GPUs across title and specs
-        matched: Optional[Tuple[str, dict]] = None
+        matched: tuple[str, dict] | None = None
         for key, pattern, entry in self._discrete_patterns:
             if pattern.search(combined_text):
                 matched = (key, entry)
@@ -90,10 +90,7 @@ class GPUAnchorExtractor:
                     if extracted_vram != entry.get("vram_gb"):
                         # Look for alternate SKU with matching model and vram_gb
                         for alt_key, alt_entry in self.specs_db.items():
-                            if (
-                                alt_entry.get("model") == base_model
-                                and alt_entry.get("vram_gb") == extracted_vram
-                            ):
+                            if alt_entry.get("model") == base_model and alt_entry.get("vram_gb") == extracted_vram:
                                 return alt_key, alt_entry
             return key, entry
 
@@ -112,9 +109,9 @@ class GPUAnchorExtractor:
 
         return None
 
-    def validate_tdp(self, cand_w: int, entry: dict) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_tdp(self, cand_w: int, entry: dict) -> tuple[bool, int | None, str | None]:
         """Validate a candidate TDP/TGP against the GPU's physical silicon envelope.
-        
+
         Returns:
             (is_valid, validated_tdp_w, rejection_reason)
         """
@@ -137,9 +134,9 @@ class GPUAnchorExtractor:
             f"TDP {cand_w}W outside physical limits [{min_w}W, {max_w}W] for {entry.get('model')}",
         )
 
-    def extract_tdp(self, text: str, entry: dict) -> Optional[int]:
+    def extract_tdp(self, text: str, entry: dict) -> int | None:
         """Extract and validate store-provided TGP/TDP from text.
-        
+
         Strict Rule:
         - If the store provides an explicit TGP (e.g., 'TGP 105W', '140W TGP'),
           we extract and validate it against the physical envelope.
@@ -150,7 +147,9 @@ class GPUAnchorExtractor:
             return None
 
         # Pattern 1: TGP/TDP XX W or TGP: XXW or TGP up to XXW or Max TGP
-        m1 = re.search(r"\b(?:max(?:imum)?\s*)?(?:tgp|tdp)\s*(?:up\s*to\s*)?[:=]?\s*(\d{2,3})\s*w\b", text, re.IGNORECASE)
+        m1 = re.search(
+            r"\b(?:max(?:imum)?\s*)?(?:tgp|tdp)\s*(?:up\s*to\s*)?[:=]?\s*(\d{2,3})\s*w\b", text, re.IGNORECASE
+        )
         if m1:
             cand = int(m1.group(1))
             valid, clean_w, _ = self.validate_tdp(cand, entry)
@@ -179,7 +178,7 @@ class GPUAnchorExtractor:
 
         return None
 
-    def extract_boost_clock(self, text: str) -> Optional[int]:
+    def extract_boost_clock(self, text: str) -> int | None:
         """Extract GPU boost clock in MHz if explicitly published."""
         m = re.search(r"\b([12]\d{3})\s*mhzx?\b", text, re.IGNORECASE)
         if m:
@@ -191,11 +190,11 @@ class GPUAnchorExtractor:
     def populate_gpu_specs(
         self,
         entry: dict,
-        raw_tdp: Optional[int] = None,
-        raw_boost: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        raw_tdp: int | None = None,
+        raw_boost: int | None = None,
+    ) -> dict[str, Any]:
         """Populate canonical structured GPU specification fields from ground truth.
-        
+
         Strict TDP Rule:
         - If raw_tdp was explicitly provided by the store and valid, it is preserved.
         - If raw_tdp was absent, tdp_w remains None.
@@ -218,7 +217,7 @@ class GPUAnchorExtractor:
             "raw_spec": None,
         }
 
-    def get_hardware_constraints(self, entry: dict) -> Dict[str, Any]:
+    def get_hardware_constraints(self, entry: dict) -> dict[str, Any]:
         """Extract hardware boundaries and capabilities used downstream."""
         return {
             "gpu_key": entry.get("model", "").lower().replace(" ", "_"),
@@ -245,12 +244,12 @@ class GPUAnchorExtractor:
     def extract(
         self,
         title: str,
-        spec_texts: Optional[List[str]] = None,
-        raw_tgp_text: Optional[str] = None,
-        cpu_context: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]], Optional[str]]:
+        spec_texts: list[str] | None = None,
+        raw_tgp_text: str | None = None,
+        cpu_context: dict[str, Any] | None = None,
+    ) -> tuple[dict[str, Any] | None, dict[str, Any] | None, str | None]:
         """Perform full GPU identification, TDP bounds validation, and constraint extraction.
-        
+
         Returns:
             (canonical_gpu_dict, hardware_constraints_dict, matched_key)
         """
@@ -272,4 +271,3 @@ class GPUAnchorExtractor:
             self.get_hardware_constraints(entry),
             key,
         )
-

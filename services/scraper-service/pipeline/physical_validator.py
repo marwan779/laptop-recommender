@@ -7,18 +7,16 @@ validate both deterministically extracted specs and AI fallback candidates.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 # Valid standard laptop RAM capacities (GB)
-VALID_RAM_CAPACITIES: Set[int] = {4, 8, 12, 16, 20, 24, 32, 36, 40, 48, 64, 96, 128, 192}
+VALID_RAM_CAPACITIES: set[int] = {4, 8, 12, 16, 20, 24, 32, 36, 40, 48, 64, 96, 128, 192}
 
 # Valid display panel types
-VALID_PANEL_TYPES: Set[str] = {
-    "IPS", "OLED", "AMOLED", "TN", "VA", "Mini-LED", "Liquid Retina", "Retina", "WVA"
-}
+VALID_PANEL_TYPES: set[str] = {"IPS", "OLED", "AMOLED", "TN", "VA", "Mini-LED", "Liquid Retina", "Retina", "WVA"}
 
 # Standard refresh rates (Hz)
-VALID_REFRESH_RATES: Set[int] = {60, 75, 90, 120, 144, 165, 240, 300, 360, 480}
+VALID_REFRESH_RATES: set[int] = {60, 75, 90, 120, 144, 165, 240, 300, 360, 480}
 
 
 class PhysicalValidator:
@@ -26,8 +24,8 @@ class PhysicalValidator:
 
     @classmethod
     def validate_memory_capacity(
-        cls, value: Any, cpu_context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+        cls, value: Any, cpu_context: dict[str, Any] | None = None
+    ) -> tuple[bool, int | None, str | None]:
         """Validate RAM capacity in GB against hardware norms and CPU max memory."""
         try:
             val = int(value)
@@ -46,8 +44,8 @@ class PhysicalValidator:
 
     @classmethod
     def validate_memory_type(
-        cls, value: Any, cpu_context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+        cls, value: Any, cpu_context: dict[str, Any] | None = None
+    ) -> tuple[bool, str | None, str | None]:
         """Validate RAM generation (DDR4, DDR5, LPDDR5X) against CPU supported memory."""
         if not value or not isinstance(value, str):
             return False, None, "type_error"
@@ -84,9 +82,7 @@ class PhysicalValidator:
         return True, canonical_type, None
 
     @classmethod
-    def validate_display_size(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[float], Optional[str]]:
+    def validate_display_size(cls, value: Any) -> tuple[bool, float | None, str | None]:
         """Validate screen size in inches (standard laptops: 10.0\" to 18.5\")."""
         try:
             val = round(float(value), 1)
@@ -98,9 +94,7 @@ class PhysicalValidator:
         return False, None, f"display_size_{val}_out_of_bounds"
 
     @classmethod
-    def validate_refresh_rate(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_refresh_rate(cls, value: Any) -> tuple[bool, int | None, str | None]:
         """Validate display refresh rate (60Hz to 480Hz)."""
         try:
             val = int(value)
@@ -112,9 +106,7 @@ class PhysicalValidator:
         return False, None, f"refresh_rate_{val}hz_out_of_bounds"
 
     @classmethod
-    def validate_battery_capacity(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[float], Optional[str]]:
+    def validate_battery_capacity(cls, value: Any) -> tuple[bool, float | None, str | None]:
         """Validate battery capacity in Wh (strictly 25.0Wh to 99.9Wh FAA limit)."""
         try:
             val = round(float(value), 1)
@@ -127,8 +119,8 @@ class PhysicalValidator:
 
     @classmethod
     def validate_power_adapter(
-        cls, value: Any, cpu_context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+        cls, value: Any, cpu_context: dict[str, Any] | None = None
+    ) -> tuple[bool, int | None, str | None]:
         """Validate AC power adapter wattage (30W to 350W)."""
         try:
             val = int(value)
@@ -145,9 +137,7 @@ class PhysicalValidator:
         return False, None, f"adapter_{val}w_out_of_bounds"
 
     @classmethod
-    def validate_weight(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[float], Optional[str]]:
+    def validate_weight(cls, value: Any) -> tuple[bool, float | None, str | None]:
         """Validate laptop weight in kg (0.7kg to 5.5kg)."""
         try:
             val = round(float(value), 2)
@@ -159,9 +149,7 @@ class PhysicalValidator:
         return False, None, f"weight_{val}kg_out_of_bounds"
 
     @classmethod
-    def validate_gpu_vram(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_gpu_vram(cls, value: Any) -> tuple[bool, int | None, str | None]:
         """Validate discrete GPU VRAM capacity in GB (2GB to 24GB)."""
         try:
             val = int(value)
@@ -173,16 +161,17 @@ class PhysicalValidator:
         return False, None, f"gpu_vram_{val}gb_out_of_bounds"
 
     @classmethod
-    def validate_mpn(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_mpn(cls, value: Any) -> tuple[bool, str | None, str | None]:
         """Validate manufacturer part number / SKU against hardware specs and generic words."""
         if not value or not isinstance(value, str):
             return False, None, "type_error"
         val = value.strip()
         val_upper = val.upper()
         # Reject hardware specs keywords
-        if any(term in val_upper for term in ["RAM", "SSD", "HDD", "RTX", "GTX", "GEFORCE", "INTEL", "RYZEN", "WINDOWS", "FREEDOS"]):
+        if any(
+            term in val_upper
+            for term in ["RAM", "SSD", "HDD", "RTX", "GTX", "GEFORCE", "INTEL", "RYZEN", "WINDOWS", "FREEDOS"]
+        ):
             return False, None, "mpn_contains_specs_keyword"
         # Reject generic words
         if val_upper in {"NONE", "N/A", "LAPTOP", "GAMING LAPTOP", "NOTEBOOK"}:
@@ -192,9 +181,7 @@ class PhysicalValidator:
         return True, val, None
 
     @classmethod
-    def validate_family(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_family(cls, value: Any) -> tuple[bool, str | None, str | None]:
         """Validate laptop family / series against specs words and generic nouns."""
         if not value or not isinstance(value, str):
             return False, None, "type_error"
@@ -207,9 +194,7 @@ class PhysicalValidator:
         return True, val.title(), None
 
     @classmethod
-    def validate_microphone(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_microphone(cls, value: Any) -> tuple[bool, str | None, str | None]:
         if value is True or (isinstance(value, str) and value.strip().lower() in ("true", "yes")):
             return True, "Built-in microphone", None
         if not value or not isinstance(value, str):
@@ -240,7 +225,7 @@ class PhysicalValidator:
     @classmethod
     def normalize_dimensions(
         cls, w: Any, d: Any, h: Any
-    ) -> Tuple[bool, Optional[float], Optional[float], Optional[float], Optional[str]]:
+    ) -> tuple[bool, float | None, float | None, float | None, str | None]:
         """Normalize and validate chassis dimensions in metric mm, ensuring width >= depth >= height."""
         vals = []
         for dim in [w, d, h]:
@@ -272,9 +257,7 @@ class PhysicalValidator:
         return True, round(norm_w, 1), round(norm_d, 1), round(norm_h, 1), None
 
     @classmethod
-    def validate_dimension(
-        cls, value: Any, dim_type: str = "width"
-    ) -> Tuple[bool, Optional[float], Optional[str]]:
+    def validate_dimension(cls, value: Any, dim_type: str = "width") -> tuple[bool, float | None, str | None]:
         """Validate individual chassis dimension in metric mm, converting cm if detected."""
         if value is None:
             return True, None, None
@@ -305,9 +288,7 @@ class PhysicalValidator:
         return True, round(val, 2), None
 
     @classmethod
-    def validate_panel_type(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_panel_type(cls, value: Any) -> tuple[bool, str | None, str | None]:
         """Validate display panel technology (IPS, OLED, AMOLED, TN, VA, Mini-LED)."""
         if not value or not isinstance(value, str):
             return False, None, "type_error"
@@ -331,9 +312,7 @@ class PhysicalValidator:
         return False, None, f"invalid_panel_type_{value}"
 
     @classmethod
-    def validate_webcam(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_webcam(cls, value: Any) -> tuple[bool, str | None, str | None]:
         """Validate webcam resolution string."""
         if not value or not isinstance(value, str):
             return False, None, "type_error"
@@ -344,9 +323,7 @@ class PhysicalValidator:
         return False, None, f"webcam_unrecognized_{val}"
 
     @classmethod
-    def validate_speaker_count(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_speaker_count(cls, value: Any) -> tuple[bool, int | None, str | None]:
         """Validate speaker count (standard laptops: 1 to 8 speakers)."""
         try:
             val = int(value)
@@ -358,9 +335,7 @@ class PhysicalValidator:
         return False, None, f"speaker_count_{val}_out_of_bounds"
 
     @classmethod
-    def validate_brightness(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_brightness(cls, value: Any) -> tuple[bool, int | None, str | None]:
         """Validate display brightness in nits (standard laptops: 150 to 3000 nits)."""
         try:
             val = int(value)
@@ -371,9 +346,7 @@ class PhysicalValidator:
         return False, None, f"brightness_{val}_out_of_bounds"
 
     @classmethod
-    def validate_response_time(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[float], Optional[str]]:
+    def validate_response_time(cls, value: Any) -> tuple[bool, float | None, str | None]:
         """Validate display response time in ms (gaming/creator laptops: 0.1 to 35.0 ms)."""
         try:
             val = float(value)
@@ -384,9 +357,7 @@ class PhysicalValidator:
         return False, None, f"response_time_{val}_out_of_bounds"
 
     @classmethod
-    def validate_npu_tops(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[float], Optional[str]]:
+    def validate_npu_tops(cls, value: Any) -> tuple[bool, float | None, str | None]:
         """Validate AI NPU TOPS (modern laptop silicon: 5 to 150 TOPS)."""
         try:
             val = float(value)
@@ -397,9 +368,7 @@ class PhysicalValidator:
         return False, None, f"npu_tops_{val}_out_of_bounds"
 
     @classmethod
-    def validate_gpu_boost(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_gpu_boost(cls, value: Any) -> tuple[bool, int | None, str | None]:
         """Validate GPU boost clock in MHz (laptop discrete GPUs: 500 to 3200 MHz)."""
         try:
             val = int(value)
@@ -410,9 +379,7 @@ class PhysicalValidator:
         return False, None, f"gpu_boost_{val}_out_of_bounds"
 
     @classmethod
-    def validate_gpu_power(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_gpu_power(cls, value: Any) -> tuple[bool, int | None, str | None]:
         """Validate GPU TGP / power in watts (laptop discrete GPUs: 20 to 250 W)."""
         try:
             val = int(value)
@@ -423,9 +390,7 @@ class PhysicalValidator:
         return False, None, f"gpu_power_{val}w_out_of_bounds"
 
     @classmethod
-    def validate_bluetooth(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_bluetooth(cls, value: Any) -> tuple[bool, str | None, str | None]:
         """Validate Bluetooth version specification."""
         if not value or not isinstance(value, str):
             return False, None, "type_error"
@@ -439,9 +404,7 @@ class PhysicalValidator:
         return False, None, f"bluetooth_unrecognized_{val}"
 
     @classmethod
-    def validate_warranty_years(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_warranty_years(cls, value: Any) -> tuple[bool, int | None, str | None]:
         """Validate warranty duration in years (typically 1 to 5 years)."""
         try:
             val = int(value)
@@ -452,19 +415,31 @@ class PhysicalValidator:
         return False, None, f"warranty_years_{val}_out_of_bounds"
 
     @classmethod
-    def validate_color_gamut(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_color_gamut(cls, value: Any) -> tuple[bool, str | None, str | None]:
         """Validate display color gamut and reject chassis colors/exterior paint names."""
         if not value or not isinstance(value, str):
             return False, None, "type_error"
         val = value.strip()
         chassis_colors = [
-            "silver", "grey", "gray", "black", "blue", "white", "gold",
-            "mica", "eclipse", "cosmos", "shadow", "luna", "platinum", "dark ash"
+            "silver",
+            "grey",
+            "gray",
+            "black",
+            "blue",
+            "white",
+            "gold",
+            "mica",
+            "eclipse",
+            "cosmos",
+            "shadow",
+            "luna",
+            "platinum",
+            "dark ash",
         ]
         # If string matches chassis paint and lacks gamut keywords, reject
-        if any(c in val.lower() for c in chassis_colors) and not any(g in val.lower() for g in ["srgb", "ntsc", "dci-p3", "adobe"]):
+        if any(c in val.lower() for c in chassis_colors) and not any(
+            g in val.lower() for g in ["srgb", "ntsc", "dci-p3", "adobe"]
+        ):
             return False, None, f"color_gamut_contains_chassis_color_{val}"
         # Plausible gamuts must contain standards or percentage
         if any(g in val.lower() for g in ["srgb", "ntsc", "dci-p3", "adobe rgb", "color gamut"]) or "%" in val:
@@ -472,9 +447,7 @@ class PhysicalValidator:
         return False, None, f"invalid_color_gamut_{val}"
 
     @classmethod
-    def validate_memory_slots(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_memory_slots(cls, value: Any) -> tuple[bool, int | None, str | None]:
         """Validate RAM slot count (0 for soldered, 1 to 8 for SO-DIMM/CAMM2)."""
         try:
             val = int(value)
@@ -485,9 +458,7 @@ class PhysicalValidator:
         return False, None, f"memory_slots_{val}_out_of_bounds"
 
     @classmethod
-    def validate_storage_slots(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[int], Optional[str]]:
+    def validate_storage_slots(cls, value: Any) -> tuple[bool, int | None, str | None]:
         """Validate storage slot count (1 to 6 slots)."""
         try:
             val = int(value)
@@ -498,14 +469,12 @@ class PhysicalValidator:
         return False, None, f"storage_slots_{val}_out_of_bounds"
 
     @classmethod
-    def validate_storage_form_factor(
-        cls, value: Any
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_storage_form_factor(cls, value: Any) -> tuple[bool, str | None, str | None]:
         """Validate storage form factor (M.2, 2.5-inch, eMMC, UFS)."""
         if not value or not isinstance(value, str):
             return False, None, "type_error"
         val = value.strip()
-        if any(term in val.lower() for term in ["m.2", "2280", "2242", "2230", "2.5-inch", "2.5\"", "emmc", "ufs"]):
+        if any(term in val.lower() for term in ["m.2", "2280", "2242", "2230", "2.5-inch", '2.5"', "emmc", "ufs"]):
             return True, val, None
         return False, None, f"invalid_storage_form_factor_{val}"
 
@@ -514,8 +483,8 @@ class PhysicalValidator:
         cls,
         field_path: str,
         value: Any,
-        cpu_context: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[bool, Any, Optional[str]]:
+        cpu_context: dict[str, Any] | None = None,
+    ) -> tuple[bool, Any, str | None]:
         """Dispatch validation for any specific canonical field path."""
         if value is None:
             return True, None, None
@@ -620,5 +589,3 @@ class PhysicalValidator:
 
         # Default pass-through for other fields
         return True, value, None
-
-

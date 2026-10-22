@@ -9,7 +9,6 @@ import pytest
 from app.api.deps import get_orchestrator
 from app.api.routes.scrape import _execute_scrape_background
 from app.main import app
-from app.schemas.laptop import BrandCatalogResult, StoreCatalogResult
 from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
 from app.services.orchestrator import ScrapeOrchestrator
 

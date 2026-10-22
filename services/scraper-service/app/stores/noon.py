@@ -33,7 +33,6 @@ class NoonStoreScraper(BaseStoreScraper):
     SEARCH_URL_TEMPLATE = "https://www.noon.com/egypt-en/search/?q={query}"
     SEARCH_API_TEMPLATE = "https://www.noon.com/_svc/catalog/api/v3/u/egypt-en/search/?q={query}&page=1"
 
-
     def __init__(self, engine: IScraperEngine | None = None):
         super().__init__(engine=engine or None)
         self._session = cffi_requests.Session()
