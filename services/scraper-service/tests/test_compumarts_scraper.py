@@ -112,6 +112,101 @@ def test_compumarts_catalog_watermark_stop(monkeypatch):
     assert "Model 1" in results[0].title
 
 
+def test_compumarts_sort_order_created_descending():
+    """Verify Compumarts collection query explicitly enforces created-descending order and in-stock filter."""
+    scraper = CompumartsStoreScraper()
+    assert "sort_by=created-descending" in scraper.COLLECTION_BASE_URL
+    assert "filter.v.availability=1" in scraper.COLLECTION_BASE_URL
+    assert "sort_by=created-descending" in scraper.COLLECTION_PAGE_TEMPLATE
+    assert "page={page}" in scraper.COLLECTION_PAGE_TEMPLATE
+
+
+def test_compumarts_catalog_watermark_stops_on_url_slug(monkeypatch):
+    """Verify until_model stops on matching URL slug/handle before deep crawl."""
+    scraper = CompumartsStoreScraper()
+    mock_collection_html = """
+    <html>
+      <body>
+        <product-card>
+          <a class="card-link" href="/products/asus-tuf-gaming-newest">Brand New Asus</a>
+          <span class="price__current"><span class="js-value">70,000 EGP</span></span>
+        </product-card>
+        <product-card>
+          <a class="card-link" href="/products/dell-latitude-3450-watermark">Dell Watermark Model</a>
+          <span class="price__current"><span class="js-value">40,000 EGP</span></span>
+        </product-card>
+        <product-card>
+          <a class="card-link" href="/products/older-laptop">Older Laptop</a>
+          <span class="price__current"><span class="js-value">30,000 EGP</span></span>
+        </product-card>
+      </body>
+    </html>
+    """
+    monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_collection_html)
+
+    # Halt on the slug 'dell-latitude-3450-watermark'
+    results = scraper.scrape_catalog(level=1, until_model="dell-latitude-3450-watermark", max_pages=1)
+    assert len(results) == 1
+    assert results[0].title == "Brand New Asus"
+
+
+def test_compumarts_catalog_watermark_stops_on_list_of_targets(monkeypatch):
+    """Verify until_model accepts a list of watermarks and halts on the first one encountered."""
+    scraper = CompumartsStoreScraper()
+    mock_collection_html = """
+    <html>
+      <body>
+        <product-card>
+          <a class="card-link" href="/products/item-1">Item 1</a>
+        </product-card>
+        <product-card>
+          <a class="card-link" href="/products/item-2">Item 2</a>
+        </product-card>
+        <product-card>
+          <a class="card-link" href="/products/item-3">Item 3</a>
+        </product-card>
+      </body>
+    </html>
+    """
+    monkeypatch.setattr(scraper, "_fetch_html", lambda url: mock_collection_html)
+
+    results = scraper.scrape_catalog(level=1, until_model=["non-existent-sku", "item-2"], max_pages=1)
+    assert len(results) == 1
+    assert results[0].title == "Item 1"
+
+
+def test_orchestrator_preserves_latest_pointers_when_zero_new_items():
+    """Verify orchestrator retains existing watermark pointers when 0 new items are found."""
+    from app.services.orchestrator import ScrapeOrchestrator
+    from app.schemas.orchestrator import ScrapeRequest
+    from unittest.mock import MagicMock, patch
+
+    orchestrator = ScrapeOrchestrator(email_service=MagicMock())
+    req = ScrapeRequest(
+        target_type="store",
+        targets=["compumarts"],
+        level=1,
+        until_model=["P1-Existing", "P2-Existing"],
+        upload_to_bucket=False,
+    )
+
+    with patch("app.services.orchestrator.get_store_scraper") as mock_get_store:
+        mock_scraper = MagicMock()
+        mock_scraper.store_name = "Compumarts"
+        mock_scraper.store_key = "compumarts"
+        mock_scraper.base_domain = "compumarts.com"
+        # 0 new items returned because watermark matched product #1
+        mock_scraper.scrape_catalog.return_value = []
+        mock_scraper.skipped_laptops = []
+        mock_get_store.return_value = mock_scraper
+
+        res = orchestrator.execute(req)
+        assert res.total_items_scraped == 0
+        target_res = res.results[0]
+        # Pointers must not be wiped to empty list; they fall back to req.until_model!
+        assert target_res.store_result.latest_pointers == ["P1-Existing", "P2-Existing"]
+
+
 def test_compumarts_pattern_registry_profile():
     from app.core.patterns.registry import PatternRegistry
 

@@ -285,7 +285,12 @@ class ScrapeOrchestrator:
                 checkpoint_file=checkpoint_file,
             )
 
-        latest_pointers = [p.title for p in products[:3]]
+        if products:
+            latest_pointers = [p.title for p in products[:3]]
+        elif req.until_model:
+            latest_pointers = [req.until_model] if isinstance(req.until_model, str) else list(req.until_model[:3])
+        else:
+            latest_pointers = []
         skipped_list = list(getattr(store_scraper, "skipped_laptops", []))
         is_level2 = req.level == 2
 

@@ -331,7 +331,7 @@ def test_expanded_specification_fields_extraction(raw_catalog: Dict[str, Any]):
         if bs["keyboard_backlight_type"] is not None:
             counts["backlight_type"] += 1
             assert bs["keyboard_backlight_type"] in {
-                "Per-Key RGB", "4-Zone RGB", "1-Zone RGB", "RGB Backlit", "White Backlit", "Backlit"
+                "Per-Key RGB", "4-Zone RGB", "1-Zone RGB", "RGB Backlit", "White Backlit", "Backlit", "Amber Backlit"
             }
         if bs["has_numpad"] is not None:
             counts["numpad"] += 1

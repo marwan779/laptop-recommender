@@ -1429,14 +1429,14 @@ class DeterministicExtractor:
             m_sod = re.search(r"\b(\d+)\s*(?:ddr[45]\s*)?(?:csodimm|so-?dimm)\b", slot_text, re.IGNORECASE)
             if m_sod:
                 specs["memory"]["slot_count"] = int(m_sod.group(1))
-            elif re.search(r"\b(two|dual)\b", slot_text, re.IGNORECASE) and re.search(r"\b(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b", slot_text, re.IGNORECASE):
-                specs["memory"]["slot_count"] = 2
-            elif re.search(r"\b(one|single)\b\s+(?:ddr[45]\s*)?(?:sodimm|so-dimm|slot)", slot_text, re.IGNORECASE):
-                specs["memory"]["slot_count"] = 1
             elif any(term in slot_text.lower() for term in ["no slots", "no expansion", "not upgradable", "0 slots", "zero slots"]):
                 specs["memory"]["slot_count"] = 0
             elif "soldered to systemboard" in slot_text.lower() and not re.search(r"\b(?:sodimm|so-dimm|slot)\b", slot_text.lower()):
                 specs["memory"]["slot_count"] = 0
+            elif re.search(r"\b(two|dual)\b", slot_text, re.IGNORECASE) and re.search(r"\b(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b", slot_text, re.IGNORECASE):
+                specs["memory"]["slot_count"] = 2
+            elif re.search(r"\b(one|single)\b\s+(?:ddr[45]\s*)?(?:sodimm|so-dimm|slot)", slot_text, re.IGNORECASE):
+                specs["memory"]["slot_count"] = 1
             else:
                 m_sl = re.search(r"\b([1-4])\s*(?:x\s*)?(?:ddr[45]\s*)?(?:csodimm|so-?dimm|slots?)\b|ram,\s*number\s*of\s*slots:\s*([1-4])", slot_text, re.IGNORECASE)
                 if m_sl:
