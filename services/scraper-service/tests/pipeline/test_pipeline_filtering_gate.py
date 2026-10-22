@@ -117,4 +117,3 @@ def test_pipeline_gate3_drops_non_laptop_in_process_catalog():
     assert results[0]["title"] == valid_laptop.title
     assert results[0]["store_name"] == "TestStore"
     assert results[0]["store_key"] == "test_store"
-
