@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from common.logger import configure_logging, get_logger
+from app.common.logger import configure_logging, get_logger
 import os
 import sys
 import time

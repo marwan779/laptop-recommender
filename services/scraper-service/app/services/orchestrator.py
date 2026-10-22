@@ -25,7 +25,7 @@ Usage::
 from __future__ import annotations
 
 import json
-from common.logger import get_logger
+from app.common.logger import get_logger
 from pathlib import Path
 import time
 from typing import Any

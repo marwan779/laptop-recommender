@@ -10,7 +10,7 @@ import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, status
 
-from common.logger import get_logger, request_context
+from app.common.logger import get_logger, request_context
 
 from app.api.deps import get_orchestrator
 from app.schemas.orchestrator import ScrapeJobResponse, ScrapeRequest

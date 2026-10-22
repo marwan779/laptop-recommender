@@ -8,8 +8,8 @@ from datetime import UTC, datetime
 from typing import Any, ClassVar
 from uuid import UUID
 
-from common.logger.config import LoggerConfig
-from common.logger.context import get_context, get_correlation_id
+from app.common.logger.config import LoggerConfig
+from app.common.logger.context import get_context, get_correlation_id
 
 # Standard attributes present on logging.LogRecord that should not be treated as user extra
 _STANDARD_LOGRECORD_ATTRS: frozenset[str] = frozenset(

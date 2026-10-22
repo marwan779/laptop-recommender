@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from common.logger import get_logger
+from app.common.logger import get_logger
 import re
 from datetime import datetime, UTC
 from pathlib import Path

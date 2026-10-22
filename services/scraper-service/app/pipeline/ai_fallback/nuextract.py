@@ -8,7 +8,7 @@ optimized for structured JSON extraction on CUDA GPU and server CPU environments
 from __future__ import annotations
 
 import json
-from common.logger import get_logger
+from app.common.logger import get_logger
 import os
 import re
 from typing import Any

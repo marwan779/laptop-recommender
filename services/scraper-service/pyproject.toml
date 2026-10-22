@@ -14,7 +14,7 @@ runner = "python -m pytest tests/test_normalizer.py -x -q -o addopts=''"
 # ─── Pytest Configuration ──────────────────────────────
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = [".", "../../packages/common"]
+pythonpath = ["."]
 filterwarnings = [
     "ignore::DeprecationWarning",
 ]

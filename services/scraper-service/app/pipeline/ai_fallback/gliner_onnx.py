@@ -6,7 +6,7 @@ to achieve ~35ms latency and low memory footprint.
 
 from __future__ import annotations
 
-from common.logger import get_logger
+from app.common.logger import get_logger
 import os
 import re
 from typing import Any

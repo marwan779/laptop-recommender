@@ -7,8 +7,8 @@ import sys
 import threading
 from typing import Any, Self
 
-from common.logger.config import LoggerConfig
-from common.logger.formatters import DatadogJSONFormatter, DevelopmentConsoleFormatter
+from app.common.logger.config import LoggerConfig
+from app.common.logger.formatters import DatadogJSONFormatter, DevelopmentConsoleFormatter
 
 
 class LoggerService:
@@ -123,7 +123,7 @@ def get_logger(name: str | None = None) -> logging.Logger:
     """Global convenience function to get a logger instance from the LoggerService singleton.
 
     Example:
-        >>> from common.logger import get_logger
+        >>> from app.common.logger import get_logger
         >>> logger = get_logger(__name__)
         >>> logger.info("Server started", extra={"port": 8000})
     """

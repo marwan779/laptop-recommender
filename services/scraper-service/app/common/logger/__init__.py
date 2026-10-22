@@ -1,7 +1,7 @@
 """Global Unified Logging Service for Laptop Recommender."""
 
-from common.logger.config import Environment, LoggerConfig, LogLevel
-from common.logger.context import (
+from app.common.logger.config import Environment, LoggerConfig, LogLevel
+from app.common.logger.context import (
     bind_context,
     clear_context,
     get_context,
@@ -9,8 +9,8 @@ from common.logger.context import (
     request_context,
     set_correlation_id,
 )
-from common.logger.formatters import DatadogJSONFormatter, DevelopmentConsoleFormatter
-from common.logger.service import (
+from app.common.logger.formatters import DatadogJSONFormatter, DevelopmentConsoleFormatter
+from app.common.logger.service import (
     LoggerService,
     configure_logging,
     get_logger,

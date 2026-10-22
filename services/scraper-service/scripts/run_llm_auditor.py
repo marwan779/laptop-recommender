@@ -23,7 +23,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
-from common.logger import configure_logging, get_logger
+from app.common.logger import configure_logging, get_logger
 import shutil
 import sys
 from pathlib import Path

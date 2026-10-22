@@ -13,7 +13,7 @@ Wires all 7 layers together into a coherent, robust extraction pipeline:
 from __future__ import annotations
 
 import json
-from common.logger import get_logger
+from app.common.logger import get_logger
 import copy
 import re
 import time

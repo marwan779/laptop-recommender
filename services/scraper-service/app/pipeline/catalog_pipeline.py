@@ -14,7 +14,7 @@ Executes the 8-layer hardware extraction pipeline across any store's scraped pro
 from __future__ import annotations
 
 import json
-from common.logger import get_logger
+from app.common.logger import get_logger
 import time
 from pathlib import Path
 from typing import Any

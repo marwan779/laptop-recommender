@@ -7,15 +7,15 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from common.logger.config import Environment, LoggerConfig, LogLevel
-from common.logger.context import (
+from app.common.logger.config import Environment, LoggerConfig, LogLevel
+from app.common.logger.context import (
     clear_context,
     get_correlation_id,
     request_context,
     set_correlation_id,
 )
-from common.logger.formatters import DatadogJSONFormatter, DevelopmentConsoleFormatter
-from common.logger.service import LoggerService, configure_logging, get_logger
+from app.common.logger.formatters import DatadogJSONFormatter, DevelopmentConsoleFormatter
+from app.common.logger.service import LoggerService, configure_logging, get_logger
 
 
 @pytest.fixture(autouse=True)

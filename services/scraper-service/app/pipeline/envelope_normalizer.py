@@ -13,7 +13,7 @@ models can extract accurate integer counts and boolean flags without arithmetic 
 from __future__ import annotations
 
 import copy
-from common.logger import get_logger
+from app.common.logger import get_logger
 import re
 
 from app.pipeline.schema import ComponentEnvelope

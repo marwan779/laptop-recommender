@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import copy
 import json
-from common.logger import get_logger
+from app.common.logger import get_logger
 import os
 import re
 import time

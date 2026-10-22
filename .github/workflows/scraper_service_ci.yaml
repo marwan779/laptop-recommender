@@ -5,14 +5,12 @@ on:
     branches: [main]
     paths:
       - "services/scraper-service/**"
-      - "packages/common/**"
       - ".github/workflows/scraper_service_ci.yaml"
       - ".github/workflows/deploy_scraper_service.yaml"
   pull_request:
     branches: [main]
     paths:
       - "services/scraper-service/**"
-      - "packages/common/**"
       - ".github/workflows/scraper_service_ci.yaml"
       - ".github/workflows/deploy_scraper_service.yaml"
   workflow_dispatch:
@@ -171,9 +169,7 @@ jobs:
       - name: Install Dependencies & Test Frameworks
         run: |
           pip install -r requirements.txt
-          pip install -e ../../packages/common
           pip install pytest pytest-cov mutmut
-
       - name: Unit test
         run: |
           PYTHONPATH=. pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=50 tests/
@@ -229,10 +225,9 @@ jobs:
       - name: Build container image
         run: |
           docker build \
-            -f services/scraper-service/Dockerfile \
             -t ${{ env.IMAGE }}:${{ github.sha }} \
             -t ${{ env.IMAGE }}:edge \
-            ${{ github.workspace }}
+            .
 
       - name: Scan container image
         uses: aquasecurity/trivy-action@v0.36.0

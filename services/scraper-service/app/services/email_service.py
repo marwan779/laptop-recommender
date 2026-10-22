@@ -11,7 +11,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
-from common.logger import get_logger
+from app.common.logger import get_logger
 from pathlib import Path
 import smtplib
 
