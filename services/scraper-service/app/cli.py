@@ -151,8 +151,41 @@ def main():
         default=1,
         help="Batch size for Layer 8 LLM Auditor streaming audit (default: 1)",
     )
+    parser.add_argument(
+        "--combine-stores",
+        nargs="+",
+        dest="combine_stores",
+        metavar="JSON_FILE",
+        help="List of store catalog JSON files to consolidate into a single unified catalog",
+    )
 
     args = parser.parse_args()
+
+    if getattr(args, "combine_stores", None):
+        from app.matching.combiner import CatalogCombiner
+
+        console.print(
+            Panel.fit(
+                f"[bold cyan]Consolidating {len(args.combine_stores)} Store Catalogs...[/bold cyan]",
+                border_style="cyan",
+            )
+        )
+        combiner = CatalogCombiner()
+        unified_catalog = combiner.combine_files(args.combine_stores)
+        out_file = args.save_json or "scraping results/unified_catalog_latest.json"
+        saved_path = unified_catalog.save_json(out_file)
+
+        table = Table(title="Unified Multi-Store Catalog Summary", border_style="cyan")
+        table.add_column("Metric", style="cyan bold")
+        table.add_column("Value", style="green")
+        table.add_row("Stores Included", ", ".join(unified_catalog.stores_included))
+        table.add_row("Total Raw Listings", str(unified_catalog.total_raw_listings))
+        table.add_row("Total Unique Laptops", str(unified_catalog.total_unique_laptops))
+        table.add_row("Multi-Store Laptops", str(unified_catalog.multi_store_laptops_count))
+        table.add_row("Overlap Rate", f"{unified_catalog.overlap_rate_pct:.1f}%")
+        table.add_row("Output File", str(saved_path.resolve()))
+        console.print(table)
+        return
 
     limit_display = str(args.limit) if args.limit is not None else "Unlimited"
     max_pages_display = str(args.max_pages) if args.max_pages is not None else "Unlimited (All Pages)"

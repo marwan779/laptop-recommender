@@ -141,6 +141,46 @@ class ScrapeOrchestrator:
                 except Exception as exc:
                     logger.warning("[Orchestrator] Failed to dispatch background email report for %s: %s", key, exc)
 
+        # Step 4: Multi-Store Catalog Consolidation (Triggered automatically when multiple store targets complete)
+        store_targets = [r for r in results if r.target_type == "store" and r.store_result is not None]
+        if len(store_targets) > 1:
+            logger.info(
+                "[Orchestrator] Multi-store scrape completed with %d stores. Consolidating unified catalog...",
+                len(store_targets),
+            )
+            with resilient_boundary(
+                category=ErrorCategory.DOM_PARSING,
+                source_component="matching.combiner",
+                suppress=True,
+            ):
+                from app.matching.combiner import CatalogCombiner
+
+                combiner = CatalogCombiner()
+                store_catalogs = [r.store_result.model_dump() for r in store_targets if r.store_result]
+                unified_catalog = combiner.combine_catalogs(store_catalogs)
+
+                out_dir = Path(request.output_dir) if request.output_dir else Path("scraping results")
+                unified_path = out_dir / "unified_catalog_latest.json"
+                unified_catalog.save_json(unified_path)
+                logger.info("[Orchestrator] Saved unified catalog to: %s", unified_path.resolve())
+
+                # Upload to object storage if configured
+                if self._should_upload(request):
+                    try:
+                        self.storage_service.upload_json(
+                            data=unified_catalog.model_dump(),
+                            object_key="catalogs/unified_catalog_latest.json",
+                            metadata={
+                                "total_unique_laptops": str(unified_catalog.total_unique_laptops),
+                                "stores_included": ",".join(unified_catalog.stores_included),
+                            },
+                        )
+                        logger.info(
+                            "[Orchestrator] [+] Uploaded unified catalog to S3: catalogs/unified_catalog_latest.json"
+                        )
+                    except Exception as s3_exc:
+                        logger.warning("[Orchestrator] Failed to upload unified catalog to S3: %s", s3_exc)
+
         total_items = sum(r.items_scraped for r in results)
 
         return ScrapeResponse(
