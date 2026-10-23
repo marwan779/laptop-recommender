@@ -211,10 +211,15 @@ class GenericOCRExtractor:
         line = re.sub(r"\b(\d+)\s*T\s*B\b", r"\g<1>TB", line, flags=re.IGNORECASE)
         # 3. Separate DDR type from frequency (e.g. DDR55200MHz -> DDR5 5200MHz)
         line = re.sub(r"(DDR[345]|LPDDR[45]X?)(\d{4})", r"\g<1> \g<2>", line, flags=re.IGNORECASE)
-        # 4. Fix PCIe misread as PCle
+        # 4. Fix PCIe misread as PCle and separate adjacent storage tokens
         line = re.sub(r"\bPCle\b", "PCIe", line)
-        # 5. Fix common brand spacing issues (e.g. NVIDIAGeForce -> NVIDIA GeForce)
-        line = re.sub(r"(NVIDIA)(GeForce)", r"\g<1> \g<2>", line, flags=re.IGNORECASE)
+        line = re.sub(r"(NVMe|PCIe|SATA)\s*(PCIe|SSD|HDD)", r"\g<1> \g<2>", line, flags=re.IGNORECASE)
+        line = re.sub(r"(\d\.\d)\s*(SSD|HDD)", r"\g<1> \g<2>", line, flags=re.IGNORECASE)
+        # 5. Fix common brand and GPU spacing issues (e.g. NVIDIAGeForceRTX40708GB -> NVIDIA GeForce RTX 4070 8GB)
+        line = re.sub(r"(NVIDIA)\s*(GeForce)", r"\g<1> \g<2>", line, flags=re.IGNORECASE)
+        line = re.sub(r"(GeForce)\s*(RTX|GTX|MX)", r"\g<1> \g<2>", line, flags=re.IGNORECASE)
+        line = re.sub(r"(RTX|GTX|RX)\s*(\d{3,4})", r"\g<1> \g<2>", line, flags=re.IGNORECASE)
+        line = re.sub(r"(\b\d{3,4})\s*(\d+\s*(?:GB|TB|MB)\b)", r"\g<1> \g<2>", line, flags=re.IGNORECASE)
         return line.strip()
 
     @classmethod

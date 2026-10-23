@@ -19,12 +19,22 @@ from app.schemas.laptop import RetailerProduct
 
 
 def _get_test_font() -> ImageFont.ImageFont | ImageFont.FreeTypeFont:
-    for font_name in ["arial.ttf", "DejaVuSans.ttf", "LiberationSans-Regular.ttf"]:
+    candidates = [
+        "arial.ttf",
+        "DejaVuSans.ttf",
+        "LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    ]
+    for font_name in candidates:
         try:
-            return ImageFont.truetype(font_name, 24)
+            return ImageFont.truetype(font_name, 28)
         except Exception:
             pass
-    return ImageFont.load_default()
+    try:
+        return ImageFont.load_default(size=28)
+    except TypeError:
+        return ImageFont.load_default()
 
 
 @pytest.fixture(scope="module")
