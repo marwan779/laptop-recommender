@@ -227,9 +227,10 @@ def test_orchestrator_resolve_targets_stores_and_both():
     # store with 'all'
     req_store_all = ScrapeRequest(target_type="store", targets="all")
     targets_store_all = orchestrator._resolve_targets(req_store_all)
-    assert len(targets_store_all) == 2
+    assert len(targets_store_all) == 3
     assert ("store", "compumarts") in targets_store_all
     assert ("store", "elbadr") in targets_store_all
+    assert ("store", "sigma") in targets_store_all
     assert all(t[0] == "store" for t in targets_store_all)
 
     # store with specific targets
@@ -240,7 +241,7 @@ def test_orchestrator_resolve_targets_stores_and_both():
     # both with 'all'
     req_both_all = ScrapeRequest(target_type="both", targets="all")
     targets_both_all = orchestrator._resolve_targets(req_both_all)
-    assert len(targets_both_all) == 4 + 2  # 4 legacy brands + 2 active stores (compumarts, elbadr)
+    assert len(targets_both_all) == 4 + 3  # 4 legacy brands + 3 active stores (compumarts, elbadr, sigma)
 
     # both with specific mixed targets
     req_both_mixed = ScrapeRequest(target_type="both", targets=["asus", "noon", "compumarts", "unknown_xyz"])
