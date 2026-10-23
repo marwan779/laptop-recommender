@@ -348,6 +348,133 @@ class TableKeyRouter:
         "package weight": "package_dimensions",
         # Security overrides
         "build level": "security",
+        # Multi-Store & Section-Scoped Disambiguation Overrides (ElBadr, CompuMarts, etc.)
+        # GPU / Graphics
+        "graphics > memory": "gpu_vram",
+        "graphics memory": "gpu_vram",
+        "graphics > vram": "gpu_vram",
+        "graphics vram": "gpu_vram",
+        "graphics > power": "gpu_power",
+        "graphics power": "gpu_power",
+        "graphics > gpu": "gpu",
+        "graphics > discrete gpu": "gpu",
+        "graphics > integrated gpu": "gpu",
+        "discrete gpu": "gpu",
+        "integrated gpu": "gpu",
+        "graphics card (gpu)": "gpu",
+        "graphics card": "gpu",
+        "graphics (gpu)": "gpu",
+        "tgp (thermal design power)": "gpu_power",
+        "rog boost": "gpu_boost",
+        # Memory / RAM
+        "system memory (ram)": "memory",
+        "memory > memory": "memory",
+        "memory > installed": "memory",
+        "memory > type": "memory_type",
+        "memory type": "memory_type",
+        "memory > speed": "memory_speed",
+        "memory speed": "memory_speed",
+        "memory > slots": "memory_slots",
+        "memory > max supported": "max_memory",
+        "memory > expandable to": "max_memory",
+        "max capacity": "max_memory",
+        # Storage
+        "storage > capacity": "storage",
+        "storage > primary drive": "storage",
+        "primary drive": "storage",
+        "storage > expansion slots": "storage_slots",
+        "storage > slots": "storage_slots",
+        # Power & Battery
+        "battery > capacity": "power",
+        "battery & power > capacity": "power",
+        "power & battery > capacity": "power",
+        "power supply": "power",
+        # Display
+        "display > size": "display",
+        "display > type": "display",
+        "display > panel type": "display",
+        "display > resolution": "display",
+        "display > refresh rate": "display_refresh_rate",
+        "display > peak brightness": "display_brightness",
+        "display > color gamut": "display_gamut",
+        "display > contrast ratio": "display",
+        "display > response time": "display_response_time",
+        "display > screen finish": "display_surface",
+        "display > touchscreen": "display",
+        "srgb": "display_gamut",
+        "g-sync": "display",
+        "sync tech": "display",
+        # CPU
+        "processor (cpu)": "cpu",
+        "processor > model": "cpu",
+        "processor > cpu": "cpu",
+        "base clock": "cpu",
+        "boost clock": "cpu",
+        "max boost clock": "cpu",
+        "clock speed": "cpu",
+        "clock speeds": "cpu",
+        "core/thread count": "cpu",
+        "cores & threads": "cpu",
+        "cores/threads": "cpu",
+        "threads": "cpu",
+        "p-core max frequency": "cpu",
+        "e-core max frequency": "cpu",
+        # AI Engine & Performance
+        "ai acceleration": "ai_npu",
+        "system ai accelerator": "ai_npu",
+        "system ai chip": "ai_npu",
+        "system ai controller": "ai_npu",
+        "performance & hardware > ai performance": "ai_performance",
+        "performance specifications > ai performance": "ai_performance",
+        # Dimensions
+        "dimensions (w x d x h)": "dimensions",
+        "dimensions (h x w x d)": "dimensions",
+        "laptop dimensions (w x d x h)": "dimensions",
+        # Security
+        "tpm security": "security",
+        "hardware security": "security",
+        "biometric login": "security",
+        "windows hello": "security",
+        # Camera
+        "audio & inputs > webcam": "camera",
+        "audio & multimedia > webcam": "camera",
+        "camera & security > webcam": "camera",
+        "keyboard & input > webcam": "camera",
+        "design & build specifications > webcam": "camera",
+        "security & multimedia > webcam": "camera",
+        # Audio
+        "audio & input > microphone": "audio",
+        "audio & inputs > microphone": "audio",
+        "audio & multimedia > microphone": "audio",
+        "audio > microphone": "audio",
+        "built-in array microphone": "audio",
+        "ai noise-canceling technology": "audio",
+        "audio & input > speakers": "audio",
+        "audio & inputs > speakers": "audio",
+        "audio & multimedia > speakers": "audio",
+        "audio > speakers": "audio",
+        "smart amp technology": "audio",
+        "dolby atmos": "audio",
+        "security & multimedia > audio": "audio",
+        "audio & inputs > audio": "audio",
+        "audio & multimedia > audio": "audio",
+        "audio & input devices > audio": "audio",
+        # Connectivity & Ports
+        "wi-fi 7 (802.11be 2x2)": "connectivity",
+        "wired networking": "connectivity",
+        "gigabit ethernet (rj-45)": "ports",
+        "left side ports": "ports",
+        "right side ports": "ports",
+        "rear side": "ports",
+        "ports/slots/buttons": "ports",
+        "usb-a 3.2 gen 1": "ports",
+        "usb4": "ports",
+        "headphone / mic combo": "ports",
+        "audio jacks": "ports",
+        "connectivity & i/o ports > audio": "ports",
+        "connectivity & ports > audio": "ports",
+        "connectivity & i/o ports > wireless": "connectivity",
+        "connectivity & ports > wireless": "connectivity",
     }
 
     CANONICAL_FIELD_TO_BUCKET = {
@@ -608,6 +735,33 @@ class TableKeyRouter:
             r"\b(?:display|screen|resolution|refresh\s+rate|panel|aspect\s+ratio|touchscreen|oled|amoled|ips)\b", norm
         ):
             return "display"
+        if re.search(r"\bdimensions?\b", norm) or "(w x d x h)" in norm or "(h x w x d)" in norm:
+            return "dimensions"
+        if any(
+            term in norm
+            for term in [
+                "usb",
+                "hdmi",
+                "thunderbolt",
+                "rj-45",
+                "rj45",
+                "ethernet port",
+                "combo audio jack",
+                "headphone",
+                "audio jacks",
+            ]
+        ):
+            return "ports"
+        if re.search(r"\b(?:webcam|camera)\b", norm):
+            return "camera"
+        if any(term in norm for term in ["microphone", "speakers", "nahimic", "smart amp"]):
+            return "audio"
+        if any(term in norm for term in ["tpm", "biometric", "fingerprint", "windows hello", "kensington"]):
+            return "security"
+        if any(term in norm for term in ["wi-fi", "wifi", "bluetooth", "wireless", "wired networking"]):
+            return "connectivity"
+        if any(term in norm for term in ["card reader", "microsd", "sd card"]):
+            return "card_reader"
 
         return "unrouted"
 
@@ -2023,7 +2177,11 @@ class DeterministicExtractor:
 
         # Screen size
         for target in search_targets:
-            size_match = re.search(r"\b(1[0-8](?:\.\d)?)\s*(?:inch|\"|'|″|-inch)(?!\w)", target, re.IGNORECASE)
+            size_match = re.search(
+                r"\b(1[0-8](?:\.\d)?)\s*(?:inches|inch|[\"”″“']|''|-inch|\b(?=[fF][hH][dD]|[qQ][hH][dD]|[uU][hH][dD]|[oO][lL][eE][dD]|[iI][pP][sS]|[wW][uU][xX][gG][aA]|[wW][qQ][xX][gG][aA]))(?!\w)",
+                target,
+                re.IGNORECASE,
+            )
             if size_match:
                 valid, clean_size, _ = PhysicalValidator.validate_display_size(size_match.group(1))
                 if valid:

@@ -163,58 +163,9 @@ class PatternEngine:
                             if 1 < len(sib_text) < 400:
                                 dom_specs[h_text] = sib_text
 
-                # E. Parse Raw Text Lines with Section Tracking (for plain text / <br> separated specs)
-                current_section: str | None = None
+                # E. Parse Raw Text Lines with Section Tracking and Multiline Colon Lookahead
                 lines = [l.strip() for l in block.get_text("\n", strip=True).split("\n") if l.strip()]
-                for idx, line_clean in enumerate(lines):
-                    # Check if line acts as a section header
-                    clean_lower = line_clean.lower().strip(":")
-                    if (
-                        any(
-                            clean_lower.startswith(sec)
-                            for sec in [
-                                "processor",
-                                "cpu",
-                                "graphics",
-                                "gpu",
-                                "memory",
-                                "ram",
-                                "storage",
-                                "display",
-                                "screen",
-                                "battery",
-                                "power",
-                                "audio",
-                                "operating system",
-                                "ports",
-                                "connectivity",
-                                "physical",
-                            ]
-                        )
-                        and len(line_clean) < 40
-                        and ":" not in line_clean
-                    ):
-                        current_section = line_clean.strip(":")
-                        # Lookahead: If next line has no colon and looks like hardware value, capture it
-                        if idx + 1 < len(lines):
-                            next_l = lines[idx + 1]
-                            if ":" not in next_l and 3 < len(next_l) < 120:
-                                if any(x in clean_lower for x in ["processor", "cpu"]) and any(
-                                    x in next_l.lower() for x in ["intel", "amd", "core", "ryzen", "celeron", "athlon"]
-                                ):
-                                    if "Processor" not in dom_specs or len(next_l) > len(dom_specs["Processor"]):
-                                        dom_specs["Processor"] = next_l
-                                elif any(x in clean_lower for x in ["graphics", "gpu"]) and any(
-                                    x in next_l.lower()
-                                    for x in ["nvidia", "geforce", "rtx", "gtx", "radeon", "intel", "arc", "iris"]
-                                ):
-                                    if "Graphics" not in dom_specs or len(next_l) > len(dom_specs["Graphics"]):
-                                        dom_specs["Graphics"] = next_l
-                        continue
-
-                    cls._parse_delimited_text(
-                        line_clean, pattern_cfg.delimiters, dom_specs, current_section=current_section
-                    )
+                cls._parse_raw_text_lines(lines, pattern_cfg.delimiters, dom_specs)
 
                 # F. Raw Description Accumulation
                 desc_chunk = block.get_text("\n", strip=True)
@@ -422,6 +373,275 @@ class PatternEngine:
             is_anomaly=is_anomaly,
             anomaly_reason=anomaly_reason,
         )
+
+    @classmethod
+    def _parse_raw_text_lines(
+        cls,
+        raw_lines: list[str],
+        delimiters: list[str],
+        dom_specs: dict[str, str],
+    ) -> None:
+        """Parse plain text lines into key-value pairs with section awareness and multiline colon handling."""
+        known_sections = {
+            "additional features",
+            "audio & camera",
+            "audio & input",
+            "audio & input devices",
+            "audio & inputs",
+            "audio & multimedia",
+            "battery & power",
+            "camera & security",
+            "compliance & eco labels",
+            "connectivity & i/o",
+            "connectivity & i/o ports",
+            "connectivity & ports",
+            "description",
+            "design & build specifications",
+            "dimensions & weight",
+            "display",
+            "display panel",
+            "display specifications",
+            "ecolabels & compliances",
+            "gaming & entertainment",
+            "graphics",
+            "graphics specifications",
+            "input & features",
+            "input devices",
+            "keyboard & input",
+            "memory",
+            "memory specifications",
+            "network and communication",
+            "performance & hardware",
+            "performance specifications",
+            "physical & power specifications",
+            "physical & warranty",
+            "physical build & dimensions",
+            "physical specifications",
+            "ports & connectivity",
+            "power & battery",
+            "power & mechanical specs",
+            "power & physical specs",
+            "power supply",
+            "power, security & mechanical specs",
+            "pre-installed software",
+            "processor",
+            "processor & chipset specifications",
+            "security & multimedia",
+            "software",
+            "storage",
+            "storage specifications",
+            "wireless & communication",
+            "cpu",
+            "gpu",
+            "ram",
+            "screen",
+            "battery",
+            "power",
+            "audio",
+            "operating system",
+            "ports",
+            "connectivity",
+            "physical",
+            "specifications",
+            "features",
+            "camera",
+            "webcam",
+        }
+
+        ambiguous_keys = {
+            "model",
+            "memory",
+            "type",
+            "power",
+            "capacity",
+            "expandability",
+            "slots",
+            "architecture",
+            "configuration",
+            "audio",
+            "features",
+            "special features",
+            "technologies",
+            "display technologies",
+            "ai boost",
+            "ai performance",
+            "base/boost clock",
+            "color accuracy",
+            "layout",
+            "size",
+            "input",
+            "output",
+            "speed",
+            "tgp (thermal design power)",
+            "installed",
+            "expandable to",
+            "primary drive",
+            "discrete gpu",
+            "integrated gpu",
+            "vram",
+            "ram",
+            "cpu",
+            "gpu",
+        }
+
+        current_section: str | None = None
+        i = 0
+        n = len(raw_lines)
+        while i < n:
+            line = raw_lines[i]
+            line_lower = line.lower().strip(":")
+
+            # Case 1: Key on line i, followed by colon on line i+1 (Style B: "CPU\n: AMD Ryzen..." or "Processor\n:\nIntel...")
+            if i + 1 < n and raw_lines[i + 1].startswith(":"):
+                key = line.strip(":")
+                colon_line = raw_lines[i + 1]
+                val = colon_line.lstrip(":").strip()
+                i += 1
+                if not val and i + 1 < n:
+                    val = raw_lines[i + 1]
+                    i += 1
+                # Accumulate wrapped lines
+                while i + 1 < n:
+                    next_l = raw_lines[i + 1]
+                    next_lower = next_l.lower().strip(":")
+                    if (
+                        next_lower in known_sections
+                        or next_l.startswith(":")
+                        or ":" in next_l
+                        or (i + 2 < n and raw_lines[i + 2].startswith(":"))
+                    ):
+                        break
+                    if next_l.startswith("(") or next_l.startswith(",") or next_l.endswith(")") or len(next_l) < 30:
+                        val = f"{val} {next_l}".strip()
+                        i += 1
+                    else:
+                        break
+
+                if key and val:
+                    if current_section and (
+                        key.lower() in ambiguous_keys
+                        or current_section.lower() in ["graphics", "memory", "storage", "display", "battery", "power"]
+                    ):
+                        full_key = f"{current_section} > {key}"
+                    else:
+                        full_key = key
+                    if full_key not in dom_specs or len(val) > len(dom_specs[full_key]):
+                        dom_specs[full_key] = val
+                i += 1
+                continue
+
+            # Case 2: Delimited line (Key: Value on same line OR Key: on line i with Value on line i+1)
+            delim_found = False
+            for delim in delimiters:
+                search_delim = " - " if delim == "-" else delim
+                if search_delim in line and not line.startswith(search_delim):
+                    parts = line.split(search_delim, 1)
+                    key = parts[0].strip()
+                    val = parts[1].strip()
+                    if not val and i + 1 < n:
+                        val = raw_lines[i + 1]
+                        i += 1
+                    if (
+                        1 < len(key) < 50
+                        and val
+                        and not any(key.startswith(x) for x in ["Note", "Important", "Click", "http", "www"])
+                    ):
+                        if current_section and (
+                            key.lower() in ambiguous_keys
+                            or current_section.lower()
+                            in ["graphics", "memory", "storage", "display", "battery", "power"]
+                        ):
+                            full_key = f"{current_section} > {key}"
+                        else:
+                            full_key = key
+                        if full_key not in dom_specs or len(val) > len(dom_specs[full_key]):
+                            dom_specs[full_key] = val
+                    delim_found = True
+                    break
+            if delim_found:
+                i += 1
+                continue
+
+            # Case 3: Section Header Check (does NOT contain colon)
+            if line_lower in known_sections and len(line) < 45 and ":" not in line:
+                current_section = line.strip(":")
+                # Lookahead: Section header followed by hardware spec value without colon
+                if i + 1 < n:
+                    next_l = raw_lines[i + 1]
+                    next_lower = next_l.lower().strip(":")
+                    if (
+                        next_lower not in known_sections
+                        and ":" not in next_l
+                        and not next_l.startswith(":")
+                        and (i + 2 >= n or not raw_lines[i + 2].startswith(":"))
+                    ):
+                        if any(s in line_lower for s in ["processor", "cpu"]) and any(
+                            w in next_l.lower()
+                            for w in ["intel", "amd", "core", "ryzen", "ultra", "snapdragon", "celeron"]
+                        ):
+                            if "Processor" not in dom_specs or len(next_l) > len(dom_specs["Processor"]):
+                                dom_specs["Processor"] = next_l
+                            i += 2
+                            continue
+                        elif any(s in line_lower for s in ["graphics", "gpu"]) and any(
+                            w in next_l.lower()
+                            for w in ["nvidia", "geforce", "rtx", "gtx", "radeon", "intel", "arc", "iris"]
+                        ):
+                            if "Graphics" not in dom_specs or len(next_l) > len(dom_specs["Graphics"]):
+                                dom_specs["Graphics"] = next_l
+                            i += 2
+                            continue
+                        elif any(s in line_lower for s in ["memory", "ram"]) and any(
+                            w in next_l.lower() for w in ["gb", "ddr", "lpddr", "mhz"]
+                        ):
+                            if "Memory" not in dom_specs or len(next_l) > len(dom_specs["Memory"]):
+                                dom_specs["Memory"] = next_l
+                            i += 2
+                            continue
+                        elif any(s in line_lower for s in ["storage", "ssd"]) and any(
+                            w in next_l.lower() for w in ["gb", "tb", "ssd", "nvme", "pcie", "m.2"]
+                        ):
+                            if "Storage" not in dom_specs or len(next_l) > len(dom_specs["Storage"]):
+                                dom_specs["Storage"] = next_l
+                            i += 2
+                            continue
+                        elif any(s in line_lower for s in ["battery", "power"]) and any(
+                            w in next_l.lower() for w in ["wh", "cell", "mah"]
+                        ):
+                            if "Battery" not in dom_specs or len(next_l) > len(dom_specs["Battery"]):
+                                dom_specs["Battery"] = next_l
+                            i += 2
+                            continue
+                        elif any(s in line_lower for s in ["operating system", "os"]) and any(
+                            w in next_l.lower() for w in ["windows", "dos", "freedos", "linux", "ubuntu"]
+                        ):
+                            if "Operating System" not in dom_specs or len(next_l) > len(dom_specs["Operating System"]):
+                                dom_specs["Operating System"] = next_l
+                            i += 2
+                            continue
+
+                i += 1
+                continue
+
+            # Case 4: Alternating Key \n Value (Style C: "Model Name \n ASUS ProArt...")
+            if i + 1 < n and 2 < len(line) < 35 and not line.startswith(":"):
+                next_l = raw_lines[i + 1]
+                if ":" not in next_l and not next_l.startswith(":") and next_l.lower().strip(":") not in known_sections:
+                    key = line
+                    val = next_l
+                    if current_section and (
+                        key.lower() in ambiguous_keys
+                        or current_section.lower() in ["graphics", "memory", "storage", "display", "battery", "power"]
+                    ):
+                        full_key = f"{current_section} > {key}"
+                    else:
+                        full_key = key
+                    if full_key not in dom_specs or len(val) > len(dom_specs[full_key]):
+                        dom_specs[full_key] = val
+                    i += 2
+                    continue
+
+            i += 1
 
     @staticmethod
     def _parse_delimited_text(
