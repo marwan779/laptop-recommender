@@ -136,9 +136,27 @@ def test_compumarts_orchestrator_level1_bypasses_deep_pipeline():
 
 
 def test_orchestrator_rejects_deactivated_stores():
-    """Verify requesting non-compumarts stores records an informative error."""
+    """Verify requesting non-active stores records an informative error."""
     orchestrator = ScrapeOrchestrator(email_service=MagicMock())
     req = ScrapeRequest(target_type="store", targets=["sigma"], level=1)
     res = orchestrator.execute(req)
     assert len(res.results) == 1
-    assert "Only 'compumarts' via the 8-layer hardware pipeline is currently active" in res.results[0].error
+    assert "via the 8-layer hardware pipeline are currently active" in res.results[0].error
+
+
+def test_orchestrator_supports_elbadr_store():
+    """Verify requesting elbadr store is supported by the orchestrator."""
+    orchestrator = ScrapeOrchestrator(email_service=MagicMock())
+    with patch("app.services.orchestrator.get_store_scraper") as mock_get_store:
+        mock_scraper = MagicMock()
+        mock_scraper.store_name = "El Badr Group"
+        mock_scraper.store_key = "elbadr"
+        mock_scraper.base_domain = "elbadrgroupeg.store"
+        mock_scraper.scrape_catalog.return_value = []
+        mock_scraper.skipped_laptops = []
+        mock_get_store.return_value = mock_scraper
+
+        req = ScrapeRequest(target_type="store", targets=["elbadr"], level=1)
+        res = orchestrator.execute(req)
+        assert len(res.results) == 1
+        assert res.results[0].error is None

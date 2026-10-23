@@ -258,6 +258,43 @@ class PatternEngine:
         )
         has_text_specs = len(dom_specs) >= 2 and has_dom_hardware_spec
 
+        ocr_confidence: float | None = None
+        ocr_line_count: int | None = None
+        used_ocr: bool = False
+
+        # Tier 3: Generic OCR Fallback for Image Flyers
+        # Triggers when DOM specs are insufficient (< 5 specs or missing hardware specs) and flyer image is detected
+        if (len(dom_specs) < 5 or not has_text_specs) and has_specs_image and specs_image_url:
+            from app.pipeline.ocr.engine import GenericOCRExtractor
+
+            ocr_lines, ocr_conf = GenericOCRExtractor.extract_lines_from_url(specs_image_url)
+            if ocr_lines:
+                ocr_line_count = len(ocr_lines)
+                ocr_confidence = ocr_conf
+                cls._parse_raw_text_lines(ocr_lines, pattern_cfg.delimiters, dom_specs)
+                has_dom_hardware_spec = any(
+                    any(
+                        hw in k.lower()
+                        for hw in [
+                            "cpu",
+                            "processor",
+                            "ram",
+                            "memory",
+                            "gpu",
+                            "graphics",
+                            "storage",
+                            "drive",
+                            "display",
+                            "screen",
+                            "model name",
+                        ]
+                    )
+                    for k in dom_specs
+                )
+                if len(dom_specs) >= 2 and has_dom_hardware_spec:
+                    has_text_specs = True
+                    used_ocr = True
+
         # 5. Hybrid Core Hardware Enrichment Pass
         # Extract title specifications as safety net
         title_specs = TitleSpecExtractor.extract(title, specs_image_url=specs_image_url)
@@ -328,7 +365,11 @@ class PatternEngine:
         is_anomaly = False
         anomaly_reason: str | None = None
 
-        if has_text_specs:
+        if used_ocr:
+            final_specs = dom_specs
+            specs_extraction_source = "ocr"
+            specs_fallback_reason = None
+        elif has_text_specs:
             final_specs = dom_specs
             specs_extraction_source = "dom"
             specs_fallback_reason = None
@@ -368,6 +409,8 @@ class PatternEngine:
             specs_fallback_reason=specs_fallback_reason,
             has_specs_image=has_specs_image,
             specs_image_url=specs_image_url,
+            ocr_confidence=ocr_confidence,
+            ocr_line_count=ocr_line_count,
             pattern_learned=pattern_learned,
             learned_pattern_type=learned_pattern_type,
             is_anomaly=is_anomaly,

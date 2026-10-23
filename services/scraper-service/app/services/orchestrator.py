@@ -39,6 +39,7 @@ from app.notifications.service import ScraperNotificationService
 from app.common.storage.base import IObjectStorageService
 from app.common.storage.factory import get_storage_service
 from app.stores.compumarts import CompumartsStoreScraper
+from app.stores.elbadr import ElBadrStoreScraper
 
 from app.pipeline.catalog_pipeline import GenericCatalogPipeline, setup_ai_fallback
 
@@ -46,10 +47,11 @@ logger = get_logger("scraper.orchestrator")
 
 
 # ---------------------------------------------------------------------------
-# Store Registry (Currently locked to CompuMarts with generic 8-layer pipeline)
+# Store Registry (Integrated stores active via the generic 8-layer pipeline)
 # ---------------------------------------------------------------------------
 STORE_REGISTRY: dict[str, type] = {
     "compumarts": CompumartsStoreScraper,
+    "elbadr": ElBadrStoreScraper,
 }
 
 # Decommissioned brand registry retained for backward-compatible imports
@@ -60,8 +62,9 @@ def get_store_scraper(store_key: str, engine: IScraperEngine) -> Any:
     """Instantiate a registered store scraper by key."""
     scraper_cls = STORE_REGISTRY.get(store_key.lower())
     if not scraper_cls:
+        active_stores = ", ".join(f"'{k}'" for k in STORE_REGISTRY.keys())
         raise ValueError(
-            f"Unknown store '{store_key}'. Only 'compumarts' via the 8-layer hardware pipeline is currently active. "
+            f"Unknown store '{store_key}'. Only {active_stores} via the 8-layer hardware pipeline are currently active. "
             f"Available stores: {list(STORE_REGISTRY.keys())}"
         )
     return scraper_cls(engine=engine)

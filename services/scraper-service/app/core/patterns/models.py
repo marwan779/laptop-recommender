@@ -70,10 +70,12 @@ class SpecExtractionResult(BaseModel):
     title_specs: dict[str, str] = Field(default_factory=dict)
     field_sources: dict[str, str] = Field(default_factory=dict)
     has_text_specs: bool = True
-    specs_extraction_source: str = "dom"  # "dom", "title_fallback", or "hybrid"
+    specs_extraction_source: str = "dom"  # "dom", "title_fallback", "hybrid", or "ocr"
     specs_fallback_reason: str | None = None
     has_specs_image: bool = False
     specs_image_url: str | None = None
+    ocr_confidence: float | None = None
+    ocr_line_count: int | None = None
 
     # Autonomous Discovery & Self-Learning Telemetry
     pattern_learned: bool = False

@@ -792,6 +792,8 @@ class TableKeyRouter:
 class DeterministicExtractor:
     """Extracts specs deterministically and creates envelopes for unresolved fields."""
 
+    CANONICAL_FAMILIES: dict[str, list[str]] = CANONICAL_FAMILIES
+
     def __init__(
         self,
         alias_dict_path: Path | None = None,
