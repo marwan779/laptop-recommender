@@ -36,3 +36,5 @@ latest_scraper_report.html
 store_*.json
 !store_compumarts.json
 
+unified_*.json
+unified_catalog_latest.json
