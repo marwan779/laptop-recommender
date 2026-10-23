@@ -2,6 +2,11 @@
 
 Performs linear-time O(M) entity resolution across multiple retailer
 store outputs using an Inverted Multi-Index and Union-Find Disjoint Set.
+Includes explicit guards against edge cases:
+  - Conflicting display refresh rates (vetoed across cluster)
+  - Store RAM/SSD upgrades under base factory MPNs (isolated into separate clusters)
+  - GPU VRAM / silicon variants (isolated)
+  - Multi-offer price priority (in-stock valid price prioritized)
 """
 
 from __future__ import annotations
@@ -13,7 +18,12 @@ from typing import Any
 from app.common.logger import get_logger
 from app.common.resilience import ErrorCategory, resilient_boundary
 from app.matching.disjoint_set import DisjointSet
-from app.matching.fingerprint import generate_hardware_fingerprint, normalize_mpn, slugify
+from app.matching.fingerprint import (
+    are_hardware_compatible,
+    generate_hardware_fingerprint,
+    normalize_mpn,
+    slugify,
+)
 from app.matching.fusion import merge_specifications, pick_best_title
 from app.matching.models import (
     CanonicalLaptop,
@@ -30,6 +40,18 @@ class CatalogCombiner:
 
     def __init__(self, min_valid_price_egp: float = 1000.0) -> None:
         self.min_valid_price_egp = min_valid_price_egp
+
+    @staticmethod
+    def _can_union_clusters(
+        ds: DisjointSet,
+        raw_items: dict[str, dict[str, Any]],
+        source_id: str,
+        cand_id: str,
+    ) -> bool:
+        """Verify candidate cluster has zero hardware or display contradictions with source item."""
+        cluster_members = ds.get_members(cand_id)
+        source_item = raw_items[source_id]
+        return all(are_hardware_compatible(source_item, raw_items[m]) for m in cluster_members if m in raw_items)
 
     def combine_files(self, file_paths: list[Path | str]) -> UnifiedCatalog:
         """Load multiple store catalog JSON files from disk and consolidate them."""
@@ -72,8 +94,8 @@ class CatalogCombiner:
         t_start = utcnow_str()
         ds = DisjointSet()
 
-        mpn_to_item: dict[str, str] = {}
-        fingerprint_to_item: dict[str, str] = {}
+        mpn_to_items: dict[str, list[str]] = {}
+        fingerprint_to_items: dict[str, list[str]] = {}
         raw_items: dict[str, dict[str, Any]] = {}
 
         total_listings = 0
@@ -104,6 +126,22 @@ class CatalogCombiner:
 
                     fp = generate_hardware_fingerprint(brand=brand, family=family, specs=specs)
 
+                    mem = specs.get("memory") or {}
+                    ram_gb = int(mem.get("capacity_gb") or 0)
+
+                    storage = specs.get("storage") or {}
+                    storage_gb = int(storage.get("capacity_gb") or 0)
+
+                    gpu_info = specs.get("gpu") or {}
+                    vram_gb = int(gpu_info.get("vram_gb") or 0)
+                    gpu_model = gpu_info.get("model") or ""
+
+                    disp = specs.get("display") or {}
+                    refresh_hz = int(disp.get("refresh_rate_hz") or 0)
+
+                    cpu_info = specs.get("cpu") or {}
+                    cpu_model = cpu_info.get("model") or cpu_info.get("full_name") or ""
+
                     # Store parsed record
                     raw_items[item_id] = {
                         "store_key": store_key,
@@ -123,24 +161,32 @@ class CatalogCombiner:
                         "family": family,
                         "model": model,
                         "fingerprint": fp,
+                        "ram_gb": ram_gb,
+                        "storage_gb": storage_gb,
+                        "vram_gb": vram_gb,
+                        "refresh_hz": refresh_hz,
+                        "cpu_model": cpu_model,
+                        "gpu_model": gpu_model,
                     }
 
                     # Initialize item in DisjointSet
                     ds.find(item_id)
 
-                    # Tier 1: Probe MPN Index
+                    # Tier 1: Probe MPN Index with hardware compatibility guard
                     if clean_mpn:
-                        if clean_mpn in mpn_to_item:
-                            ds.union(item_id, mpn_to_item[clean_mpn])
-                        else:
-                            mpn_to_item[clean_mpn] = item_id
+                        for prev_id in mpn_to_items.get(clean_mpn, []):
+                            if self._can_union_clusters(ds, raw_items, item_id, prev_id):
+                                ds.union(item_id, prev_id)
+                                break
+                        mpn_to_items.setdefault(clean_mpn, []).append(item_id)
 
-                    # Tier 2: Probe Hardware DNA Fingerprint Index
+                    # Tier 2: Probe Hardware DNA Fingerprint Index with cluster compatibility veto
                     if fp:
-                        if fp in fingerprint_to_item:
-                            ds.union(item_id, fingerprint_to_item[fp])
-                        else:
-                            fingerprint_to_item[fp] = item_id
+                        for prev_id in fingerprint_to_items.get(fp, []):
+                            if self._can_union_clusters(ds, raw_items, item_id, prev_id):
+                                ds.union(item_id, prev_id)
+                                break
+                        fingerprint_to_items.setdefault(fp, []).append(item_id)
 
         # Step 2: Resolve Clusters
         clusters = ds.get_clusters()
@@ -203,33 +249,46 @@ class CatalogCombiner:
                     )
                 )
 
-            # Sort offers by price ascending (cheapest first)
-            offers.sort(key=lambda o: (not o.is_valid_price, o.price_egp))
+            # Sort offers: valid prices first, in-stock first, lowest price ascending
+            offers.sort(key=lambda o: (not o.is_valid_price, not o.in_stock, o.price_egp))
 
-            # Rollups
+            # Rollups: Multi-Offer Resolution per store (Edge Case C)
             available_stores = list(dict.fromkeys(o.store_key for o in offers))
             prices_by_store: dict[str, float] = {}
-            for o in offers:
-                if o.store_key not in prices_by_store:
-                    prices_by_store[o.store_key] = o.price_egp
+
+            for store in available_stores:
+                store_offers = [o for o in offers if o.store_key == store and o.is_valid_price]
+                if not store_offers:
+                    any_store_offers = [o for o in offers if o.store_key == store]
+                    prices_by_store[store] = any_store_offers[0].price_egp if any_store_offers else 0.0
+                    continue
+
+                # Prioritize valid in-stock offers
+                in_stock_offers = [o for o in store_offers if o.in_stock]
+                if in_stock_offers:
+                    best_offer = min(in_stock_offers, key=lambda o: o.price_egp)
                 else:
-                    curr = prices_by_store[o.store_key]
-                    if curr <= self.min_valid_price_egp and o.is_valid_price:
-                        prices_by_store[o.store_key] = o.price_egp
-                    elif o.is_valid_price and o.price_egp < curr:
-                        prices_by_store[o.store_key] = o.price_egp
+                    best_offer = min(store_offers, key=lambda o: o.price_egp)
 
-            valid_prices = [o.price_egp for o in offers if o.is_valid_price]
-            min_price = min(valid_prices) if valid_prices else None
-            max_price = max(valid_prices) if valid_prices else None
+                prices_by_store[store] = best_offer.price_egp
 
-            cheapest_store = None
-            if min_price is not None:
-                cheapest_store = next(
-                    (o.store_key for o in offers if o.is_valid_price and o.price_egp == min_price),
-                    None,
-                )
+            # Overall min and max price across all stores
+            valid_offers = [o for o in offers if o.is_valid_price]
+            valid_in_stock = [o for o in valid_offers if o.in_stock]
 
+            if valid_in_stock:
+                cheapest_offer = min(valid_in_stock, key=lambda o: o.price_egp)
+                min_price = cheapest_offer.price_egp
+                cheapest_store = cheapest_offer.store_key
+            elif valid_offers:
+                cheapest_offer = min(valid_offers, key=lambda o: o.price_egp)
+                min_price = cheapest_offer.price_egp
+                cheapest_store = cheapest_offer.store_key
+            else:
+                min_price = None
+                cheapest_store = None
+
+            max_price = max((o.price_egp for o in valid_offers), default=None)
             price_spread = (max_price - min_price) if (min_price is not None and max_price is not None) else 0.0
 
             canonical_laptops.append(

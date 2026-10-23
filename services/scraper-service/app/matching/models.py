@@ -110,4 +110,3 @@ class UnifiedCatalog(BaseModel):
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(self.model_dump(), f, indent=2, ensure_ascii=False)
         return out_path
-

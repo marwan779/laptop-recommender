@@ -115,4 +115,3 @@ def merge_specifications(
         else:
             result[category] = merge_spec_value(result[category], fields)
     return result
-
