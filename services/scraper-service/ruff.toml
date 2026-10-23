@@ -24,4 +24,4 @@ ignore = [
 # Standalone CLI and analysis scripts adjust sys.path before internal imports
 "**/scripts/**" = ["E402", "F841", "B007"]
 "**/app/pipeline/run_compumarts.py" = ["E402", "F841"]
-
+"**/app/cli.py" = ["E402"]

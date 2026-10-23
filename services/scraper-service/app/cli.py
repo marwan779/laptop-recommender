@@ -3,14 +3,17 @@ import json
 from pathlib import Path
 import sys
 
+_service_root = str(Path(__file__).resolve().parent.parent)
+if _service_root not in sys.path:
+    sys.path.insert(0, _service_root)
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
 from app.engine.scrapling_engine import ScraplingEngine
 from app.schemas.orchestrator import ScrapeRequest
-from app.services.orchestrator import BRAND_SERVICE_REGISTRY, ScrapeOrchestrator
-from app.stores.registry import STORE_REGISTRY
+from app.services.orchestrator import BRAND_SERVICE_REGISTRY, STORE_REGISTRY, ScrapeOrchestrator
 
 if sys.platform == "win32":
     try:
@@ -70,7 +73,9 @@ def main():
         help="Execution mode: 'brand'/'brand-only', 'store'/'stores', or 'both'/'all' (Scrapes all brands & stores) (default: brand-only)",
     )
     parser.add_argument(
+        "--store",
         "--stores",
+        dest="stores",
         type=str,
         default="all",
         help=f"Comma-separated store keys to scrape ({','.join(SUPPORTED_STORES)}) or 'all' (default: all)",
