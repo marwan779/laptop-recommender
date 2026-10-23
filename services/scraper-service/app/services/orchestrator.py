@@ -40,6 +40,7 @@ from app.common.storage.base import IObjectStorageService
 from app.common.storage.factory import get_storage_service
 from app.stores.compumarts import CompumartsStoreScraper
 from app.stores.elbadr import ElBadrStoreScraper
+from app.stores.sigma import SigmaComputerStoreScraper
 
 from app.pipeline.catalog_pipeline import GenericCatalogPipeline, setup_ai_fallback
 
@@ -52,6 +53,7 @@ logger = get_logger("scraper.orchestrator")
 STORE_REGISTRY: dict[str, type] = {
     "compumarts": CompumartsStoreScraper,
     "elbadr": ElBadrStoreScraper,
+    "sigma": SigmaComputerStoreScraper,
 }
 
 # Decommissioned brand registry retained for backward-compatible imports

@@ -138,7 +138,7 @@ def test_compumarts_orchestrator_level1_bypasses_deep_pipeline():
 def test_orchestrator_rejects_deactivated_stores():
     """Verify requesting non-active stores records an informative error."""
     orchestrator = ScrapeOrchestrator(email_service=MagicMock())
-    req = ScrapeRequest(target_type="store", targets=["sigma"], level=1)
+    req = ScrapeRequest(target_type="store", targets=["btech"], level=1)
     res = orchestrator.execute(req)
     assert len(res.results) == 1
     assert "via the 8-layer hardware pipeline are currently active" in res.results[0].error
@@ -160,3 +160,21 @@ def test_orchestrator_supports_elbadr_store():
         res = orchestrator.execute(req)
         assert len(res.results) == 1
         assert res.results[0].error is None
+
+
+def test_orchestrator_supports_sigma_store():
+    """Verify requesting sigma store is supported by the orchestrator."""
+    orchestrator = ScrapeOrchestrator(email_service=MagicMock())
+    with patch("app.services.orchestrator.get_store_scraper") as mock_get_store:
+        mock_scraper = MagicMock()
+        mock_scraper.store_name = "Sigma Computer"
+        mock_scraper.store_key = "sigma"
+        mock_scraper.base_domain = "sigma-computer.com"
+        mock_scraper.scrape_catalog.return_value = []
+        mock_get_store.return_value = mock_scraper
+
+        req = ScrapeRequest(target_type="store", targets=["sigma"], level=1)
+        res = orchestrator.execute(req)
+        assert len(res.results) == 1
+        assert res.results[0].error is None
+        assert res.results[0].target_name == "Sigma Computer"

@@ -740,6 +740,36 @@ CPU_SPECS: dict[str, CPUSpecEntry] = {
         "aliases": ["356h", "core ultra 7 356h", "core-ultra-7-356h", "ultra 7 356h"],
         "source_url": "https://www.intel.com/content/www/us/en/products/sku/245532/intel-core-ultra-7-processor-356h-18m-cache-up-to-4-70-ghz/specifications.html",
     },
+    "intel_core_7_350": {
+        "brand": "Intel",
+        "model": "Core 7 350",
+        "family": "Core 7",
+        "generation": "Series 3",
+        "microarchitecture": "Cougar Cove / Darkmont",
+        "microarchitecture_code": "Wildcat Lake",
+        "total_cores": 6,
+        "performance_cores": {"count": 2, "base_clock_ghz": 1.5, "boost_clock_ghz": 4.8},
+        "efficient_cores": {"count": 4, "base_clock_ghz": 1.4, "boost_clock_ghz": 3.6},
+        "low_power_cores": None,
+        "total_threads": 6,
+        "base_clock_ghz": 1.5,
+        "boost_clock_ghz": 4.8,
+        "cache_mb": 6,
+        "integrated_gpu": "Intel UHD Graphics",
+        "npu_tops": None,
+        "base_power_w": 15,
+        "supported_memory": ["DDR5", "LPDDR5X"],
+        "max_memory_gb": 64,
+        "aliases": [
+            "350",
+            "core 7 350",
+            "core-7-350",
+            "core 7 processor 350",
+            "intel core 7 350",
+            "intel core 7 processor 350",
+        ],
+        "source_url": "https://www.intel.com/content/www/us/en/products/details/processors/core/series-3.html",
+    },
     "intel_core_7_240h": {
         "brand": "Intel",
         "model": "Core 7 240H",
@@ -1205,6 +1235,36 @@ CPU_SPECS: dict[str, CPUSpecEntry] = {
             "intel core ultra 5 processor 325",
         ],
         "source_url": "https://www.intel.com/content/www/us/en/products/sku/245720/intel-core-ultra-5-processor-325-12m-cache-up-to-4-50-ghz/specifications.html",
+    },
+    "intel_core_5_205h": {
+        "brand": "Intel",
+        "model": "Core 5 205H",
+        "family": "Core 5",
+        "generation": "Core 200H Series",
+        "microarchitecture": "Raptor Cove / Gracemont",
+        "microarchitecture_code": "Raptor Lake-H Refresh",
+        "total_cores": 8,
+        "performance_cores": {"count": 4, "base_clock_ghz": 2.2, "boost_clock_ghz": 4.8},
+        "efficient_cores": {"count": 4, "base_clock_ghz": 1.6, "boost_clock_ghz": 3.6},
+        "low_power_cores": None,
+        "total_threads": 12,
+        "base_clock_ghz": 2.2,
+        "boost_clock_ghz": 4.8,
+        "cache_mb": 12,
+        "integrated_gpu": "Intel Graphics (48 execution units)",
+        "npu_tops": None,
+        "base_power_w": 45,
+        "supported_memory": ["DDR5", "DDR4", "LPDDR5", "LPDDR5X"],
+        "max_memory_gb": 96,
+        "aliases": [
+            "205h",
+            "core 5 205h",
+            "core-5-205h",
+            "core 5 processor 205h",
+            "intel core 5 205h",
+            "intel core-5-205h",
+        ],
+        "source_url": "https://www.intel.com/content/www/us/en/products/details/processors/core/series-2.html",
     },
     "intel_core_5_210h": {
         "brand": "Intel",
@@ -2184,7 +2244,7 @@ CPU_SPECS: dict[str, CPUSpecEntry] = {
 }
 
 # Lightweight schema and consistency checks for the CPU specification table.
-assert len(CPU_SPECS) == 82, f"Expected 82 CPU records, got {len(CPU_SPECS)}"
+assert len(CPU_SPECS) == 84, f"Expected 84 CPU records, got {len(CPU_SPECS)}"
 _required_cpu_fields = set(CPUSpecEntry.__required_keys__)
 _optional_cpu_fields = set(CPUSpecEntry.__optional_keys__)
 for _cpu_name, _cpu in CPU_SPECS.items():
