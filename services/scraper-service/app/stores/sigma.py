@@ -11,6 +11,7 @@ from app.core.patterns.engine import PatternEngine
 from app.core.patterns.models import SpecExtractionResult
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import RetailerProduct
+from app.common.resilience import ErrorCategory, resilient_boundary
 from app.stores.base import BaseStoreScraper
 
 
@@ -230,7 +231,14 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
                     watermark_hit = True
                     break
 
-                product = self._parse_product(raw, level=level)
+                product = None
+                with resilient_boundary(
+                    category=ErrorCategory.DOM_PARSING,
+                    source_component="store.sigma",
+                    context={"slug": slug, "name": name, "level": level},
+                    suppress=True,
+                ):
+                    product = self._parse_product(raw, level=level)
                 if not product:
                     self.record_skipped(
                         name=name,

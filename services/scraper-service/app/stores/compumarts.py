@@ -18,6 +18,7 @@ from app.core.normalizer import ModelNormalizer
 from app.core.patterns import PatternEngine, SpecExtractionResult
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import RetailerProduct
+from app.common.resilience import ErrorCategory, resilient_boundary
 from app.stores.base import BaseStoreScraper
 
 
@@ -191,7 +192,14 @@ class CompumartsStoreScraper(BaseStoreScraper):
                         watermark_hit = True
                         break
 
-                product = self._parse_card(card, seen_urls, level=level)
+                product = None
+                with resilient_boundary(
+                    category=ErrorCategory.DOM_PARSING,
+                    source_component="store.compumarts",
+                    context={"level": level},
+                    suppress=True,
+                ):
+                    product = self._parse_card(card, seen_urls, level=level)
                 if product:
                     # Also check product SKU / MPN for watermark
                     if until_model and any(

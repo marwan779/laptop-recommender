@@ -9,6 +9,7 @@ from app.core.normalizer import ModelNormalizer
 from app.core.patterns import PatternEngine, SpecExtractionResult
 from app.engine.base import IScraperEngine
 from app.schemas.laptop import RetailerProduct
+from app.common.resilience import ErrorCategory, resilient_boundary
 from app.stores.base import BaseStoreScraper
 
 
@@ -159,8 +160,16 @@ class ElBadrStoreScraper(BaseStoreScraper):
 
                 seen_urls.add(clean_url)
 
-                # Parse the product card (Level 1 or Level 2)
-                product = self._parse_product_card(card, level=level, product_url=product_url, clean_url=clean_url)
+                # Parse the product card (Level 1 or Level 2) with resilient isolation
+                product = None
+                with resilient_boundary(
+                    category=ErrorCategory.DOM_PARSING,
+                    source_component="store.elbadr",
+                    context={"url": clean_url, "title": title, "level": level},
+                    suppress=True,
+                ):
+                    product = self._parse_product_card(card, level=level, product_url=product_url, clean_url=clean_url)
+
                 if not product:
                     if not any(s.url == clean_url for s in self.skipped_laptops):
                         self.record_skipped(
