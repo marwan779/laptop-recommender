@@ -178,6 +178,9 @@ class ScrapeTargetResult(BaseModel):
     items_scraped: int
     output_file: str | None = None
     storage_key: str | None = None
+    quarantine_file: str | None = None
+    quarantine_storage_key: str | None = None
+    errors_count: int = 0
     error: str | None = None
 
     # The actual catalog payload — exactly one of these will be populated.

@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 from app.common.logger import get_logger
+from app.common.resilience import ErrorCategory, resilient_boundary
 from pathlib import Path
 import time
 from typing import Any
@@ -286,6 +287,8 @@ class ScrapeOrchestrator:
             )
 
         structured_products: list[dict[str, Any]] = []
+        quarantine_file: str | None = None
+        quarantined_count = 0
 
         # Step 2: Generic 8-Layer Hardware Pipeline (on Level 2 deep PDP extraction)
         if req.level == 2 and products:
@@ -305,6 +308,16 @@ class ScrapeOrchestrator:
                 store_key=key,
                 checkpoint_file=checkpoint_file,
             )
+            quarantine_file = generic_pipeline.last_quarantine_file
+            if generic_pipeline.last_quarantine:
+                quarantined_count = generic_pipeline.last_quarantine.error_count
+                if quarantined_count > 0:
+                    logger.warning(
+                        "[Orchestrator] Target '%s' had %d quarantined items. DLQ report: %s",
+                        key,
+                        quarantined_count,
+                        quarantine_file,
+                    )
 
         if products:
             latest_pointers = [p.title for p in products[:3]]
@@ -328,6 +341,7 @@ class ScrapeOrchestrator:
             latest_pointers=latest_pointers,
             total_products=len(structured_products) if is_level2 else len(products),
             total_skipped=len(skipped_list),
+            total_quarantined=quarantined_count,
             products=[] if is_level2 else products,
             structured_products=structured_products,
             skipped_laptops=skipped_list,
@@ -343,6 +357,8 @@ class ScrapeOrchestrator:
             level=req.level,
             items_scraped=len(structured_products) if is_level2 else len(products),
             output_file=str(output_file) if output_file else None,
+            quarantine_file=quarantine_file,
+            errors_count=quarantined_count,
             store_result=store_catalog,
         )
 
@@ -392,7 +408,12 @@ class ScrapeOrchestrator:
             "level": str(result.level),
         }
 
-        try:
+        with resilient_boundary(
+            category=ErrorCategory.STORAGE,
+            source_component="storage.orchestrator",
+            context={"target_key": key, "target_type": target_type},
+            suppress=True,
+        ):
             if result.output_file and Path(result.output_file).is_file():
                 storage_obj = self.storage_service.upload_file(
                     file_path=result.output_file,
@@ -420,5 +441,25 @@ class ScrapeOrchestrator:
                 f"[Orchestrator] [+] Successfully uploaded '{key}' JSON to "
                 f"bucket '{self.storage_service.bucket_name}' as '{object_key}'"
             )
-        except Exception as exc:
-            print(f"[Orchestrator] Warning: Failed to upload '{key}' JSON to object storage: {exc}")
+
+            # Upload DLQ quarantine file if present
+            if result.quarantine_file and Path(result.quarantine_file).is_file():
+                q_object_key = f"quarantine/{target_type}_{key}_quarantine.json"
+                try:
+                    q_storage_obj = self.storage_service.upload_file(
+                        file_path=result.quarantine_file,
+                        object_key=q_object_key,
+                        content_type="application/json",
+                        metadata={
+                            "target_type": target_type,
+                            "target_key": key,
+                            "quarantined_errors": str(result.errors_count),
+                        },
+                    )
+                    result.quarantine_storage_key = q_storage_obj.key
+                    print(
+                        f"[Orchestrator] [+] Successfully uploaded DLQ quarantine report for '{key}' "
+                        f"to '{q_object_key}'"
+                    )
+                except Exception as q_exc:
+                    logger.warning("[Orchestrator] Failed to upload DLQ quarantine report to storage: %s", q_exc)

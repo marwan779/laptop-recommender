@@ -15,6 +15,12 @@ from __future__ import annotations
 
 import json
 from app.common.logger import get_logger
+from app.common.resilience import (
+    BatchCircuitBreaker,
+    DeadLetterQuarantine,
+    ErrorCategory,
+    resilient_boundary,
+)
 import time
 from pathlib import Path
 from typing import Any
@@ -133,6 +139,9 @@ class GenericCatalogPipeline:
         self.no_audit = no_audit
         self.audit_batch_size = max(1, audit_batch_size)
         self.auditor: LLMAuditor | None = None
+        self.last_quarantine: DeadLetterQuarantine | None = None
+        self.last_circuit_breaker: BatchCircuitBreaker | None = None
+        self.last_quarantine_file: str | None = None
         if not no_audit:
             try:
                 self.auditor = auditor or LLMAuditor()
@@ -256,6 +265,7 @@ class GenericCatalogPipeline:
         checkpoint_file: Path | str | None = None,
         trace_file: Path | str | None = None,
         progress_callback: Callable[[int, int, str], None] | None = None,
+        failure_threshold_pct: float = 20.0,
     ) -> list[dict[str, Any]]:
         """Process an entire catalog through the 8 layers with streaming audit and checkpoints."""
         total = len(products)
@@ -318,77 +328,114 @@ class GenericCatalogPipeline:
                         cf.write(json.dumps(item, ensure_ascii=False) + "\n")
             audit_buffer.clear()
 
+        quarantine = DeadLetterQuarantine(target_key=store_key, target_type="store")
+        circuit_breaker = BatchCircuitBreaker(target_key=store_key, failure_threshold_pct=failure_threshold_pct)
+        self.last_quarantine = quarantine
+        self.last_circuit_breaker = circuit_breaker
+        self.last_quarantine_file = None
+
         for idx, prod in enumerate(products, start=1):
-            # Gate 3: Universal Defense-in-depth hardware validation
-            is_valid, reason = ProductClassifier.is_valid_new_laptop(
-                title=prod.title,
-                specs=prod.specs,
-                url=prod.product_url,
-                description=prod.raw_description,
-            )
-            if not is_valid:
-                logger.warning(
-                    "[Pipeline Gate 3] Dropping non-laptop or used product '%s' (%s): %s",
-                    prod.title,
-                    prod.product_url,
-                    reason,
+            if circuit_breaker.is_tripped:
+                logger.error(
+                    "[Catalog Pipeline] Circuit breaker tripped for '%s': halting extraction (%s)",
+                    store_key,
+                    circuit_breaker.tripped_reason,
                 )
-                continue
+                break
 
-            if progress_callback:
-                progress_callback(idx, total, prod.title)
-            else:
-                logger.info("[%d/%d] Processing %s...", idx, total, prod.title[:60])
+            quarantine.mark_item_attempted()
 
-            raw_prod = retailer_product_to_raw_scraped(prod, store_key=store_key)
-            t_item = time.time()
-            pipeline_res = self.pipeline.process_raw_product(raw_prod)
-            elapsed = time.time() - t_item
-
-            store_k = getattr(prod, "store_key", None) or raw_prod.store or store_key
-            store_n = getattr(prod, "store_name", None) or (
-                raw_prod.store.capitalize() if raw_prod.store else store_key.capitalize()
-            )
-            store_d = getattr(prod, "store_domain", None) or f"{store_k}.com"
-
-            item_record: dict[str, Any] = {
-                "store_name": store_n,
-                "store_key": store_k,
-                "store_domain": store_d,
-                "url": prod.product_url,
-                "title": prod.title,
-                "price_egp": prod.price_egp,
-                "in_stock": getattr(prod, "in_stock", True),
-                "thumbnail_url": getattr(prod, "thumbnail_url", None),
-                "retailer_sku": getattr(prod, "retailer_sku", None),
-                "mpn": getattr(prod, "mpn", None),
-                "cpu_key": pipeline_res.cpu_key,
-                "is_audited": False,
-                "audit_status": "skipped" if (self.no_audit or not self.auditor) else "pending",
-                "audit_meta": {
-                    "provider": None,
-                    "has_contradictions": False,
-                    "corrections_count": 0,
-                    "applied_corrections": [],
+            with resilient_boundary(
+                category=ErrorCategory.PIPELINE_EXTRACTION,
+                source_component="pipeline.catalog",
+                context={
+                    "store_key": store_key,
+                    "title": getattr(prod, "title", "Unknown"),
+                    "url": getattr(prod, "product_url", None),
+                    "index": idx,
+                    "total": total,
                 },
-                "specs": pipeline_res.specs,
-                "source_table": prod.specs or {},
-                "envelopes_count": len(pipeline_res.component_envelopes_generated),
-                "rejections_count": len(pipeline_res.validation_rejections),
-                "elapsed_s": round(elapsed, 3),
-            }
+                quarantine=quarantine,
+                circuit_breaker=circuit_breaker,
+                payload_snapshot=prod.model_dump() if hasattr(prod, "model_dump") else None,
+                suppress=True,
+                reraise_on_circuit_break=False,
+            ):
+                # Gate 3: Universal Defense-in-depth hardware validation
+                is_valid, reason = ProductClassifier.is_valid_new_laptop(
+                    title=prod.title,
+                    specs=prod.specs,
+                    url=prod.product_url,
+                    description=prod.raw_description,
+                )
+                if not is_valid:
+                    logger.warning(
+                        "[Pipeline Gate 3] Dropping non-laptop or used product '%s' (%s): %s",
+                        prod.title,
+                        prod.product_url,
+                        reason,
+                    )
+                    continue
 
-            audit_buffer.append(item_record)
+                if progress_callback:
+                    progress_callback(idx, total, prod.title)
+                else:
+                    logger.info("[%d/%d] Processing %s...", idx, total, prod.title[:60])
 
-            if not self.auditor or len(audit_buffer) >= self.audit_batch_size:
-                flush_buffer()
+                raw_prod = retailer_product_to_raw_scraped(prod, store_key=store_key)
+                t_item = time.time()
+                pipeline_res = self.pipeline.process_raw_product(raw_prod)
+                elapsed = time.time() - t_item
 
-            if trace_path and pipeline_res.provenance_record:
-                with trace_path.open("a", encoding="utf-8") as tf:
-                    tf.write(json.dumps(pipeline_res.provenance_record, ensure_ascii=False) + "\n")
+                store_k = getattr(prod, "store_key", None) or raw_prod.store or store_key
+                store_n = getattr(prod, "store_name", None) or (
+                    raw_prod.store.capitalize() if raw_prod.store else store_key.capitalize()
+                )
+                store_d = getattr(prod, "store_domain", None) or f"{store_k}.com"
+
+                item_record: dict[str, Any] = {
+                    "store_name": store_n,
+                    "store_key": store_k,
+                    "store_domain": store_d,
+                    "url": prod.product_url,
+                    "title": prod.title,
+                    "price_egp": prod.price_egp,
+                    "in_stock": getattr(prod, "in_stock", True),
+                    "thumbnail_url": getattr(prod, "thumbnail_url", None),
+                    "retailer_sku": getattr(prod, "retailer_sku", None),
+                    "mpn": getattr(prod, "mpn", None),
+                    "cpu_key": pipeline_res.cpu_key,
+                    "is_audited": False,
+                    "audit_status": "skipped" if (self.no_audit or not self.auditor) else "pending",
+                    "audit_meta": {
+                        "provider": None,
+                        "has_contradictions": False,
+                        "corrections_count": 0,
+                        "applied_corrections": [],
+                    },
+                    "specs": pipeline_res.specs,
+                    "source_table": prod.specs or {},
+                    "envelopes_count": len(pipeline_res.component_envelopes_generated),
+                    "rejections_count": len(pipeline_res.validation_rejections),
+                    "elapsed_s": round(elapsed, 3),
+                }
+
+                audit_buffer.append(item_record)
+
+                if not self.auditor or len(audit_buffer) >= self.audit_batch_size:
+                    flush_buffer()
+
+                if trace_path and pipeline_res.provenance_record:
+                    with trace_path.open("a", encoding="utf-8") as tf:
+                        tf.write(json.dumps(pipeline_res.provenance_record, ensure_ascii=False) + "\n")
 
         # Flush any remaining items in buffer
         if audit_buffer:
             flush_buffer()
+
+        if quarantine.has_errors():
+            quarantine_dir = (ckpt_path.parent / "quarantine") if ckpt_path else Path("quarantine")
+            saved_file = quarantine.save_report(output_dir=quarantine_dir, target_key=store_key)
+            self.last_quarantine_file = str(saved_file) if saved_file else None
 
         return results

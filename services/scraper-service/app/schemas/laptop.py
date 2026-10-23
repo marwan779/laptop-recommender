@@ -150,6 +150,7 @@ class StoreCatalogResult(BaseModel):
     latest_pointers: list[str] = Field(default_factory=list)
     total_products: int = 0
     total_skipped: int = 0
+    total_quarantined: int = 0
     patterns_learned: list[str] = Field(default_factory=list)
     anomalies: list[dict[str, Any]] = Field(default_factory=list)
     scraped_at: str = Field(default_factory=utcnow_str)
