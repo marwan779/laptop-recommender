@@ -123,4 +123,3 @@ class DeadLetterQuarantine:
 
         logger.info("Saved Dead-Letter Quarantine artifact to: %s", dest)
         return dest
-

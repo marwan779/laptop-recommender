@@ -96,4 +96,3 @@ def test_context_manager_scope():
         assert get_correlation_id() == cid1
 
     assert get_correlation_id() is None
-

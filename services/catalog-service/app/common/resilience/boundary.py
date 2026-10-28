@@ -185,4 +185,3 @@ def resilient_step(
         return wrapper  # type: ignore[return-value]
 
     return decorator
-

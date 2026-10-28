@@ -111,4 +111,3 @@ def configure_logging(config: LoggerConfig | None = None) -> LoggerService:
 def get_logger(name: str) -> logging.Logger:
     """Fast accessor for retrieving a named logger instance."""
     return LoggerService.get_instance().get_logger(name)
-

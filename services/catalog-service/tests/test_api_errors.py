@@ -28,4 +28,3 @@ async def test_404_error_handler_structure(async_client: AsyncClient):
     assert "error" in data
     assert data["error"]["code"] == 404
     assert "correlation_id" in data["error"]
-

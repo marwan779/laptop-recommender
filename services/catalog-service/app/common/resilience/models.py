@@ -113,4 +113,3 @@ class DeadLetterQuarantineReport(BaseModel):
     errors_by_category: dict[str, int] = Field(default_factory=dict)
     errors_by_severity: dict[str, int] = Field(default_factory=dict)
     records: list[ServiceErrorRecord] = Field(default_factory=list)
-

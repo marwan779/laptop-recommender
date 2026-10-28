@@ -192,4 +192,3 @@ class DevelopmentConsoleFormatter(logging.Formatter):
             formatted += "\n" + self.formatException(record.exc_info)
 
         return formatted
-

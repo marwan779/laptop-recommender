@@ -92,4 +92,3 @@ class LoggerConfig:
             level=level,
             json_output=json_output,
         )
-

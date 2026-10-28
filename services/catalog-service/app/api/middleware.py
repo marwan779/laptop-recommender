@@ -65,4 +65,3 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
             raise
         finally:
             clear_context()
-

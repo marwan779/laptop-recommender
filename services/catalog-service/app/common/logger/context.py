@@ -59,4 +59,3 @@ def request_context(
     finally:
         _correlation_id_ctx.reset(token_cid)
         _request_context_ctx.reset(token_ctx)
-

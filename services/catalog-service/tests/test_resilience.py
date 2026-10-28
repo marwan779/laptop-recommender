@@ -84,4 +84,3 @@ def test_resilient_step_decorator():
 
     result = risky_operation()
     assert result == "fallback_result"
-
