@@ -397,4 +397,3 @@ class S3StorageService(IObjectStorageService):
         except Exception as exc:
             self._handle_error(exc, object_key)
             raise
-

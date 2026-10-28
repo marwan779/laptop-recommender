@@ -75,12 +75,12 @@ class LoggerConfig:
 
         # Default log level: DEBUG in dev, INFO in prod/staging/test
         default_level = "DEBUG" if env == Environment.DEVELOPMENT else "INFO"
-        level_raw = os.getenv("LOG_LEVEL", default_level)
+        level_raw = os.getenv("LOG_LEVEL") or default_level
         level = LogLevel.from_string(level_raw)
 
         # Output format: JSON in prod/staging by default, or explicitly forced
         json_env = os.getenv("LOG_JSON_FORMAT")
-        if json_env is not None:
+        if json_env and json_env.strip():
             json_output = json_env.strip().lower() in ("true", "1", "yes")
         else:
             json_output = env in (Environment.PRODUCTION, Environment.STAGING)

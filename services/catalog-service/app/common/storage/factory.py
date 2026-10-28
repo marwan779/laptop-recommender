@@ -45,4 +45,3 @@ class StorageFactory:
 def get_storage_service() -> IObjectStorageService:
     """Singleton accessor for the default object storage provider."""
     return StorageFactory.create()
-

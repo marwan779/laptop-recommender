@@ -1,5 +1,7 @@
 from pathlib import Path
-from pydantic import computed_field
+from typing import Any
+
+from pydantic import computed_field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 SERVICE_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -23,11 +25,21 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def empty_str_to_default(cls, data: Any) -> Any:
+        """Strip empty or whitespace-only environment strings so defaults apply."""
+        if isinstance(data, dict):
+            return {k: v for k, v in data.items() if not (isinstance(v, str) and v.strip() == "")}
+        return data
+
     @computed_field
     @property
     def async_database_url(self) -> str:
         """Ensure database URL uses asyncpg driver for async SQLAlchemy."""
-        url = self.database_url
+        url = (self.database_url or "").strip()
+        if not url:
+            url = "postgresql+asyncpg://postgres:postgres@localhost:5432/laptop_recommender_catalog"
         if url.startswith("postgresql+psycopg://"):
             return url.replace("postgresql+psycopg://", "postgresql+asyncpg://", 1)
         if url.startswith("postgresql://"):
@@ -38,7 +50,9 @@ class Settings(BaseSettings):
     @property
     def sync_database_url(self) -> str:
         """Ensure database URL uses psycopg driver for synchronous tools (e.g. Alembic sync fallback)."""
-        url = self.database_url
+        url = (self.database_url or "").strip()
+        if not url:
+            url = "postgresql+psycopg://postgres:postgres@localhost:5432/laptop_recommender_catalog"
         if url.startswith("postgresql+asyncpg://"):
             return url.replace("postgresql+asyncpg://", "postgresql+psycopg://", 1)
         if url.startswith("postgresql://"):

@@ -43,4 +43,3 @@ class StorageOperationError(StorageError):
     def __init__(self, message: str, key: str | None = None, original_error: Exception | None = None):
         super().__init__(message, original_error=original_error)
         self.key = key
-

@@ -65,4 +65,3 @@ class BatchDeleteResult(BaseModel):
     @property
     def is_successful(self) -> bool:
         return len(self.failed_keys) == 0
-

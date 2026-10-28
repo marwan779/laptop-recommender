@@ -123,4 +123,3 @@ class IObjectStorageService(ABC):
     ) -> str:
         """Generate a pre-signed URL for temporary, secure client-side access."""
         pass
-

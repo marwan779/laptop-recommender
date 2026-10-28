@@ -1,6 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,6 +35,14 @@ class StorageSettings(BaseSettings):
     # Path-style addressing (required for MinIO/LocalStack)
     aws_s3_force_path_style: bool = False
 
+    @model_validator(mode="before")
+    @classmethod
+    def empty_str_to_default(cls, data: Any) -> Any:
+        """Strip empty or whitespace-only environment strings so defaults apply."""
+        if isinstance(data, dict):
+            return {k: v for k, v in data.items() if not (isinstance(v, str) and v.strip() == "")}
+        return data
+
     @property
     def is_configured(self) -> bool:
         """Return True if bucket and credentials (or custom local endpoint) are present."""
@@ -46,4 +56,3 @@ class StorageSettings(BaseSettings):
 def get_storage_settings() -> StorageSettings:
     """Singleton provider for StorageSettings."""
     return StorageSettings()
-

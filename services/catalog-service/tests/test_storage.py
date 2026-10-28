@@ -145,4 +145,3 @@ def test_generate_presigned_url(s3_service, mock_s3_client):
     url = s3_service.generate_presigned_url("item.json", expiration_seconds=600)
     assert "https://" in url
     mock_s3_client.generate_presigned_url.assert_called_once()
-
