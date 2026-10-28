@@ -18,4 +18,3 @@ async def test_health_endpoint(async_client: AsyncClient):
     data = response.json()
     assert data["status"] == "ok"
     assert data["database"] == "ok"
-

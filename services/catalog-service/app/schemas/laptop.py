@@ -45,4 +45,3 @@ class LaptopConfigurationSummary(BaseModel):
 class LaptopConfigurationDetail(LaptopConfigurationSummary):
     offers: list[LaptopOfferRead] = []
     category_scores: list[LaptopCategoryScoreRead] = []
-

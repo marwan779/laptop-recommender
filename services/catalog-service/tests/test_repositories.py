@@ -29,4 +29,3 @@ async def test_laptop_repository_get_by_identity_hash():
     assert result.identity_hash == "test_identity_hash"
     assert result.title == "Test Laptop"
     mock_session.execute.assert_called_once()
-

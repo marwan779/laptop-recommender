@@ -76,4 +76,3 @@ def test_laptop_configuration_and_scores_instantiation():
     assert config.canonical_id == "lenovo_legion_pro_5_16irx8_rtx4060"
     assert offer.price_egp == 65000.0
     assert score.score == 8.5
-
