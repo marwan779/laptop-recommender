@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Integer, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, utcnow
 
@@ -23,7 +23,20 @@ class CPU(Base):
     base_clock_ghz: Mapped[float | None] = mapped_column(Numeric)
     boost_clock_ghz: Mapped[float | None] = mapped_column(Numeric)
     tdp_w: Mapped[float | None] = mapped_column(Numeric)
+    base_power_w: Mapped[float | None] = mapped_column(Numeric)
     benchmark_score: Mapped[float | None] = mapped_column(Numeric)
+
+    # Detailed synthetic & normalized benchmark ratings
+    cinebench_r23_single: Mapped[int | None] = mapped_column(Integer)
+    cinebench_r23_multi: Mapped[int | None] = mapped_column(Integer)
+    geekbench6_single: Mapped[int | None] = mapped_column(Integer)
+    geekbench6_multi: Mapped[int | None] = mapped_column(Integer)
+    passmark_cpu: Mapped[int | None] = mapped_column(Integer)
+    npu_tops: Mapped[float | None] = mapped_column(Numeric)
+    single_core_rating: Mapped[float | None] = mapped_column(Numeric)
+    multi_core_rating: Mapped[float | None] = mapped_column(Numeric)
+    efficiency_rating: Mapped[float | None] = mapped_column(Numeric)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
@@ -40,6 +53,18 @@ class GPU(Base):
     tdp_w: Mapped[float | None] = mapped_column(Numeric)
     integrated: Mapped[bool] = mapped_column(Boolean)
     benchmark_score: Mapped[float | None] = mapped_column(Numeric)
+
+    # Detailed synthetic & normalized benchmark ratings
+    timespy_graphics: Mapped[int | None] = mapped_column(Integer)
+    firestrike_graphics: Mapped[int | None] = mapped_column(Integer)
+    passmark_g3d: Mapped[int | None] = mapped_column(Integer)
+    avg_1080p_gaming_fps: Mapped[float | None] = mapped_column(Numeric)
+    gaming_rating: Mapped[float | None] = mapped_column(Numeric)
+    creative_compute_rating: Mapped[float | None] = mapped_column(Numeric)
+    efficiency_rating: Mapped[float | None] = mapped_column(Numeric)
+    tdp_min_w: Mapped[float | None] = mapped_column(Numeric)
+    tdp_max_w: Mapped[float | None] = mapped_column(Numeric)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
@@ -101,7 +126,12 @@ class UsageCategory(Base):
     __tablename__ = "usage_category"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String, unique=True)
+    slug: Mapped[str | None] = mapped_column(String, unique=True)
+    icon: Mapped[str | None] = mapped_column(String)
+    description: Mapped[str | None] = mapped_column(Text)
+
+    scores = relationship("LaptopCategoryScore", back_populates="category")
 
 
 __all__ = [
@@ -113,4 +143,3 @@ __all__ = [
     "DataSource",
     "UsageCategory",
 ]
-

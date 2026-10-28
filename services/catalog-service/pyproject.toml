@@ -1,0 +1,23 @@
+[project]
+name = "catalog-service"
+version = "0.2.0"
+description = "Relational Product Catalog, Hardware Scoring Engine, and Recommendation API"
+requires-python = ">=3.12"
+
+# ─── Pytest Configuration ──────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+# ─── Code Coverage ─────────────────────────────────────
+[tool.coverage.run]
+source = ["app"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 50
+

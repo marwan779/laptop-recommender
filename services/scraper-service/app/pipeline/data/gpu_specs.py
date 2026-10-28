@@ -1,10 +1,13 @@
-"""Canonical GPU specification schema and database loader.
+"""Canonical GPU specification schema, database loader, and matching helpers.
 
 Defines:
 - GPUTDPLimits: Pydantic model for discrete GPU TDP/TGP envelope bounds.
 - GPUFeatures: Pydantic model for modern GPU hardware features (RT, Frame Gen, AV1).
+- GPURawBenchmarks: Pydantic model for raw synthetic 3D and gaming benchmark scores.
+- GPUNormalizedScores: Pydantic model for normalized 0-100 gaming and creative scores.
 - GPUSpecificationEntry: Full Pydantic model for GPU ground-truth silicon specifications.
-- GPU_SPECS: Pre-loaded dictionary of all canonical GPU specifications.
+- GPU_SPECS: Pre-loaded dictionary of all canonical GPU specifications loaded from gpu_specs.json.
+- Matching and lookup helpers.
 """
 
 from __future__ import annotations
@@ -12,6 +15,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Literal
+
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -32,6 +36,19 @@ class GPUFeatures(BaseModel):
     ray_tracing: bool | None = None
     frame_generation: bool | None = None
     av1_encoding: bool | None = None
+
+
+class GPURawBenchmarks(BaseModel):
+    timespy_graphics: int | None = None
+    firestrike_graphics: int | None = None
+    passmark_g3d: int | None = None
+    avg_1080p_gaming_fps: float | None = None
+
+
+class GPUNormalizedScores(BaseModel):
+    gaming_rating: float | None = Field(None, ge=0, le=100)
+    creative_compute_rating: float | None = Field(None, ge=0, le=100)
+    efficiency_rating: float | None = Field(None, ge=0, le=100)
 
 
 class GPUSpecificationEntry(BaseModel):
@@ -57,6 +74,9 @@ class GPUSpecificationEntry(BaseModel):
     tdp_limits: GPUTDPLimits | None = None
     features: GPUFeatures
     match_patterns: list[str] = Field(..., min_length=1)
+
+    raw_benchmarks: GPURawBenchmarks | None = None
+    normalized_scores: GPUNormalizedScores | None = None
 
     @model_validator(mode="after")
     def enforce_discrete_vs_integrated(self) -> GPUSpecificationEntry:
@@ -93,3 +113,19 @@ def load_gpu_specs() -> dict[str, dict]:
 
 
 GPU_SPECS: dict[str, dict] = load_gpu_specs()
+
+
+# --- Helper Query Methods ---
+def get_gpu_spec(key: str) -> dict | None:
+    """Retrieve canonical GPU specification dictionary by key."""
+    return GPU_SPECS.get(key)
+
+
+def find_gpu_by_pattern(text: str) -> tuple[str, dict] | None:
+    """Find a canonical GPU specification by matching text against known patterns."""
+    normalized = text.lower().strip()
+    for gpu_key, entry in GPU_SPECS.items():
+        patterns = entry.get("match_patterns", [])
+        if any(p.lower() in normalized for p in patterns):
+            return gpu_key, entry
+    return None

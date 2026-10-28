@@ -1,11 +1,50 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, utcnow
+
+
+class LaptopOffer(Base):
+    __tablename__ = "laptop_offer"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    laptop_configuration_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("laptop_configuration.id", ondelete="CASCADE"), index=True
+    )
+    data_source_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("data_source.id"))
+    store_name: Mapped[str] = mapped_column(String, index=True)
+    retailer_sku: Mapped[str | None] = mapped_column(String)
+    price_egp: Mapped[float] = mapped_column(Numeric, index=True)
+    in_stock: Mapped[bool] = mapped_column(Boolean, default=True)
+    offer_url: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    configuration = relationship("LaptopConfiguration", back_populates="offers")
+    data_source = relationship("DataSource")
+
+
+class LaptopCategoryScore(Base):
+    __tablename__ = "laptop_category_score"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    laptop_configuration_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("laptop_configuration.id", ondelete="CASCADE"), index=True
+    )
+    usage_category_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("usage_category.id"), index=True)
+    score: Mapped[float] = mapped_column(Numeric, index=True)  # 1.0 to 10.0 scale
+    raw_percentile: Mapped[float | None] = mapped_column(Numeric)  # 0.0 to 100.0
+    confidence: Mapped[float | None] = mapped_column(Numeric)
+    notes: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    configuration = relationship("LaptopConfiguration", back_populates="category_scores")
+    category = relationship("UsageCategory", back_populates="scores")
 
 
 class LaptopConfigurationAlias(Base):
@@ -152,6 +191,8 @@ class LaptopWebcam(Base):
 
 
 __all__ = [
+    "LaptopOffer",
+    "LaptopCategoryScore",
     "LaptopConfigurationAlias",
     "LaptopMemory",
     "LaptopStorage",
@@ -165,4 +206,3 @@ __all__ = [
     "LaptopAudio",
     "LaptopWebcam",
 ]
-

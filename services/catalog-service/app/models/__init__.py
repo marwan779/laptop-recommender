@@ -12,10 +12,12 @@ from app.models.configuration import (
     Battery,
     LaptopAudio,
     LaptopBuild,
-    LaptopConnectivity,
+    LaptopCategoryScore,
     LaptopConfigurationAlias,
+    LaptopConnectivity,
     LaptopMeasurement,
     LaptopMemory,
+    LaptopOffer,
     LaptopPort,
     LaptopStorage,
     LaptopStorageSlot,
@@ -47,6 +49,8 @@ __all__ = [
     "LaptopFamily",
     "LaptopModel",
     "LaptopConfiguration",
+    "LaptopOffer",
+    "LaptopCategoryScore",
     "LaptopConfigurationAlias",
     "LaptopMemory",
     "LaptopStorage",
@@ -62,4 +66,3 @@ __all__ = [
     "SpecificationEvidence",
     "RawLaptopRecord",
 ]
-
