@@ -1,0 +1,3198 @@
+{
+  "GTX_1050_2GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce GTX 1050",
+    "series": "GeForce GTX 10 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GP107 (N17P-G0)",
+    "architecture": "Pascal",
+    "process_node_nm": 14,
+    "integrated": false,
+    "vram_gb": 2,
+    "memory_type": "GDDR5",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 7.0,
+    "cuda_cores": 640,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": null,
+      "base_max_w": null,
+      "dynamic_boost_w": 0
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "gtx 1050",
+      "gtx1050",
+      "geforce gtx 1050",
+      "nvidia gtx 1050",
+      "gtx 1050 2gb",
+      "geforce gtx 1050 2gb"
+    ]
+  },
+  "GTX_1050_Ti_4GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce GTX 1050 Ti",
+    "series": "GeForce GTX 10 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GP107 (N17P-G1)",
+    "architecture": "Pascal",
+    "process_node_nm": 14,
+    "integrated": false,
+    "vram_gb": 4,
+    "memory_type": "GDDR5",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 7.0,
+    "cuda_cores": 768,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": null,
+      "base_max_w": null,
+      "dynamic_boost_w": 0
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "gtx 1050 ti",
+      "gtx1050ti",
+      "gtx 1050ti",
+      "geforce gtx 1050 ti",
+      "nvidia gtx 1050 ti",
+      "gtx 1050 ti 4gb"
+    ]
+  },
+  "GTX_1650_4GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce GTX 1650",
+    "series": "GeForce GTX 16 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU117 (N18P-G0 / N18P-G61)",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 4,
+    "memory_type": "GDDR5 / GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 35,
+      "max_w": 50,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "gtx 1650",
+      "gtx1650",
+      "geforce gtx 1650",
+      "nvidia gtx 1650",
+      "gtx 1650 4gb",
+      "gtx 1650 max-q"
+    ]
+  },
+  "GTX_1650_Ti_4GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce GTX 1650 Ti",
+    "series": "GeForce GTX 16 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU117 (N18P-G62)",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 4,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 12.0,
+    "cuda_cores": 1024,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 35,
+      "max_w": 80,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "gtx 1650 ti",
+      "gtx1650ti",
+      "gtx 1650ti",
+      "geforce gtx 1650 ti",
+      "nvidia gtx 1650 ti",
+      "gtx 1650 ti 4gb"
+    ]
+  },
+  "GTX_1660_Ti_6GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce GTX 1660 Ti",
+    "series": "GeForce GTX 16 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU116 (N18E-G0)",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 6,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 192,
+    "memory_speed_gbps": 12.0,
+    "cuda_cores": 1536,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 60,
+      "max_w": 80,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "gtx 1660 ti",
+      "gtx1660ti",
+      "gtx 1660ti",
+      "geforce gtx 1660 ti",
+      "nvidia gtx 1660 ti",
+      "gtx 1660 ti 6gb",
+      "gtx 1660 ti max-q"
+    ]
+  },
+  "RTX_2050_4GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 2050",
+    "series": "GeForce RTX 20 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA107 (GN20-S7)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 4,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": 14.0,
+    "cuda_cores": 2048,
+    "tensor_cores": 64,
+    "rt_cores": 16,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 30,
+      "max_w": 70,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 2050",
+      "rtx2050",
+      "geforce rtx 2050",
+      "nvidia rtx 2050",
+      "rtx 2050 4gb",
+      "rtx 2050 laptop gpu"
+    ]
+  },
+  "RTX_2060_6GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 2060",
+    "series": "GeForce RTX 20 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU106 (N18E-G1)",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 6,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 192,
+    "memory_speed_gbps": null,
+    "cuda_cores": 1920,
+    "tensor_cores": 240,
+    "rt_cores": 30,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": 115,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 2060",
+      "rtx2060",
+      "geforce rtx 2060",
+      "nvidia rtx 2060",
+      "rtx 2060 6gb",
+      "rtx 2060 max-q"
+    ]
+  },
+  "RTX_2070_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 2070",
+    "series": "GeForce RTX 20 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU106 (N18E-G2)",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": null,
+    "cuda_cores": 2304,
+    "tensor_cores": 288,
+    "rt_cores": 36,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 115,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 2070",
+      "rtx2070",
+      "geforce rtx 2070",
+      "nvidia rtx 2070",
+      "rtx 2070 8gb",
+      "rtx 2070 max-q"
+    ]
+  },
+  "RTX_2070_Super_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 2070 Super",
+    "series": "GeForce RTX 20 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU104 (N18E-G2R)",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": null,
+    "cuda_cores": 2560,
+    "tensor_cores": 320,
+    "rt_cores": 40,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 115,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 2070 super",
+      "rtx2070 super",
+      "rtx 2070s",
+      "geforce rtx 2070 super",
+      "nvidia rtx 2070 super",
+      "rtx 2070 super max-q"
+    ]
+  },
+  "RTX_2080_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 2080",
+    "series": "GeForce RTX 20 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU104 (N18E-G3)",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": null,
+    "cuda_cores": 2944,
+    "tensor_cores": 368,
+    "rt_cores": 46,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": null,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 2080",
+      "rtx2080",
+      "geforce rtx 2080",
+      "nvidia rtx 2080",
+      "rtx 2080 8gb",
+      "rtx 2080 max-q"
+    ]
+  },
+  "RTX_2080_Super_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 2080 Super",
+    "series": "GeForce RTX 20 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU104",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": null,
+    "cuda_cores": 3072,
+    "tensor_cores": 384,
+    "rt_cores": 48,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 200,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 2080 super",
+      "rtx2080 super",
+      "rtx 2080s",
+      "geforce rtx 2080 super",
+      "nvidia rtx 2080 super",
+      "rtx 2080 super max-q"
+    ]
+  },
+  "RTX_3050_4GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 3050",
+    "series": "GeForce RTX 30 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA107 (GN20-P0)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 4,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 12.0,
+    "cuda_cores": 2048,
+    "tensor_cores": 64,
+    "rt_cores": 16,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 35,
+      "max_w": 95,
+      "base_max_w": 80,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 3050 4gb",
+      "rtx3050 4gb",
+      "geforce rtx 3050 4gb",
+      "nvidia rtx 3050 4gb"
+    ]
+  },
+  "RTX_3050_6GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 3050",
+    "series": "GeForce RTX 30 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA107 (GN20-P0-R)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 6,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 96,
+    "memory_speed_gbps": 12.0,
+    "cuda_cores": 2560,
+    "tensor_cores": 80,
+    "rt_cores": 20,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 35,
+      "max_w": 95,
+      "base_max_w": 80,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 3050 6gb",
+      "rtx3050 6gb",
+      "geforce rtx 3050 6gb",
+      "nvidia rtx 3050 6gb",
+      "rtx 3050 (6gb)"
+    ]
+  },
+  "RTX_3050_Ti_4GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 3050 Ti",
+    "series": "GeForce RTX 30 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA107 (GN20-P1)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 4,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 12.0,
+    "cuda_cores": 2560,
+    "tensor_cores": 80,
+    "rt_cores": 20,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 35,
+      "max_w": 95,
+      "base_max_w": 80,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 3050 ti",
+      "rtx3050ti",
+      "rtx 3050ti",
+      "geforce rtx 3050 ti",
+      "nvidia rtx 3050 ti",
+      "rtx 3050 ti 4gb"
+    ]
+  },
+  "RTX_3060_6GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 3060",
+    "series": "GeForce RTX 30 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA106 (GN20-E3)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 6,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 192,
+    "memory_speed_gbps": 14.0,
+    "cuda_cores": 3840,
+    "tensor_cores": 120,
+    "rt_cores": 30,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 60,
+      "max_w": 140,
+      "base_max_w": 115,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 3060",
+      "rtx3060",
+      "geforce rtx 3060",
+      "nvidia rtx 3060",
+      "rtx 3060 6gb",
+      "rtx 3060 laptop gpu"
+    ]
+  },
+  "RTX_3070_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 3070",
+    "series": "GeForce RTX 30 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA104 (GN20-E5)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 14.0,
+    "cuda_cores": 5120,
+    "tensor_cores": 160,
+    "rt_cores": 40,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 140,
+      "base_max_w": 125,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 3070",
+      "rtx3070",
+      "geforce rtx 3070",
+      "nvidia rtx 3070",
+      "rtx 3070 8gb",
+      "rtx 3070 laptop gpu"
+    ]
+  },
+  "RTX_3070_Ti_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 3070 Ti",
+    "series": "GeForce RTX 30 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA104 (GN20-E6)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 14.0,
+    "cuda_cores": 5888,
+    "tensor_cores": 184,
+    "rt_cores": 46,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 150,
+      "base_max_w": 125,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 3070 ti",
+      "rtx3070ti",
+      "rtx 3070ti",
+      "geforce rtx 3070 ti",
+      "nvidia rtx 3070 ti",
+      "rtx 3070 ti 8gb"
+    ]
+  },
+  "RTX_3080_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 3080",
+    "series": "GeForce RTX 30 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA104 (GN20-E7)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": null,
+    "cuda_cores": 6144,
+    "tensor_cores": 192,
+    "rt_cores": 48,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 165,
+      "base_max_w": 150,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 3080 8gb",
+      "rtx3080 8gb",
+      "geforce rtx 3080 8gb",
+      "nvidia rtx 3080 8gb",
+      "rtx 3080",
+      "rtx3080",
+      "geforce rtx 3080"
+    ]
+  },
+  "RTX_3080_16GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 3080",
+    "series": "GeForce RTX 30 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA104 (GN20-E7)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 16,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": null,
+    "cuda_cores": 6144,
+    "tensor_cores": 192,
+    "rt_cores": 48,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 165,
+      "base_max_w": 150,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 3080 16gb",
+      "rtx3080 16gb",
+      "geforce rtx 3080 16gb",
+      "nvidia rtx 3080 16gb",
+      "rtx 3080 (16gb)"
+    ]
+  },
+  "RTX_3080_Ti_16GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 3080 Ti",
+    "series": "GeForce RTX 30 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA103S (GN20-E8)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 16,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": 7424,
+    "tensor_cores": 232,
+    "rt_cores": 58,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 175,
+      "base_max_w": 150,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "rtx 3080 ti",
+      "rtx3080ti",
+      "rtx 3080ti",
+      "geforce rtx 3080 ti",
+      "nvidia rtx 3080 ti",
+      "rtx 3080 ti 16gb"
+    ]
+  },
+  "RTX_4050_6GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 4050",
+    "series": "GeForce RTX 40 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "AD107 (GN21-X2)",
+    "architecture": "Ada Lovelace",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 6,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 96,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": 2560,
+    "tensor_cores": 80,
+    "rt_cores": 20,
+    "ai_tops": 194,
+    "tdp_limits": {
+      "min_w": 35,
+      "max_w": 140,
+      "base_max_w": 115,
+      "dynamic_boost_w": 25
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 4050",
+      "rtx4050",
+      "geforce rtx 4050",
+      "nvidia rtx 4050",
+      "rtx 4050 6gb",
+      "rtx 4050 laptop gpu"
+    ]
+  },
+  "RTX_4060_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 4060",
+    "series": "GeForce RTX 40 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "AD107 (GN21-X4)",
+    "architecture": "Ada Lovelace",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": 3072,
+    "tensor_cores": 96,
+    "rt_cores": 24,
+    "ai_tops": 233,
+    "tdp_limits": {
+      "min_w": 35,
+      "max_w": 140,
+      "base_max_w": 115,
+      "dynamic_boost_w": 25
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 4060",
+      "rtx4060",
+      "geforce rtx 4060",
+      "nvidia rtx 4060",
+      "rtx 4060 8gb",
+      "rtx 4060 laptop gpu"
+    ]
+  },
+  "RTX_4070_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 4070",
+    "series": "GeForce RTX 40 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "AD106 (GN21-X6)",
+    "architecture": "Ada Lovelace",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": 4608,
+    "tensor_cores": 144,
+    "rt_cores": 36,
+    "ai_tops": 321,
+    "tdp_limits": {
+      "min_w": 35,
+      "max_w": 140,
+      "base_max_w": 115,
+      "dynamic_boost_w": 25
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 4070",
+      "rtx4070",
+      "geforce rtx 4070",
+      "nvidia rtx 4070",
+      "rtx 4070 8gb",
+      "rtx 4070 laptop gpu"
+    ]
+  },
+  "RTX_4080_12GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 4080",
+    "series": "GeForce RTX 40 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "AD104 (GN21-X9)",
+    "architecture": "Ada Lovelace",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 12,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 192,
+    "memory_speed_gbps": null,
+    "cuda_cores": 7424,
+    "tensor_cores": 232,
+    "rt_cores": 58,
+    "ai_tops": 542,
+    "tdp_limits": {
+      "min_w": 60,
+      "max_w": 175,
+      "base_max_w": 150,
+      "dynamic_boost_w": 25
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 4080",
+      "rtx4080",
+      "geforce rtx 4080",
+      "nvidia rtx 4080",
+      "rtx 4080 12gb",
+      "rtx 4080 laptop gpu"
+    ]
+  },
+  "RTX_4090_16GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 4090",
+    "series": "GeForce RTX 40 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "AD103 (GN21-X11)",
+    "architecture": "Ada Lovelace",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 16,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 20.0,
+    "cuda_cores": 9728,
+    "tensor_cores": 304,
+    "rt_cores": 76,
+    "ai_tops": 686,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 175,
+      "base_max_w": 150,
+      "dynamic_boost_w": 25
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 4090",
+      "rtx4090",
+      "geforce rtx 4090",
+      "nvidia rtx 4090",
+      "rtx 4090 16gb",
+      "rtx 4090 laptop gpu"
+    ]
+  },
+  "RTX_5050_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 5050",
+    "series": "GeForce RTX 50 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GB207 (GN22-X2)",
+    "architecture": "Blackwell",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR7",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 24.0,
+    "cuda_cores": 2560,
+    "tensor_cores": 80,
+    "rt_cores": 20,
+    "ai_tops": 440,
+    "tdp_limits": {
+      "min_w": 35,
+      "max_w": 115,
+      "base_max_w": 100,
+      "dynamic_boost_w": 15
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 5050",
+      "rtx5050",
+      "geforce rtx 5050",
+      "nvidia rtx 5050",
+      "rtx 5050 8gb",
+      "rtx 5050 laptop gpu"
+    ]
+  },
+  "RTX_5060_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 5060",
+    "series": "GeForce RTX 50 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GB206 (GN22-X4)",
+    "architecture": "Blackwell",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR7",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 24.0,
+    "cuda_cores": 3328,
+    "tensor_cores": 104,
+    "rt_cores": 26,
+    "ai_tops": 572,
+    "tdp_limits": {
+      "min_w": 45,
+      "max_w": 115,
+      "base_max_w": 100,
+      "dynamic_boost_w": 15
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 5060",
+      "rtx5060",
+      "geforce rtx 5060",
+      "nvidia rtx 5060",
+      "rtx 5060 8gb",
+      "rtx 5060 laptop gpu"
+    ]
+  },
+  "RTX_5070_8GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 5070",
+    "series": "GeForce RTX 50 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GB206 (GN22-X6)",
+    "architecture": "Blackwell",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR7",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 24.0,
+    "cuda_cores": 4608,
+    "tensor_cores": 144,
+    "rt_cores": 36,
+    "ai_tops": 798,
+    "tdp_limits": {
+      "min_w": 50,
+      "max_w": 115,
+      "base_max_w": 100,
+      "dynamic_boost_w": 15
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 5070",
+      "rtx5070",
+      "geforce rtx 5070",
+      "nvidia rtx 5070",
+      "rtx 5070 8gb",
+      "rtx 5070 laptop gpu"
+    ]
+  },
+  "RTX_5070_Ti_12GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 5070 Ti",
+    "series": "GeForce RTX 50 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GB205 (GN22-X7)",
+    "architecture": "Blackwell",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 12,
+    "memory_type": "GDDR7",
+    "bus_width_bits": 192,
+    "memory_speed_gbps": 28.0,
+    "cuda_cores": 5888,
+    "tensor_cores": 184,
+    "rt_cores": 46,
+    "ai_tops": 992,
+    "tdp_limits": {
+      "min_w": 60,
+      "max_w": 140,
+      "base_max_w": 115,
+      "dynamic_boost_w": 25
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 5070 ti",
+      "rtx5070ti",
+      "rtx 5070ti",
+      "geforce rtx 5070 ti",
+      "nvidia rtx 5070 ti",
+      "rtx 5070 ti 12gb",
+      "rtx 5070 ti laptop gpu"
+    ]
+  },
+  "RTX_5080_16GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 5080",
+    "series": "GeForce RTX 50 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GB203 (GN22-X9)",
+    "architecture": "Blackwell",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 16,
+    "memory_type": "GDDR7",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 28.0,
+    "cuda_cores": 7680,
+    "tensor_cores": 240,
+    "rt_cores": 60,
+    "ai_tops": 1334,
+    "tdp_limits": {
+      "min_w": 80,
+      "max_w": 175,
+      "base_max_w": 150,
+      "dynamic_boost_w": 25
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 5080",
+      "rtx5080",
+      "geforce rtx 5080",
+      "nvidia rtx 5080",
+      "rtx 5080 16gb",
+      "rtx 5080 laptop gpu"
+    ]
+  },
+  "RTX_5090_24GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce RTX 5090",
+    "series": "GeForce RTX 50 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GB203 (GN22-X11)",
+    "architecture": "Blackwell",
+    "process_node_nm": 4,
+    "integrated": false,
+    "vram_gb": 24,
+    "memory_type": "GDDR7",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 28.0,
+    "cuda_cores": 10496,
+    "tensor_cores": 328,
+    "rt_cores": 82,
+    "ai_tops": 1824,
+    "tdp_limits": {
+      "min_w": 95,
+      "max_w": 175,
+      "base_max_w": 150,
+      "dynamic_boost_w": 25
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "rtx 5090",
+      "rtx5090",
+      "geforce rtx 5090",
+      "nvidia rtx 5090",
+      "rtx 5090 24gb",
+      "rtx 5090 laptop gpu"
+    ]
+  },
+  "MX_130_2GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce MX130",
+    "series": "GeForce MX Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GM108",
+    "architecture": "Maxwell",
+    "process_node_nm": 28,
+    "integrated": false,
+    "vram_gb": 2,
+    "memory_type": "DDR3 or GDDR5",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": null,
+    "cuda_cores": 384,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": null,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "mx130",
+      "mx 130",
+      "geforce mx130",
+      "geforce mx 130",
+      "nvidia mx130",
+      "mx130 2gb"
+    ]
+  },
+  "MX_230_2GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce MX230",
+    "series": "GeForce MX Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GP108 (N17S-G0)",
+    "architecture": "Pascal",
+    "process_node_nm": 14,
+    "integrated": false,
+    "vram_gb": 2,
+    "memory_type": "GDDR5",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": null,
+    "cuda_cores": 256,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": null,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "mx230",
+      "mx 230",
+      "geforce mx230",
+      "geforce mx 230",
+      "nvidia mx230",
+      "mx230 2gb"
+    ]
+  },
+  "MX_330_2GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce MX330",
+    "series": "GeForce MX Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GP108-655-A1 (N17S-G3-A1)",
+    "architecture": "Pascal",
+    "process_node_nm": 14,
+    "integrated": false,
+    "vram_gb": 2,
+    "memory_type": "GDDR5",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": null,
+    "cuda_cores": 384,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 10,
+      "max_w": 25,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "mx330",
+      "mx 330",
+      "geforce mx330",
+      "geforce mx 330",
+      "nvidia mx330",
+      "mx330 2gb"
+    ]
+  },
+  "MX_350_2GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce MX350",
+    "series": "GeForce MX Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GP107-670-A1 (N17S-G5)",
+    "architecture": "Pascal",
+    "process_node_nm": 14,
+    "integrated": false,
+    "vram_gb": 2,
+    "memory_type": "GDDR5",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": 7.0,
+    "cuda_cores": 640,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 10,
+      "max_w": 25,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "mx350",
+      "mx 350",
+      "geforce mx350",
+      "geforce mx 350",
+      "nvidia mx350",
+      "mx350 2gb"
+    ]
+  },
+  "MX_450_2GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce MX450",
+    "series": "GeForce MX Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU117 (N18S-G5 family; also N18S-LP)",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 2,
+    "memory_type": "GDDR5 or GDDR6",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": null,
+    "cuda_cores": 896,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 12,
+      "max_w": 28.5,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "mx450",
+      "mx 450",
+      "geforce mx450",
+      "geforce mx 450",
+      "nvidia mx450",
+      "mx450 2gb"
+    ]
+  },
+  "MX_550_2GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce MX550",
+    "series": "GeForce MX Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "TU117",
+    "architecture": "Turing",
+    "process_node_nm": 12,
+    "integrated": false,
+    "vram_gb": 2,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": null,
+    "cuda_cores": 1024,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 25,
+      "max_w": 35,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "mx550",
+      "mx 550",
+      "geforce mx550",
+      "geforce mx 550",
+      "nvidia mx550",
+      "mx550 2gb"
+    ]
+  },
+  "MX_570_2GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce MX570",
+    "series": "GeForce MX Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA107 (GN20-S5)",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 2,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": 12.0,
+    "cuda_cores": 2048,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 15,
+      "max_w": 45,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": null,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "mx570",
+      "mx 570",
+      "geforce mx570",
+      "geforce mx 570",
+      "nvidia mx570",
+      "mx570 2gb"
+    ]
+  },
+  "MX_570_A_2GB": {
+    "manufacturer": "NVIDIA",
+    "model": "GeForce MX570 A",
+    "series": "GeForce MX Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "GA107",
+    "architecture": "Ampere",
+    "process_node_nm": 8,
+    "integrated": false,
+    "vram_gb": 2,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": 12.0,
+    "cuda_cores": 2048,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 15,
+      "max_w": 45,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": null,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "mx570 a",
+      "mx 570 a",
+      "mx570a",
+      "geforce mx570 a",
+      "geforce mx 570 a",
+      "nvidia mx570 a"
+    ]
+  },
+  "Intel_HD_Graphics_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel HD Graphics",
+    "series": "Intel HD Graphics",
+    "variant": "Integrated GPU",
+    "chip_codename": "Multiple Intel processor generations and product lines (including Sandy Bridge through Kaby Lake-era Core graphics and other HD-branded parts)",
+    "architecture": "Multiple Intel graphics generations (Gen6 through Gen9.5 and other HD-branded implementations; varies by SKU)",
+    "process_node_nm": null,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared system memory; DDR/LPDDR generation and configuration vary by processor/platform",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "intel hd graphics",
+      "hd graphics 520",
+      "hd graphics 620",
+      "hd graphics 630",
+      "intel hd 520",
+      "intel hd 620"
+    ]
+  },
+  "Intel_UHD_Graphics_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel UHD Graphics",
+    "series": "Intel UHD Graphics",
+    "variant": "Integrated GPU",
+    "chip_codename": "Multiple Intel processor generations (including Coffee Lake, Ice Lake, Tiger Lake, Alder Lake and Raptor Lake; GT tier varies)",
+    "architecture": "Multiple Intel graphics generations (Gen9.5 through Gen11 and Gen12-class implementations; varies by SKU)",
+    "process_node_nm": null,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared system memory; DDR3/DDR4/DDR5 and LPDDR variants depend on processor/platform",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "intel uhd graphics",
+      "uhd graphics",
+      "intel uhd",
+      "uhd graphics 620",
+      "uhd graphics 630",
+      "intel uhd graphics 64eu"
+    ]
+  },
+  "Intel_Iris_Plus_Graphics_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel Iris Plus Graphics",
+    "series": "Intel Iris Plus",
+    "variant": "Integrated GPU",
+    "chip_codename": "Multiple generations, including Kaby Lake/Coffee Lake-era Iris Plus and Ice Lake (Sunny Cove) Iris Plus graphics",
+    "architecture": "Intel Gen9.5 and Gen11 implementations (varies by Iris Plus generation/SKU)",
+    "process_node_nm": null,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared system memory (DDR/LPDDR generation varies); some Iris Plus SKUs also include package eDRAM cache, not dedicated VRAM",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "intel iris plus graphics",
+      "iris plus graphics",
+      "intel iris plus",
+      "iris plus g7",
+      "iris plus g4"
+    ]
+  },
+  "Intel_Iris_Xe_Graphics_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel Iris Xe Graphics",
+    "series": "Intel Iris Xe",
+    "variant": "Integrated GPU",
+    "chip_codename": "Multiple processor generations, chiefly Tiger Lake, Alder Lake and Raptor Lake integrated graphics (GT configuration and branding vary)",
+    "architecture": "Intel Xe-LP / Gen12-class integrated graphics (implementation varies by generation)",
+    "process_node_nm": null,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared system memory; DDR4/DDR5 and LPDDR4X/LPDDR5 variants depend on processor/platform",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "intel iris xe graphics",
+      "iris xe graphics",
+      "intel iris xe",
+      "iris xe 96eu",
+      "iris xe 80eu"
+    ]
+  },
+  "Intel_Arc_Graphics_4Xe_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel Graphics (4 Xe-cores)",
+    "series": "Intel Graphics",
+    "variant": "Integrated GPU",
+    "chip_codename": "Meteor Lake (4 Xe-cores)",
+    "architecture": "Intel Xe-LPG",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 4,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "intel graphics 4 xe cores",
+      "intel graphics 4xe",
+      "meteor lake 4 xe core graphics",
+      "intel graphics xe-lpg 4"
+    ]
+  },
+  "Intel_Arc_Graphics_8Xe_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel Arc Graphics (8 Xe-cores)",
+    "series": "Intel Arc Graphics / Intel Graphics (system-qualified)",
+    "variant": "Integrated GPU; Arc branding requires qualifying system configuration",
+    "chip_codename": "Meteor Lake (8 Xe-cores)",
+    "architecture": "Intel Xe-LPG",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 8,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "intel arc graphics 8xe",
+      "intel arc 8-core",
+      "intel arc 8 xe",
+      "arc graphics (8 xe-cores)"
+    ]
+  },
+  "Intel_Arc_130V_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel Arc 130V",
+    "series": "Intel Arc V-Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Lunar Lake 7Xe2",
+    "architecture": "Intel Xe2-LPG (Battlemage)",
+    "process_node_nm": 3,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 7,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "intel arc 130v",
+      "arc 130v",
+      "intel arc graphics 130v",
+      "arc 130v gpu",
+      "intel 130v"
+    ]
+  },
+  "Intel_Arc_140V_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel Arc 140V",
+    "series": "Intel Arc V-Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Lunar Lake 8Xe2",
+    "architecture": "Intel Xe2-LPG (Battlemage)",
+    "process_node_nm": 3,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 8,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "intel arc 140v",
+      "arc 140v",
+      "intel arc graphics 140v",
+      "arc 140v gpu",
+      "intel 140v"
+    ]
+  },
+  "Intel_Arc_130T_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel Arc 130T",
+    "series": "Intel Arc T-Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Arrow Lake-H 7Xe+",
+    "architecture": "Intel Xe-LPG+ (Alchemist+)",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5/LPDDR5X (processor/platform dependent)",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 7,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "intel arc 130t",
+      "arc 130t",
+      "intel arc graphics 130t",
+      "arc 130t gpu",
+      "intel 130t"
+    ]
+  },
+  "Intel_Arc_140T_Shared": {
+    "manufacturer": "Intel",
+    "model": "Intel Arc 140T",
+    "series": "Intel Arc T-Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Arrow Lake-H 8Xe+",
+    "architecture": "Intel Xe-LPG+ (Alchemist+)",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5/LPDDR5X (processor/platform dependent)",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 8,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "intel arc 140t",
+      "arc 140t",
+      "intel arc graphics 140t",
+      "arc 140t gpu",
+      "intel 140t"
+    ]
+  },
+  "Radeon_Vega_3_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon Vega 3 Graphics",
+    "series": "Radeon Vega Mobile",
+    "variant": "Integrated GPU",
+    "chip_codename": "Raven Ridge / Dali",
+    "architecture": "Vega (GCN 5th generation)",
+    "process_node_nm": 14,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR4",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": null,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon vega 3",
+      "amd radeon vega 3",
+      "vega 3 graphics",
+      "radeon vega 3 graphics"
+    ]
+  },
+  "Radeon_Vega_6_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon Vega 6 Graphics",
+    "series": "Radeon Vega Mobile",
+    "variant": "Integrated GPU",
+    "chip_codename": "Raven Ridge / Picasso / Renoir / Lucienne / Cezanne / Barcelo (APU-dependent; includes refreshes)",
+    "architecture": "Vega (GCN 5th generation)",
+    "process_node_nm": null,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR4/LPDDR4X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": null,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon vega 6",
+      "amd radeon vega 6",
+      "vega 6 graphics",
+      "radeon rx vega 6"
+    ]
+  },
+  "Radeon_Vega_7_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon Vega 7 Graphics",
+    "series": "Radeon Vega Mobile",
+    "variant": "Integrated GPU",
+    "chip_codename": "Renoir / Lucienne / Cezanne / Barcelo (APU-dependent; includes refreshes)",
+    "architecture": "Vega (GCN 5th generation)",
+    "process_node_nm": 7,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR4/LPDDR4X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": null,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon vega 7",
+      "amd radeon vega 7",
+      "vega 7 graphics",
+      "radeon rx vega 7"
+    ]
+  },
+  "Radeon_Vega_8_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon Vega 8 Graphics",
+    "series": "Radeon Vega Mobile",
+    "variant": "Integrated GPU",
+    "chip_codename": "Raven Ridge / Picasso / Renoir / Lucienne / Cezanne / Barcelo (APU-dependent; includes refreshes)",
+    "architecture": "Vega (GCN 5th generation)",
+    "process_node_nm": null,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR4/LPDDR4X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": null,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon vega 8",
+      "amd radeon vega 8",
+      "vega 8 graphics",
+      "radeon rx vega 8"
+    ]
+  },
+  "Radeon_610M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 610M",
+    "series": "Radeon 600M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Mendocino",
+    "architecture": "RDNA 2",
+    "process_node_nm": 6,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared LPDDR5",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 2,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": null,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon 610m",
+      "amd radeon 610m",
+      "radeon 610m graphics",
+      "610m graphics"
+    ]
+  },
+  "Radeon_740M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 740M",
+    "series": "Radeon 700M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Phoenix / Phoenix 2 / Hawk Point (APU-dependent)",
+    "architecture": "RDNA 3",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 4,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon 740m",
+      "amd radeon 740m",
+      "radeon 740m graphics",
+      "740m graphics"
+    ]
+  },
+  "Radeon_760M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 760M",
+    "series": "Radeon 700M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Phoenix / Hawk Point",
+    "architecture": "RDNA 3",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 8,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon 760m",
+      "amd radeon 760m",
+      "radeon 760m graphics",
+      "760m graphics"
+    ]
+  },
+  "Radeon_780M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 780M",
+    "series": "Radeon 700M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Phoenix / Hawk Point",
+    "architecture": "RDNA 3",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 12,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon 780m",
+      "amd radeon 780m",
+      "radeon 780m graphics",
+      "780m graphics"
+    ]
+  },
+  "Radeon_840M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 840M",
+    "series": "Radeon 800M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Krackan Point",
+    "architecture": "RDNA 3.5",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 4,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon 840m",
+      "amd radeon 840m",
+      "radeon 840m graphics",
+      "840m graphics"
+    ]
+  },
+  "Radeon_860M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 860M",
+    "series": "Radeon 800M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Krackan Point",
+    "architecture": "RDNA 3.5",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 8,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon 860m",
+      "amd radeon 860m",
+      "radeon 860m graphics",
+      "860m graphics"
+    ]
+  },
+  "Radeon_880M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 880M",
+    "series": "Radeon 800M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Strix Point",
+    "architecture": "RDNA 3.5",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 12,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon 880m",
+      "amd radeon 880m",
+      "radeon 880m graphics",
+      "880m graphics"
+    ]
+  },
+  "Radeon_890M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 890M",
+    "series": "Radeon 800M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Strix Point",
+    "architecture": "RDNA 3.5",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5X",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 16,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon 890m",
+      "amd radeon 890m",
+      "radeon 890m graphics",
+      "890m graphics"
+    ]
+  },
+  "Radeon_8060S_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 8060S",
+    "series": "Radeon 8000S Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Strix Halo",
+    "architecture": "RDNA 3.5",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared LPDDR5X",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 40,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon 8060s",
+      "amd radeon 8060s",
+      "radeon 8060s graphics",
+      "8060s graphics"
+    ]
+  },
+  "Radeon_660M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 660M",
+    "series": "Radeon 600M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Rembrandt",
+    "architecture": "RDNA 2",
+    "process_node_nm": 6,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 6,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": null,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon 660m",
+      "amd radeon 660m",
+      "radeon 660m graphics",
+      "660m graphics"
+    ]
+  },
+  "Radeon_680M_Shared": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon 680M",
+    "series": "Radeon 600M Series",
+    "variant": "Integrated GPU",
+    "chip_codename": "Rembrandt",
+    "architecture": "RDNA 2",
+    "process_node_nm": 6,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared DDR5/LPDDR5",
+    "bus_width_bits": null,
+    "memory_speed_gbps": null,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 12,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": null,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon 680m",
+      "amd radeon 680m",
+      "radeon 680m graphics",
+      "680m graphics"
+    ]
+  },
+  "Radeon_RX_640_4GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 640",
+    "series": "Radeon 600 Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Polaris 12 / 23",
+    "architecture": "GCN 4.0 (Polaris)",
+    "process_node_nm": 14,
+    "integrated": false,
+    "vram_gb": 4,
+    "memory_type": "GDDR5",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": 6.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": 50,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": false,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 640",
+      "rx 640",
+      "amd radeon rx 640",
+      "rx 640 4gb"
+    ]
+  },
+  "Radeon_RX_6500M_4GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 6500M",
+    "series": "Radeon RX 6000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 24",
+    "architecture": "RDNA 2",
+    "process_node_nm": 6,
+    "integrated": false,
+    "vram_gb": 4,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 64,
+    "memory_speed_gbps": 18.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 16,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": 50,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 6500m",
+      "rx 6500m",
+      "amd radeon rx 6500m",
+      "rx 6500m 4gb"
+    ]
+  },
+  "Radeon_RX_6600M_8GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 6600M",
+    "series": "Radeon RX 6000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 23",
+    "architecture": "RDNA 2",
+    "process_node_nm": 7,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 14.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 28,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 50,
+      "max_w": 100,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 6600m",
+      "rx 6600m",
+      "amd radeon rx 6600m",
+      "rx 6600m 8gb"
+    ]
+  },
+  "Radeon_RX_6650M_8GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 6650M",
+    "series": "Radeon RX 6000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 23",
+    "architecture": "RDNA 2",
+    "process_node_nm": 7,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 28,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 100,
+      "max_w": 120,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 6650m",
+      "rx 6650m",
+      "amd radeon rx 6650m",
+      "rx 6650m 8gb"
+    ]
+  },
+  "Radeon_RX_6650M_XT_8GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 6650M XT",
+    "series": "Radeon RX 6000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 23",
+    "architecture": "RDNA 2",
+    "process_node_nm": 7,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 32,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": 120,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 6650m xt",
+      "rx 6650m xt",
+      "amd radeon rx 6650m xt",
+      "rx 6650m xt 8gb"
+    ]
+  },
+  "Radeon_RX_6700M_10GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 6700M",
+    "series": "Radeon RX 6000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 22",
+    "architecture": "RDNA 2",
+    "process_node_nm": 7,
+    "integrated": false,
+    "vram_gb": 10,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 160,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 36,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": null,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 6700m",
+      "rx 6700m",
+      "amd radeon rx 6700m",
+      "rx 6700m 10gb"
+    ]
+  },
+  "Radeon_RX_6700S_8GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 6700S",
+    "series": "Radeon RX 6000S Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 23",
+    "architecture": "RDNA 2",
+    "process_node_nm": 7,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 14.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 28,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": 80,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 6700s",
+      "rx 6700s",
+      "amd radeon rx 6700s",
+      "rx 6700s 8gb"
+    ]
+  },
+  "Radeon_RX_6800M_12GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 6800M",
+    "series": "Radeon RX 6000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 22",
+    "architecture": "RDNA 2",
+    "process_node_nm": 7,
+    "integrated": false,
+    "vram_gb": 12,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 192,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 40,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 145,
+      "max_w": null,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 6800m",
+      "rx 6800m",
+      "amd radeon rx 6800m",
+      "rx 6800m 12gb"
+    ]
+  },
+  "Radeon_RX_6800S_8GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 6800S",
+    "series": "Radeon RX 6000S Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 23",
+    "architecture": "RDNA 2",
+    "process_node_nm": 7,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 32,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": 100,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 6800s",
+      "rx 6800s",
+      "amd radeon rx 6800s",
+      "rx 6800s 8gb"
+    ]
+  },
+  "Radeon_RX_6850M_XT_12GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 6850M XT",
+    "series": "Radeon RX 6000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 22",
+    "architecture": "RDNA 2",
+    "process_node_nm": 7,
+    "integrated": false,
+    "vram_gb": 12,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 192,
+    "memory_speed_gbps": 18.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 40,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": null,
+      "max_w": 165,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "radeon rx 6850m xt",
+      "rx 6850m xt",
+      "amd radeon rx 6850m xt",
+      "rx 6850m xt 12gb"
+    ]
+  },
+  "Radeon_RX_7600M_8GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 7600M",
+    "series": "Radeon RX 7000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 33",
+    "architecture": "RDNA 3",
+    "process_node_nm": 6,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 28,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 50,
+      "max_w": 90,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon rx 7600m",
+      "rx 7600m",
+      "amd radeon rx 7600m",
+      "rx 7600m 8gb"
+    ]
+  },
+  "Radeon_RX_7600M_XT_8GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 7600M XT",
+    "series": "Radeon RX 7000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 33",
+    "architecture": "RDNA 3",
+    "process_node_nm": 6,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 18.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 32,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 75,
+      "max_w": 120,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon rx 7600m xt",
+      "rx 7600m xt",
+      "amd radeon rx 7600m xt",
+      "rx 7600m xt 8gb"
+    ]
+  },
+  "Radeon_RX_7600S_8GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 7600S",
+    "series": "Radeon RX 7000S Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 33",
+    "architecture": "RDNA 3",
+    "process_node_nm": 6,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 16.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 28,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 50,
+      "max_w": 75,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon rx 7600s",
+      "rx 7600s",
+      "amd radeon rx 7600s",
+      "rx 7600s 8gb"
+    ]
+  },
+  "Radeon_RX_7700S_8GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 7700S",
+    "series": "Radeon RX 7000S Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 33",
+    "architecture": "RDNA 3",
+    "process_node_nm": 6,
+    "integrated": false,
+    "vram_gb": 8,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 18.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 32,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 75,
+      "max_w": 100,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon rx 7700s",
+      "rx 7700s",
+      "amd radeon rx 7700s",
+      "rx 7700s 8gb"
+    ]
+  },
+  "Radeon_RX_7900M_16GB": {
+    "manufacturer": "AMD",
+    "model": "AMD Radeon RX 7900M",
+    "series": "Radeon RX 7000M Series",
+    "variant": "Laptop GPU",
+    "chip_codename": "Navi 31",
+    "architecture": "RDNA 3",
+    "process_node_nm": null,
+    "integrated": false,
+    "vram_gb": 16,
+    "memory_type": "GDDR6",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 18.0,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": 72,
+    "ai_tops": null,
+    "tdp_limits": {
+      "min_w": 160,
+      "max_w": 180,
+      "base_max_w": null,
+      "dynamic_boost_w": null
+    },
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "radeon rx 7900m",
+      "rx 7900m",
+      "amd radeon rx 7900m",
+      "rx 7900m 16gb"
+    ]
+  },
+  "Apple_M1_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M1 GPU",
+    "series": "Apple M1 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Tonga (T8103)",
+    "architecture": "Apple GPU Family 7 (Metal)",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR4X)",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 4.266,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m1",
+      "apple m1 gpu",
+      "m1 8-core gpu",
+      "m1 7-core gpu",
+      "apple m1 graphics",
+      "apple m1 chip",
+      "m1 chip"
+    ]
+  },
+  "Apple_M1_Pro_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M1 Pro GPU",
+    "series": "Apple M1 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Jade Chop (T6000)",
+    "architecture": "Apple GPU Family 7 (Metal)",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5)",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 6.4,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m1 pro",
+      "apple m1 pro gpu",
+      "m1 pro 16-core gpu",
+      "m1 pro 14-core gpu",
+      "apple m1 pro graphics",
+      "apple m1 pro chip",
+      "m1 pro chip"
+    ]
+  },
+  "Apple_M1_Max_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M1 Max GPU",
+    "series": "Apple M1 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Jade 1C (T6001)",
+    "architecture": "Apple GPU Family 7 (Metal)",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5)",
+    "bus_width_bits": 512,
+    "memory_speed_gbps": 6.4,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m1 max",
+      "apple m1 max gpu",
+      "m1 max 32-core gpu",
+      "m1 max 24-core gpu",
+      "apple m1 max graphics",
+      "apple m1 max chip",
+      "m1 max chip"
+    ]
+  },
+  "Apple_M2_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M2 GPU",
+    "series": "Apple M2 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Staten (T8112)",
+    "architecture": "Apple GPU Family 8 (Metal)",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5)",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 6.4,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m2",
+      "apple m2 gpu",
+      "m2 10-core gpu",
+      "m2 8-core gpu",
+      "apple m2 graphics",
+      "apple m2 chip",
+      "m2 chip"
+    ]
+  },
+  "Apple_M2_Pro_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M2 Pro GPU",
+    "series": "Apple M2 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Rhodes Chop (T6020)",
+    "architecture": "Apple GPU Family 8 (Metal)",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5)",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 6.4,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m2 pro",
+      "apple m2 pro gpu",
+      "m2 pro 19-core gpu",
+      "m2 pro 16-core gpu",
+      "apple m2 pro graphics",
+      "apple m2 pro chip",
+      "m2 pro chip"
+    ]
+  },
+  "Apple_M2_Max_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M2 Max GPU",
+    "series": "Apple M2 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Rhodes 1C (T6021)",
+    "architecture": "Apple GPU Family 8 (Metal)",
+    "process_node_nm": 5,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5)",
+    "bus_width_bits": 512,
+    "memory_speed_gbps": 6.4,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": false,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m2 max",
+      "apple m2 max gpu",
+      "m2 max 38-core gpu",
+      "m2 max 30-core gpu",
+      "apple m2 max graphics",
+      "apple m2 max chip",
+      "m2 max chip"
+    ]
+  },
+  "Apple_M3_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M3 GPU",
+    "series": "Apple M3 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Ibiza (T8122)",
+    "architecture": "Apple GPU Family 9 (Metal)",
+    "process_node_nm": 3,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5)",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 6.4,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m3",
+      "apple m3 gpu",
+      "m3 10-core gpu",
+      "m3 8-core gpu",
+      "apple m3 graphics",
+      "apple m3 chip",
+      "m3 chip"
+    ]
+  },
+  "Apple_M3_Pro_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M3 Pro GPU",
+    "series": "Apple M3 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Lobos (T6030)",
+    "architecture": "Apple GPU Family 9 (Metal)",
+    "process_node_nm": 3,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5)",
+    "bus_width_bits": 192,
+    "memory_speed_gbps": 6.4,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m3 pro",
+      "apple m3 pro gpu",
+      "m3 pro 18-core gpu",
+      "m3 pro 14-core gpu",
+      "apple m3 pro graphics",
+      "apple m3 pro chip",
+      "m3 pro chip"
+    ]
+  },
+  "Apple_M3_Max_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M3 Max GPU",
+    "series": "Apple M3 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Palma (T6031/T6034)",
+    "architecture": "Apple GPU Family 9 (Metal)",
+    "process_node_nm": 3,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5)",
+    "bus_width_bits": null,
+    "memory_speed_gbps": 6.4,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m3 max",
+      "apple m3 max gpu",
+      "m3 max 40-core gpu",
+      "m3 max 30-core gpu",
+      "apple m3 max graphics",
+      "apple m3 max chip",
+      "m3 max chip"
+    ]
+  },
+  "Apple_M4_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M4 GPU",
+    "series": "Apple M4 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Donan (T8132)",
+    "architecture": "Apple GPU Family 9 (Metal)",
+    "process_node_nm": 3,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5X)",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 7.5,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m4",
+      "apple m4 gpu",
+      "m4 10-core gpu",
+      "m4 8-core gpu",
+      "apple m4 graphics",
+      "apple m4 chip",
+      "m4 chip"
+    ]
+  },
+  "Apple_M4_Pro_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M4 Pro GPU",
+    "series": "Apple M4 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Brava Chop (T6040)",
+    "architecture": "Apple GPU Family 9 (Metal)",
+    "process_node_nm": 3,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5X)",
+    "bus_width_bits": 256,
+    "memory_speed_gbps": 8.533,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m4 pro",
+      "apple m4 pro gpu",
+      "m4 pro 20-core gpu",
+      "m4 pro 16-core gpu",
+      "apple m4 pro graphics",
+      "apple m4 pro chip",
+      "m4 pro chip"
+    ]
+  },
+  "Apple_M4_Max_GPU_Unified": {
+    "manufacturer": "Apple",
+    "model": "Apple M4 Max GPU",
+    "series": "Apple M4 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": "Brava (T6041)",
+    "architecture": "Apple GPU Family 9 (Metal)",
+    "process_node_nm": 3,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Unified Memory (LPDDR5X)",
+    "bus_width_bits": null,
+    "memory_speed_gbps": 8.533,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": true,
+      "av1_encoding": false
+    },
+    "match_patterns": [
+      "apple m4 max",
+      "apple m4 max gpu",
+      "m4 max 40-core gpu",
+      "m4 max 32-core gpu",
+      "apple m4 max graphics",
+      "apple m4 max chip",
+      "m4 max chip"
+    ]
+  },
+  "Qualcomm_Adreno_X1_45_Shared": {
+    "manufacturer": "Qualcomm",
+    "model": "Qualcomm Adreno X1-45",
+    "series": "Qualcomm Adreno X1 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": null,
+    "architecture": "Adreno X1",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared LPDDR5X",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 8.448,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "adreno x1-45",
+      "qualcomm adreno x1-45",
+      "adreno x1 45",
+      "qualcomm adreno gpu (x1-45)",
+      "snapdragon x adreno x1-45",
+      "snapdragon x1-26-100",
+      "snapdragon x plus 8-core adreno x1-45",
+      "snapdragon x plus 8 core adreno x1-45",
+      "snapdragon x1p-46-100",
+      "snapdragon x1p-42-100"
+    ]
+  },
+  "Qualcomm_Adreno_X1_85_Shared": {
+    "manufacturer": "Qualcomm",
+    "model": "Qualcomm Adreno X1-85",
+    "series": "Qualcomm Adreno X1 Series",
+    "variant": "SoC Integrated",
+    "chip_codename": null,
+    "architecture": "Adreno X1",
+    "process_node_nm": 4,
+    "integrated": true,
+    "vram_gb": null,
+    "memory_type": "Shared LPDDR5X",
+    "bus_width_bits": 128,
+    "memory_speed_gbps": 8.448,
+    "cuda_cores": null,
+    "tensor_cores": null,
+    "rt_cores": null,
+    "ai_tops": null,
+    "tdp_limits": null,
+    "features": {
+      "ray_tracing": true,
+      "frame_generation": false,
+      "av1_encoding": true
+    },
+    "match_patterns": [
+      "adreno x1-85",
+      "qualcomm adreno x1-85",
+      "adreno x1 85",
+      "qualcomm adreno gpu (x1-85)",
+      "snapdragon x elite adreno x1-85",
+      "snapdragon x1e adreno x1-85",
+      "snapdragon x plus 10-core adreno x1-85",
+      "snapdragon x plus 10 core adreno x1-85",
+      "snapdragon x1p-66-100",
+      "snapdragon x1p-64-100",
+      "snapdragon x1-26-101"
+    ]
+  }
+}

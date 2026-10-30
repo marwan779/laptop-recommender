@@ -138,19 +138,3 @@ def find_cpu_by_alias(text: str) -> tuple[str, CPUSpecEntry] | None:
         if normalized == cpu_key or normalized in entry.get("aliases", []):
             return cpu_key, entry
     return None
-
-
-# --- Helper Query Methods ---
-def get_cpu_spec(key: str) -> CPUSpecEntry | None:
-    """Retrieve canonical CPU specification by key."""
-    return CPU_SPECS.get(key.lower().strip())
-
-
-def find_cpu_by_alias(text: str) -> tuple[str, CPUSpecEntry] | None:
-    """Find a canonical CPU specification by matching against known aliases."""
-    normalized = text.lower().strip()
-    for cpu_key, entry in CPU_SPECS.items():
-        if normalized == cpu_key or normalized in entry.get("aliases", []):
-            return cpu_key, entry
-    return None
-

@@ -611,3 +611,59 @@ def test_orchestrator_automatic_consolidation_hook(tmp_path: Path):
     assert data["total_unique_laptops"] == 1
     assert data["laptops"][0]["cheapest_store"] == "sigma"
     assert data["laptops"][0]["min_price_egp"] == 29000.0
+
+
+def test_catalog_combiner_preserves_latest_pointers_per_store():
+    """Verify that CatalogCombiner captures and preserves latest_pointers per store."""
+    cat_compumarts = {
+        "store_name": "CompuMarts",
+        "store_key": "compumarts",
+        "latest_pointers": ["CompuMarts Pointer 1", "CompuMarts Pointer 2"],
+        "structured_products": [
+            {
+                "title": "Dell XPS 13",
+                "price_egp": 45000.0,
+                "mpn": "XPS13-9315",
+                "specs": {"identity": {"brand": "Dell"}},
+            }
+        ],
+    }
+    cat_elbadr = {
+        "store_name": "El Badr Group",
+        "store_key": "elbadr",
+        "latest_pointers": ["ElBadr Pointer 1"],
+        "structured_products": [
+            {
+                "title": "Dell XPS 13 - Elbadr",
+                "price_egp": 44000.0,
+                "mpn": "XPS13-9315",
+                "specs": {"identity": {"brand": "Dell"}},
+            }
+        ],
+    }
+    cat_fallback = {
+        "store_name": "No Pointer Store",
+        "store_key": "fallback_store",
+        # No latest_pointers key: should fallback to product title
+        "structured_products": [
+            {
+                "title": "Fallback Laptop Title",
+                "price_egp": 25000.0,
+                "mpn": "FALLBACK01",
+                "specs": {"identity": {"brand": "HP"}},
+            }
+        ],
+    }
+
+    combiner = CatalogCombiner()
+    unified = combiner.combine_catalogs([cat_compumarts, cat_elbadr, cat_fallback])
+
+    assert "compumarts" in unified.latest_pointers
+    assert unified.latest_pointers["compumarts"] == ["CompuMarts Pointer 1", "CompuMarts Pointer 2"]
+    assert "elbadr" in unified.latest_pointers
+    assert unified.latest_pointers["elbadr"] == ["ElBadr Pointer 1"]
+    assert "fallback_store" in unified.latest_pointers
+    assert unified.latest_pointers["fallback_store"] == ["Fallback Laptop Title"]
+
+    # Also verify store_pointers property alias
+    assert unified.store_pointers == unified.latest_pointers

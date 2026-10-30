@@ -98,10 +98,19 @@ class UnifiedCatalog(BaseModel):
         default=0.0,
         description="Percentage of unique laptops found across multiple stores",
     )
+    latest_pointers: dict[str, list[str]] = Field(
+        default_factory=dict,
+        description="Latest watermark pointers for each store (e.g. {'compumarts': [...], 'sigma': [...]})",
+    )
     laptops: list[CanonicalLaptop] = Field(
         default_factory=list,
         description="Consolidated list of all canonical laptops",
     )
+
+    @property
+    def store_pointers(self) -> dict[str, list[str]]:
+        """Backwards-compatible alias for latest_pointers."""
+        return self.latest_pointers
 
     def save_json(self, path: Path | str) -> Path:
         """Persist the unified catalog to disk as formatted JSON."""
