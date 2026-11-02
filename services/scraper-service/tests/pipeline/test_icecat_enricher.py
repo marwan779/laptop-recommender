@@ -232,12 +232,15 @@ def test_parse_openicecat_json_maps_all_11_categories() -> None:
 
     assert parsed["storage"]["capacity_gb"] == 512
     assert parsed["storage"]["storage_type"] == "SSD"
-    assert parsed["storage"]["interface"] == "PCIe NVMe"
+    assert parsed["storage"]["interface"] == "PCIe 4.0 NVMe"
     assert parsed["storage"]["form_factor"] == "M.2"
-    assert parsed["storage"]["slot_count"] == 1
+    assert parsed["storage"].get("slot_count") is None
+    assert parsed["storage"]["installed_ssd_count"] == 1
 
     assert parsed["display"]["size_inches"] == 15.1
     assert parsed["display"]["resolution"] == "2560x1600"
+    assert parsed["display"]["resolution_width"] == 2560
+    assert parsed["display"]["resolution_height"] == 1600
     assert parsed["display"]["refresh_rate_hz"] == 165
     assert parsed["display"]["panel_type"] == "OLED"
     assert parsed["display"]["aspect_ratio"] == "16:10"
@@ -376,3 +379,87 @@ def test_not_found_laptop_injects_online_reference_specs() -> None:
     )
     assert "Online_Reference_Specs" in rec["source_table"]
     assert "Battery: 60 Wh" in rec["source_table"]["Online_Reference_Specs"]
+
+
+def test_parse_asus_tuf_a16_extended_icecat_fields() -> None:
+    """Verify all extended Icecat features (Design, Memory Channels, PCIe Gen, Display Sync, USB-C PD/DP, Copilot, Security) map accurately."""
+    tuf_json = {
+        "FeaturesGroups": [
+            {
+                "Features": [
+                    {"Feature": {"Name": {"Value": "Colour name"}}, "PresentationValue": "Jaeger Gray", "RawValue": "Jaeger Gray"},
+                    {"Feature": {"Name": {"Value": "Product colour"}}, "PresentationValue": "Black, Grey", "RawValue": "Black, Grey"},
+                    {"Feature": {"Name": {"Value": "Form factor"}}, "PresentationValue": "Clamshell", "RawValue": "Clamshell"},
+                    {"Feature": {"Name": {"Value": "Market positioning"}}, "PresentationValue": "Gaming", "RawValue": "Gaming"},
+                    {"Feature": {"Name": {"Value": "Introduction year"}}, "PresentationValue": "2025", "RawValue": "2025"},
+                    {"Feature": {"Name": {"Value": "Display diagonal"}}, "PresentationValue": '40.6 cm (16")', "RawValue": "16"},
+                    {"Feature": {"Name": {"Value": "Display resolution"}}, "PresentationValue": "1920 x 1200 pixels", "RawValue": "1920 x 1200"},
+                    {"Feature": {"Name": {"Value": "HD type"}}, "PresentationValue": "WUXGA", "RawValue": "WUXGA"},
+                    {"Feature": {"Name": {"Value": "Anti-glare screen"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "NVIDIA G-SYNC"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "On-board graphics card model"}}, "PresentationValue": "AMD Radeon 610M", "RawValue": "AMD Radeon 610M"},
+                    {"Feature": {"Name": {"Value": "Memory form factor"}}, "PresentationValue": "SO-DIMM", "RawValue": "SO-DIMM"},
+                    {"Feature": {"Name": {"Value": "Memory channels"}}, "PresentationValue": "Dual-channel", "RawValue": "Dual-channel"},
+                    {"Feature": {"Name": {"Value": "SSD interface"}}, "PresentationValue": "PCI Express 4.0", "RawValue": "PCI Express 4.0"},
+                    {"Feature": {"Name": {"Value": "NVMe"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "Number of SSDs installed"}}, "PresentationValue": "1", "RawValue": "1"},
+                    {"Feature": {"Name": {"Value": "Audio system"}}, "PresentationValue": "Dolby Atmos", "RawValue": "Dolby Atmos"},
+                    {"Feature": {"Name": {"Value": "Antenna type"}}, "PresentationValue": "2x2", "RawValue": "2x2"},
+                    {"Feature": {"Name": {"Value": "Ethernet LAN data rates"}}, "PresentationValue": "10, 100, 1000 Mbit/s", "RawValue": "10, 100, 1000"},
+                    {"Feature": {"Name": {"Value": "USB Type-C DisplayPort Alternate Mode"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "USB Power Delivery (USB PD)"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "USB Type-C charging port"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "Copilot key"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "Battery technology"}}, "PresentationValue": "Lithium-Ion (Li-Ion)", "RawValue": "Lithium-Ion (Li-Ion)"},
+                    {"Feature": {"Name": {"Value": "Fast charging time (50%)"}}, "PresentationValue": "30 min", "RawValue": "30"},
+                    {"Feature": {"Name": {"Value": "Face recognition"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "Windows Hello"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "Trusted Platform Module (TPM)"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "Password protection"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {"Feature": {"Name": {"Value": "Password protection type"}}, "PresentationValue": "BIOS, User", "RawValue": "BIOS, User"},
+                    {"Feature": {"Name": {"Value": "Height (front)"}}, "PresentationValue": "1.79 cm", "RawValue": "1.79"},
+                    {"Feature": {"Name": {"Value": "Height (rear)"}}, "PresentationValue": "2.73 cm", "RawValue": "2.73"},
+                ]
+            }
+        ]
+    }
+    api = IcecatAPIService(request_delay=0.0)
+    parsed = api.parse_product_json(tuf_json)
+
+    assert parsed["identity"]["color"] == "Jaeger Gray"
+    assert parsed["identity"]["base_color"] == "Black, Grey"
+    assert parsed["identity"]["form_factor"] == "Clamshell"
+    assert parsed["identity"]["market_positioning"] == "Gaming"
+    assert parsed["identity"]["release_year"] == 2025
+
+    assert parsed["gpu"]["igpu_model"] == "AMD Radeon 610M"
+    assert parsed["memory"]["form_factor"] == "SO-DIMM"
+    assert parsed["memory"]["channels"] == "Dual-channel"
+    assert parsed["storage"]["interface"] == "PCIe 4.0 NVMe"
+    assert parsed["storage"]["installed_ssd_count"] == 1
+
+    assert parsed["display"]["hd_type"] == "WUXGA"
+    assert parsed["display"]["surface_treatment"] == "Anti-glare"
+    assert parsed["display"]["adaptive_sync"] == "G-SYNC"
+    assert parsed["display"]["resolution_width"] == 1920
+    assert parsed["display"]["resolution_height"] == 1200
+
+    assert parsed["audio_webcam"]["audio_system"] == "Dolby Atmos"
+    assert parsed["connectivity"]["wifi_antenna"] == "2x2"
+    assert parsed["connectivity"]["ethernet_speed"] == "1 Gbps"
+    assert parsed["connectivity"]["usb_c_displayport"] is True
+    assert parsed["connectivity"]["usb_c_power_delivery"] is True
+
+    assert parsed["power_battery"]["battery_type"] == "Lithium-Ion (Li-Ion)"
+    assert parsed["power_battery"]["fast_charge_50_mins"] == 30
+    assert parsed["power_battery"]["usb_c_pd_charging"] is True
+
+    assert parsed["physical"]["height_front_mm"] == 17.9
+    assert parsed["physical"]["height_rear_mm"] == 27.3
+    assert parsed["physical"]["height_mm"] == 27.3
+
+    assert parsed["build_security"]["has_copilot_key"] is True
+    assert "TPM" in parsed["build_security"]["security_features"]
+    assert "Windows Hello" in parsed["build_security"]["security_features"]
+    assert "Face Recognition" in parsed["build_security"]["security_features"]
+    assert "Password Protection (BIOS, User)" in parsed["build_security"]["security_features"]

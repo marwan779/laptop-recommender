@@ -18,6 +18,7 @@ if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
 from app.common.logger import get_logger
+from app.matching.combiner import CatalogCombiner, merge_specifications
 from app.matching.models import UnifiedCatalog
 from app.pipeline.icecat.enricher import IcecatCatalogEnricher
 
@@ -35,7 +36,7 @@ STORE_FILES = [
 
 
 def hydrate_raw_store_context(catalog: UnifiedCatalog, store_files: list[Path]) -> int:
-    """Attach `source_table` and `raw_description` from store JSONs to each CanonicalLaptop by URL."""
+    """Attach `source_table`, `raw_description`, `store_specs`, and `store_slot_count` from store JSONs to each CanonicalLaptop."""
     url_to_context: dict[str, dict[str, Any]] = {}
     for sf in store_files:
         if not sf.is_file():
@@ -46,16 +47,40 @@ def hydrate_raw_store_context(catalog: UnifiedCatalog, store_files: list[Path]) 
             for prod in data.get("structured_products", []) or []:
                 url = (prod.get("url") or "").strip()
                 if url:
+                    store_sc = ((prod.get("specs") or {}).get("storage") or {}).get("slot_count")
                     url_to_context[url] = {
                         "source_table": prod.get("source_table") or {},
                         "raw_description": prod.get("raw_description") or "",
+                        "store_specs": prod.get("specs") or {},
+                        "store_slot_count": store_sc if isinstance(store_sc, int) else None,
                     }
         except Exception as e:
             logger.warning("Could not read store file %s: %s", sf.name, e)
 
     hydrated = 0
     for lap in catalog.laptops:
+        store_slot_counts: list[int] = []
+        fused_store_specs: dict[str, Any] = {}
+        for offer in lap.offers:
+            u = (offer.product_url or "").strip()
+            ctx = url_to_context.get(u)
+            if ctx:
+                if isinstance(ctx.get("store_slot_count"), int):
+                    store_slot_counts.append(ctx["store_slot_count"])
+                if ctx.get("store_specs"):
+                    fused_store_specs = merge_specifications(fused_store_specs, ctx["store_specs"])
+
+        max_store_sc = max(store_slot_counts) if store_slot_counts else None
+        if max_store_sc is not None:
+            stor = lap.specs.setdefault("storage", {})
+            if (stor.get("slot_count") or 0) < max_store_sc:
+                stor["slot_count"] = max_store_sc
+
         if lap.raw_store_context and lap.raw_store_context.get("source_table"):
+            if max_store_sc is not None:
+                lap.raw_store_context["store_slot_count"] = max_store_sc
+            if fused_store_specs:
+                lap.raw_store_context["store_specs"] = fused_store_specs
             hydrated += 1
             continue
 
@@ -76,11 +101,13 @@ def hydrate_raw_store_context(catalog: UnifiedCatalog, store_files: list[Path]) 
                 if desc and desc not in descriptions:
                     descriptions.append(desc)
 
-        if merged_table or descriptions:
+        if merged_table or descriptions or max_store_sc is not None or fused_store_specs:
             lap.raw_store_context = {
                 "source_table": merged_table,
                 "raw_description": "\n\n".join(descriptions),
                 "primary_url": primary_url,
+                "store_slot_count": max_store_sc,
+                "store_specs": fused_store_specs,
             }
             hydrated += 1
 
@@ -124,14 +151,28 @@ def main() -> None:
     args = parser.parse_args()
 
     t0 = time.perf_counter()
-    if not args.catalog.is_file():
-        raise FileNotFoundError(f"Unified catalog not found: {args.catalog}")
+    catalog: UnifiedCatalog | None = None
+    if args.catalog.is_file():
+        logger.info("Loading unified catalog from: %s", args.catalog)
+        with open(args.catalog, encoding="utf-8") as f:
+            raw_catalog = json.load(f)
+        catalog = UnifiedCatalog.model_validate(raw_catalog)
 
-    logger.info("Loading unified catalog from: %s", args.catalog)
-    with open(args.catalog, encoding="utf-8") as f:
-        raw_catalog = json.load(f)
-
-    catalog = UnifiedCatalog.model_validate(raw_catalog)
+    if catalog is None or len(catalog.laptops) == 0:
+        backup_path = SERVICE_ROOT.parent / "catalog-service" / "scraping input" / "unified_catalog_latest.json"
+        if backup_path.is_file():
+            logger.info("Restoring unified catalog from backup: %s", backup_path)
+            with open(backup_path, encoding="utf-8") as f:
+                catalog = UnifiedCatalog.model_validate(json.load(f))
+            catalog.save_json(args.catalog)
+        else:
+            logger.info(
+                "Unified catalog is empty or missing; recombining from store files (%s)...",
+                [sf.name for sf in STORE_FILES if sf.is_file()],
+            )
+            combiner = CatalogCombiner()
+            catalog = combiner.combine_files([sf for sf in STORE_FILES if sf.is_file()])
+            catalog.save_json(args.catalog)
     hydrated_count = hydrate_raw_store_context(catalog, STORE_FILES)
     logger.info(
         "Loaded %d canonical laptops (%d hydrated with raw store tables for Stage 4 LLM).",

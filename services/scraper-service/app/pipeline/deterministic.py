@@ -1681,7 +1681,7 @@ class DeterministicExtractor:
         """Extract TGP (tdp_w), GPU Boost Clock (MHz), and AI TOPS."""
         pwr_rows = routed_table.get("gpu_power", [])
         pwr_text = " ".join(v for _, v in pwr_rows) + " " + gpu_text
-        m_tgp = re.search(r"\b(\d{2,3})\s*w\b", pwr_text, re.IGNORECASE)
+        m_tgp = re.search(r"(?<!\+\s)(?<!\+)\b(\d{2,3})\s*w\b(?!\s*dynamic\s*boost)", pwr_text, re.IGNORECASE)
         if m_tgp:
             valid, clean_w, _ = PhysicalValidator.validate_gpu_power(m_tgp.group(1))
             if valid:

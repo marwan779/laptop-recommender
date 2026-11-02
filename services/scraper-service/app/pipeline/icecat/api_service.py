@@ -137,32 +137,90 @@ class IcecatAPIService:
             "build_security": {},
         }
 
-        # 1. Identity (Color fallback only — never overwrite regional MPN or OS)
+        # 1. Identity & Design (Never overwrite regional MPN or OS)
         color_name = get_pres("Colour name") or get_pres("Product colour")
         if color_name:
             parsed["identity"]["color"] = color_name
 
-        # 2. CPU TDP / NPU Supplements (Silicon dictionary remains primary owner)
+        base_color = get_pres("Product colour")
+        if base_color:
+            parsed["identity"]["base_color"] = base_color
+
+        form_factor = get_pres("Form factor")
+        if form_factor:
+            parsed["identity"]["form_factor"] = form_factor
+
+        market_pos = get_pres("Market positioning")
+        if market_pos:
+            parsed["identity"]["market_positioning"] = market_pos
+
+        intro_year = _to_int(get_raw("Introduction year") or get_pres("Introduction year"))
+        if intro_year and 2015 <= intro_year <= 2030:
+            parsed["identity"]["release_year"] = intro_year
+
+        # 2. CPU Supplements (Silicon dictionary remains primary owner; these fill missing fields)
+        cpu_mfr = get_pres("Processor manufacturer") or ""
+        cpu_fam = get_pres("Processor family") or ""
+        cpu_mod = get_pres("Processor model") or ""
+        if cpu_fam or cpu_mod:
+            parsed["cpu"]["_icecat_cpu_text"] = f"{cpu_mfr} {cpu_fam} {cpu_mod}".strip()
+
         cpu_base_w = _to_float(get_raw("Processor base power") or get_pres("Processor base power"))
         if cpu_base_w and 5 <= cpu_base_w <= 200:
+            parsed["cpu"]["base_power_w"] = cpu_base_w
             parsed["cpu"]["tdp_w"] = cpu_base_w
 
         cpu_turbo_w = _to_float(get_raw("Maximum turbo power") or get_pres("Maximum turbo power"))
         if cpu_turbo_w and 10 <= cpu_turbo_w <= 300:
             parsed["cpu"]["max_turbo_power_w"] = cpu_turbo_w
 
-        npu_tops = _to_float(get_raw("NPU performance up to") or get_pres("NPU performance up to"))
+        npu_tops = _to_float(
+            get_raw("NPU performance up to")
+            or get_pres("NPU performance up to")
+            or get_raw("Total processor performance up to")
+        )
         if npu_tops:
             parsed["cpu"]["npu_tops"] = npu_tops
 
-        # 3. GPU TDP / VRAM Type Supplements
+        cpu_cores = _to_int(get_raw("Processor cores") or get_pres("Processor cores"))
+        if cpu_cores and 2 <= cpu_cores <= 64:
+            parsed["cpu"]["cores"] = cpu_cores
+
+        cpu_threads = _to_int(get_raw("Processor threads") or get_pres("Processor threads"))
+        if cpu_threads and 2 <= cpu_threads <= 128:
+            parsed["cpu"]["threads"] = cpu_threads
+
+        cpu_base_ghz = _to_float(get_raw("Processor frequency") or get_pres("Processor frequency"))
+        if cpu_base_ghz and 0.8 <= cpu_base_ghz <= 6.0:
+            parsed["cpu"]["clock_base_ghz"] = cpu_base_ghz
+
+        cpu_boost_ghz = _to_float(get_raw("Processor boost frequency") or get_pres("Processor boost frequency"))
+        if cpu_boost_ghz and 1.5 <= cpu_boost_ghz <= 6.5:
+            parsed["cpu"]["clock_boost_ghz"] = cpu_boost_ghz
+
+        l3_mb = _to_float(get_raw("L3 cache") or get_pres("L3 cache") or get_raw("Processor cache"))
+        l2_mb = _to_float(get_raw("L2 cache") or get_pres("L2 cache"))
+        if l3_mb and 2 <= l3_mb <= 256:
+            parsed["cpu"]["cache_mb"] = round(l3_mb + (l2_mb or 0.0), 1) if l2_mb else round(l3_mb, 1)
+
+        # 3. GPU Supplements (GPU dictionary remains primary owner)
         gpu_tdp = _to_float(get_raw("Maximum graphics card power") or get_pres("Maximum graphics card power"))
         if gpu_tdp and 15 <= gpu_tdp <= 250:
             parsed["gpu"]["tdp_w"] = gpu_tdp
 
         vram_type = get_pres("Discrete graphics memory type")
-        if vram_type and vram_type.upper() not in ("N", "NO", "NONE"):
+        if vram_type and vram_type.upper() not in ("N", "NO", "NONE", "NOT AVAILABLE"):
             parsed["gpu"]["vram_type"] = vram_type
+
+        igpu_model = get_pres("On-board graphics card model")
+        if igpu_model and igpu_model.upper() not in ("N", "NO", "NONE", "NOT AVAILABLE"):
+            parsed["gpu"]["igpu_model"] = igpu_model
+
+        dgpu_model = get_pres("Discrete graphics card model") or ""
+        if dgpu_model and dgpu_model.upper() not in ("N", "NO", "NONE", "NOT AVAILABLE"):
+            parsed["gpu"]["_icecat_gpu_text"] = dgpu_model
+        elif igpu_model and igpu_model.upper() not in ("N", "NO", "NONE", "NOT AVAILABLE"):
+            parsed["gpu"]["_icecat_gpu_text"] = igpu_model
 
         # 4. Memory
         mem_gb = _to_int(get_raw("Internal memory") or get_pres("Internal memory"))
@@ -182,8 +240,20 @@ class IcecatAPIService:
         if max_mem_gb and 4 <= max_mem_gb <= 256:
             parsed["memory"]["max_supported_gb"] = max_mem_gb
 
-        mem_form = (get_pres("Memory form factor") or "").lower()
-        mem_slots_str = get_pres("Memory slots") or get_pres("Memory layout (slots x size)") or ""
+        mem_form_pres = get_pres("Memory form factor")
+        if mem_form_pres:
+            parsed["memory"]["form_factor"] = mem_form_pres
+
+        mem_channels = get_pres("Memory channels")
+        if mem_channels:
+            parsed["memory"]["channels"] = mem_channels
+
+        mem_layout = get_pres("Memory layout (slots x size)")
+        if mem_layout:
+            parsed["memory"]["layout"] = mem_layout
+
+        mem_form = (mem_form_pres or "").lower()
+        mem_slots_str = get_pres("Memory slots") or mem_layout or ""
         if "on-board" in mem_form or "onboard" in mem_form or "soldered" in mem_form:
             parsed["memory"]["is_soldered"] = True
             parsed["memory"]["slot_count"] = 0
@@ -196,8 +266,12 @@ class IcecatAPIService:
                 parsed["memory"]["is_soldered"] = False
 
         # 5. Storage
-        storage_pres = get_pres("Total storage capacity") or get_pres("Total SSDs capacity") or ""
-        storage_raw = _to_int(get_raw("Total storage capacity") or get_raw("Total SSDs capacity"))
+        storage_pres = (
+            get_pres("Total storage capacity") or get_pres("Total SSDs capacity") or get_pres("SSD capacity") or ""
+        )
+        storage_raw = _to_int(
+            get_raw("Total storage capacity") or get_raw("Total SSDs capacity") or get_raw("SSD capacity")
+        )
         if storage_raw:
             if "tb" in storage_pres.lower() and storage_raw <= 8:
                 parsed["storage"]["capacity_gb"] = storage_raw * 1024
@@ -217,21 +291,32 @@ class IcecatAPIService:
             parsed["storage"]["storage_type"] = "eMMC"
 
         ssd_iface = (get_pres("SSD interface") or "").lower()
-        has_nvme = get_bool("NVMe")
-        if "pci" in ssd_iface or has_nvme:
+        has_nvme = get_bool("NVMe") or ("nvme" in ssd_iface)
+        if "5.0" in ssd_iface:
+            parsed["storage"]["interface"] = "PCIe 5.0 NVMe" if has_nvme else "PCIe 5.0"
+        elif "4.0" in ssd_iface:
+            parsed["storage"]["interface"] = "PCIe 4.0 NVMe" if has_nvme else "PCIe 4.0"
+        elif "3.0" in ssd_iface:
+            parsed["storage"]["interface"] = "PCIe 3.0 NVMe" if has_nvme else "PCIe 3.0"
+        elif "pci" in ssd_iface or has_nvme:
             parsed["storage"]["interface"] = "PCIe NVMe"
         elif "sata" in ssd_iface:
             parsed["storage"]["interface"] = "SATA"
 
         ssd_ff = get_pres("SSD form factor") or ""
         if "m.2" in ssd_ff.lower():
-            parsed["storage"]["form_factor"] = "M.2 2280" if "2280" in ssd_ff else "M.2"
+            if "2280" in ssd_ff:
+                parsed["storage"]["form_factor"] = "M.2 2280"
+            elif "2242" in ssd_ff:
+                parsed["storage"]["form_factor"] = "M.2 2242"
+            else:
+                parsed["storage"]["form_factor"] = "M.2"
         elif "2.5" in ssd_ff:
             parsed["storage"]["form_factor"] = "2.5-inch"
 
-        ssd_count = _to_int(get_raw("Number of SSDs installed"))
+        ssd_count = _to_int(get_raw("Number of SSDs installed") or get_pres("Number of SSDs installed"))
         if ssd_count and 1 <= ssd_count <= 4:
-            parsed["storage"]["slot_count"] = ssd_count
+            parsed["storage"]["installed_ssd_count"] = ssd_count
 
         # 6. Display
         diag_in = _to_float(get_raw("Display diagonal"))
@@ -245,7 +330,14 @@ class IcecatAPIService:
         res_raw = get_raw("Display resolution") or get_pres("Display resolution") or ""
         m_res = re.search(r"(\d{3,4})\s*[x×]\s*(\d{3,4})", res_raw)
         if m_res:
-            parsed["display"]["resolution"] = f"{m_res.group(1)}x{m_res.group(2)}"
+            w_px, h_px = int(m_res.group(1)), int(m_res.group(2))
+            parsed["display"]["resolution"] = f"{w_px}x{h_px}"
+            parsed["display"]["resolution_width"] = w_px
+            parsed["display"]["resolution_height"] = h_px
+
+        hd_type = get_pres("HD type")
+        if hd_type:
+            parsed["display"]["hd_type"] = hd_type
 
         hz = _to_int(get_raw("Maximum refresh rate") or get_pres("Maximum refresh rate"))
         if hz and 60 <= hz <= 500:
@@ -283,6 +375,31 @@ class IcecatAPIService:
         if resp_ms and 0.1 <= resp_ms <= 50:
             parsed["display"]["response_time_ms"] = resp_ms
 
+        if get_bool("Anti-glare screen") is True:
+            parsed["display"]["surface_treatment"] = "Anti-glare"
+        else:
+            disp_surface = (get_pres("Display surface") or "").lower()
+            if "matt" in disp_surface or "anti-glare" in disp_surface:
+                parsed["display"]["surface_treatment"] = "Anti-glare"
+            elif "gloss" in disp_surface:
+                parsed["display"]["surface_treatment"] = "Glossy"
+
+        hdr_tech = get_pres("High Dynamic Range (HDR) technology")
+        hdr_supp = get_bool("High Dynamic Range (HDR) supported")
+        if hdr_tech:
+            parsed["display"]["hdr"] = hdr_tech
+        elif hdr_supp is not None:
+            parsed["display"]["hdr"] = hdr_supp
+
+        gsync = get_bool("NVIDIA G-SYNC")
+        freesync = get_bool("AMD FreeSync")
+        if gsync is True and freesync is True:
+            parsed["display"]["adaptive_sync"] = "G-SYNC / FreeSync"
+        elif gsync is True:
+            parsed["display"]["adaptive_sync"] = "G-SYNC"
+        elif freesync is True:
+            parsed["display"]["adaptive_sync"] = "FreeSync"
+
         # 7. Power & Battery
         batt_wh = _to_float(get_raw("Battery capacity") or get_pres("Battery capacity"))
         if batt_wh and 20.0 <= batt_wh <= 105.0:
@@ -296,17 +413,31 @@ class IcecatAPIService:
         if cells and 1 <= cells <= 12:
             parsed["power_battery"]["battery_cells"] = cells
 
+        batt_tech = get_pres("Battery technology")
+        if batt_tech:
+            parsed["power_battery"]["battery_type"] = batt_tech
+
+        usb_pd = get_bool("USB Power Delivery (USB PD)")
+        usbc_chg = get_bool("USB Type-C charging port")
+        if usb_pd is True or usbc_chg is True:
+            parsed["power_battery"]["usb_c_pd_charging"] = True
+        elif usb_pd is False and usbc_chg is False:
+            parsed["power_battery"]["usb_c_pd_charging"] = False
+
         fast_chg = get_bool("Fast charging")
         if fast_chg is None:
-            fast_chg = get_bool("USB Power Delivery (USB PD)")
+            fast_chg = usb_pd
         if fast_chg is not None:
             parsed["power_battery"]["fast_charging"] = fast_chg
+
+        fast_chg_50 = _to_int(get_raw("Fast charging time (50%)") or get_pres("Fast charging time (50%)"))
+        if fast_chg_50 and 10 <= fast_chg_50 <= 120:
+            parsed["power_battery"]["fast_charge_50_mins"] = fast_chg_50
 
         # 8. Physical (Weight & Dimensions)
         weight_pres = get_pres("Weight") or ""
         weight_raw = _to_float(get_raw("Weight"))
         if weight_raw:
-            # Icecat RawValue for Weight is often in grams (e.g. '1900' while PresentationValue is '1.9 kg')
             if weight_raw > 20.0:
                 weight_kg = round(weight_raw / 1000.0, 2)
             else:
@@ -316,13 +447,29 @@ class IcecatAPIService:
         if weight_kg and 0.5 <= weight_kg <= 6.0:
             parsed["physical"]["weight_kg"] = weight_kg
 
-        width_mm = _to_float(get_raw("Width"))
-        if width_mm and 200.0 <= width_mm <= 450.0:
-            parsed["physical"]["width_mm"] = round(width_mm, 1)
+        width_raw = _to_float(get_raw("Width") or get_pres("Width"))
+        if width_raw:
+            width_mm = width_raw * 10.0 if width_raw < 50.0 else width_raw
+            if 200.0 <= width_mm <= 450.0:
+                parsed["physical"]["width_mm"] = round(width_mm, 1)
 
-        depth_mm = _to_float(get_raw("Depth"))
-        if depth_mm and 150.0 <= depth_mm <= 380.0:
-            parsed["physical"]["depth_mm"] = round(depth_mm, 1)
+        depth_raw = _to_float(get_raw("Depth") or get_pres("Depth"))
+        if depth_raw:
+            depth_mm = depth_raw * 10.0 if depth_raw < 50.0 else depth_raw
+            if 150.0 <= depth_mm <= 380.0:
+                parsed["physical"]["depth_mm"] = round(depth_mm, 1)
+
+        h_front_raw = _to_float(get_raw("Height (front)") or get_pres("Height (front)"))
+        if h_front_raw:
+            h_front_mm = h_front_raw * 10.0 if h_front_raw < 5.0 else h_front_raw
+            if 5.0 <= h_front_mm <= 55.0:
+                parsed["physical"]["height_front_mm"] = round(h_front_mm, 1)
+
+        h_rear_raw = _to_float(get_raw("Height (rear)") or get_pres("Height (rear)"))
+        if h_rear_raw:
+            h_rear_mm = h_rear_raw * 10.0 if h_rear_raw < 5.0 else h_rear_raw
+            if 5.0 <= h_rear_mm <= 55.0:
+                parsed["physical"]["height_rear_mm"] = round(h_rear_mm, 1)
 
         height_raw = _to_float(get_raw("Height") or get_raw("Height (rear)") or get_raw("Height (front)"))
         if height_raw:
@@ -334,6 +481,10 @@ class IcecatAPIService:
         wifi = get_pres("Top Wi-Fi standard") or get_pres("Wi-Fi standards")
         if wifi and wifi.lower() not in ("n", "no", "none"):
             parsed["connectivity"]["wifi"] = wifi
+
+        antenna = get_pres("Antenna type")
+        if antenna and antenna.lower() not in ("n", "no", "none"):
+            parsed["connectivity"]["wifi_antenna"] = antenna
 
         bt_ver = get_pres("Bluetooth version")
         if bt_ver:
@@ -347,9 +498,37 @@ class IcecatAPIService:
         if eth is not None:
             parsed["connectivity"]["ethernet"] = eth
 
+        eth_rates = get_pres("Ethernet LAN data rates") or ""
+        if "2500" in eth_rates:
+            parsed["connectivity"]["ethernet_speed"] = "2.5 Gbps"
+        elif "1000" in eth_rates:
+            parsed["connectivity"]["ethernet_speed"] = "1 Gbps"
+        elif "100" in eth_rates:
+            parsed["connectivity"]["ethernet_speed"] = "100 Mbps"
+
+        mob_conn = get_bool("Mobile network connection")
+        mob_gen = get_pres("Mobile network generation")
+        if mob_conn is True:
+            parsed["connectivity"]["cellular"] = mob_gen or "Yes"
+        elif mob_conn is False:
+            parsed["connectivity"]["cellular"] = "No"
+
+        usbc_dp = get_bool("USB Type-C DisplayPort Alternate Mode")
+        if usbc_dp is not None:
+            parsed["connectivity"]["usb_c_displayport"] = usbc_dp
+
+        if usb_pd is True or usbc_chg is True:
+            parsed["connectivity"]["usb_c_power_delivery"] = True
+        elif usb_pd is False and usbc_chg is False:
+            parsed["connectivity"]["usb_c_power_delivery"] = False
+
         card_rdr = get_bool("Card reader integrated")
         if card_rdr is not None:
             parsed["connectivity"]["has_card_reader"] = card_rdr
+
+        card_types = get_pres("Compatible memory cards")
+        if card_types and card_types.lower() not in ("n", "no", "none"):
+            parsed["connectivity"]["card_reader_type"] = card_types
 
         tb4_qty = _to_int(get_raw("Thunderbolt 4 ports quantity"))
         tb3_qty = _to_int(get_raw("Thunderbolt 3 ports quantity"))
@@ -365,11 +544,13 @@ class IcecatAPIService:
             ("USB 3.2 Gen 2 (3.1 Gen 2) Type-A ports quantity", "USB 3.2 Gen 2 Type-A"),
             ("USB 3.2 Gen 1 (3.1 Gen 1) Type-C ports quantity", "USB 3.2 Gen 1 Type-C"),
             ("USB 3.2 Gen 2 (3.1 Gen 2) Type-C ports quantity", "USB 3.2 Gen 2 Type-C"),
+            ("USB 3.2 Gen 2x2 Type-C ports quantity", "USB 3.2 Gen 2x2 Type-C"),
             ("USB4 Gen 2x2 ports quantity", "USB4"),
             ("USB4 Gen 3x2 ports quantity", "USB4"),
             ("Thunderbolt 4 ports quantity", "Thunderbolt 4"),
             ("Thunderbolt 3 ports quantity", "Thunderbolt 3"),
             ("HDMI ports quantity", f"HDMI {get_pres('HDMI version')}" if get_pres("HDMI version") else "HDMI"),
+            ("Mini DisplayPorts quantity", "Mini DisplayPort"),
             ("Ethernet LAN (RJ-45) ports", "RJ-45 Ethernet"),
         ]
         for feat_key, label in port_mappings:
@@ -386,11 +567,24 @@ class IcecatAPIService:
         if speakers and 1 <= speakers <= 8:
             parsed["audio_webcam"]["speaker_count"] = speakers
 
-        cam_hd = get_pres("Front camera HD type")
+        spk_power = _to_float(get_raw("Speaker power") or get_pres("Speaker power"))
+        if spk_power and 0.5 <= spk_power <= 25.0:
+            parsed["audio_webcam"]["speaker_power_w"] = spk_power
+
+        audio_sys = get_pres("Audio system") or get_pres("Speaker manufacturer")
+        if audio_sys and audio_sys.lower() not in ("n", "no", "none", "na"):
+            parsed["audio_webcam"]["audio_system"] = audio_sys
+
+        cam_hd = get_pres("Front camera HD type") or ""
+        cam_res = get_pres("Front camera resolution") or ""
         cam_mp = get_pres("Front camera resolution (numeric)")
-        if cam_hd and "full hd" in cam_hd.lower():
+        if "full hd" in cam_hd.lower() or "1920 x 1080" in cam_res:
             parsed["audio_webcam"]["webcam_resolution"] = "1080p"
-        elif cam_hd and "hd" in cam_hd.lower():
+        elif "ultra hd" in cam_hd.lower() or "4k" in cam_hd.lower() or "3840 x 2160" in cam_res:
+            parsed["audio_webcam"]["webcam_resolution"] = "4K"
+        elif "qhd" in cam_hd.lower() or "2560 x 1440" in cam_res:
+            parsed["audio_webcam"]["webcam_resolution"] = "1440p"
+        elif "hd" in cam_hd.lower() or "1280 x 720" in cam_res:
             parsed["audio_webcam"]["webcam_resolution"] = "720p"
         elif cam_mp:
             parsed["audio_webcam"]["webcam_resolution"] = cam_mp
@@ -437,6 +631,10 @@ class IcecatAPIService:
         if numpad is not None:
             parsed["build_security"]["has_numpad"] = numpad
 
+        copilot = get_bool("Copilot key")
+        if copilot is not None:
+            parsed["build_security"]["has_copilot_key"] = copilot
+
         material = get_pres("Housing material")
         if material:
             parsed["build_security"]["chassis_material"] = material
@@ -449,10 +647,16 @@ class IcecatAPIService:
         if get_bool("Trusted Platform Module (TPM)"):
             tpm_v = get_pres("Trusted Platform Module (TPM) version")
             sec_features.append(f"TPM {tpm_v}" if tpm_v else "TPM")
-        if priv_cam:
-            sec_features.append("Privacy shutter")
-        if fp:
-            sec_features.append("Fingerprint reader")
+        if get_bool("Windows Hello"):
+            sec_features.append("Windows Hello")
+        if get_bool("Face recognition"):
+            sec_features.append("Face Recognition")
+        if get_bool("Cable lock slot"):
+            lock_t = get_pres("Cable lock slot type (1)") or get_pres("Cable lock slot type")
+            sec_features.append(f"{lock_t} Lock" if lock_t else "Cable Lock Slot")
+        if get_bool("Password protection"):
+            pwd_t = get_pres("Password protection type")
+            sec_features.append(f"Password Protection ({pwd_t})" if pwd_t else "Password Protection")
         if sec_features:
             parsed["build_security"]["security_features"] = sec_features
 

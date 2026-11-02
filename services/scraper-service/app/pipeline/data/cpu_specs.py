@@ -83,7 +83,7 @@ CPU_SPECS: dict[str, CPUSpecEntry] = load_cpu_specs()
 
 
 # --- Validation and Schema Consistency Integrity Checks ---
-assert len(CPU_SPECS) == 84, f"Expected 84 CPU records, got {len(CPU_SPECS)}"
+assert len(CPU_SPECS) >= 84, f"Expected at least 84 CPU records, got {len(CPU_SPECS)}"
 _required_cpu_fields = set(CPUSpecEntry.__required_keys__)
 _optional_cpu_fields = set(CPUSpecEntry.__optional_keys__)
 

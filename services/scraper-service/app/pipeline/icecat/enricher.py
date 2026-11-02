@@ -8,17 +8,23 @@ across a UnifiedCatalog.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
 from app.common.logger import get_logger
 from app.matching.models import CanonicalLaptop, UnifiedCatalog, utcnow_str
+from app.pipeline.cpu_anchor import CPUAnchorExtractor
+from app.pipeline.gpu_anchor import GPUAnchorExtractor
 from app.pipeline.icecat.api_service import IcecatAPIService
 from app.pipeline.icecat.search_service import IcecatSearchService
 from app.pipeline.icecat.web_spec_service import WebSpecSearchService
 from app.pipeline.llm_auditor import LLMAuditor
 
 logger = get_logger("pipeline.icecat.enricher")
+
+_CPU_EXTRACTOR = CPUAnchorExtractor()
+_GPU_EXTRACTOR = GPUAnchorExtractor()
 
 SERVICE_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 DEFAULT_CACHE_PATH = SERVICE_ROOT / "scraping results" / "icecat_specs_cache.json"
@@ -79,6 +85,7 @@ class IcecatCatalogEnricher:
 
         self.matches_cache: dict[str, dict[str, Any]] = {}
         self.specs_by_icecat_id: dict[str, dict[str, Any]] = {}
+        self.raw_icecat_by_id: dict[str, dict[str, Any]] = {}
         self.llm_cache: dict[str, dict[str, Any]] = {}
         self.web_specs_cache: dict[str, str] = {}
         self._load_caches()
@@ -91,6 +98,7 @@ class IcecatCatalogEnricher:
                     data = json.load(f)
                 self.matches_cache = data.get("matches_by_canonical_id", {}) or {}
                 self.specs_by_icecat_id = data.get("specs_by_icecat_id", {}) or {}
+                self.raw_icecat_by_id = data.get("raw_icecat_by_id", {}) or {}
                 self.llm_cache = data.get("llm_stage4_by_canonical_id", {}) or {}
                 self.web_specs_cache = data.get("web_specs_by_canonical_id", {}) or {}
             except Exception as e:
@@ -127,6 +135,7 @@ class IcecatCatalogEnricher:
                 "updated_at": utcnow_str(),
                 "matches_by_canonical_id": self.matches_cache,
                 "specs_by_icecat_id": self.specs_by_icecat_id,
+                "raw_icecat_by_id": self.raw_icecat_by_id,
                 "llm_stage4_by_canonical_id": self.llm_cache,
                 "web_specs_by_canonical_id": self.web_specs_cache,
             }
@@ -161,14 +170,19 @@ class IcecatCatalogEnricher:
     def get_or_fetch_icecat_specs(self, icecat_id: int | str) -> dict[str, dict[str, Any]] | None:
         """Retrieve parsed Icecat specs from cache or fetch live from OpenIcecat API."""
         key = str(icecat_id)
-        if key in self.specs_by_icecat_id:
-            return self.specs_by_icecat_id[key]
+        cached = self.specs_by_icecat_id.get(key)
+        if cached and cached.get("_schema_v") == 3:
+            return cached
 
-        raw_data = self.api_service.fetch_product_data(icecat_id)
+        raw_data = self.raw_icecat_by_id.get(key)
         if not raw_data:
-            return None
+            raw_data = self.api_service.fetch_product_data(icecat_id)
+            if not raw_data:
+                return cached
+            self.raw_icecat_by_id[key] = {"FeaturesGroups": raw_data.get("FeaturesGroups", [])}
 
         parsed = self.api_service.parse_product_json(raw_data)
+        parsed["_schema_v"] = 3  # type: ignore[assignment]
         self.specs_by_icecat_id[key] = parsed
         return parsed
 
@@ -178,41 +192,51 @@ class IcecatCatalogEnricher:
         icecat_specs: dict[str, dict[str, Any]],
         match_status: str,
     ) -> None:
-        """Merge Icecat specifications into CanonicalLaptop according to the Ownership Matrix.
-
-        Rules:
-        1. CPU & GPU Dictionaries: Keep 100% as-is from our local dictionaries.
-           Exception: Inject `tdp_w` / `max_turbo_power_w` / `npu_tops` / `vram_type` if missing.
-        2. Regional & Store Fields: Never overwrite `operating_system.name`, `mpn`, `price_egp`, `offers`.
-           Only fill `identity.color` from Icecat if our store color is None.
-        3. EXACT_MATCH: Overwrite all non-regional, non-dictionary hardware categories
-           (`memory`, `storage`, `display`, `power_battery`, `physical`, `connectivity`,
-            `audio_webcam`, `build_security`).
-        4. VARIANT_MATCH: Overwrite chassis-level categories (`power_battery`, `physical`,
-           `connectivity`, `audio_webcam`, `build_security`) and chassis slot/interface sub-fields,
-           while preserving the Egyptian store's `memory.capacity_gb`, `storage.capacity_gb`, and `display`.
-        """
+        """Merge Icecat specifications into CanonicalLaptop according to the Ownership Matrix."""
         specs = laptop.specs
 
-        # 1. Identity: Only fill color if missing on store
+        # 1. Identity & Design: Only fill color if missing on store; always populate design/market metadata
         ident = specs.setdefault("identity", {})
-        if not ident.get("color") and icecat_specs.get("identity", {}).get("color"):
-            ident["color"] = icecat_specs["identity"]["color"]
+        ice_ident = icecat_specs.get("identity", {}) or {}
+        if not ident.get("color") and ice_ident.get("color"):
+            ident["color"] = ice_ident["color"]
+        for id_key in ("base_color", "form_factor", "market_positioning", "release_year"):
+            if ice_ident.get(id_key) is not None and ident.get(id_key) is None:
+                ident[id_key] = ice_ident[id_key]
 
-        # 2. CPU TDP / NPU injection (never overwrite existing CPU dictionary fields)
+        # 2. CPU TDP / NPU / Fallback injection
+        # Rule: If CPU actual TDP is provided in Icecat, take it; otherwise keep value from CPU_SPECS dictionary
         cpu_dict = specs.setdefault("cpu", {})
-        for cpu_supp_key in ("tdp_w", "max_turbo_power_w", "npu_tops"):
-            val = icecat_specs.get("cpu", {}).get(cpu_supp_key)
+        ice_cpu = icecat_specs.get("cpu", {}) or {}
+        if ice_cpu.get("base_power_w") is not None:
+            cpu_dict["base_power_w"] = ice_cpu["base_power_w"]
+        elif ice_cpu.get("tdp_w") is not None:
+            cpu_dict["base_power_w"] = int(round(float(ice_cpu["tdp_w"])))
+        for cpu_supp_key in (
+            "tdp_w",
+            "max_turbo_power_w",
+            "npu_tops",
+            "cores",
+            "threads",
+            "clock_base_ghz",
+            "clock_boost_ghz",
+            "cache_mb",
+        ):
+            val = ice_cpu.get(cpu_supp_key)
             if val is not None and cpu_dict.get(cpu_supp_key) is None:
                 cpu_dict[cpu_supp_key] = val
 
-        # 3. GPU TDP / VRAM type injection (never overwrite existing GPU dictionary fields)
+        # 3. GPU TDP / VRAM type / iGPU injection
+        # Rule: If GPU actual TDP is provided in Icecat, take it; otherwise keep store/dictionary value
         gpu_dict = specs.setdefault("gpu", {})
+        ice_gpu = icecat_specs.get("gpu", {}) or {}
+        if ice_gpu.get("igpu_model") and not gpu_dict.get("igpu_model"):
+            gpu_dict["igpu_model"] = ice_gpu["igpu_model"]
         if not gpu_dict.get("integrated"):
-            for gpu_supp_key in ("tdp_w", "vram_type"):
-                val = icecat_specs.get("gpu", {}).get(gpu_supp_key)
-                if val is not None and gpu_dict.get(gpu_supp_key) is None:
-                    gpu_dict[gpu_supp_key] = val
+            if ice_gpu.get("tdp_w") is not None:
+                gpu_dict["tdp_w"] = ice_gpu["tdp_w"]
+            if ice_gpu.get("vram_type") is not None and gpu_dict.get("vram_type") is None:
+                gpu_dict["vram_type"] = ice_gpu["vram_type"]
 
         # 4. Category Overwrites based on EXACT_MATCH vs VARIANT_MATCH
         if match_status == "EXACT_MATCH":
@@ -220,29 +244,381 @@ class IcecatCatalogEnricher:
                 cat_target = specs.setdefault(cat, {})
                 cat_source = icecat_specs.get(cat, {}) or {}
                 for f_name, f_val in cat_source.items():
-                    if f_val is not None:
-                        cat_target[f_name] = f_val
+                    if f_val is None or f_name.startswith("_"):
+                        continue
+                    # Never overwrite store motherboard M.2 slot_count with a lower number
+                    if (
+                        cat == "storage"
+                        and f_name == "slot_count"
+                        and cat_target.get("slot_count") is not None
+                        and f_val < cat_target["slot_count"]
+                    ):
+                        continue
+                    cat_target[f_name] = f_val
         elif match_status == "VARIANT_MATCH":
             # Overwrite chassis-level categories
             for cat in VARIANT_MATCH_CHASSIS_CATEGORIES:
                 cat_target = specs.setdefault(cat, {})
                 cat_source = icecat_specs.get(cat, {}) or {}
                 for f_name, f_val in cat_source.items():
-                    if f_val is not None:
+                    if f_val is not None and not f_name.startswith("_"):
                         cat_target[f_name] = f_val
 
-            # For memory & storage on VARIANT_MATCH, keep store capacity_gb, populate chassis slots/interface
+            # For memory & storage & display on VARIANT_MATCH, keep store capacity_gb/panel, populate chassis sub-fields
             mem_target = specs.setdefault("memory", {})
-            for f_name in ("memory_type", "speed", "slot_count", "max_supported_gb", "is_soldered"):
+            for f_name in (
+                "memory_type",
+                "speed",
+                "form_factor",
+                "channels",
+                "slot_count",
+                "max_supported_gb",
+                "is_soldered",
+            ):
                 f_val = (icecat_specs.get("memory") or {}).get(f_name)
                 if f_val is not None and mem_target.get(f_name) is None:
                     mem_target[f_name] = f_val
 
             stor_target = specs.setdefault("storage", {})
-            for f_name in ("storage_type", "interface", "form_factor", "slot_count"):
+            for f_name in ("storage_type", "interface", "form_factor", "slot_count", "installed_ssd_count"):
                 f_val = (icecat_specs.get("storage") or {}).get(f_name)
-                if f_val is not None and stor_target.get(f_name) is None:
+                if f_val is not None and (
+                    stor_target.get(f_name) is None
+                    or (f_name == "interface" and stor_target.get("interface") == "PCIe NVMe")
+                ):
                     stor_target[f_name] = f_val
+
+            disp_target = specs.setdefault("display", {})
+            for f_name in ("aspect_ratio", "surface_treatment", "adaptive_sync", "hdr", "hd_type"):
+                f_val = (icecat_specs.get("display") or {}).get(f_name)
+                if f_val is not None and disp_target.get(f_name) is None:
+                    disp_target[f_name] = f_val
+
+        IcecatCatalogEnricher.finalize_laptop_specs(laptop, icecat_specs)
+
+    @staticmethod
+    def finalize_laptop_specs(
+        laptop: CanonicalLaptop,
+        icecat_specs: dict[str, dict[str, Any]] | None = None,
+    ) -> None:
+        """Deterministically normalize and finalize all 11 specification categories.
+
+        Enforces:
+        1. Unwrapping any nested `specs["specs"]` LLM artifacts into their proper category.sub_field.
+        2. Resolving any missing CPU/GPU models via CPU_SPECS & GPU_SPECS dictionaries + Icecat hints.
+        3. CPU & GPU TDP Rule: If actual TDP is provided in Icecat, take it; else keep valid store TDP
+           or fallback to CPU_SPECS / GPU_SPECS dictionary TDP (and 0W discrete draw for integrated GPUs).
+        4. Preserving motherboard M.2 `storage.slot_count` separate from `storage.installed_ssd_count`.
+        5. Strict boolean/numeric/string data-type consistency across `microphone`, `ethernet`,
+           `fast_charging`, `hdr`, and `memory.speed`.
+        """
+        specs = laptop.specs
+        ctx = laptop.raw_store_context or {}
+        source_table_str = " ".join(
+            f"{k}: {v}" for k, v in (ctx.get("source_table") or {}).items() if v
+        )
+
+        # 1. Unwrap nested `specs["specs"]` if present
+        nested_specs = specs.pop("specs", None)
+        if isinstance(nested_specs, dict):
+            for raw_key, val in nested_specs.items():
+                if val is None:
+                    continue
+                clean_key = str(raw_key).strip()
+                while clean_key.startswith("specs."):
+                    clean_key = clean_key[6:].strip()
+                if "." in clean_key:
+                    cat, sub = clean_key.split(".", 1)
+                    if cat in specs and isinstance(specs[cat], dict):
+                        if cat == "physical" and sub == "height_mm" and isinstance(val, str):
+                            nums = re.findall(r"\d+(?:\.\d+)?", val)
+                            if len(nums) >= 2:
+                                specs["physical"]["height_front_mm"] = float(nums[0])
+                                specs["physical"]["height_rear_mm"] = float(nums[1])
+                                specs["physical"]["height_mm"] = max(float(nums[0]), float(nums[1]))
+                                continue
+                            elif len(nums) == 1:
+                                val = float(nums[0])
+                        if specs[cat].get(sub) is None:
+                            specs[cat][sub] = val
+
+        # 2. Resolve missing CPU / GPU models and enforce CPU & GPU TDP rule
+        cpu_dict = specs.setdefault("cpu", {})
+        gpu_dict = specs.setdefault("gpu", {})
+        ice_cpu = (icecat_specs or {}).get("cpu") or {}
+        ice_gpu = (icecat_specs or {}).get("gpu") or {}
+
+        ice_cpu_text = str(ice_cpu.get("_icecat_cpu_text") or cpu_dict.pop("_icecat_cpu_text", "") or "")
+        ice_gpu_text = str(ice_gpu.get("_icecat_gpu_text") or gpu_dict.pop("_icecat_gpu_text", "") or "")
+
+        cpu_probes = [
+            str(cpu_dict.get("model") or ""),
+            str(cpu_dict.get("raw_spec") or ""),
+            ice_cpu_text,
+            source_table_str,
+        ]
+        # Handle MSI Prestige 13 AI Evo A1MG where store omits "155H" after "Core Ultra 7"
+        if "a1mg" in (laptop.title or "").lower() and "ultra 7" in " ".join(cpu_probes).lower():
+            cpu_probes.append("Core Ultra 7 155H")
+
+        cpu_populated, cpu_constraints, _ = _CPU_EXTRACTOR.extract(laptop.title or "", cpu_probes)
+        if cpu_populated:
+            if not cpu_dict.get("model"):
+                raw_saved = cpu_dict.get("raw_spec")
+                for k, v in cpu_populated.items():
+                    if k != "raw_spec" and v is not None:
+                        cpu_dict[k] = v
+                if raw_saved:
+                    cpu_dict["raw_spec"] = raw_saved
+            # CPU TDP Rule: Icecat actual TDP first, else dictionary base_power_w
+            ice_cpu_tdp = ice_cpu.get("base_power_w") or ice_cpu.get("tdp_w")
+            if ice_cpu_tdp is not None and float(ice_cpu_tdp) > 0:
+                cpu_dict["base_power_w"] = int(round(float(ice_cpu_tdp)))
+            elif cpu_dict.get("base_power_w") is None and cpu_populated.get("base_power_w") is not None:
+                cpu_dict["base_power_w"] = int(round(float(cpu_populated["base_power_w"])))
+
+        gpu_probes = [
+            str(gpu_dict.get("model") or ""),
+            str(gpu_dict.get("raw_spec") or ""),
+            ice_gpu_text,
+            source_table_str,
+        ]
+        gpu_populated, gpu_constraints, _ = _GPU_EXTRACTOR.extract(
+            laptop.title or "",
+            gpu_probes,
+            cpu_context=cpu_constraints,
+        )
+        if gpu_populated and not gpu_dict.get("model"):
+            raw_saved = gpu_dict.get("raw_spec")
+            for k, v in gpu_populated.items():
+                if k != "raw_spec" and v is not None:
+                    gpu_dict[k] = v
+            if raw_saved:
+                gpu_dict["raw_spec"] = raw_saved
+
+        # GPU TDP Rule: Icecat actual TDP first, else valid store TDP, else GPU_SPECS dictionary TDP
+        is_integrated = bool(
+            gpu_dict.get("integrated")
+            if gpu_dict.get("integrated") is not None
+            else (gpu_constraints or {}).get("integrated", False)
+        )
+        gpu_dict["integrated"] = is_integrated
+
+        if is_integrated:
+            gpu_dict["tdp_w"] = 0
+        else:
+            tdp_limits = (gpu_constraints or {}).get("tdp_limits") or {}
+            min_w = float(tdp_limits.get("min_w") or 10.0)
+            max_w = float(tdp_limits.get("max_w") or 200.0)
+            base_max_w = tdp_limits.get("base_max_w")
+
+            ice_gpu_tdp = ice_gpu.get("tdp_w")
+            cur_gpu_tdp = gpu_dict.get("tdp_w")
+            raw_gpu_spec = str(gpu_dict.get("raw_spec") or "").lower()
+
+            # Reject "+ 25W Dynamic Boost" false extraction if cur_gpu_tdp == 25 on high-power RTX GPU
+            if cur_gpu_tdp == 25 and ("dynamic boost" in raw_gpu_spec or min_w > 25):
+                cur_gpu_tdp = None
+
+            if ice_gpu_tdp is not None and min_w <= float(ice_gpu_tdp) <= max_w:
+                gpu_dict["tdp_w"] = int(round(float(ice_gpu_tdp)))
+            elif cur_gpu_tdp is not None and min_w <= float(cur_gpu_tdp) <= max_w:
+                gpu_dict["tdp_w"] = int(round(float(cur_gpu_tdp)))
+            else:
+                if "dynamic boost" in raw_gpu_spec:
+                    fallback_w = max_w or base_max_w or min_w
+                else:
+                    fallback_w = base_max_w or max_w or min_w
+                gpu_dict["tdp_w"] = int(round(float(fallback_w)))
+
+        # 3. Preserve Egyptian Store Modular Specs (when not an exact MPN match) & motherboard slot_count
+        is_exact_mpn = bool(
+            laptop.mpn
+            and laptop.icecat_mpn
+            and laptop.mpn.strip().lower() == laptop.icecat_mpn.strip().lower()
+        )
+        store_specs = ctx.pop("store_specs", None) or {}
+        if not is_exact_mpn and isinstance(store_specs, dict) and store_specs:
+            # 3a. Display (Store wins on panel_type, resolution, refresh_rate_hz, color_gamut, brightness_nits)
+            st_disp = store_specs.get("display") or {}
+            disp_target = specs.setdefault("display", {})
+            for d_key in (
+                "size_inches",
+                "resolution",
+                "resolution_width",
+                "resolution_height",
+                "panel_type",
+                "refresh_rate_hz",
+                "aspect_ratio",
+                "color_gamut",
+                "brightness_nits",
+            ):
+                if st_disp.get(d_key) is not None:
+                    disp_target[d_key] = st_disp[d_key]
+            if st_disp.get("touchscreen") is True:
+                disp_target["touchscreen"] = True
+            # Synchronize hd_type with resolution so there is no mismatch
+            res_str = str(disp_target.get("resolution") or "")
+            res_to_hd = {
+                "1920x1080": "FHD",
+                "1920x1200": "WUXGA",
+                "2560x1440": "WQHD",
+                "2560x1600": "WQXGA",
+                "2880x1800": "3K",
+                "3200x2000": "3.2K",
+                "3840x2160": "4K UHD",
+                "3840x2400": "WQUXGA",
+            }
+            if res_str in res_to_hd:
+                disp_target["hd_type"] = res_to_hd[res_str]
+
+            # 3b. Power & Battery (Store wins on battery_capacity_wh, power_adapter_w, battery_cells)
+            st_pb = store_specs.get("power_battery") or {}
+            pb_target = specs.setdefault("power_battery", {})
+            st_bat = st_pb.get("battery_capacity_wh")
+            if st_bat is not None and 30.0 <= float(st_bat) <= 100.0:
+                pb_target["battery_capacity_wh"] = float(st_bat)
+            st_adp = st_pb.get("power_adapter_w")
+            if st_adp is not None and 30.0 <= float(st_adp) <= 400.0:
+                pb_target["power_adapter_w"] = float(st_adp)
+            if st_pb.get("battery_cells") is not None:
+                pb_target["battery_cells"] = st_pb["battery_cells"]
+
+            # 3c. Memory (Store wins on capacity_gb, memory_type, speed, layout, slot_count)
+            st_mem = store_specs.get("memory") or {}
+            mem_target = specs.setdefault("memory", {})
+            for m_key in ("capacity_gb", "memory_type", "speed", "layout"):
+                if st_mem.get(m_key) is not None:
+                    mem_target[m_key] = st_mem[m_key]
+            if isinstance(st_mem.get("slot_count"), int) and st_mem["slot_count"] > (
+                mem_target.get("slot_count") or 0
+            ):
+                mem_target["slot_count"] = st_mem["slot_count"]
+
+            # 3d. Storage (Store wins on capacity_gb, slot_count)
+            st_stor = store_specs.get("storage") or {}
+            stor_target = specs.setdefault("storage", {})
+            if st_stor.get("capacity_gb") is not None:
+                stor_target["capacity_gb"] = st_stor["capacity_gb"]
+            if isinstance(st_stor.get("slot_count"), int) and st_stor["slot_count"] > (
+                stor_target.get("slot_count") or 0
+            ):
+                stor_target["slot_count"] = st_stor["slot_count"]
+
+            # 3e. Backlight, Camera, Wi-Fi, Bluetooth (Store wins when present)
+            st_bs = store_specs.get("build_security") or {}
+            bs_target = specs.setdefault("build_security", {})
+            if st_bs.get("keyboard_backlight_type"):
+                bs_target["keyboard_backlight_type"] = st_bs["keyboard_backlight_type"]
+            if st_bs.get("has_backlit_keyboard") is True:
+                bs_target["has_backlit_keyboard"] = True
+            if st_bs.get("has_fingerprint") is True:
+                bs_target["has_fingerprint"] = True
+
+            st_aw = store_specs.get("audio_webcam") or {}
+            aw_target = specs.setdefault("audio_webcam", {})
+            if st_aw.get("webcam_resolution"):
+                aw_target["webcam_resolution"] = st_aw["webcam_resolution"]
+
+            st_cn = store_specs.get("connectivity") or {}
+            cn_target = specs.setdefault("connectivity", {})
+            if st_cn.get("wifi"):
+                cn_target["wifi"] = st_cn["wifi"]
+            if st_cn.get("bluetooth") and st_cn["bluetooth"] not in ("Yes", "Bluetooth"):
+                cn_target["bluetooth"] = st_cn["bluetooth"]
+
+        stor_dict = specs.setdefault("storage", {})
+        store_slot_count = ctx.get("store_slot_count")
+        if isinstance(store_slot_count, int) and store_slot_count > (stor_dict.get("slot_count") or 0):
+            stor_dict["slot_count"] = store_slot_count
+
+        stor_raw = f"{stor_dict.get('raw_spec') or ''} {source_table_str}"
+        if re.search(
+            r"\b(?:2\s*x\s*m\.?2|up\s*to\s*(?:two|2)\s*(?:drives|m\.?2|ssd)|two\s*m\.?2|2\s*m\.?2\s*slots?|m\.?2\s*slots?\s*[:=]?\s*2)\b",
+            stor_raw,
+            re.IGNORECASE,
+        ):
+            if (stor_dict.get("slot_count") or 0) < 2:
+                stor_dict["slot_count"] = 2
+
+        inst_ssds = stor_dict.get("installed_ssd_count")
+        if isinstance(inst_ssds, int) and (stor_dict.get("slot_count") or 0) < inst_ssds:
+            stor_dict["slot_count"] = inst_ssds
+
+        # 4. Strict Data Type & Format Normalization across all categories
+        # 4a. audio_webcam.microphone -> bool | None & webcam_resolution format
+        aw_dict = specs.setdefault("audio_webcam", {})
+        mic_val = aw_dict.get("microphone")
+        if isinstance(mic_val, str):
+            aw_dict["microphone"] = mic_val.strip().lower() not in ("false", "no", "none", "n/a", "0", "")
+        if aw_dict.get("webcam_resolution") == "5.0MP":
+            aw_dict["webcam_resolution"] = "5 MP"
+
+        # 4b. connectivity.ethernet -> bool | None, wifi standard format, & bluetooth version format
+        conn_dict = specs.setdefault("connectivity", {})
+        eth_val = conn_dict.get("ethernet")
+        if isinstance(eth_val, str):
+            eth_low = eth_val.strip().lower()
+            if conn_dict.get("ethernet_speed") is None:
+                if "2.5" in eth_low:
+                    conn_dict["ethernet_speed"] = "2.5 Gbps"
+                elif any(k in eth_low for k in ("1000", "gigabit", "gbe", "rj-45", "rj45")):
+                    conn_dict["ethernet_speed"] = "1 Gbps"
+            conn_dict["ethernet"] = eth_low not in ("false", "no", "none", "n/a", "0", "", "without lan")
+
+        wifi_val = str(conn_dict.get("wifi") or "").strip()
+        if wifi_val:
+            if "wi-fi 7" in wifi_val.lower() or "802.11be" in wifi_val.lower():
+                conn_dict["wifi"] = "Wi-Fi 7 (802.11be)"
+            elif "wi-fi 6e" in wifi_val.lower():
+                conn_dict["wifi"] = "Wi-Fi 6E (802.11ax)"
+            elif "wi-fi 6" in wifi_val.lower() or "802.11ax" in wifi_val.lower():
+                conn_dict["wifi"] = "Wi-Fi 6 (802.11ax)"
+            elif "wi-fi 5" in wifi_val.lower() or "802.11ac" in wifi_val.lower():
+                conn_dict["wifi"] = "Wi-Fi 5 (802.11ac)"
+
+        bt_val = conn_dict.get("bluetooth")
+        if bt_val in ("Yes", "Bluetooth", True):
+            conn_raw = f"{conn_dict.get('raw_spec') or ''} {source_table_str}"
+            m_bt = re.search(r"\b(?:bluetooth|bt)\s*v?(\d\.\d)\b", conn_raw, re.IGNORECASE)
+            if m_bt:
+                conn_dict["bluetooth"] = f"Bluetooth {m_bt.group(1)}"
+            else:
+                w_str = str(conn_dict.get("wifi") or "")
+                if "Wi-Fi 7" in w_str:
+                    conn_dict["bluetooth"] = "Bluetooth 5.4"
+                elif "Wi-Fi 6E" in w_str:
+                    conn_dict["bluetooth"] = "Bluetooth 5.3"
+                elif "Wi-Fi 5" in w_str:
+                    conn_dict["bluetooth"] = "Bluetooth 5.0"
+                else:
+                    conn_dict["bluetooth"] = "Bluetooth 5.2"
+        elif isinstance(bt_val, (int, float)) and not isinstance(bt_val, bool):
+            conn_dict["bluetooth"] = f"Bluetooth {bt_val}"
+
+        # 4c. power_battery.fast_charging -> bool | None (preserving minutes in fast_charge_50_mins)
+        pb_dict = specs.setdefault("power_battery", {})
+        fc_val = pb_dict.get("fast_charging")
+        if isinstance(fc_val, str):
+            fc_low = fc_val.strip().lower()
+            m_mins = re.search(r"50%\s*(?:in\s*)?(\d{2})\s*min", fc_low)
+            if m_mins and pb_dict.get("fast_charge_50_mins") is None:
+                pb_dict["fast_charge_50_mins"] = int(m_mins.group(1))
+            pb_dict["fast_charging"] = fc_low not in ("false", "no", "none", "n/a", "0", "")
+
+        # 4d. display.hdr -> str | None
+        disp_dict = specs.setdefault("display", {})
+        hdr_val = disp_dict.get("hdr")
+        if isinstance(hdr_val, bool):
+            disp_dict["hdr"] = "HDR" if hdr_val else None
+
+        # 4e. memory.speed -> str | None ("XXXX MHz")
+        mem_dict = specs.setdefault("memory", {})
+        spd_val = mem_dict.get("speed")
+        if spd_val is not None:
+            m_spd = re.search(r"\b(\d{4})\b", str(spd_val))
+            if m_spd:
+                mem_dict["speed"] = f"{int(m_spd.group(1))} MHz"
 
     def enrich_catalog(
         self,
@@ -304,6 +680,18 @@ class IcecatCatalogEnricher:
             for lap in not_found_laptops:
                 if lap.verification_status != "LLM_EXTRACTED":
                     lap.verification_status = "NOT_FOUND"
+
+        # Finalize and normalize every laptop in the catalog after Stage 3 & Stage 4
+        for lap in catalog.laptops:
+            ice_specs = (
+                self.specs_by_icecat_id.get(str(lap.icecat_product_id))
+                if lap.icecat_product_id
+                else None
+            )
+            self.finalize_laptop_specs(lap, ice_specs)
+            if lap.canonical_id in self.llm_cache:
+                self.llm_cache[lap.canonical_id]["specs"] = lap.specs
+        self._save_caches()
 
         exact_cnt = sum(1 for l in catalog.laptops if l.verification_status == "VERIFIED_ICECAT")
         var_cnt = sum(1 for l in catalog.laptops if l.verification_status == "VERIFIED_ICECAT_VARIANT")

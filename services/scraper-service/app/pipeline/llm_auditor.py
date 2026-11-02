@@ -264,6 +264,11 @@ def cast_value_to_field_type(field_path: str, value: Any) -> Any:
         "power_battery.power_adapter_w",
         "audio_webcam.speaker_count",
         "identity.warranty_years",
+        "identity.release_year",
+        "storage.installed_ssd_count",
+        "display.resolution_width",
+        "display.resolution_height",
+        "power_battery.fast_charge_50_mins",
     }
     float_fields = {
         "display.size_inches",
@@ -274,6 +279,9 @@ def cast_value_to_field_type(field_path: str, value: Any) -> Any:
         "physical.depth_mm",
         "physical.height_mm",
         "cpu.npu_tops",
+        "physical.height_front_mm",
+        "physical.height_rear_mm",
+        "audio_webcam.speaker_power_w",
     }
     bool_fields = {
         "memory.is_soldered",
@@ -284,6 +292,13 @@ def cast_value_to_field_type(field_path: str, value: Any) -> Any:
         "audio_webcam.has_privacy_shutter",
         "audio_webcam.has_ir_camera",
         "connectivity.has_card_reader",
+        "connectivity.ethernet",
+        "connectivity.usb_c_displayport",
+        "connectivity.usb_c_power_delivery",
+        "power_battery.fast_charging",
+        "power_battery.usb_c_pd_charging",
+        "build_security.has_copilot_key",
+        "audio_webcam.microphone",
     }
 
     if field_path in int_fields:
@@ -879,6 +894,8 @@ class LLMAuditor:
 
         for corr in corrections:
             field_path = corr.field_path.strip()
+            while field_path.startswith("specs."):
+                field_path = field_path[6:].strip()
 
             # Guard against touching locked CPU and GPU fields
             if field_path.startswith("cpu.") or field_path.startswith("gpu."):
@@ -891,6 +908,20 @@ class LLMAuditor:
                 continue
 
             category, sub_field = parts[0], parts[1]
+            if category not in (
+                "identity",
+                "memory",
+                "storage",
+                "display",
+                "power_battery",
+                "physical",
+                "build_security",
+                "audio_webcam",
+                "connectivity",
+                "operating_system",
+            ):
+                logger.warning("Skipping unknown spec category '%s' in field path: %s", category, field_path)
+                continue
 
             if allowed_categories is not None and category not in allowed_categories:
                 continue

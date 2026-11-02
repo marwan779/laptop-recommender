@@ -143,7 +143,7 @@ class ScrapeOrchestrator:
 
         # Stage 2, 3 & 4: Dynamic Multi-Store Catalog Consolidation + Icecat Enrichment + Targeted LLM Fallback
         store_targets = [r for r in results if r.target_type == "store" and r.store_result is not None]
-        if store_targets:
+        if store_targets and request.level == 2:
             out_dir = Path(request.output_dir) if request.output_dir else Path("scraping results")
             in_memory_by_store = {
                 r.target_key.lower(): r.store_result.model_dump() for r in store_targets if r.store_result
@@ -198,7 +198,8 @@ class ScrapeOrchestrator:
                         unified_catalog = enricher.enrich_catalog(unified_catalog)
 
                     unified_path = out_dir / "unified_catalog_latest.json"
-                    unified_catalog.save_json(unified_path)
+                    if unified_catalog.total_unique_laptops > 0:
+                        unified_catalog.save_json(unified_path)
                     logger.info("[Orchestrator] Saved enriched unified catalog to: %s", unified_path.resolve())
 
                     # Upload to object storage if configured

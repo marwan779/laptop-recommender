@@ -259,6 +259,8 @@ class CatalogCombiner:
                 "source_table": merged_source_table,
                 "raw_description": "\n\n".join(raw_descriptions),
                 "primary_url": listings[0].get("product_url") or "",
+                "store_slot_count": (fused_specs.get("storage") or {}).get("slot_count"),
+                "store_specs": fused_specs,
             }
 
             # Build Offers list
