@@ -357,3 +357,22 @@ def test_core_only_ai_envelope_scoping() -> None:
     # Deep chassis components must never be generated when core_only_ai=True
     for deep_comp in ("power_battery", "physical", "connectivity", "audio_webcam", "build_security"):
         assert deep_comp not in generated_components
+
+
+def test_not_found_laptop_injects_online_reference_specs() -> None:
+    """Verify _build_auditor_record attaches Scrapling online specs to source_table['Online_Reference_Specs']."""
+    lap = CanonicalLaptop(
+        canonical_id="laptop_lenovo_loq_15irx10",
+        brand="Lenovo",
+        laptop_family="LOQ",
+        laptop_model="LOQ 15IRX10",
+        title="Lenovo LOQ 15IRX10 Core i7-13650HX RTX 5050",
+        specs={"power_battery": {"battery_capacity_wh": None}},
+        raw_store_context={"source_table": {"Processor": "i7-13650HX"}},
+    )
+    rec = IcecatCatalogEnricher._build_auditor_record(
+        lap,
+        online_specs="[Source: nanoreview.net]\nBattery: 60 Wh\nWeight: 2.4 kg",
+    )
+    assert "Online_Reference_Specs" in rec["source_table"]
+    assert "Battery: 60 Wh" in rec["source_table"]["Online_Reference_Specs"]
