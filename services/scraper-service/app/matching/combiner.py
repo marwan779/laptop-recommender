@@ -176,6 +176,8 @@ class CatalogCombiner:
                         "thumbnail_url": p.get("thumbnail_url"),
                         "scraped_at": p.get("scraped_at") or t_start,
                         "specs": specs,
+                        "source_table": p.get("source_table") or {},
+                        "raw_description": p.get("raw_description") or "",
                         "brand": brand,
                         "family": family,
                         "model": model,
@@ -242,8 +244,22 @@ class CatalogCombiner:
 
             # Non-destructive Spec Fusion
             fused_specs: dict[str, Any] = {}
+            merged_source_table: dict[str, Any] = {}
+            raw_descriptions: list[str] = []
             for l in listings:
                 fused_specs = merge_specifications(fused_specs, l.get("specs") or {})
+                for k, v in (l.get("source_table") or {}).items():
+                    if k not in merged_source_table and v:
+                        merged_source_table[k] = v
+                desc = (l.get("raw_description") or "").strip()
+                if desc and desc not in raw_descriptions:
+                    raw_descriptions.append(desc)
+
+            raw_store_context = {
+                "source_table": merged_source_table,
+                "raw_description": "\n\n".join(raw_descriptions),
+                "primary_url": listings[0].get("product_url") or "",
+            }
 
             # Build Offers list
             offers: list[StoreOffer] = []
@@ -328,6 +344,7 @@ class CatalogCombiner:
                     price_spread_egp=round(price_spread, 2),
                     prices_by_store=prices_by_store,
                     offers=offers,
+                    raw_store_context=raw_store_context,
                 )
             )
 

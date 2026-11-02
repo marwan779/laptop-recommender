@@ -299,3 +299,72 @@ def test_catalog_metrics_service_enrichment(tmp_path: Path) -> None:
     assert "hardware_metrics" in saved_data["laptops"][0]
     assert "metrics_calculated_at" in saved_data
 
+
+def test_integrated_gpu_consumes_zero_watts(
+    sample_cpu_benchmarks: dict[str, Any],
+    sample_gpu_benchmarks: dict[str, Any],
+) -> None:
+    """Integrated GPUs must consume 0W discrete power and unthrottled scale factor."""
+    cpu_spec = {"model": "Core i5-1335U", "base_power_w": 15}
+    gpu_spec = {"model": "Intel Iris Xe Graphics", "integrated": True}
+    power_spec = {"power_adapter_w": 65}
+
+    silicon, power = calculate_silicon_and_power_metrics(
+        cpu_spec=cpu_spec,
+        gpu_spec=gpu_spec,
+        power_spec=power_spec,
+        cpu_benchmarks=sample_cpu_benchmarks,
+        gpu_benchmarks=sample_gpu_benchmarks,
+    )
+
+    # 0W discrete consumption
+    assert silicon["inferred_tgp_w"] == 0.0
+    assert silicon["tgp_source"] == "INTEGRATED_GPU"
+    assert silicon["scale_factor_gpu"] == 1.0
+
+    # Delta P: 65W - (15W CPU + 0W GPU + 25W overhead) = 25.0W headroom
+    assert power["delta_p_watts"] == 25.0
+    assert power["electrical_status"] == "UNCONSTRAINED_HEADROOM"
+
+    # CPU available power: 65W - 0W - 25W = 40W -> 40 / 15 = 2.67 -> clamped to max 1.20
+    assert silicon["scale_factor_cpu"] == 1.20
+
+
+def test_verification_status_gate_excludes_not_found(tmp_path: Path) -> None:
+    """Laptops with verification_status='NOT_FOUND' must be skipped by the Metrics Engine."""
+    catalog_file = tmp_path / "test_verified_gate.json"
+    sample_data = {
+        "title": "Test Catalog",
+        "laptops": [
+            {
+                "canonical_id": "laptop_verified_1",
+                "verification_status": "VERIFIED_ICECAT",
+                "specs": {
+                    "cpu": {"model": "Core i7-13650HX", "base_power_w": 55},
+                    "gpu": {"model": "GeForce RTX 4060", "vram_gb": 8, "integrated": False},
+                    "power_battery": {"power_adapter_w": 230, "battery_capacity_wh": 80},
+                },
+                "offers": [{"store_name": "CompuMarts", "price_egp": 55000.0, "in_stock": True}],
+            },
+            {
+                "canonical_id": "laptop_unverified_2",
+                "verification_status": "NOT_FOUND",
+                "specs": {
+                    "cpu": {"model": "Core i5-13420H"},
+                },
+                "offers": [],
+            },
+        ],
+    }
+    catalog_file.write_text(json.dumps(sample_data), encoding="utf-8")
+
+    service = CatalogMetricsService()
+    summary = service.enrich_catalog(catalog_path=catalog_file, overwrite=True)
+
+    assert summary["total_laptops"] == 2
+    assert summary["processed_successfully"] == 1
+    assert summary["skipped_unverified"] == 1
+
+    saved_data = json.loads(catalog_file.read_text(encoding="utf-8"))
+    assert saved_data["laptops"][0]["hardware_metrics"] is not None
+    assert saved_data["laptops"][1]["hardware_metrics"] is None

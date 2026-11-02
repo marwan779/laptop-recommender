@@ -136,6 +136,63 @@ DEFAULT_CPU_BASELINES: dict[str, tuple[float, float]] = {
 # -----------------------------------------------------------------------------
 # Component Benchmark Resolvers
 # -----------------------------------------------------------------------------
+def is_integrated_gpu(
+    gpu_spec: dict[str, Any] | None,
+    gpu_benchmarks: dict[str, Any] | None = None,
+) -> bool:
+    """Determine whether the GPU is integrated (consumes 0W discrete power)."""
+    if not gpu_spec:
+        return True
+
+    # 1. Explicit boolean flag in gpu_spec
+    if "integrated" in gpu_spec and gpu_spec["integrated"] is not None:
+        return bool(gpu_spec["integrated"])
+
+    # 2. Check matched benchmark entry if provided
+    raw_model = (gpu_spec.get("model") or "").strip().lower()
+    if gpu_benchmarks:
+        for key, entry in gpu_benchmarks.items():
+            if key.lower() == raw_model or entry.get("model", "").lower() == raw_model:
+                if "integrated" in entry and entry["integrated"] is not None:
+                    return bool(entry["integrated"])
+            patterns = entry.get("match_patterns", [])
+            if any(p.lower() == raw_model or p.lower() in raw_model for p in patterns):
+                if "integrated" in entry and entry["integrated"] is not None:
+                    return bool(entry["integrated"])
+
+    # 3. Common integrated GPU model substrings
+    integrated_patterns = [
+        "uhd",
+        "iris",
+        "intel graphics",
+        "intel hd",
+        "arc 130v",
+        "arc 140v",
+        "arc 130t",
+        "arc 140t",
+        "radeon 610m",
+        "radeon 660m",
+        "radeon 680m",
+        "radeon 740m",
+        "radeon 760m",
+        "radeon 780m",
+        "radeon 820m",
+        "radeon 880m",
+        "radeon 890m",
+        "shared",
+        "integrated",
+    ]
+    if any(p in raw_model for p in integrated_patterns):
+        return True
+
+    # If discrete keywords exist, definitely discrete
+    discrete_patterns = ["rtx", "gtx", "geforce", "radeon rx", "quadro", "arc a", "arc b"]
+    if any(p in raw_model for p in discrete_patterns):
+        return False
+
+    return False
+
+
 def resolve_gpu_benchmark(
     gpu_spec: dict[str, Any] | None,
     gpu_benchmarks: dict[str, Any],
@@ -162,9 +219,14 @@ def resolve_gpu_benchmark(
             break
 
     if matched_entry:
-        tgp_limits = matched_entry.get("tdp_limits") or {}
-        tgp_min = float(tgp_limits.get("min_w") or 35.0)
-        tgp_max = float(tgp_limits.get("max_w") or 140.0)
+        is_igpu = is_integrated_gpu(gpu_spec, gpu_benchmarks)
+        if is_igpu:
+            tgp_min = 0.0
+            tgp_max = 0.0
+        else:
+            tgp_limits = matched_entry.get("tdp_limits") or {}
+            tgp_min = float(tgp_limits.get("min_w") or 35.0)
+            tgp_max = float(tgp_limits.get("max_w") or 140.0)
 
         # Prioritize explicit base_score if provided in the JSON entry
         if "base_score" in matched_entry:
@@ -174,12 +236,13 @@ def resolve_gpu_benchmark(
     # 2. Match against curated reference baselines
     for pattern, (b_score, p_min, p_max) in DEFAULT_GPU_BASELINES.items():
         if pattern in raw_model:
+            if is_integrated_gpu(gpu_spec, gpu_benchmarks):
+                return b_score, 0.0, 0.0
             return b_score, p_min, p_max
 
     # 3. Fallback based on integrated vs discrete
-    is_integrated = gpu_spec.get("integrated", True)
-    if is_integrated:
-        return 1200.0, 12.0, 28.0
+    if is_integrated_gpu(gpu_spec, gpu_benchmarks):
+        return 1200.0, 0.0, 0.0
     return 5000.0, 35.0, 80.0
 
 
@@ -246,36 +309,39 @@ def calculate_silicon_and_power_metrics(
     base_cpu_score, cpu_base_w = resolve_cpu_benchmark(cpu_spec, cpu_benchmarks)
     base_gpu_raw, tgp_min, tgp_max = resolve_gpu_benchmark(gpu_spec, gpu_benchmarks)
 
-    # Infer P_actual (Configured TGP)
-    explicit_tgp = (gpu_spec or {}).get("tdp_w")
-    if explicit_tgp is not None:
-        p_actual = float(explicit_tgp)
-        tgp_source = "EXPLICIT_SPEC"
-    elif power_adapter_w is not None:
-        p_actual = clamp(power_adapter_w - cpu_base_w - 25.0, tgp_min, tgp_max)
-        tgp_source = "INFERRED_FROM_CHARGER"
-    else:
-        p_actual = (tgp_min + tgp_max) / 2.0
-        tgp_source = "BENCHMARK_DEFAULT"
+    is_integrated = is_integrated_gpu(gpu_spec, gpu_benchmarks)
 
-    # Effective GPU Score (Guard 1: Normalized by 100)
-    if tgp_max > tgp_min:
-        scale_factor_gpu = 0.72 + 0.28 * ((p_actual - tgp_min) / (tgp_max - tgp_min))
-    else:
+    if is_integrated:
+        # Integrated GPU consumes 0W discrete power (power envelope shared within CPU package)
+        p_actual = 0.0
+        tgp_source = "INTEGRATED_GPU"
         scale_factor_gpu = 1.0
+    else:
+        # Infer P_actual (Configured TGP for discrete GPUs)
+        explicit_tgp = (gpu_spec or {}).get("tdp_w")
+        if explicit_tgp is not None:
+            p_actual = float(explicit_tgp)
+            tgp_source = "EXPLICIT_SPEC"
+        elif power_adapter_w is not None:
+            p_actual = clamp(power_adapter_w - cpu_base_w - 25.0, tgp_min, tgp_max)
+            tgp_source = "INFERRED_FROM_CHARGER"
+        else:
+            p_actual = (tgp_min + tgp_max) / 2.0
+            tgp_source = "BENCHMARK_DEFAULT"
+
+        # Effective GPU Score (Guard 1: Normalized by 100)
+        if tgp_max > tgp_min:
+            scale_factor_gpu = 0.72 + 0.28 * ((p_actual - tgp_min) / (tgp_max - tgp_min))
+        else:
+            scale_factor_gpu = 1.0
 
     effective_gpu_score = (base_gpu_raw * scale_factor_gpu) / 100.0
 
     # Effective CPU Score (Guard 2: power_adapter_w null check)
-    is_discrete = not (gpu_spec or {}).get("integrated", True)
     if power_adapter_w is None:
         scale_factor_cpu = 1.0
     else:
-        if is_discrete:
-            p_cpu_avail = power_adapter_w - p_actual - 25.0
-        else:
-            p_cpu_avail = power_adapter_w - 25.0
-
+        p_cpu_avail = power_adapter_w - p_actual - 25.0
         scale_factor_cpu = clamp(p_cpu_avail / cpu_base_w, 0.70, 1.20)
 
     effective_cpu_score = base_cpu_score * scale_factor_cpu
@@ -562,6 +628,26 @@ def calculate_economics_metrics(
 # -----------------------------------------------------------------------------
 # Main Composite Evaluator
 # -----------------------------------------------------------------------------
+VERIFIED_METRICS_STATUSES = {
+    "VERIFIED_ICECAT",
+    "VERIFIED_ICECAT_VARIANT",
+    "LLM_EXTRACTED",
+}
+
+
+def is_laptop_verified_for_metrics(laptop: dict[str, Any]) -> bool:
+    """Return True if the laptop is verified to enter the hardware metrics phase.
+
+    If `verification_status` is explicitly present, requires it to be one of
+    `VERIFIED_ICECAT`, `VERIFIED_ICECAT_VARIANT`, or `LLM_EXTRACTED`.
+    Laptops marked `NOT_FOUND` are held back until verified.
+    """
+    status = laptop.get("verification_status")
+    if status is None:
+        return True
+    return str(status).upper() in VERIFIED_METRICS_STATUSES
+
+
 def calculate_all_hardware_metrics(
     laptop: dict[str, Any],
     cpu_benchmarks: dict[str, Any],

@@ -121,13 +121,13 @@ class PhysicalValidator:
     def validate_power_adapter(
         cls, value: Any, cpu_context: dict[str, Any] | None = None
     ) -> tuple[bool, int | None, str | None]:
-        """Validate AC power adapter wattage (30W to 350W)."""
+        """Validate AC power adapter wattage (30W to 500W)."""
         try:
             val = int(value)
         except (ValueError, TypeError):
             return False, None, "type_error"
 
-        if 30 <= val <= 350:
+        if 30 <= val <= 500:
             if cpu_context and cpu_context.get("base_power_w"):
                 # Power adapter must at least meet CPU base power
                 cpu_pwr = cpu_context["base_power_w"]

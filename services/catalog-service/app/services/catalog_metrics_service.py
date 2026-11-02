@@ -15,7 +15,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from app.services.metrics_engine import calculate_all_hardware_metrics
+from app.services.metrics_engine import (
+    calculate_all_hardware_metrics,
+    is_laptop_verified_for_metrics,
+)
 
 logger = logging.getLogger("catalog.metrics_service")
 
@@ -109,7 +112,14 @@ class CatalogMetricsService:
         portability_scores: list[float] = []
         upgradeability_scores: list[float] = []
 
+        skipped_unverified = 0
+
         for laptop in laptops:
+            if not is_laptop_verified_for_metrics(laptop):
+                laptop["hardware_metrics"] = None
+                skipped_unverified += 1
+                continue
+
             metrics = calculate_all_hardware_metrics(
                 laptop=laptop,
                 cpu_benchmarks=cpu_benchmarks,
@@ -150,6 +160,7 @@ class CatalogMetricsService:
         summary = {
             "total_laptops": total_laptops,
             "processed_successfully": processed_count,
+            "skipped_unverified": skipped_unverified,
             "elapsed_seconds": round(elapsed, 3),
             "averages": {
                 "effective_gpu_score": round(sum(gpu_scores) / len(gpu_scores), 2) if gpu_scores else 0.0,

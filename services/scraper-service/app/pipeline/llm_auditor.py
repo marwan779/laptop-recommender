@@ -837,7 +837,12 @@ class LLMAuditor:
             error=str(last_error),
         )
 
-    def apply_corrections(self, laptop: dict[str, Any], corrections: list[FieldCorrection]) -> list[dict[str, Any]]:
+    def apply_corrections(
+        self,
+        laptop: dict[str, Any],
+        corrections: list[FieldCorrection],
+        allowed_categories: set[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """Validate and apply corrections to a laptop's specifications dictionary.
 
         Returns:
@@ -849,8 +854,8 @@ class LLMAuditor:
         for corr in corrections:
             field_path = corr.field_path.strip()
 
-            # Guard against touching locked CPU fields
-            if field_path.startswith("cpu."):
+            # Guard against touching locked CPU and GPU fields
+            if field_path.startswith("cpu.") or field_path.startswith("gpu."):
                 logger.warning("Ignoring proposed correction to locked field: %s", field_path)
                 continue
 
@@ -860,6 +865,16 @@ class LLMAuditor:
                 continue
 
             category, sub_field = parts[0], parts[1]
+
+            if allowed_categories is not None and category not in allowed_categories:
+                continue
+
+            if (
+                allowed_categories is not None
+                and category == "identity"
+                and sub_field not in ("color", "warranty_years")
+            ):
+                continue
 
             # Cast value
             typed_value = cast_value_to_field_type(field_path, corr.corrected_value)
