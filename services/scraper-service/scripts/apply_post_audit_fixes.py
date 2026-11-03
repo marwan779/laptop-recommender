@@ -23,9 +23,7 @@ if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
 from app.pipeline.data.cpu_specs import CPU_SPECS
-from app.matching.models import UnifiedCatalog
-from app.pipeline.icecat.enricher import IcecatCatalogEnricher
-from scripts.run_icecat_enrichment import STORE_FILES, DEFAULT_UNIFIED_PATH
+from scripts.run_icecat_enrichment import STORE_FILES
 
 
 def update_metrics_engine_files() -> None:
@@ -246,7 +244,7 @@ def main() -> None:
 
     # Load unified catalog
     cat_path = SERVICE_ROOT / "scraping results" / "unified_catalog_latest.json"
-    with open(cat_path, "r", encoding="utf-8") as f:
+    with open(cat_path, encoding="utf-8") as f:
         catalog = json.load(f)
 
     store_lookup = load_raw_store_lookups()

@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 import sys
 
@@ -19,12 +18,12 @@ if str(SERVICE_ROOT) not in sys.path:
 from app.matching.combiner import merge_specifications
 from app.matching.models import UnifiedCatalog
 from app.pipeline.icecat.enricher import IcecatCatalogEnricher
-from scripts.run_icecat_enrichment import hydrate_raw_store_context, STORE_FILES, DEFAULT_UNIFIED_PATH, DEFAULT_CACHE_PATH
+from scripts.run_icecat_enrichment import hydrate_raw_store_context, STORE_FILES, DEFAULT_UNIFIED_PATH
 
 
 def update_fingerprint_file() -> None:
     fp_path = SERVICE_ROOT / "app" / "matching" / "fingerprint.py"
-    with open(fp_path, "r", encoding="utf-8") as f:
+    with open(fp_path, encoding="utf-8") as f:
         content = f.read()
 
     # 1. Lenovo MPN normalization

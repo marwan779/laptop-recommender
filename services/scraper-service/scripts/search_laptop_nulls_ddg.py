@@ -43,7 +43,7 @@ def build_targeted_queries(laptop: dict[str, Any], null_fields: dict[str, list[s
     """
     title = laptop.get("title") or ""
     mpn = (laptop.get("mpn") or "").strip()
-    
+
     # Extract clean model tokens (e.g. FA608PM, FA608)
     m_code = re.search(r"\b(FA\d{3}[A-Z]{2}(?:-[A-Z0-9]+)?)\b", title, re.I)
     model_code = m_code.group(1) if m_code else "FA608PM"
@@ -158,7 +158,7 @@ def main() -> None:
         print(f"Error: Catalog file not found at {DEFAULT_UNIFIED_PATH}")
         sys.exit(1)
 
-    with open(DEFAULT_UNIFIED_PATH, "r", encoding="utf-8") as f:
+    with open(DEFAULT_UNIFIED_PATH, encoding="utf-8") as f:
         catalog = json.load(f)
 
     target_lap = next((l for l in catalog.get("laptops", []) if l.get("canonical_id") == args.canonical_id), None)
