@@ -27,11 +27,11 @@ def update_fingerprint_file() -> None:
         content = f.read()
 
     # 1. Lenovo MPN normalization
-    old_mpn_clean = "    cleaned = re.sub(r\"[\\s\\-_.]+\", \"\", cleaned).upper()"
+    old_mpn_clean = '    cleaned = re.sub(r"[\\s\\-_.]+", "", cleaned).upper()'
     new_mpn_clean = (
-        "    cleaned = re.sub(r\"[\\s\\-_.]+\", \"\", cleaned).upper()\n\n"
+        '    cleaned = re.sub(r"[\\s\\-_.]+", "", cleaned).upper()\n\n'
         "    # Normalize Lenovo model prefix embedded in MPN (e.g. '15IRX1083JE00DAED' -> '83JE00DAED')\n"
-        "    m_lenovo = re.search(r\"(8[0-9A-Z]{9}|2[0-9A-Z]{9})$\", cleaned)\n"
+        '    m_lenovo = re.search(r"(8[0-9A-Z]{9}|2[0-9A-Z]{9})$", cleaned)\n'
         "    if m_lenovo and len(cleaned) > 10:\n"
         "        cleaned = m_lenovo.group(1)"
     )
@@ -40,15 +40,15 @@ def update_fingerprint_file() -> None:
 
     # 2. Same MPN refresh rate veto relaxation
     old_hz = (
-        "    hz_a = item_a.get(\"refresh_hz\")\n"
-        "    hz_b = item_b.get(\"refresh_hz\")\n"
+        '    hz_a = item_a.get("refresh_hz")\n'
+        '    hz_b = item_b.get("refresh_hz")\n'
         "    if hz_a and hz_b and abs(hz_a - hz_b) > 10:\n"
         "        return False"
     )
     new_hz = (
-        "    hz_a = item_a.get(\"refresh_hz\")\n"
-        "    hz_b = item_b.get(\"refresh_hz\")\n"
-        "    same_mpn = bool(item_a.get(\"mpn\") and item_a.get(\"mpn\") == item_b.get(\"mpn\"))\n"
+        '    hz_a = item_a.get("refresh_hz")\n'
+        '    hz_b = item_b.get("refresh_hz")\n'
+        '    same_mpn = bool(item_a.get("mpn") and item_a.get("mpn") == item_b.get("mpn"))\n'
         "    if not same_mpn and hz_a and hz_b and abs(hz_a - hz_b) > 10:\n"
         "        return False"
     )
@@ -118,7 +118,9 @@ def main() -> None:
         print("[Rename] Renaming laptop_gigabyte_gaming_a16_a16ga6h_2 -> laptop_gigabyte_gaming_a16_i7_13620h_rtx5050")
         g2.canonical_id = "laptop_gigabyte_gaming_a16_i7_13620h_rtx5050"
         if "laptop_gigabyte_gaming_a16_a16ga6h_2" in enricher.llm_cache:
-            enricher.llm_cache["laptop_gigabyte_gaming_a16_i7_13620h_rtx5050"] = enricher.llm_cache.pop("laptop_gigabyte_gaming_a16_a16ga6h_2")
+            enricher.llm_cache["laptop_gigabyte_gaming_a16_i7_13620h_rtx5050"] = enricher.llm_cache.pop(
+                "laptop_gigabyte_gaming_a16_a16ga6h_2"
+            )
 
     # Filter out merged source duplicates
     cleaned_laptops = [l for l in catalog.laptops if l.canonical_id not in merged_src_ids]
@@ -126,7 +128,9 @@ def main() -> None:
     catalog.total_unique_laptops = len(cleaned_laptops)
     catalog.multi_store_laptops_count = sum(1 for l in catalog.laptops if l.stores_count > 1)
     catalog.overlap_rate_pct = round(catalog.multi_store_laptops_count / catalog.total_unique_laptops * 100.0, 2)
-    print(f"[2/5] Catalog deduplication complete: {len(cleaned_laptops)} unique laptops ({catalog.multi_store_laptops_count} multi-store).")
+    print(
+        f"[2/5] Catalog deduplication complete: {len(cleaned_laptops)} unique laptops ({catalog.multi_store_laptops_count} multi-store)."
+    )
 
     # Run finalize_laptop_specs on every laptop
     for lap in catalog.laptops:
@@ -153,14 +157,26 @@ def main() -> None:
     dups_remaining = [l["canonical_id"] for l in laps if "_2" in l["canonical_id"]]
     four_slots = [l["canonical_id"] for l in laps if (l["specs"].get("storage") or {}).get("slot_count") == 4]
     low_adps = [
-        l["canonical_id"] for l in laps
+        l["canonical_id"]
+        for l in laps
         if not (l["specs"].get("gpu") or {}).get("integrated")
         and (l["specs"].get("power_battery") or {}).get("power_adapter_w") is not None
-        and (l["specs"].get("power_battery") or {}).get("power_adapter_w") < ((l["specs"].get("gpu") or {}).get("tdp_w") or 0) + ((l["specs"].get("cpu") or {}).get("base_power_w") or 0)
+        and (l["specs"].get("power_battery") or {}).get("power_adapter_w")
+        < ((l["specs"].get("gpu") or {}).get("tdp_w") or 0) + ((l["specs"].get("cpu") or {}).get("base_power_w") or 0)
     ]
-    os_unnorm = [l["canonical_id"] for l in laps if (l["specs"].get("operating_system") or {}).get("name") in ("DOS", "Dos", "Windows 11")]
-    storage_unnorm = [l["canonical_id"] for l in laps if (l["specs"].get("storage") or {}).get("capacity_gb") in (1000, 500)]
-    cam_unnorm = [l["canonical_id"] for l in laps if (l["specs"].get("audio_webcam") or {}).get("webcam_resolution") in ("1080P", "720P", "5MP", "5.0M", "1.0M")]
+    os_unnorm = [
+        l["canonical_id"]
+        for l in laps
+        if (l["specs"].get("operating_system") or {}).get("name") in ("DOS", "Dos", "Windows 11")
+    ]
+    storage_unnorm = [
+        l["canonical_id"] for l in laps if (l["specs"].get("storage") or {}).get("capacity_gb") in (1000, 500)
+    ]
+    cam_unnorm = [
+        l["canonical_id"]
+        for l in laps
+        if (l["specs"].get("audio_webcam") or {}).get("webcam_resolution") in ("1080P", "720P", "5MP", "5.0M", "1.0M")
+    ]
 
     print("\n[5/5] Final Verification Results:")
     print(f"  Total unique laptops: {len(laps)}")

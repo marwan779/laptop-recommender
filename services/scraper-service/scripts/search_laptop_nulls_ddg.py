@@ -57,34 +57,19 @@ def build_targeted_queries(laptop: dict[str, Any], null_fields: dict[str, list[s
     queries = []
 
     # 1. Official ASUS page for exact model
-    queries.append((
-        "Official ASUS Global / Regional Store",
-        f'site:asus.com {base_chassis}'
-    ))
+    queries.append(("Official ASUS Global / Regional Store", f"site:asus.com {base_chassis}"))
 
     # 2. Comprehensive chassis-level specifications (FA608 family)
-    queries.append((
-        "ASUS TUF A16 FA608 Chassis Specifications",
-        f'ASUS TUF Gaming A16 {base_chassis} specifications'
-    ))
+    queries.append(("ASUS TUF A16 FA608 Chassis Specifications", f"ASUS TUF Gaming A16 {base_chassis} specifications"))
 
     # 3. Chassis Material & Ports (nulls: chassis_material, card_reader_type, thunderbolt)
-    queries.append((
-        "Chassis Material, Ports & Card Reader",
-        f'ASUS TUF A16 {base_chassis} material ports card reader'
-    ))
+    queries.append(("Chassis Material, Ports & Card Reader", f"ASUS TUF A16 {base_chassis} material ports card reader"))
 
     # 4. Webcam Privacy Shutter (null: has_privacy_shutter)
-    queries.append((
-        "Webcam & Privacy Shutter Evidence",
-        f'ASUS TUF {base_chassis} webcam privacy shutter'
-    ))
+    queries.append(("Webcam & Privacy Shutter Evidence", f"ASUS TUF {base_chassis} webcam privacy shutter"))
 
     # 5. GPU Boost Clock & TGP (null: boost_clock_mhz)
-    queries.append((
-        "GPU Boost Clock & TGP",
-        f'ASUS TUF {base_chassis} RTX 5060 boost clock TGP'
-    ))
+    queries.append(("GPU Boost Clock & TGP", f"ASUS TUF {base_chassis} RTX 5060 boost clock TGP"))
 
     return queries
 
@@ -128,11 +113,13 @@ def search_ddg_lite(query: str, session: Any = None, timeout: int = 15) -> list[
             snippet = snippets[idx].get_text(strip=True)
             snippet = re.sub(r"\s+", " ", snippet).strip()
 
-        results.append({
-            "title": title,
-            "url": raw_href,
-            "snippet": snippet,
-        })
+        results.append(
+            {
+                "title": title,
+                "url": raw_href,
+                "snippet": snippet,
+            }
+        )
 
     return results
 
@@ -188,6 +175,7 @@ def main() -> None:
 
     # 3. Execute Searches & Output Raw Results
     from curl_cffi import requests
+
     session = requests.Session(impersonate="chrome120")
 
     for idx, (label, q) in enumerate(queries, 1):
@@ -201,8 +189,10 @@ def main() -> None:
             print("    [!] No results returned.")
             continue
 
-        print(f"    Found {len(results)} raw results from DuckDuckGo Lite (showing top {min(args.max_results, len(results))}):")
-        for r_idx, r in enumerate(results[:args.max_results], 1):
+        print(
+            f"    Found {len(results)} raw results from DuckDuckGo Lite (showing top {min(args.max_results, len(results))}):"
+        )
+        for r_idx, r in enumerate(results[: args.max_results], 1):
             print(f"\n    [{r_idx}] TITLE   : {r['title']}")
             print(f"        URL     : {r['url']}")
             print(f"        SNIPPET : {r['snippet']}")

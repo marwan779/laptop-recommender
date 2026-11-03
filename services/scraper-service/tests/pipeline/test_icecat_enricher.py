@@ -387,38 +387,130 @@ def test_parse_asus_tuf_a16_extended_icecat_fields() -> None:
         "FeaturesGroups": [
             {
                 "Features": [
-                    {"Feature": {"Name": {"Value": "Colour name"}}, "PresentationValue": "Jaeger Gray", "RawValue": "Jaeger Gray"},
-                    {"Feature": {"Name": {"Value": "Product colour"}}, "PresentationValue": "Black, Grey", "RawValue": "Black, Grey"},
-                    {"Feature": {"Name": {"Value": "Form factor"}}, "PresentationValue": "Clamshell", "RawValue": "Clamshell"},
-                    {"Feature": {"Name": {"Value": "Market positioning"}}, "PresentationValue": "Gaming", "RawValue": "Gaming"},
-                    {"Feature": {"Name": {"Value": "Introduction year"}}, "PresentationValue": "2025", "RawValue": "2025"},
-                    {"Feature": {"Name": {"Value": "Display diagonal"}}, "PresentationValue": '40.6 cm (16")', "RawValue": "16"},
-                    {"Feature": {"Name": {"Value": "Display resolution"}}, "PresentationValue": "1920 x 1200 pixels", "RawValue": "1920 x 1200"},
+                    {
+                        "Feature": {"Name": {"Value": "Colour name"}},
+                        "PresentationValue": "Jaeger Gray",
+                        "RawValue": "Jaeger Gray",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Product colour"}},
+                        "PresentationValue": "Black, Grey",
+                        "RawValue": "Black, Grey",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Form factor"}},
+                        "PresentationValue": "Clamshell",
+                        "RawValue": "Clamshell",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Market positioning"}},
+                        "PresentationValue": "Gaming",
+                        "RawValue": "Gaming",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Introduction year"}},
+                        "PresentationValue": "2025",
+                        "RawValue": "2025",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Display diagonal"}},
+                        "PresentationValue": '40.6 cm (16")',
+                        "RawValue": "16",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Display resolution"}},
+                        "PresentationValue": "1920 x 1200 pixels",
+                        "RawValue": "1920 x 1200",
+                    },
                     {"Feature": {"Name": {"Value": "HD type"}}, "PresentationValue": "WUXGA", "RawValue": "WUXGA"},
                     {"Feature": {"Name": {"Value": "Anti-glare screen"}}, "PresentationValue": "Y", "RawValue": "Y"},
                     {"Feature": {"Name": {"Value": "NVIDIA G-SYNC"}}, "PresentationValue": "Y", "RawValue": "Y"},
-                    {"Feature": {"Name": {"Value": "On-board graphics card model"}}, "PresentationValue": "AMD Radeon 610M", "RawValue": "AMD Radeon 610M"},
-                    {"Feature": {"Name": {"Value": "Memory form factor"}}, "PresentationValue": "SO-DIMM", "RawValue": "SO-DIMM"},
-                    {"Feature": {"Name": {"Value": "Memory channels"}}, "PresentationValue": "Dual-channel", "RawValue": "Dual-channel"},
-                    {"Feature": {"Name": {"Value": "SSD interface"}}, "PresentationValue": "PCI Express 4.0", "RawValue": "PCI Express 4.0"},
+                    {
+                        "Feature": {"Name": {"Value": "On-board graphics card model"}},
+                        "PresentationValue": "AMD Radeon 610M",
+                        "RawValue": "AMD Radeon 610M",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Memory form factor"}},
+                        "PresentationValue": "SO-DIMM",
+                        "RawValue": "SO-DIMM",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Memory channels"}},
+                        "PresentationValue": "Dual-channel",
+                        "RawValue": "Dual-channel",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "SSD interface"}},
+                        "PresentationValue": "PCI Express 4.0",
+                        "RawValue": "PCI Express 4.0",
+                    },
                     {"Feature": {"Name": {"Value": "NVMe"}}, "PresentationValue": "Y", "RawValue": "Y"},
-                    {"Feature": {"Name": {"Value": "Number of SSDs installed"}}, "PresentationValue": "1", "RawValue": "1"},
-                    {"Feature": {"Name": {"Value": "Audio system"}}, "PresentationValue": "Dolby Atmos", "RawValue": "Dolby Atmos"},
+                    {
+                        "Feature": {"Name": {"Value": "Number of SSDs installed"}},
+                        "PresentationValue": "1",
+                        "RawValue": "1",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Audio system"}},
+                        "PresentationValue": "Dolby Atmos",
+                        "RawValue": "Dolby Atmos",
+                    },
                     {"Feature": {"Name": {"Value": "Antenna type"}}, "PresentationValue": "2x2", "RawValue": "2x2"},
-                    {"Feature": {"Name": {"Value": "Ethernet LAN data rates"}}, "PresentationValue": "10, 100, 1000 Mbit/s", "RawValue": "10, 100, 1000"},
-                    {"Feature": {"Name": {"Value": "USB Type-C DisplayPort Alternate Mode"}}, "PresentationValue": "Y", "RawValue": "Y"},
-                    {"Feature": {"Name": {"Value": "USB Power Delivery (USB PD)"}}, "PresentationValue": "Y", "RawValue": "Y"},
-                    {"Feature": {"Name": {"Value": "USB Type-C charging port"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {
+                        "Feature": {"Name": {"Value": "Ethernet LAN data rates"}},
+                        "PresentationValue": "10, 100, 1000 Mbit/s",
+                        "RawValue": "10, 100, 1000",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "USB Type-C DisplayPort Alternate Mode"}},
+                        "PresentationValue": "Y",
+                        "RawValue": "Y",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "USB Power Delivery (USB PD)"}},
+                        "PresentationValue": "Y",
+                        "RawValue": "Y",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "USB Type-C charging port"}},
+                        "PresentationValue": "Y",
+                        "RawValue": "Y",
+                    },
                     {"Feature": {"Name": {"Value": "Copilot key"}}, "PresentationValue": "Y", "RawValue": "Y"},
-                    {"Feature": {"Name": {"Value": "Battery technology"}}, "PresentationValue": "Lithium-Ion (Li-Ion)", "RawValue": "Lithium-Ion (Li-Ion)"},
-                    {"Feature": {"Name": {"Value": "Fast charging time (50%)"}}, "PresentationValue": "30 min", "RawValue": "30"},
+                    {
+                        "Feature": {"Name": {"Value": "Battery technology"}},
+                        "PresentationValue": "Lithium-Ion (Li-Ion)",
+                        "RawValue": "Lithium-Ion (Li-Ion)",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Fast charging time (50%)"}},
+                        "PresentationValue": "30 min",
+                        "RawValue": "30",
+                    },
                     {"Feature": {"Name": {"Value": "Face recognition"}}, "PresentationValue": "Y", "RawValue": "Y"},
                     {"Feature": {"Name": {"Value": "Windows Hello"}}, "PresentationValue": "Y", "RawValue": "Y"},
-                    {"Feature": {"Name": {"Value": "Trusted Platform Module (TPM)"}}, "PresentationValue": "Y", "RawValue": "Y"},
+                    {
+                        "Feature": {"Name": {"Value": "Trusted Platform Module (TPM)"}},
+                        "PresentationValue": "Y",
+                        "RawValue": "Y",
+                    },
                     {"Feature": {"Name": {"Value": "Password protection"}}, "PresentationValue": "Y", "RawValue": "Y"},
-                    {"Feature": {"Name": {"Value": "Password protection type"}}, "PresentationValue": "BIOS, User", "RawValue": "BIOS, User"},
-                    {"Feature": {"Name": {"Value": "Height (front)"}}, "PresentationValue": "1.79 cm", "RawValue": "1.79"},
-                    {"Feature": {"Name": {"Value": "Height (rear)"}}, "PresentationValue": "2.73 cm", "RawValue": "2.73"},
+                    {
+                        "Feature": {"Name": {"Value": "Password protection type"}},
+                        "PresentationValue": "BIOS, User",
+                        "RawValue": "BIOS, User",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Height (front)"}},
+                        "PresentationValue": "1.79 cm",
+                        "RawValue": "1.79",
+                    },
+                    {
+                        "Feature": {"Name": {"Value": "Height (rear)"}},
+                        "PresentationValue": "2.73 cm",
+                        "RawValue": "2.73",
+                    },
                 ]
             }
         ]

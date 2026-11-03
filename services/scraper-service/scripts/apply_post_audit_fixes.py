@@ -38,20 +38,20 @@ def update_metrics_engine_files() -> None:
                 "    if is_integrated:\n"
                 "        # Integrated GPU consumes 0W discrete power (power envelope shared within CPU package)\n"
                 "        p_actual = 0.0\n"
-                "        tgp_source = \"INTEGRATED_GPU\"\n"
+                '        tgp_source = "INTEGRATED_GPU"\n'
                 "        scale_factor_gpu = 1.0\n"
                 "    else:\n"
                 "        # Infer P_actual (Configured TGP for discrete GPUs)\n"
-                "        explicit_tgp = (gpu_spec or {}).get(\"tdp_w\")\n"
+                '        explicit_tgp = (gpu_spec or {}).get("tdp_w")\n'
                 "        if explicit_tgp is not None:\n"
                 "            p_actual = float(explicit_tgp)\n"
-                "            tgp_source = \"EXPLICIT_SPEC\"\n"
+                '            tgp_source = "EXPLICIT_SPEC"\n'
                 "        elif power_adapter_w is not None:\n"
                 "            p_actual = clamp(power_adapter_w - cpu_base_w - 25.0, tgp_min, tgp_max)\n"
-                "            tgp_source = \"INFERRED_FROM_CHARGER\"\n"
+                '            tgp_source = "INFERRED_FROM_CHARGER"\n'
                 "        else:\n"
                 "            p_actual = (tgp_min + tgp_max) / 2.0\n"
-                "            tgp_source = \"BENCHMARK_DEFAULT\"\n\n"
+                '            tgp_source = "BENCHMARK_DEFAULT"\n\n'
                 "        # Effective GPU Score (Guard 1: Normalized by 100)\n"
                 "        if tgp_max > tgp_min:\n"
                 "            scale_factor_gpu = 0.72 + 0.28 * ((p_actual - tgp_min) / (tgp_max - tgp_min))\n"
@@ -68,7 +68,7 @@ def update_metrics_engine_files() -> None:
                 "    # Metric 2: Electrical Power Sufficiency Margin (ΔP)\n"
                 "    if power_adapter_w is None:\n"
                 "        delta_p = 0.0\n"
-                "        electrical_status = \"UNKNOWN_CHARGER_NEUTRAL\"\n"
+                '        electrical_status = "UNKNOWN_CHARGER_NEUTRAL"\n'
                 "    else:\n"
                 "        delta_p = power_adapter_w - (cpu_base_w + p_actual + 25.0)"
             )
@@ -78,20 +78,20 @@ def update_metrics_engine_files() -> None:
                 "    if is_integrated:\n"
                 "        # Integrated GPU consumes 0W discrete power (power envelope shared within CPU package)\n"
                 "        p_actual = 0.0\n"
-                "        tgp_source = \"INTEGRATED_GPU\"\n"
+                '        tgp_source = "INTEGRATED_GPU"\n'
                 "        scale_factor_gpu = 1.0\n"
                 "    else:\n"
                 "        # Infer P_actual (Configured TGP for discrete GPUs)\n"
-                "        explicit_tgp = (gpu_spec or {}).get(\"tdp_w\")\n"
+                '        explicit_tgp = (gpu_spec or {}).get("tdp_w")\n'
                 "        if explicit_tgp is not None:\n"
                 "            p_actual = float(explicit_tgp)\n"
-                "            tgp_source = \"EXPLICIT_SPEC\"\n"
+                '            tgp_source = "EXPLICIT_SPEC"\n'
                 "        elif power_adapter_w is not None:\n"
                 "            p_actual = clamp(power_adapter_w - cpu_base_w - board_aux_w, tgp_min, tgp_max)\n"
-                "            tgp_source = \"INFERRED_FROM_CHARGER\"\n"
+                '            tgp_source = "INFERRED_FROM_CHARGER"\n'
                 "        else:\n"
                 "            p_actual = (tgp_min + tgp_max) / 2.0\n"
-                "            tgp_source = \"BENCHMARK_DEFAULT\"\n\n"
+                '            tgp_source = "BENCHMARK_DEFAULT"\n\n'
                 "        # Effective GPU Score (Guard 1: Normalized by 100)\n"
                 "        if tgp_max > tgp_min:\n"
                 "            scale_factor_gpu = 0.72 + 0.28 * ((p_actual - tgp_min) / (tgp_max - tgp_min))\n"
@@ -108,7 +108,7 @@ def update_metrics_engine_files() -> None:
                 "    # Metric 2: Electrical Power Sufficiency Margin (ΔP)\n"
                 "    if power_adapter_w is None:\n"
                 "        delta_p = 0.0\n"
-                "        electrical_status = \"UNKNOWN_CHARGER_NEUTRAL\"\n"
+                '        electrical_status = "UNKNOWN_CHARGER_NEUTRAL"\n'
                 "    else:\n"
                 "        delta_p = power_adapter_w - (cpu_base_w + p_actual + board_aux_w)"
             )
@@ -122,8 +122,8 @@ def update_metrics_engine_files() -> None:
     test_me_path = WORKSPACE_ROOT / "services" / "catalog-service" / "tests" / "test_metrics_engine.py"
     if test_me_path.is_file():
         t_content = test_me_path.read_text(encoding="utf-8").replace("\r\n", "\n")
-        old_test_dp = "    assert power[\"delta_p_watts\"] == 25.0"
-        new_test_dp = "    assert power[\"delta_p_watts\"] == 35.0"
+        old_test_dp = '    assert power["delta_p_watts"] == 25.0'
+        new_test_dp = '    assert power["delta_p_watts"] == 35.0'
         if old_test_dp in t_content:
             t_content = t_content.replace(old_test_dp, new_test_dp, 1)
             test_me_path.write_text(t_content.replace("\n", "\r\n"), encoding="utf-8")
@@ -137,18 +137,18 @@ def update_pipeline_source_code() -> None:
         det_content = det_path.read_text(encoding="utf-8").replace("\r\n", "\n")
 
         # 1. Touchscreen: filter out touchpad/trackpad from touch targets
-        old_tt = "        touch_targets = [primary_text, title, \" \".join(table.values())]"
+        old_tt = '        touch_targets = [primary_text, title, " ".join(table.values())]'
         new_tt = (
             "        # Touchscreen: Only evaluate display-relevant text, ignoring touchpad/pointing rows\n"
             "        disp_only_vals = [v for k, v in table.items() if not any(p in k.lower() for p in ('pad', 'pointing', 'mouse', 'input', 'keyboard'))]\n"
-            "        touch_targets = [primary_text, title, \" \".join(disp_only_vals)]"
+            '        touch_targets = [primary_text, title, " ".join(disp_only_vals)]'
         )
         if old_tt in det_content:
             det_content = det_content.replace(old_tt, new_tt, 1)
 
         # 2. Storage capacity: match (user-upgradable to 4TB) and strip expansion limits cleanly
-        old_strip = "            clean_tgt = re.sub(\n                r\"\\b(?:up\\s+to|support(?:s)?\\s*(?:up\\s+to)?)\\s*\\d+\\s*(?:tb|gb)\\b\", \"\", target, flags=re.I\n            )"
-        new_strip = "            clean_tgt = re.sub(\n                r\"\\b(?:up\\s+to|support(?:s)?\\s*(?:up\\s+to)?|user[- ]upgradable\\s+to|upgradable\\s+to|expandable\\s+to|max(?:\\b|\\.))\\s*\\d+\\s*(?:tb|gb)\\b\", \"\", target, flags=re.I\n            )"
+        old_strip = '            clean_tgt = re.sub(\n                r"\\b(?:up\\s+to|support(?:s)?\\s*(?:up\\s+to)?)\\s*\\d+\\s*(?:tb|gb)\\b", "", target, flags=re.I\n            )'
+        new_strip = '            clean_tgt = re.sub(\n                r"\\b(?:up\\s+to|support(?:s)?\\s*(?:up\\s+to)?|user[- ]upgradable\\s+to|upgradable\\s+to|expandable\\s+to|max(?:\\b|\\.))\\s*\\d+\\s*(?:tb|gb)\\b", "", target, flags=re.I\n            )'
         if old_strip in det_content:
             det_content = det_content.replace(old_strip, new_strip, 1)
 
@@ -162,48 +162,48 @@ def update_pipeline_source_code() -> None:
         # Remove artificial power floor override
         old_pwr_block = (
             "        # Power Adapter Physical Sizing Floor for Discrete GPUs\n"
-            "        pb_dict = specs.setdefault(\"power_battery\", {})\n"
+            '        pb_dict = specs.setdefault("power_battery", {})\n'
             "        if not is_integrated:\n"
-            "            gpu_tdp = gpu_dict.get(\"tdp_w\") or 0\n"
-            "            cpu_p = cpu_dict.get(\"base_power_w\") or 45\n"
+            '            gpu_tdp = gpu_dict.get("tdp_w") or 0\n'
+            '            cpu_p = cpu_dict.get("base_power_w") or 45\n'
             "            req_min = gpu_tdp + cpu_p + 25  # physical operating floor\n"
-            "            cur_adp = pb_dict.get(\"power_adapter_w\")\n\n"
+            '            cur_adp = pb_dict.get("power_adapter_w")\n\n'
             "            if cur_adp is None or cur_adp < req_min:\n"
             "                # Search source_table for explicit AC Adapter / power supply (avoiding CPU-GPU combined power or dynamic boost)\n"
             "                m_adp = re.search(\n"
-            "                    r\"\\b(1[3578]\\d|2[0348]\\d|330|400)\\s*w\\s*(?:ac\\s*adapter|power\\s*(?:adapter|supply)|charger)\\b\",\n"
+            '                    r"\\b(1[3578]\\d|2[0348]\\d|330|400)\\s*w\\s*(?:ac\\s*adapter|power\\s*(?:adapter|supply)|charger)\\b",\n'
             "                    source_table_str,\n"
             "                    re.I,\n"
             "                )\n"
             "                cand_w = float(m_adp.group(1)) if m_adp else 0.0\n"
             "                if cand_w >= req_min:\n"
-            "                    pb_dict[\"power_adapter_w\"] = cand_w\n"
+            '                    pb_dict["power_adapter_w"] = cand_w\n'
             "                else:\n"
-            "                    gpu_m = str(gpu_dict.get(\"model\") or \"\").lower()\n"
-            "                    if any(top_gpu in gpu_m for top_gpu in (\"5090\", \"5080\", \"4090\", \"4080\")):\n"
-            "                        pb_dict[\"power_adapter_w\"] = 330.0\n"
-            "                    elif any(mid_gpu in gpu_m for mid_gpu in (\"5070\", \"4070\")):\n"
-            "                        pb_dict[\"power_adapter_w\"] = 240.0\n"
-            "                    elif any(g_gpu in gpu_m for g_gpu in (\"5060\", \"4060\")):\n"
-            "                        pb_dict[\"power_adapter_w\"] = 230.0\n"
-            "                    elif cpu_p >= 55 or \"tuf\" in title_lower or \"loq\" in title_lower or \"victus\" in title_lower:\n"
-            "                        pb_dict[\"power_adapter_w\"] = 200.0\n"
-            "                    elif \"nitro\" in title_lower:\n"
-            "                        pb_dict[\"power_adapter_w\"] = 135.0\n"
+            '                    gpu_m = str(gpu_dict.get("model") or "").lower()\n'
+            '                    if any(top_gpu in gpu_m for top_gpu in ("5090", "5080", "4090", "4080")):\n'
+            '                        pb_dict["power_adapter_w"] = 330.0\n'
+            '                    elif any(mid_gpu in gpu_m for mid_gpu in ("5070", "4070")):\n'
+            '                        pb_dict["power_adapter_w"] = 240.0\n'
+            '                    elif any(g_gpu in gpu_m for g_gpu in ("5060", "4060")):\n'
+            '                        pb_dict["power_adapter_w"] = 230.0\n'
+            '                    elif cpu_p >= 55 or "tuf" in title_lower or "loq" in title_lower or "victus" in title_lower:\n'
+            '                        pb_dict["power_adapter_w"] = 200.0\n'
+            '                    elif "nitro" in title_lower:\n'
+            '                        pb_dict["power_adapter_w"] = 135.0\n'
             "                    else:\n"
-            "                        pb_dict[\"power_adapter_w\"] = 120.0"
+            '                        pb_dict["power_adapter_w"] = 120.0'
         )
         new_pwr_block = (
             "        # Power Adapter: Keep authentic store/Icecat wattage; extract from source_table only if currently None\n"
-            "        pb_dict = specs.setdefault(\"power_battery\", {})\n"
-            "        if pb_dict.get(\"power_adapter_w\") is None and not is_integrated:\n"
+            '        pb_dict = specs.setdefault("power_battery", {})\n'
+            '        if pb_dict.get("power_adapter_w") is None and not is_integrated:\n'
             "            m_adp = re.search(\n"
-            "                r\"\\b(65|90|100|120|135|140|150|170|180|200|230|240|280|300|330|400)\\s*w\\s*(?:ac\\s*adapter|power\\s*(?:adapter|supply)|charger|slim\\s*tip)\\b\",\n"
+            '                r"\\b(65|90|100|120|135|140|150|170|180|200|230|240|280|300|330|400)\\s*w\\s*(?:ac\\s*adapter|power\\s*(?:adapter|supply)|charger|slim\\s*tip)\\b",\n'
             "                source_table_str,\n"
             "                re.I,\n"
             "            )\n"
             "            if m_adp:\n"
-            "                pb_dict[\"power_adapter_w\"] = float(m_adp.group(1))"
+            '                pb_dict["power_adapter_w"] = float(m_adp.group(1))'
         )
         if old_pwr_block in enr_content:
             enr_content = enr_content.replace(old_pwr_block, new_pwr_block, 1)
@@ -253,10 +253,28 @@ def main() -> None:
 
     # Set of gaming chassis terms
     gaming_terms = (
-        "loq", "legion", "tuf", "strix", "scar", "zephyrus", "nitro",
-        "predator", "victus", "omen", "cyborg", "katana", "sword",
-        "vector", "raider", "crosshair", "pulse", "alienware", "aorus",
-        "gaming a16", "gaming g5", "gaming g6"
+        "loq",
+        "legion",
+        "tuf",
+        "strix",
+        "scar",
+        "zephyrus",
+        "nitro",
+        "predator",
+        "victus",
+        "omen",
+        "cyborg",
+        "katana",
+        "sword",
+        "vector",
+        "raider",
+        "crosshair",
+        "pulse",
+        "alienware",
+        "aorus",
+        "gaming a16",
+        "gaming g5",
+        "gaming g6",
     )
 
     restored_adapters = 0
@@ -347,10 +365,10 @@ def main() -> None:
         # Halved RAM corrections (title has merchant upgraded RAM)
         halved_ram_map = {
             "laptop_asus_g834jzr_n6027w_90nr0in2m000y0": 32,  # Strix SCAR 18
-            "laptop_asus_rog_zephyrus_gu605myqr061w": 32,      # Zephyrus G16
-            "laptop_acer_predator_helios_nhqw2em001": 32,       # Helios 16
-            "laptop_acer_aspire_go_nxjv0em006": 16,             # Aspire Go 16
-            "laptop_hp_victus_r1032nia": 16,                    # Victus 16
+            "laptop_asus_rog_zephyrus_gu605myqr061w": 32,  # Zephyrus G16
+            "laptop_acer_predator_helios_nhqw2em001": 32,  # Helios 16
+            "laptop_acer_aspire_go_nxjv0em006": 16,  # Aspire Go 16
+            "laptop_hp_victus_r1032nia": 16,  # Victus 16
         }
         if cid in halved_ram_map:
             mem_dict["capacity_gb"] = halved_ram_map[cid]
@@ -431,7 +449,9 @@ def main() -> None:
         catalog["laptops"] = laptops
         catalog["total_unique_laptops"] = len(laptops)
         catalog["multi_store_laptops_count"] = sum(1 for l in laptops if l.get("stores_count", 0) > 1)
-        catalog["overlap_rate_pct"] = round(catalog["multi_store_laptops_count"] / catalog["total_unique_laptops"] * 100.0, 2)
+        catalog["overlap_rate_pct"] = round(
+            catalog["multi_store_laptops_count"] / catalog["total_unique_laptops"] * 100.0, 2
+        )
         print(f"[5/7] Merged 2 1-EGP duplicate listings: new total {len(laptops)} laptops.")
 
     # Save to scraper-service results
@@ -440,7 +460,9 @@ def main() -> None:
     print(f"[6/7] Saved updated catalog to: {cat_path}")
 
     # Sync to catalog-service scraping input
-    catalog_input_path = WORKSPACE_ROOT / "services" / "catalog-service" / "scraping input" / "unified_catalog_latest.json"
+    catalog_input_path = (
+        WORKSPACE_ROOT / "services" / "catalog-service" / "scraping input" / "unified_catalog_latest.json"
+    )
     if catalog_input_path.parent.is_dir():
         with open(catalog_input_path, "w", encoding="utf-8") as f:
             json.dump(catalog, f, indent=2, ensure_ascii=False)
@@ -448,11 +470,31 @@ def main() -> None:
 
     # Final Verification
     print("\n--- Final Verification Summary ---")
-    rem_touch = [l["canonical_id"] for l in laptops if any(gt in (l.get("title") or "").lower() for gt in gaming_terms) and (l["specs"].get("display") or {}).get("touchscreen") is True]
-    rem_scar_60 = [l["canonical_id"] for l in laptops if any(s in (l.get("title") or "").lower() for s in ("strix", "scar")) and (l["specs"].get("display") or {}).get("refresh_rate_hz") == 60]
-    rem_4tb = [l["canonical_id"] for l in laptops if "gigabyte_gaming_a16" in l["canonical_id"] and (l["specs"].get("storage") or {}).get("capacity_gb") == 4096]
-    rem_64gb = [l["canonical_id"] for l in laptops if "gigabyte_gaming_a16" in l["canonical_id"] and (l["specs"].get("memory") or {}).get("capacity_gb") == 64]
-    rem_35ms = [l["canonical_id"] for l in laptops if (l["specs"].get("display") or {}).get("response_time_ms") in (35, 35.0)]
+    rem_touch = [
+        l["canonical_id"]
+        for l in laptops
+        if any(gt in (l.get("title") or "").lower() for gt in gaming_terms)
+        and (l["specs"].get("display") or {}).get("touchscreen") is True
+    ]
+    rem_scar_60 = [
+        l["canonical_id"]
+        for l in laptops
+        if any(s in (l.get("title") or "").lower() for s in ("strix", "scar"))
+        and (l["specs"].get("display") or {}).get("refresh_rate_hz") == 60
+    ]
+    rem_4tb = [
+        l["canonical_id"]
+        for l in laptops
+        if "gigabyte_gaming_a16" in l["canonical_id"] and (l["specs"].get("storage") or {}).get("capacity_gb") == 4096
+    ]
+    rem_64gb = [
+        l["canonical_id"]
+        for l in laptops
+        if "gigabyte_gaming_a16" in l["canonical_id"] and (l["specs"].get("memory") or {}).get("capacity_gb") == 64
+    ]
+    rem_35ms = [
+        l["canonical_id"] for l in laptops if (l["specs"].get("display") or {}).get("response_time_ms") in (35, 35.0)
+    ]
 
     print(f"  Total Unique Laptops: {len(laptops)}")
     print(f"  Remaining Gaming Touchscreens: {len(rem_touch)} {rem_touch}")

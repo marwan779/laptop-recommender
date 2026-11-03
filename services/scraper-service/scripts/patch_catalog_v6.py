@@ -165,13 +165,7 @@ def apply_fixes(input_path: str | Path, output_path: str | Path) -> None:
                 fam = "Omen"
             elif "probook" in t_low:
                 fam = "Probook"
-            elif (
-                "250 g" in t_low
-                or "255 g" in t_low
-                or "15-fd" in t_low
-                or "15-fc" in t_low
-                or "gw0054" in t_low
-            ):
+            elif "250 g" in t_low or "255 g" in t_low or "15-fd" in t_low or "15-fc" in t_low or "gw0054" in t_low:
                 fam = "HP Essential"
             elif "g6x" in t_low or "g6 " in t_low or "g5 " in t_low:
                 fam = "Gigabyte G-Series"
