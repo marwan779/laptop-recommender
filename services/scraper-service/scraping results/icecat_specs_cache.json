@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-02T19:32:34.556263+00:00",
+  "updated_at": "2026-11-02T21:07:57.895933+00:00",
   "matches_by_canonical_id": {
     "laptop_asus_tuf_gaming_90nr0mc1m003t0": {
       "match_status": "EXACT_MATCH",
@@ -1106306,7 +1106306,7 @@
           "form_factor": "On-board"
         },
         "storage": {
-          "capacity_gb": 500,
+          "capacity_gb": 512,
           "storage_type": "HDD",
           "interface": null,
           "form_factor": null,
@@ -1106507,7 +1106507,7 @@
         "audio_webcam": {
           "speaker_count": null,
           "microphone": null,
-          "webcam_resolution": "720 MP",
+          "webcam_resolution": "720p",
           "has_privacy_shutter": null,
           "has_ir_camera": null,
           "raw_spec": null
@@ -1106529,7 +1106529,7 @@
           "ethernet_speed": "1 Gbps"
         },
         "operating_system": {
-          "name": "Windows 11",
+          "name": "Windows 11 Home",
           "raw_spec": "Operating System: Windows 11"
         }
       }
@@ -1106613,7 +1106613,7 @@
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": "M.2",
-          "slot_count": 1,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 2TB PCIe 4.0 NVMe M.2 Performance SSD | Storage > I/O Ports: 1x 3.5mm Combo Audio Jack | Storage > 1x HDMI 2.1 FRL: 2x USB 3.2 Gen 2 Type-A | Storage > Keyboard and Touchpad: Backlit Chiclet Keyboard | Storage > (1-Zone RGB): Touchpad",
           "installed_ssd_count": 1
@@ -1106672,7 +1106672,7 @@
         "audio_webcam": {
           "speaker_count": 4,
           "microphone": true,
-          "webcam_resolution": "1080P",
+          "webcam_resolution": "1080p",
           "has_privacy_shutter": null,
           "has_ir_camera": true,
           "raw_spec": "Camera: 1080P FHD IR Camera for Windows Hello | Audio: Smart Amp Technology Dolby Atmos AI noise-canceling technology Hi-Res certification (for headphones) Built-in 3-microphone array 4-speaker system with dual force woofers and Smart Amplifier Technology 2 Tweeters | 1080P FHD IR Camera: for Windows Hello | Smart Amp Technology: Dolby Atmos | AI noise-canceling technology: Hi-Res certification",
@@ -1106861,7 +1106861,7 @@
           "usb_c_power_delivery": true
         },
         "operating_system": {
-          "name": "Windows 11",
+          "name": "Windows 11 Home",
           "raw_spec": "Operating System: Windows 11"
         }
       }
@@ -1107016,7 +1107016,7 @@
           "usb_c_power_delivery": true
         },
         "operating_system": {
-          "name": "Windows 11",
+          "name": "Windows 11 Home",
           "raw_spec": "Operating System: Windows 11"
         }
       }
@@ -1107422,7 +1107422,7 @@
           "storage_type": "SSD",
           "interface": "PCIe 5.0 NVMe",
           "form_factor": "M.2",
-          "slot_count": 1,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Total Solid State Drive Capacity: 1 TB | Solid State Drive Interface: PCI Express NVMe 5.0 | Storage: 1TB PCIe Gen 5 NVMe M.2 SSD | 32GB DDR5 + 1TB SSD: DDR5 6400MT/s • PCIe Gen 5 NVMe",
           "installed_ssd_count": 1
@@ -1107909,7 +1107909,7 @@
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": "M.2",
-          "slot_count": 1,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage Capacity: 512GB PCIe Gen4x4 M.2 SSD (user-upgradable to 4TB) | Storage: Capacity: 512GB PCIe Gen4x4 M.2 SSD (user-upgradable to 4TB) Speed: Ultra-fast data transfer for quick boot times and large file handling. | Storage > Capacity: 512GB PCIe Gen4x4 M.2 SSD (user-upgradable to 4TB) | Storage > Speed: Ultra-fast data transfer for quick boot times and large file handling.",
           "installed_ssd_count": 1
@@ -1107934,7 +1107934,7 @@
         "power_battery": {
           "battery_capacity_wh": 76.0,
           "battery_cells": 4,
-          "power_adapter_w": 150.0,
+          "power_adapter_w": 120.0,
           "fast_charging": true,
           "raw_spec": "Battery Type: Li-Polymer | Battery Capacity: 76Wh for moderate runtime. | Adapter: 150W AC Adapter for stable power delivery. | Battery & Power: Battery Type: Li-Polymer Capacity: 76Wh for moderate runtime. Adapter: 150W AC Adapter for stable power delivery. | Battery & Power > Capacity: 76Wh for moderate runtime.",
           "battery_type": "Lithium Polymer (LiPo)",
@@ -1108102,7 +1108102,7 @@
         "power_battery": {
           "battery_capacity_wh": 73.0,
           "battery_cells": null,
-          "power_adapter_w": 180.0,
+          "power_adapter_w": 230.0,
           "fast_charging": null,
           "raw_spec": "Adapter: 180W AC Adapter, 100W PD | Battery: Lithium-Ion 73Wh Adapter : 180W AC Adapter, 100W PD | Battery > Adapter: 180W AC Adapter, 100W PD",
           "battery_type": "Lithium Polymer (LiPo)"
@@ -1108242,7 +1108242,7 @@
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": "M.2",
-          "slot_count": 1,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: Up to 4TB PCIe NVMe M.2 SSD",
           "installed_ssd_count": 1
@@ -1108267,7 +1108267,7 @@
         "power_battery": {
           "battery_capacity_wh": 76.0,
           "battery_cells": 4,
-          "power_adapter_w": 150.0,
+          "power_adapter_w": 120.0,
           "fast_charging": true,
           "raw_spec": "Battery: Li Polymer 76Wh | Adapter: 150W AC Adapter",
           "battery_type": "Lithium Polymer (LiPo)",
@@ -1108422,7 +1108422,7 @@
         "power_battery": {
           "battery_capacity_wh": 76.0,
           "battery_cells": 4,
-          "power_adapter_w": 150.0,
+          "power_adapter_w": 120.0,
           "fast_charging": true,
           "raw_spec": "Battery: 76Wh lithium-ion battery | Power Adapter: 150W AC adapter",
           "battery_type": "Lithium Polymer (LiPo)",
@@ -1109027,7 +1109027,7 @@
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": "M.2",
-          "slot_count": 1,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 1TB Nvme GEN 4",
           "installed_ssd_count": 1
@@ -1109186,11 +1109186,11 @@
           "form_factor": "SO-DIMM"
         },
         "storage": {
-          "capacity_gb": 1000,
+          "capacity_gb": 1024,
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": "M.2",
-          "slot_count": 1,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 1T Nvme GEN 4",
           "installed_ssd_count": 1
@@ -1109215,7 +1109215,7 @@
         "power_battery": {
           "battery_capacity_wh": 70.0,
           "battery_cells": 4,
-          "power_adapter_w": 150.0,
+          "power_adapter_w": 230.0,
           "fast_charging": true,
           "raw_spec": "Battery: 70Wh | Power Adapter: 150W",
           "battery_type": "Lithium Polymer (LiPo)",
@@ -1109674,7 +1109674,7 @@
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": "M.2",
-          "slot_count": 1,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 512GB PCIe Gen4 NVMe M.2 SSD",
           "installed_ssd_count": 1
@@ -1109699,7 +1109699,7 @@
         "power_battery": {
           "battery_capacity_wh": 70.0,
           "battery_cells": 4,
-          "power_adapter_w": 150.0,
+          "power_adapter_w": 200.0,
           "fast_charging": true,
           "raw_spec": "Battery: 4-cell, 70 Wh Li-ion polymer",
           "battery_type": "Lithium Polymer (LiPo)",
@@ -1110066,7 +1110066,7 @@
           "cellular": "No"
         },
         "operating_system": {
-          "name": "DOS",
+          "name": "FreeDOS",
           "raw_spec": "Operating System: DOS"
         }
       }
@@ -1110172,7 +1110172,7 @@
         "power_battery": {
           "battery_capacity_wh": 57.0,
           "battery_cells": null,
-          "power_adapter_w": 135.0,
+          "power_adapter_w": 200.0,
           "fast_charging": true,
           "raw_spec": "Battery: 57Wh | Power Adapter: 135W",
           "battery_type": "Lithium Polymer (LiPo)",
@@ -1110518,7 +1110518,7 @@
         "audio_webcam": {
           "speaker_count": null,
           "microphone": null,
-          "webcam_resolution": "720P",
+          "webcam_resolution": "720p",
           "has_privacy_shutter": null,
           "has_ir_camera": null,
           "raw_spec": "Camera: 720P HD camera | Audio Tech: Dolby Atmos, Hi-Res certification, AI noise-canceling"
@@ -1110639,7 +1110639,7 @@
         "power_battery": {
           "battery_capacity_wh": 56.0,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 200.0,
           "fast_charging": true,
           "raw_spec": "Battery: 56Wh | Fast Charging: 0-50% in 30 minutes",
           "fast_charge_50_mins": 30
@@ -1110788,7 +1110788,7 @@
         "power_battery": {
           "battery_capacity_wh": null,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 240.0,
           "fast_charging": null,
           "raw_spec": null
         },
@@ -1111189,7 +1111189,7 @@
         "power_battery": {
           "battery_capacity_wh": null,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 120.0,
           "fast_charging": null,
           "raw_spec": null
         },
@@ -1111319,7 +1111319,7 @@
         "power_battery": {
           "battery_capacity_wh": 41.0,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 120.0,
           "fast_charging": null,
           "raw_spec": "A battery that lasts: With a 41 Whr battery, you know you can rely on your device to power through the day."
         },
@@ -1111436,7 +1111436,7 @@
           "storage_type": "SSD",
           "interface": "NVMe",
           "form_factor": "M.2",
-          "slot_count": null,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 1 TB, M.2, PCIe NVMe, SSD"
         },
@@ -1111460,7 +1111460,7 @@
         "power_battery": {
           "battery_capacity_wh": null,
           "battery_cells": null,
-          "power_adapter_w": 130.0,
+          "power_adapter_w": 230.0,
           "fast_charging": null,
           "raw_spec": "Power Adapter: 130W or 180W Adapter options"
         },
@@ -1111583,7 +1111583,7 @@
           "storage_type": "SSD",
           "interface": "NVMe",
           "form_factor": null,
-          "slot_count": null,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 1TB NVMe SSD"
         },
@@ -1111607,7 +1111607,7 @@
         "power_battery": {
           "battery_capacity_wh": 60,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 240.0,
           "fast_charging": null,
           "raw_spec": null
         },
@@ -1111724,7 +1111724,7 @@
           "storage_type": "SSD",
           "interface": "NVMe",
           "form_factor": null,
-          "slot_count": null,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 1TB SSD NVMe"
         },
@@ -1111748,7 +1111748,7 @@
         "power_battery": {
           "battery_capacity_wh": null,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 240.0,
           "fast_charging": null,
           "raw_spec": null
         },
@@ -1112565,7 +1112565,7 @@
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": null,
-          "slot_count": null,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 512GB Nvme GEN 4"
         },
@@ -1112737,7 +1112737,7 @@
         "power_battery": {
           "battery_capacity_wh": 70.0,
           "battery_cells": null,
-          "power_adapter_w": 120.0,
+          "power_adapter_w": 200.0,
           "fast_charging": null,
           "raw_spec": "Battery: 70Wh | Power Adapter: 120W"
         },
@@ -1112930,7 +1112930,7 @@
           "ethernet_speed": "1 Gbps"
         },
         "operating_system": {
-          "name": "DOS",
+          "name": "FreeDOS",
           "raw_spec": "Operating System: DOS"
         }
       }
@@ -1113178,7 +1113178,7 @@
         "power_battery": {
           "battery_capacity_wh": 56.0,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 135.0,
           "fast_charging": null,
           "raw_spec": null
         },
@@ -1113316,7 +1113316,7 @@
         "power_battery": {
           "battery_capacity_wh": 52.5,
           "battery_cells": null,
-          "power_adapter_w": 120.0,
+          "power_adapter_w": 200.0,
           "fast_charging": null,
           "raw_spec": "Battery: 52.5Wh | Power Adapter: 120W"
         },
@@ -1113440,7 +1113440,7 @@
           "storage_type": "SSD",
           "interface": "GEN 4",
           "form_factor": "M.2 2280 GEN 4",
-          "slot_count": 1,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 1TB SSD | Storage Slot: One M.2 2280 GEN 4 slot"
         },
@@ -1113506,7 +1113506,7 @@
           "raw_spec": "WLAN + Bluetooth: Wi-Fi 6 + BT5.3"
         },
         "operating_system": {
-          "name": "DOS",
+          "name": "FreeDOS",
           "raw_spec": "Operating System: DOS"
         }
       }
@@ -1113581,7 +1113581,7 @@
           "storage_type": "SSD",
           "interface": null,
           "form_factor": null,
-          "slot_count": null,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 1TB SSD"
         },
@@ -1113605,7 +1113605,7 @@
         "power_battery": {
           "battery_capacity_wh": null,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 200.0,
           "fast_charging": null,
           "raw_spec": null
         },
@@ -1113744,7 +1113744,7 @@
         "power_battery": {
           "battery_capacity_wh": null,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 240.0,
           "fast_charging": null,
           "raw_spec": null
         },
@@ -1113928,7 +1113928,7 @@
           "ethernet_speed": "1 Gbps"
         },
         "operating_system": {
-          "name": "DOS",
+          "name": "FreeDOS",
           "raw_spec": "Operating System: DOS"
         }
       }
@@ -1114002,7 +1114002,7 @@
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": "M.2",
-          "slot_count": null,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage Capacity: 512 GB | SSD Count: 1 | SSD Type: PCIe Gen4 NVMe M.2 | STORAGE: 512 GB"
         },
@@ -1114026,7 +1114026,7 @@
         "power_battery": {
           "battery_capacity_wh": 70.0,
           "battery_cells": 4,
-          "power_adapter_w": null,
+          "power_adapter_w": 200.0,
           "fast_charging": true,
           "raw_spec": "Max Turbo Power: 157 W | Battery Type: Lithium Polymer (LiPo) | Battery Cells: 4 | Battery Capacity: 70 Wh | Maximum Battery Life: 5.25 hours | Video Playback Time: 7 hours | Fast Charging: Yes (50% in 30 minutes) | BATTERY: 70 Wh",
           "fast_charge_50_mins": 30
@@ -1114447,7 +1114447,7 @@
           "raw_spec": "Memory: 16GB DDR5 5600Hz | Memory Slots: Two DDR5 slots"
         },
         "storage": {
-          "capacity_gb": 1000,
+          "capacity_gb": 1024,
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": "M.2 2242",
@@ -1114532,7 +1114532,7 @@
           "usb_c_power_delivery": true
         },
         "operating_system": {
-          "name": "Windows 11",
+          "name": "Windows 11 Home",
           "raw_spec": "Operating System: Windows 11"
         }
       }
@@ -1114631,7 +1114631,7 @@
         "power_battery": {
           "battery_capacity_wh": 60.0,
           "battery_cells": null,
-          "power_adapter_w": 180.0,
+          "power_adapter_w": 120.0,
           "fast_charging": null,
           "raw_spec": "Battery: 60Wh | Power Adapter: 180W"
         },
@@ -1114671,7 +1114671,7 @@
           "raw_spec": null
         },
         "operating_system": {
-          "name": "Dos",
+          "name": "FreeDOS",
           "raw_spec": "Operating System: Dos"
         }
       }
@@ -1114746,7 +1114746,7 @@
           "storage_type": "SSD",
           "interface": "PCIe 4.0 NVMe",
           "form_factor": null,
-          "slot_count": null,
+          "slot_count": 2,
           "max_supported_gb": null,
           "raw_spec": "Storage: 512GB Nvme GEN 4"
         },
@@ -1114770,7 +1114770,7 @@
         "power_battery": {
           "battery_capacity_wh": 70.0,
           "battery_cells": null,
-          "power_adapter_w": null,
+          "power_adapter_w": 240.0,
           "fast_charging": null,
           "raw_spec": "Battery: 70Wh"
         },
