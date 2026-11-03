@@ -126,6 +126,7 @@ class CatalogMetricsService:
                 gpu_benchmarks=gpu_benchmarks,
             )
             laptop["hardware_metrics"] = metrics
+            laptop["derived_metrics"] = metrics
             processed_count += 1
 
             gpu_scores.append(metrics["silicon"]["effective_gpu_score"])
