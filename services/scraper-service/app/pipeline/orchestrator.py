@@ -64,6 +64,7 @@ class LaptopExtractionPipeline:
         scraper_engine: ScraplingEngine | None = None,
         raw_storage: RawScrapeStorage | None = None,
         log_envelopes: bool = False,
+        core_only_ai: bool = False,
     ) -> None:
         self.ai_fallback = ai_fallback
         self.scraper_engine = scraper_engine or ScraplingEngine()
@@ -74,6 +75,7 @@ class LaptopExtractionPipeline:
         self.validator = PhysicalValidator()
         self.prompt_normalizer = EnvelopePromptNormalizer()
         self.log_envelopes = log_envelopes
+        self.core_only_ai = core_only_ai
 
     def process_raw_product(self, product: RawScrapedProduct) -> PipelineResult:
         """Run extraction layers 2 through 7 on a raw scraped product."""
@@ -197,48 +199,58 @@ class LaptopExtractionPipeline:
                     specs[cat][f_name] = cleaned_val
 
         # --- Component Envelope Packaging ---
-        COMPONENT_DEFINITIONS = {
-            "identity": ["laptop_family", "laptop_model", "manufacturer_part_number", "color", "warranty_years"],
-            "gpu": ["model", "vram_gb", "tdp_w", "integrated"],
-            "memory": ["capacity_gb", "memory_type", "speed", "slot_count", "max_supported_gb", "is_soldered"],
-            "storage": ["capacity_gb", "storage_type", "interface", "form_factor", "slot_count"],
-            "display": [
-                "size_inches",
-                "resolution",
-                "refresh_rate_hz",
-                "panel_type",
-                "aspect_ratio",
-                "touchscreen",
-                "brightness_nits",
-                "color_gamut",
-                "response_time_ms",
-            ],
-            "power_battery": ["battery_capacity_wh", "power_adapter_w", "battery_cells", "fast_charging"],
-            "physical": ["weight_kg", "width_mm", "depth_mm", "height_mm"],
-            "connectivity": [
-                "wifi",
-                "bluetooth",
-                "ethernet",
-                "has_card_reader",
-                "card_reader_type",
-                "thunderbolt_version",
-            ],
-            "audio_webcam": [
-                "speaker_count",
-                "webcam_resolution",
-                "has_ir_camera",
-                "has_privacy_shutter",
-                "microphone",
-            ],
-            "build_security": [
-                "has_backlit_keyboard",
-                "keyboard_backlight_type",
-                "has_fingerprint",
-                "has_numpad",
-                "chassis_material",
-            ],
-            "operating_system": ["name"],
-        }
+        if self.core_only_ai:
+            COMPONENT_DEFINITIONS = {
+                "identity": ["laptop_family", "laptop_model", "manufacturer_part_number", "color", "warranty_years"],
+                "gpu": ["model", "vram_gb", "tdp_w", "integrated"],
+                "memory": ["capacity_gb"],
+                "storage": ["capacity_gb"],
+                "display": ["size_inches", "refresh_rate_hz"],
+                "operating_system": ["name"],
+            }
+        else:
+            COMPONENT_DEFINITIONS = {
+                "identity": ["laptop_family", "laptop_model", "manufacturer_part_number", "color", "warranty_years"],
+                "gpu": ["model", "vram_gb", "tdp_w", "integrated"],
+                "memory": ["capacity_gb", "memory_type", "speed", "slot_count", "max_supported_gb", "is_soldered"],
+                "storage": ["capacity_gb", "storage_type", "interface", "form_factor", "slot_count"],
+                "display": [
+                    "size_inches",
+                    "resolution",
+                    "refresh_rate_hz",
+                    "panel_type",
+                    "aspect_ratio",
+                    "touchscreen",
+                    "brightness_nits",
+                    "color_gamut",
+                    "response_time_ms",
+                ],
+                "power_battery": ["battery_capacity_wh", "power_adapter_w", "battery_cells", "fast_charging"],
+                "physical": ["weight_kg", "width_mm", "depth_mm", "height_mm"],
+                "connectivity": [
+                    "wifi",
+                    "bluetooth",
+                    "ethernet",
+                    "has_card_reader",
+                    "card_reader_type",
+                    "thunderbolt_version",
+                ],
+                "audio_webcam": [
+                    "speaker_count",
+                    "webcam_resolution",
+                    "has_ir_camera",
+                    "has_privacy_shutter",
+                    "microphone",
+                ],
+                "build_security": [
+                    "has_backlit_keyboard",
+                    "keyboard_backlight_type",
+                    "has_fingerprint",
+                    "has_numpad",
+                    "chassis_material",
+                ],
+                "operating_system": ["name"],
+            }
 
         COMPONENT_ENUMS = {
             "display": {

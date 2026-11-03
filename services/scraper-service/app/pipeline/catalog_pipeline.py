@@ -128,13 +128,15 @@ class GenericCatalogPipeline:
         self,
         ai_fallback: IAIFallbackExtractor | None = None,
         auditor: LLMAuditor | None = None,
-        no_audit: bool = False,
+        no_audit: bool = True,
         audit_batch_size: int = 1,
         log_envelopes: bool = False,
+        core_only_ai: bool = True,
     ) -> None:
         self.pipeline = LaptopExtractionPipeline(
             ai_fallback=ai_fallback,
             log_envelopes=log_envelopes,
+            core_only_ai=core_only_ai,
         )
         self.no_audit = no_audit
         self.audit_batch_size = max(1, audit_batch_size)
@@ -219,6 +221,7 @@ class GenericCatalogPipeline:
             },
             "specs": pipeline_res.specs,
             "source_table": raw_prod.raw_tables.get("specs", {}),
+            "raw_description": raw_prod.raw_sections.get("Description", ""),
             "envelopes_count": len(pipeline_res.component_envelopes_generated),
             "rejections_count": len(pipeline_res.validation_rejections),
             "elapsed_s": round(elapsed, 3),
@@ -415,6 +418,7 @@ class GenericCatalogPipeline:
                     },
                     "specs": pipeline_res.specs,
                     "source_table": prod.specs or {},
+                    "raw_description": prod.raw_description or "",
                     "envelopes_count": len(pipeline_res.component_envelopes_generated),
                     "rejections_count": len(pipeline_res.validation_rejections),
                     "elapsed_s": round(elapsed, 3),

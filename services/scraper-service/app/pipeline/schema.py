@@ -10,7 +10,7 @@ Defines the data structures for:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -93,7 +93,7 @@ class RawScrapedProduct:
 def empty_laptop_specifications() -> dict[str, Any]:
     """Return the empty canonical structured laptop dictionary skeleton.
 
-    Covers all 35+ specification dimensions required for catalog ingestion and live audit.
+    Covers all specification dimensions across all 11 hardware categories.
     """
     return {
         "identity": {
@@ -103,6 +103,10 @@ def empty_laptop_specifications() -> dict[str, Any]:
             "manufacturer_part_number": None,
             "retailer_sku": None,
             "color": None,
+            "base_color": None,
+            "form_factor": None,
+            "market_positioning": None,
+            "release_year": None,
             "is_bundle": False,
             "warranty": None,
             "warranty_years": None,
@@ -134,16 +138,21 @@ def empty_laptop_specifications() -> dict[str, Any]:
             "model": None,
             "variant": None,
             "vram_gb": None,
+            "vram_type": None,
             "tdp_w": None,
             "boost_clock_mhz": None,
             "ai_tops": None,
             "integrated": False,
+            "igpu_model": None,
             "raw_spec": None,
         },
         "memory": {
             "capacity_gb": None,
             "memory_type": None,
             "speed": None,
+            "form_factor": None,
+            "channels": None,
+            "layout": None,
             "slot_count": None,
             "max_supported_gb": None,
             "is_soldered": None,
@@ -155,6 +164,7 @@ def empty_laptop_specifications() -> dict[str, Any]:
             "interface": None,
             "form_factor": None,
             "slot_count": None,
+            "installed_ssd_count": None,
             "max_supported_gb": None,
             "raw_spec": None,
         },
@@ -163,6 +173,7 @@ def empty_laptop_specifications() -> dict[str, Any]:
             "resolution": None,
             "resolution_width": None,
             "resolution_height": None,
+            "hd_type": None,
             "panel_type": None,
             "refresh_rate_hz": None,
             "aspect_ratio": None,
@@ -172,13 +183,17 @@ def empty_laptop_specifications() -> dict[str, Any]:
             "response_time_ms": None,
             "surface_treatment": None,
             "hdr": None,
+            "adaptive_sync": None,
             "raw_spec": None,
         },
         "power_battery": {
             "battery_capacity_wh": None,
             "battery_cells": None,
+            "battery_type": None,
             "power_adapter_w": None,
             "fast_charging": None,
+            "fast_charge_50_mins": None,
+            "usb_c_pd_charging": None,
             "raw_spec": None,
         },
         "physical": {
@@ -186,6 +201,8 @@ def empty_laptop_specifications() -> dict[str, Any]:
             "width_mm": None,
             "depth_mm": None,
             "height_mm": None,
+            "height_front_mm": None,
+            "height_rear_mm": None,
             "raw_spec": None,
         },
         "build_security": {
@@ -193,6 +210,7 @@ def empty_laptop_specifications() -> dict[str, Any]:
             "keyboard_backlight_type": None,
             "has_fingerprint": False,
             "has_numpad": None,
+            "has_copilot_key": None,
             "pointing_device": None,
             "chassis_material": None,
             "security_features": [],
@@ -200,6 +218,8 @@ def empty_laptop_specifications() -> dict[str, Any]:
         },
         "audio_webcam": {
             "speaker_count": None,
+            "speaker_power_w": None,
+            "audio_system": None,
             "microphone": None,
             "webcam_resolution": None,
             "has_privacy_shutter": None,
@@ -208,9 +228,14 @@ def empty_laptop_specifications() -> dict[str, Any]:
         },
         "connectivity": {
             "wifi": None,
+            "wifi_antenna": None,
             "bluetooth": None,
             "ethernet": None,
+            "ethernet_speed": None,
+            "cellular": None,
             "ports": [],
+            "usb_c_displayport": None,
+            "usb_c_power_delivery": None,
             "has_card_reader": None,
             "card_reader_type": None,
             "thunderbolt_version": None,

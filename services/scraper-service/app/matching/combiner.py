@@ -73,9 +73,19 @@ class CatalogCombiner:
     def combine_catalogs(self, catalogs: list[dict[str, Any]]) -> UnifiedCatalog:
         """Consolidate parsed store catalog dictionaries into a UnifiedCatalog."""
         products_by_store: dict[str, list[dict[str, Any]]] = {}
+        latest_pointers: dict[str, list[str]] = {}
 
         for cat in catalogs:
             store_k = cat.get("store_key") or "unknown_store"
+
+            # Extract latest watermark pointers for each store
+            ptrs = cat.get("latest_pointers") or cat.get("store_pointers")
+            if ptrs:
+                if isinstance(ptrs, list):
+                    latest_pointers[store_k] = [str(p) for p in ptrs if p]
+                elif isinstance(ptrs, str):
+                    latest_pointers[store_k] = [ptrs]
+
             # Structured products from level 2 pipeline
             prods = cat.get("structured_products") or []
             if not prods and "products" in cat:
@@ -84,11 +94,20 @@ class CatalogCombiner:
 
             products_by_store.setdefault(store_k, []).extend(prods)
 
-        return self.combine_products(products_by_store)
+            # Fallback: if no pointers were in catalog metadata, derive top 3 from products
+            if store_k not in latest_pointers and prods:
+                fallback_ptrs = [
+                    p.get("title") or p.get("name") for p in prods[:3] if (p.get("title") or p.get("name"))
+                ]
+                if fallback_ptrs:
+                    latest_pointers[store_k] = fallback_ptrs
+
+        return self.combine_products(products_by_store, latest_pointers=latest_pointers)
 
     def combine_products(
         self,
         products_by_store: dict[str, list[dict[str, Any]]],
+        latest_pointers: dict[str, list[str]] | None = None,
     ) -> UnifiedCatalog:
         """Core consolidation algorithm using Inverted Indexes and Union-Find."""
         t_start = utcnow_str()
@@ -157,6 +176,8 @@ class CatalogCombiner:
                         "thumbnail_url": p.get("thumbnail_url"),
                         "scraped_at": p.get("scraped_at") or t_start,
                         "specs": specs,
+                        "source_table": p.get("source_table") or {},
+                        "raw_description": p.get("raw_description") or "",
                         "brand": brand,
                         "family": family,
                         "model": model,
@@ -223,8 +244,24 @@ class CatalogCombiner:
 
             # Non-destructive Spec Fusion
             fused_specs: dict[str, Any] = {}
+            merged_source_table: dict[str, Any] = {}
+            raw_descriptions: list[str] = []
             for l in listings:
                 fused_specs = merge_specifications(fused_specs, l.get("specs") or {})
+                for k, v in (l.get("source_table") or {}).items():
+                    if k not in merged_source_table and v:
+                        merged_source_table[k] = v
+                desc = (l.get("raw_description") or "").strip()
+                if desc and desc not in raw_descriptions:
+                    raw_descriptions.append(desc)
+
+            raw_store_context = {
+                "source_table": merged_source_table,
+                "raw_description": "\n\n".join(raw_descriptions),
+                "primary_url": listings[0].get("product_url") or "",
+                "store_slot_count": (fused_specs.get("storage") or {}).get("slot_count"),
+                "store_specs": fused_specs,
+            }
 
             # Build Offers list
             offers: list[StoreOffer] = []
@@ -309,6 +346,7 @@ class CatalogCombiner:
                     price_spread_egp=round(price_spread, 2),
                     prices_by_store=prices_by_store,
                     offers=offers,
+                    raw_store_context=raw_store_context,
                 )
             )
 
@@ -319,12 +357,22 @@ class CatalogCombiner:
         multi_store_count = sum(1 for c in canonical_laptops if c.stores_count > 1)
         overlap_pct = (multi_store_count / len(canonical_laptops) * 100.0) if canonical_laptops else 0.0
 
+        if latest_pointers is None:
+            latest_pointers = {}
+            for store_k, prods in products_by_store.items():
+                fallback_ptrs = [
+                    p.get("title") or p.get("name") for p in prods[:3] if (p.get("title") or p.get("name"))
+                ]
+                if fallback_ptrs:
+                    latest_pointers[store_k] = fallback_ptrs
+
         catalog = UnifiedCatalog(
             stores_included=sorted(stores_seen),
             total_raw_listings=total_listings,
             total_unique_laptops=len(canonical_laptops),
             multi_store_laptops_count=multi_store_count,
             overlap_rate_pct=round(overlap_pct, 2),
+            latest_pointers=latest_pointers,
             laptops=canonical_laptops,
         )
 

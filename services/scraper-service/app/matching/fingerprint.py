@@ -58,6 +58,11 @@ def normalize_mpn(raw_mpn: str | None) -> str | None:
     # Strip punctuation, whitespace, dashes
     cleaned = re.sub(r"[\s\-_.]+", "", cleaned).upper()
 
+    # Normalize Lenovo model prefix embedded in MPN (e.g. '15IRX1083JE00DAED' -> '83JE00DAED')
+    m_lenovo = re.search(r"(8[0-9A-Z]{9}|2[0-9A-Z]{9})$", cleaned)
+    if m_lenovo and len(cleaned) > 10:
+        cleaned = m_lenovo.group(1)
+
     # Reject noisy values
     if len(cleaned) < 5 or cleaned in INVALID_MPN_TOKENS:
         return None
@@ -161,7 +166,8 @@ def are_hardware_compatible(item_a: dict[str, Any], item_b: dict[str, Any]) -> b
     # 4. Display Refresh Rate Veto (Tolerates missing refresh rates, vetos hard conflicts)
     hz_a = item_a.get("refresh_hz")
     hz_b = item_b.get("refresh_hz")
-    if hz_a and hz_b and abs(hz_a - hz_b) > 10:
+    same_mpn = bool(item_a.get("mpn") and item_a.get("mpn") == item_b.get("mpn"))
+    if not same_mpn and hz_a and hz_b and abs(hz_a - hz_b) > 10:
         return False
 
     # 5. CPU Tier Compatibility Guard

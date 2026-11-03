@@ -1594,7 +1594,9 @@
       "intel graphics 4 xe cores",
       "intel graphics 4xe",
       "meteor lake 4 xe core graphics",
-      "intel graphics xe-lpg 4"
+      "intel graphics xe-lpg 4",
+      "intel graphics",
+      "intel integrated graphics"
     ]
   },
   "Intel_Arc_Graphics_8Xe_Shared": {
@@ -1624,7 +1626,8 @@
       "intel arc graphics 8xe",
       "intel arc 8-core",
       "intel arc 8 xe",
-      "arc graphics (8 xe-cores)"
+      "arc graphics (8 xe-cores)",
+      "intel arc graphics"
     ]
   },
   "Intel_Arc_130V_Shared": {

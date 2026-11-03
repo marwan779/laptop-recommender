@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import copy
 import json
+import logging
 from app.common.logger import get_logger
 import os
 import re
@@ -36,6 +37,10 @@ from app.pipeline.physical_validator import PhysicalValidator
 
 # Load environment variables (.env in services/scraper-service or current working directory)
 load_dotenv()
+
+# Silence verbose DEBUG HTTP/SSL trace logs from third-party HTTP clients
+for _noisy_logger in ("httpx", "httpx2", "httpcore", "httpcore2", "openai", "openai._base_client"):
+    logging.getLogger(_noisy_logger).setLevel(logging.WARNING)
 
 logger = get_logger("llm_auditor")
 
@@ -110,6 +115,7 @@ When the source contains apparently conflicting statements:
 - STRICT RULE: When an explicit technical specification table entry exists (e.g. "Standard Memory: 16 GB" or "Memory: 16GB DDR5"), this table entry takes STRICT PRECEDENCE over contradictory claims in product titles or promotional headings.
 - NEVER override a verified specification table value (such as 16GB RAM) with a different number from the product title or promotional marketing banner (such as 32GB RAM).
 - Only use product titles or promotional text to populate a field if that field is completely missing (null/unpopulated) in the specification table.
+- ONLINE REFERENCE SPECS FALLBACK: When 'source_table' contains an 'Online_Reference_Specs' entry (scraped from online hardware spec sheets for laptops with incomplete retailer pages), the retailer's own specification table and product title take STRICT PRECEDENCE for SKU-specific variant specs (RAM capacity, storage capacity, display resolution/refresh rate, and operating system). Use 'Online_Reference_Specs' strictly to populate missing (null or empty) chassis and hardware fields (such as power_battery.*, physical.*, connectivity.*, audio_webcam.*, build_security.*, or missing display/memory/storage sub-fields) that the retailer omitted.
 - If credible technical sources disagree and the conflict cannot be resolved confidently, report an unresolved conflict rather than overriding the structured technical value.
 
 SCOPE AND PROTECTION:
@@ -258,6 +264,11 @@ def cast_value_to_field_type(field_path: str, value: Any) -> Any:
         "power_battery.power_adapter_w",
         "audio_webcam.speaker_count",
         "identity.warranty_years",
+        "identity.release_year",
+        "storage.installed_ssd_count",
+        "display.resolution_width",
+        "display.resolution_height",
+        "power_battery.fast_charge_50_mins",
     }
     float_fields = {
         "display.size_inches",
@@ -268,6 +279,9 @@ def cast_value_to_field_type(field_path: str, value: Any) -> Any:
         "physical.depth_mm",
         "physical.height_mm",
         "cpu.npu_tops",
+        "physical.height_front_mm",
+        "physical.height_rear_mm",
+        "audio_webcam.speaker_power_w",
     }
     bool_fields = {
         "memory.is_soldered",
@@ -278,6 +292,13 @@ def cast_value_to_field_type(field_path: str, value: Any) -> Any:
         "audio_webcam.has_privacy_shutter",
         "audio_webcam.has_ir_camera",
         "connectivity.has_card_reader",
+        "connectivity.ethernet",
+        "connectivity.usb_c_displayport",
+        "connectivity.usb_c_power_delivery",
+        "power_battery.fast_charging",
+        "power_battery.usb_c_pd_charging",
+        "build_security.has_copilot_key",
+        "audio_webcam.microphone",
     }
 
     if field_path in int_fields:
@@ -347,7 +368,7 @@ DEFAULT_ENDPOINTS: list[LLMProviderEndpoint] = [
         name="cerebras-llama-70b",
         base_url="https://api.cerebras.ai/v1",
         api_key_env="CEREBRAS_API_KEY",
-        model="llama-3.3-70b",
+        model="llama3.1-8b",
         is_reasoning=False,
         timeout_seconds=20.0,
         requests_per_minute=30.0,
@@ -454,6 +475,7 @@ class LLMAuditor:
                         base_url=ep.base_url,
                         api_key=key or "none",
                         timeout=ep.timeout_seconds,
+                        max_retries=0,
                     )
                 except ImportError:
                     logger.warning(
@@ -500,29 +522,42 @@ class LLMAuditor:
     def _prepare_laptop_payload(self, laptop: dict[str, Any], identifier: str) -> dict[str, Any]:
         """Format a laptop entry for auditing, excluding CPU and GPU to enforce immutability."""
         specs = laptop.get("specs", {})
+        allowed_cats: set[str] | None = laptop.get("allowed_categories")
+        source_table = dict(laptop.get("source_table") or {})
+
+        # Trim excessively long marketing descriptions inside source_table to stay well under Groq's 8K TPM limit
+        if "Description" in source_table and len(str(source_table["Description"])) > 1500:
+            source_table["Description"] = str(source_table["Description"])[:1500]
+        if "Online_Reference_Specs" in source_table and len(str(source_table["Online_Reference_Specs"])) > 2200:
+            source_table["Online_Reference_Specs"] = str(source_table["Online_Reference_Specs"])[:2200]
 
         group_raw_specs: dict[str, str] = {}
         auditable_specs: dict[str, Any] = {}
 
         for group_name, group_data in specs.items():
-            if group_name == "cpu":
+            if group_name in ("cpu", "gpu"):
+                continue
+            if allowed_cats is not None and group_name not in allowed_cats:
                 continue
             if isinstance(group_data, dict):
                 group_copy = dict(group_data)
                 raw_s = group_copy.pop("raw_spec", None)
-                if raw_s:
-                    group_raw_specs[group_name] = str(raw_s).strip()
+                # Only include group_raw_specs when source_table is empty to avoid sending duplicate text
+                if raw_s and not source_table:
+                    group_raw_specs[group_name] = str(raw_s).strip()[:800]
                 auditable_specs[group_name] = group_copy
             else:
                 auditable_specs[group_name] = group_data
 
-        return {
+        payload: dict[str, Any] = {
             "laptop_id": identifier,
             "title": laptop.get("title", ""),
-            "group_raw_specs": group_raw_specs,
-            "source_table": laptop.get("source_table", {}),
+            "source_table": source_table,
             "specs": auditable_specs,
         }
+        if group_raw_specs:
+            payload["group_raw_specs"] = group_raw_specs
+        return payload
 
     def audit_batch(self, laptops: list[dict[str, Any]], identifiers: list[str] | None = None) -> BatchAuditResponse:
         """Audit a batch of laptops against their raw specs using the failover chain."""
@@ -545,7 +580,7 @@ class LLMAuditor:
             "The structured schema given to you might contain mismatches or missing values from the original scraped text "
             "represented in 'source_table', 'group_raw_specs', and 'title'. "
             "Your task is to check every single field in every laptop given to you, correct any mismatches, and fill in missing fields explicitly stated in the raw text.\n\n"
-            f"INPUT_BATCH:\n{json.dumps(batch_payload, indent=2, ensure_ascii=False)}\n\n"
+            f"INPUT_BATCH:\n{json.dumps(batch_payload, separators=(',', ':'), ensure_ascii=False)}\n\n"
             "Return your response ONLY as a JSON object matching this schema:\n"
             "{\n"
             '  "audited_laptops": [\n'
@@ -783,11 +818,17 @@ class LLMAuditor:
                         self._exhausted_endpoints.add(ep.name)
                         break
 
-                    if (is_rate_limit or is_unavailable) and attempt < self.max_retries:
+                    if is_rate_limit:
+                        logger.warning(
+                            "Rate limit (429) on %s. Failing over immediately to next provider...",
+                            ep.name,
+                        )
+                        break
+
+                    if is_unavailable and attempt < self.max_retries:
                         backoff = 2.0 * attempt
                         logger.warning(
-                            "Transient %s on %s (attempt %d/%d). Backing off %.1fs...",
-                            "RateLimit" if is_rate_limit else "Unavailable",
+                            "Transient Unavailable on %s (attempt %d/%d). Backing off %.1fs...",
                             ep.name,
                             attempt,
                             self.max_retries,
@@ -837,7 +878,12 @@ class LLMAuditor:
             error=str(last_error),
         )
 
-    def apply_corrections(self, laptop: dict[str, Any], corrections: list[FieldCorrection]) -> list[dict[str, Any]]:
+    def apply_corrections(
+        self,
+        laptop: dict[str, Any],
+        corrections: list[FieldCorrection],
+        allowed_categories: set[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """Validate and apply corrections to a laptop's specifications dictionary.
 
         Returns:
@@ -848,9 +894,11 @@ class LLMAuditor:
 
         for corr in corrections:
             field_path = corr.field_path.strip()
+            while field_path.startswith("specs."):
+                field_path = field_path[6:].strip()
 
-            # Guard against touching locked CPU fields
-            if field_path.startswith("cpu."):
+            # Guard against touching locked CPU and GPU fields
+            if field_path.startswith("cpu.") or field_path.startswith("gpu."):
                 logger.warning("Ignoring proposed correction to locked field: %s", field_path)
                 continue
 
@@ -860,6 +908,30 @@ class LLMAuditor:
                 continue
 
             category, sub_field = parts[0], parts[1]
+            if category not in (
+                "identity",
+                "memory",
+                "storage",
+                "display",
+                "power_battery",
+                "physical",
+                "build_security",
+                "audio_webcam",
+                "connectivity",
+                "operating_system",
+            ):
+                logger.warning("Skipping unknown spec category '%s' in field path: %s", category, field_path)
+                continue
+
+            if allowed_categories is not None and category not in allowed_categories:
+                continue
+
+            if (
+                allowed_categories is not None
+                and category == "identity"
+                and sub_field not in ("color", "warranty_years")
+            ):
+                continue
 
             # Cast value
             typed_value = cast_value_to_field_type(field_path, corr.corrected_value)

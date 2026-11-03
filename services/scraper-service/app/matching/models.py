@@ -78,6 +78,23 @@ class CanonicalLaptop(BaseModel):
         description="All individual store offers sorted from lowest price to highest",
     )
 
+    # Icecat & Post-Combiner Verification Metadata
+    verification_status: str = Field(
+        default="NOT_FOUND",
+        description="VERIFIED_ICECAT | VERIFIED_ICECAT_VARIANT | LLM_EXTRACTED | NOT_FOUND",
+    )
+    icecat_match_type: str | None = Field(
+        default=None,
+        description="EXACT_MATCH | VARIANT_MATCH | NOT_FOUND",
+    )
+    icecat_product_id: int | str | None = Field(default=None, description="Matched Icecat product ID")
+    icecat_mpn: str | None = Field(default=None, description="Matched Icecat MPN")
+    icecat_url: str | None = Field(default=None, description="Matched Icecat product page URL")
+    raw_store_context: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Preserved store raw spec table and description for post-combiner LLM fallback",
+    )
+
     created_at: str = Field(default_factory=utcnow_str, description="Timestamp of first ingestion")
     updated_at: str = Field(default_factory=utcnow_str, description="Timestamp of last consolidation")
 
@@ -98,10 +115,19 @@ class UnifiedCatalog(BaseModel):
         default=0.0,
         description="Percentage of unique laptops found across multiple stores",
     )
+    latest_pointers: dict[str, list[str]] = Field(
+        default_factory=dict,
+        description="Latest watermark pointers for each store (e.g. {'compumarts': [...], 'sigma': [...]})",
+    )
     laptops: list[CanonicalLaptop] = Field(
         default_factory=list,
         description="Consolidated list of all canonical laptops",
     )
+
+    @property
+    def store_pointers(self) -> dict[str, list[str]]:
+        """Backwards-compatible alias for latest_pointers."""
+        return self.latest_pointers
 
     def save_json(self, path: Path | str) -> Path:
         """Persist the unified catalog to disk as formatted JSON."""

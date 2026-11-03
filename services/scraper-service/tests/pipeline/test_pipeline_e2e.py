@@ -104,6 +104,23 @@ def test_validator_hardware_bounds_and_cpu_constraints():
     assert not valid
     assert "out_of_bounds" in reason
 
+    # AC Power adapter limits (30W to 500W)
+    valid, val, _ = PhysicalValidator.validate_power_adapter(30)
+    assert valid and val == 30
+
+    valid, val, _ = PhysicalValidator.validate_power_adapter(500)
+    assert valid and val == 500
+
+    valid, _, reason = PhysicalValidator.validate_power_adapter(25)
+    assert not valid and "out_of_bounds" in reason
+
+    valid, _, reason = PhysicalValidator.validate_power_adapter(501)
+    assert not valid and "out_of_bounds" in reason
+
+    # Power adapter insufficient for CPU base power
+    valid, _, reason = PhysicalValidator.validate_power_adapter(45, {"base_power_w": 65})
+    assert not valid and "insufficient_for_cpu" in reason
+
 
 # =============================================================================
 # 4. Layer 4: Deterministic Extractor & Section Envelope Tests (Option B)

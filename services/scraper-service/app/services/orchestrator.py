@@ -141,45 +141,83 @@ class ScrapeOrchestrator:
                 except Exception as exc:
                     logger.warning("[Orchestrator] Failed to dispatch background email report for %s: %s", key, exc)
 
-        # Step 4: Multi-Store Catalog Consolidation (Triggered automatically when multiple store targets complete)
+        # Stage 2, 3 & 4: Dynamic Multi-Store Catalog Consolidation + Icecat Enrichment + Targeted LLM Fallback
         store_targets = [r for r in results if r.target_type == "store" and r.store_result is not None]
-        if len(store_targets) > 1:
-            logger.info(
-                "[Orchestrator] Multi-store scrape completed with %d stores. Consolidating unified catalog...",
-                len(store_targets),
-            )
-            with resilient_boundary(
-                category=ErrorCategory.DOM_PARSING,
-                source_component="matching.combiner",
-                suppress=True,
-            ):
-                from app.matching.combiner import CatalogCombiner
+        if store_targets and request.level == 2:
+            out_dir = Path(request.output_dir) if request.output_dir else Path("scraping results")
+            in_memory_by_store = {
+                r.target_key.lower(): r.store_result.model_dump() for r in store_targets if r.store_result
+            }
 
-                combiner = CatalogCombiner()
-                store_catalogs = [r.store_result.model_dump() for r in store_targets if r.store_result]
-                unified_catalog = combiner.combine_catalogs(store_catalogs)
+            # Dynamically discover all active stores registered in STORE_REGISTRY
+            store_catalogs: list[dict[str, Any]] = []
+            for reg_store_key in STORE_REGISTRY.keys():
+                if reg_store_key in in_memory_by_store:
+                    store_catalogs.append(in_memory_by_store[reg_store_key])
+                else:
+                    # Check disk for previously scraped catalog of this registered store
+                    candidates = [
+                        out_dir / f"store_{reg_store_key}.json",
+                        out_dir / f"{reg_store_key}_catalog_latest.json",
+                        out_dir / f"{reg_store_key}_latest.json",
+                    ]
+                    for cand_path in candidates:
+                        if cand_path.is_file():
+                            try:
+                                with open(cand_path, encoding="utf-8") as cf:
+                                    store_catalogs.append(json.load(cf))
+                                break
+                            except Exception as disk_exc:
+                                logger.warning(
+                                    "[Orchestrator] Failed to load cached store '%s': %s", cand_path, disk_exc
+                                )
 
-                out_dir = Path(request.output_dir) if request.output_dir else Path("scraping results")
-                unified_path = out_dir / "unified_catalog_latest.json"
-                unified_catalog.save_json(unified_path)
-                logger.info("[Orchestrator] Saved unified catalog to: %s", unified_path.resolve())
+            if len(store_catalogs) >= 1:
+                logger.info(
+                    "[Orchestrator] All store scrapers finished (%d active store catalogs collected). Running Combiner + Icecat Enrichment...",
+                    len(store_catalogs),
+                )
+                with resilient_boundary(
+                    category=ErrorCategory.DOM_PARSING,
+                    source_component="matching.combiner",
+                    suppress=True,
+                ):
+                    from app.matching.combiner import CatalogCombiner
+                    from app.pipeline.icecat.enricher import IcecatCatalogEnricher
 
-                # Upload to object storage if configured
-                if self._should_upload(request):
-                    try:
-                        self.storage_service.upload_json(
-                            data=unified_catalog.model_dump(),
-                            object_key="catalogs/unified_catalog_latest.json",
-                            metadata={
-                                "total_unique_laptops": str(unified_catalog.total_unique_laptops),
-                                "stores_included": ",".join(unified_catalog.stores_included),
-                            },
+                    combiner = CatalogCombiner()
+                    unified_catalog = combiner.combine_catalogs(store_catalogs)
+
+                    # Stage 3 & 4: Icecat Enrichment + Post-Combiner Targeted LLM Fallback (when level == 2)
+                    if request.level == 2:
+                        enricher = IcecatCatalogEnricher(
+                            cache_path=out_dir / "icecat_specs_cache.json",
+                            match_report_path=out_dir / "icecat_match_report.json",
+                            run_llm_fallback=not self.no_audit,
                         )
-                        logger.info(
-                            "[Orchestrator] [+] Uploaded unified catalog to S3: catalogs/unified_catalog_latest.json"
-                        )
-                    except Exception as s3_exc:
-                        logger.warning("[Orchestrator] Failed to upload unified catalog to S3: %s", s3_exc)
+                        unified_catalog = enricher.enrich_catalog(unified_catalog)
+
+                    unified_path = out_dir / "unified_catalog_latest.json"
+                    if unified_catalog.total_unique_laptops > 0:
+                        unified_catalog.save_json(unified_path)
+                    logger.info("[Orchestrator] Saved enriched unified catalog to: %s", unified_path.resolve())
+
+                    # Upload to object storage if configured
+                    if self._should_upload(request):
+                        try:
+                            self.storage_service.upload_json(
+                                data=unified_catalog.model_dump(),
+                                object_key="catalogs/unified_catalog_latest.json",
+                                metadata={
+                                    "total_unique_laptops": str(unified_catalog.total_unique_laptops),
+                                    "stores_included": ",".join(unified_catalog.stores_included),
+                                },
+                            )
+                            logger.info(
+                                "[Orchestrator] [+] Uploaded unified catalog to S3: catalogs/unified_catalog_latest.json"
+                            )
+                        except Exception as s3_exc:
+                            logger.warning("[Orchestrator] Failed to upload unified catalog to S3: %s", s3_exc)
 
         total_items = sum(r.items_scraped for r in results)
 
@@ -340,8 +378,9 @@ class ScrapeOrchestrator:
             ai_backend = setup_ai_fallback(self.ai_type, use_onnx=self.use_onnx)
             generic_pipeline = GenericCatalogPipeline(
                 ai_fallback=ai_backend,
-                no_audit=self.no_audit,
+                no_audit=True,  # Cloud LLM audit runs post-combiner & post-Icecat in Stage 4
                 audit_batch_size=self.audit_batch_size,
+                core_only_ai=True,
             )
             structured_products = generic_pipeline.process_catalog(
                 products=products,
