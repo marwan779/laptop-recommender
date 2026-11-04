@@ -15,6 +15,8 @@ def _build_sample_catalog_item(
     mpn: str = "TEST-MPN-100",
     min_price: float = 60000.0,
     store_key: str = "compumarts",
+    ram_gb: int = 16,
+    storage_gb: int = 1024,
 ) -> dict:
     return {
         "canonical_id": canonical_id,
@@ -22,7 +24,7 @@ def _build_sample_catalog_item(
         "brand": "Lenovo",
         "laptop_family": "Legion",
         "laptop_model": "Legion Pro 5 16IRX9",
-        "title": "Lenovo Legion Pro 5 16IRX9 - Core i7-14700HX - RTX 4060",
+        "title": f"Lenovo Legion Pro 5 16IRX9 - Core i7-14700HX - RTX 4060 - {ram_gb}GB {storage_gb}GB",
         "thumbnail_url": "https://example.com/legion.jpg",
         "min_price_egp": min_price,
         "max_price_egp": min_price + 5000.0,
@@ -60,14 +62,14 @@ def _build_sample_catalog_item(
                 "integrated": False,
             },
             "memory": {
-                "capacity_gb": 16,
+                "capacity_gb": ram_gb,
                 "memory_type": "DDR5",
                 "speed": "5600 MHz",
                 "slot_count": 2,
                 "max_supported_gb": 64,
             },
             "storage": {
-                "capacity_gb": 1024,
+                "capacity_gb": storage_gb,
                 "storage_type": "SSD",
                 "interface": "PCIe 4.0 NVMe",
                 "slot_count": 2,
@@ -343,3 +345,69 @@ async def test_seeder_safe_fallbacks_for_partial_specs(db_session: AsyncSession)
     assert laptop.ram_capacity_gb == 8  # Default applied
     assert laptop.storage_capacity_gb == 256  # Default applied
     assert laptop.display_resolution == "1920x1080"  # Default applied
+
+
+@pytest.mark.asyncio
+async def test_seeder_hardware_guarded_resolution_for_same_mpn_variants(db_session: AsyncSession):
+    """Verify that multiple retailer hardware configurations sharing an identical factory MPN
+
+    are preserved as separate database records and not incorrectly overwritten.
+    """
+    base_mpn = f"83DV01HSED-{uuid.uuid4().hex[:6]}"
+    cid_8_512 = f"laptop_lenovo_loq_{base_mpn.lower()}_8gb_512gb"
+    cid_16_512 = f"laptop_lenovo_loq_{base_mpn.lower()}_16gb_512gb"
+    cid_16_1024 = f"laptop_lenovo_loq_{base_mpn.lower()}_16gb_1024gb"
+
+    seeder = CatalogSeederRepository(db_session)
+
+    # Batch 1: Seed base 8GB / 512GB model
+    catalog_b1 = {
+        "laptops": [
+            _build_sample_catalog_item(cid_8_512, mpn=base_mpn, min_price=35000.0, ram_gb=8, storage_gb=512),
+        ]
+    }
+    summary_b1 = await seeder.upsert_catalog(catalog_b1)
+    assert summary_b1.new_laptops_created == 1
+    assert summary_b1.laptops_updated == 0
+
+    # Batch 2: Seed all 3 upgraded/base variants together
+    catalog_b2 = {
+        "laptops": [
+            _build_sample_catalog_item(cid_8_512, mpn=base_mpn, min_price=34000.0, ram_gb=8, storage_gb=512),
+            _build_sample_catalog_item(cid_16_512, mpn=base_mpn, min_price=38000.0, ram_gb=16, storage_gb=512),
+            _build_sample_catalog_item(cid_16_1024, mpn=base_mpn, min_price=42000.0, ram_gb=16, storage_gb=1024),
+        ]
+    }
+    summary_b2 = await seeder.upsert_catalog(catalog_b2)
+    assert summary_b2.new_laptops_created == 2  # The 16GB/512GB and 16GB/1024GB variants are new
+    assert summary_b2.laptops_updated == 1      # The 8GB/512GB variant was updated
+
+    # Verify all 3 configurations exist distinctly in PostgreSQL
+    stmt = (
+        select(LaptopConfiguration)
+        .where(LaptopConfiguration.mpn == base_mpn)
+        .order_by(LaptopConfiguration.ram_capacity_gb, LaptopConfiguration.storage_capacity_gb)
+    )
+    result = await db_session.execute(stmt)
+    records = result.scalars().all()
+
+    assert len(records) == 3
+    assert (records[0].ram_capacity_gb, records[0].storage_capacity_gb) == (8, 512)
+    assert (records[1].ram_capacity_gb, records[1].storage_capacity_gb) == (16, 512)
+    assert (records[2].ram_capacity_gb, records[2].storage_capacity_gb) == (16, 1024)
+
+    # Batch 3: Alternate canonical ID with exact same MPN and 16GB / 1024GB hardware specs
+    # Should resolve to records[2] via secondary identity resolution without creating duplicate
+    cid_alt = f"laptop_legacy_slug_{base_mpn.lower()}_alt"
+    catalog_b3 = {
+        "laptops": [
+            _build_sample_catalog_item(cid_alt, mpn=base_mpn, min_price=41000.0, ram_gb=16, storage_gb=1024),
+        ]
+    }
+    summary_b3 = await seeder.upsert_catalog(catalog_b3)
+    assert summary_b3.new_laptops_created == 0
+    assert summary_b3.laptops_updated == 1
+
+    # Verify count is still exactly 3
+    result_b3 = await db_session.execute(stmt)
+    assert len(result_b3.scalars().all()) == 3

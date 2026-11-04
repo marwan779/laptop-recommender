@@ -145,11 +145,14 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 canonical_ids.append(str(cid).strip())
             mpn = item.get("mpn") or item.get("specs", {}).get("identity", {}).get("manufacturer_part_number")
             if mpn:
-                mpns.append(str(mpn).strip())
+                mpn_clean = str(mpn).strip()
+                mpns.append(mpn_clean)
+                if mpn_clean.upper() != mpn_clean:
+                    mpns.append(mpn_clean.upper())
 
         # Step 2: Fetch existing configurations in chunks
         existing_by_canonical: dict[str, LaptopConfiguration] = {}
-        existing_by_mpn: dict[str, LaptopConfiguration] = {}
+        existing_by_mpn_and_specs: dict[tuple[str, int, int], LaptopConfiguration] = {}
 
         for i in range(0, max(len(canonical_ids), len(mpns), 1), batch_size):
             cid_chunk = canonical_ids[i : i + batch_size]
@@ -182,7 +185,11 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 if laptop.canonical_id:
                     existing_by_canonical[laptop.canonical_id] = laptop
                 if laptop.mpn:
-                    existing_by_mpn[laptop.mpn.upper()] = laptop
+                    existing_by_mpn_and_specs[(
+                        laptop.mpn.strip().upper(),
+                        laptop.ram_capacity_gb,
+                        laptop.storage_capacity_gb,
+                    )] = laptop
 
         # Step 3: Iterate and upsert
         for item in raw_laptops:
@@ -196,10 +203,17 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
             mpn_val = item.get("mpn") or item.get("specs", {}).get("identity", {}).get("manufacturer_part_number")
             mpn_str = str(mpn_val).strip() if mpn_val else None
 
-            # Identity match
+            # Extract memory & storage for hardware-guarded secondary resolution
+            item_specs = item.get("specs") or {}
+            item_mem = item_specs.get("memory") or {}
+            item_storage = item_specs.get("storage") or {}
+            item_ram_gb = _safe_int(item_mem.get("capacity_gb"), default=8) or 8
+            item_storage_gb = _safe_int(item_storage.get("capacity_gb"), default=256) or 256
+
+            # Identity match: 1) primary exact canonical_id, 2) secondary MPN + RAM + Storage guard
             existing_laptop = existing_by_canonical.get(cid_str)
             if existing_laptop is None and mpn_str:
-                existing_laptop = existing_by_mpn.get(mpn_str.upper())
+                existing_laptop = existing_by_mpn_and_specs.get((mpn_str.upper(), item_ram_gb, item_storage_gb))
 
             if existing_laptop is not None:
                 target_laptop = existing_laptop
@@ -212,14 +226,25 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                     target_laptop.price_updated_at = now
                 self._populate_laptop_fields(target_laptop, item, now)
                 updated_laptops_count += 1
+                existing_by_canonical[target_laptop.canonical_id] = target_laptop
+                if target_laptop.mpn:
+                    existing_by_mpn_and_specs[(
+                        target_laptop.mpn.strip().upper(),
+                        target_laptop.ram_capacity_gb,
+                        target_laptop.storage_capacity_gb,
+                    )] = target_laptop
             else:
                 target_laptop = LaptopConfiguration(id=uuid.uuid4(), canonical_id=cid_str)
                 self._populate_laptop_fields(target_laptop, item, now)
                 target_laptop.laptop_added_at = now
                 self.session.add(target_laptop)
                 existing_by_canonical[cid_str] = target_laptop
-                if mpn_str:
-                    existing_by_mpn[mpn_str.upper()] = target_laptop
+                if target_laptop.mpn:
+                    existing_by_mpn_and_specs[(
+                        target_laptop.mpn.strip().upper(),
+                        target_laptop.ram_capacity_gb,
+                        target_laptop.storage_capacity_gb,
+                    )] = target_laptop
                 new_laptops_count += 1
 
             # Step 4: Upsert offers
