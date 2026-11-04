@@ -19,6 +19,15 @@ class Settings(BaseSettings):
     db_pool_size: int = 10
     db_max_overflow: int = 20
 
+    # Downstream Services
+    scraper_service_url: str = "http://localhost:8001"
+
+    # Scraping Cron Job Configuration
+    enable_scraping_cron: bool = False
+    scraping_cron_interval_hours: int = 168
+    scraping_cron_level: int = 2
+    scraping_cron_send_email: bool = True
+
     model_config = SettingsConfigDict(
         env_file=(SERVICE_ROOT / ".env", ".env"),
         env_file_encoding="utf-8",
