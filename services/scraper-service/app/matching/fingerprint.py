@@ -219,7 +219,6 @@ def are_hardware_compatible(item_a: dict[str, Any], item_b: dict[str, Any]) -> b
     return True
 
 
-
 def generate_canonical_id(
     brand: str,
     family: str | None,
