@@ -10,7 +10,7 @@ from app.api.routes.scraping import router as scraping_router
 from app.common.logger import configure_logging, get_logger
 from app.core.config import settings
 from app.core.database import engine
-from app.jobs.scraping_cron import scraping_cron
+from app.jobs import price_sync_cron, scraping_cron
 
 # Initialize unified logging subsystem
 configure_logging()
@@ -21,8 +21,10 @@ logger = get_logger("catalog.main")
 async def lifespan(app: FastAPI):
     logger.info("Starting %s in %s mode", settings.service_name, settings.environment)
     scraping_cron.start()
+    price_sync_cron.start()
     yield
     logger.info("Shutting down %s: closing background jobs and database pool", settings.service_name)
+    await price_sync_cron.stop()
     await scraping_cron.stop()
     await engine.dispose()
 

@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     scraping_cron_level: int = 2
     scraping_cron_send_email: bool = True
 
+    # Price Sync Cron Job Configuration (Lightweight Monitor)
+    enable_price_sync_cron: bool = False
+    price_sync_cron_interval_hours: int = 24
+    price_sync_batch_limit: int = 50
+
     model_config = SettingsConfigDict(
         env_file=(SERVICE_ROOT / ".env", ".env"),
         env_file_encoding="utf-8",
