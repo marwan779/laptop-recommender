@@ -23,7 +23,7 @@ class LaptopConfiguration(Base):
 
     # Identity & Presentation
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    canonical_id: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    canonical_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     mpn: Mapped[str | None] = mapped_column(String(100), index=True)
     brand: Mapped[str] = mapped_column(String(50), index=True)
     laptop_family: Mapped[str | None] = mapped_column(String(100), index=True)

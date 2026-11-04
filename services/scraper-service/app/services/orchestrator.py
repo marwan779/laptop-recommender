@@ -202,19 +202,36 @@ class ScrapeOrchestrator:
                         unified_catalog.save_json(unified_path)
                     logger.info("[Orchestrator] Saved enriched unified catalog to: %s", unified_path.resolve())
 
-                    # Upload to object storage if configured
+                    # Upload to object storage if configured (both immutable timestamped snapshot and latest pointer)
                     if self._should_upload(request):
                         try:
+                            from datetime import UTC, datetime
+
+                            timestamp_str = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+                            dated_key = f"catalogs/unified_catalog_{timestamp_str}.json"
+                            latest_key = "catalogs/unified_catalog_latest.json"
+                            upload_meta = {
+                                "total_unique_laptops": str(unified_catalog.total_unique_laptops),
+                                "stores_included": ",".join(unified_catalog.stores_included),
+                                "timestamp": timestamp_str,
+                            }
+
+                            # 1. Primary: Upload immutable timestamped artifact
                             self.storage_service.upload_json(
                                 data=unified_catalog.model_dump(),
-                                object_key="catalogs/unified_catalog_latest.json",
-                                metadata={
-                                    "total_unique_laptops": str(unified_catalog.total_unique_laptops),
-                                    "stores_included": ",".join(unified_catalog.stores_included),
-                                },
+                                object_key=dated_key,
+                                metadata=upload_meta,
+                            )
+                            # 2. Convenience: Overwrite latest pointer
+                            self.storage_service.upload_json(
+                                data=unified_catalog.model_dump(),
+                                object_key=latest_key,
+                                metadata=upload_meta,
                             )
                             logger.info(
-                                "[Orchestrator] [+] Uploaded unified catalog to S3: catalogs/unified_catalog_latest.json"
+                                "[Orchestrator] [+] Uploaded unified catalog to S3: '%s' and '%s'",
+                                dated_key,
+                                latest_key,
                             )
                         except Exception as s3_exc:
                             logger.warning("[Orchestrator] Failed to upload unified catalog to S3: %s", s3_exc)

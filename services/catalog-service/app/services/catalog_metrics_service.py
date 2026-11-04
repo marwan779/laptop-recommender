@@ -1,18 +1,18 @@
 """Catalog Metrics Enrichment Service.
 
 Reads scraping input catalog JSON, enriches each laptop with the 6 hardware metrics,
-and updates the catalog file in-place.
+and updates the catalog file in-place or in-memory.
 """
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 import json
 import logging
 import os
+from pathlib import Path
 import tempfile
 import time
-from datetime import UTC, datetime
-from pathlib import Path
 from typing import Any
 
 from app.services.metrics_engine import (
@@ -68,29 +68,19 @@ class CatalogMetricsService:
 
         return self._cpu_benchmarks, self._gpu_benchmarks
 
-    def enrich_catalog(
+    def enrich_catalog_dict(
         self,
-        catalog_path: Path = DEFAULT_INPUT_FILE,
-        overwrite: bool = True,
-    ) -> dict[str, Any]:
-        """Read catalog JSON, compute 6 hardware metrics for each laptop, and save in-place.
+        catalog_data: dict[str, Any],
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        """Enrich an in-memory catalog dictionary with hardware metrics and TOPSIS inputs.
 
         Args:
-            catalog_path: Path to unified_catalog_latest.json
-            overwrite: Whether to overwrite the input file in-place
+            catalog_data: Catalog dictionary with a list of 'laptops'.
 
         Returns:
-            Execution summary dictionary with timing and aggregated statistics.
+            Tuple of (enriched_catalog_data, summary_dict).
         """
         start_time = time.perf_counter()
-
-        if not catalog_path.exists():
-            raise FileNotFoundError(f"Catalog file not found at: {catalog_path}")
-
-        logger.info("Loading catalog from %s", catalog_path)
-        with open(catalog_path, encoding="utf-8") as f:
-            catalog_data = json.load(f)
-
         laptops = catalog_data.get("laptops")
         if not isinstance(laptops, list):
             raise ValueError(f"Invalid catalog schema: expected 'laptops' list, got {type(laptops)}")
@@ -135,26 +125,8 @@ class CatalogMetricsService:
             portability_scores.append(metrics["mobility"]["portability_score"])
             upgradeability_scores.append(metrics["longevity"]["upgradeability_score"])
 
-        # Update metadata
         catalog_data["metrics_calculated_at"] = datetime.now(UTC).isoformat()
         catalog_data["metrics_version"] = "1.0.0"
-
-        # Atomic file write to prevent corruption
-        if overwrite:
-            target_dir = catalog_path.parent
-            with tempfile.NamedTemporaryFile(
-                "w",
-                dir=target_dir,
-                delete=False,
-                encoding="utf-8",
-                suffix=".tmp",
-            ) as tf:
-                json.dump(catalog_data, tf, indent=2, ensure_ascii=False)
-                temp_name = tf.name
-
-            # Atomically replace target file
-            os.replace(temp_name, catalog_path)
-            logger.info("Successfully updated catalog in-place at %s", catalog_path)
 
         elapsed = time.perf_counter() - start_time
 
@@ -183,5 +155,47 @@ class CatalogMetricsService:
             summary["averages"]["effective_gpu_score"],
             summary["averages"]["effective_cpu_score"],
         )
+
+        return catalog_data, summary
+
+    def enrich_catalog(
+        self,
+        catalog_path: Path = DEFAULT_INPUT_FILE,
+        overwrite: bool = True,
+    ) -> dict[str, Any]:
+        """Read catalog JSON, compute 6 hardware metrics for each laptop, and save in-place.
+
+        Args:
+            catalog_path: Path to unified_catalog_latest.json
+            overwrite: Whether to overwrite the input file in-place
+
+        Returns:
+            Execution summary dictionary with timing and aggregated statistics.
+        """
+        if not catalog_path.exists():
+            raise FileNotFoundError(f"Catalog file not found at: {catalog_path}")
+
+        logger.info("Loading catalog from %s", catalog_path)
+        with open(catalog_path, encoding="utf-8") as f:
+            catalog_data = json.load(f)
+
+        enriched_data, summary = self.enrich_catalog_dict(catalog_data)
+
+        # Atomic file write to prevent corruption
+        if overwrite:
+            target_dir = catalog_path.parent
+            with tempfile.NamedTemporaryFile(
+                "w",
+                dir=target_dir,
+                delete=False,
+                encoding="utf-8",
+                suffix=".tmp",
+            ) as tf:
+                json.dump(enriched_data, tf, indent=2, ensure_ascii=False)
+                temp_name = tf.name
+
+            # Atomically replace target file
+            os.replace(temp_name, catalog_path)
+            logger.info("Successfully updated catalog in-place at %s", catalog_path)
 
         return summary

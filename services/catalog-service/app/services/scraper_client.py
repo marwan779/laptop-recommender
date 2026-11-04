@@ -1,11 +1,12 @@
 import logging
 import uuid
 import httpx
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models.scraping import ScrapingBatchLog, StoreScrapingPointer
+from app.models.scraping import StoreScrapingPointer
+from app.repositories.batch_log_repository import BatchLogRepository
+from app.repositories.pointer_repository import StoreScrapingPointerRepository
 from app.schemas.scraping import ScrapeTriggerRequest, ScrapeTriggerResponse
 
 logger = logging.getLogger(__name__)
@@ -23,12 +24,9 @@ class ScraperClientService:
         store_key: str | None = None,
     ) -> list[StoreScrapingPointer]:
         """Fetch active scraping pointers for one or all stores."""
-        stmt = select(StoreScrapingPointer).where(StoreScrapingPointer.is_active.is_(True))
-        if store_key and store_key != "all":
-            stmt = stmt.where(StoreScrapingPointer.store_key == store_key.lower().strip())
-
-        result = await session.execute(stmt)
-        return list(result.scalars().all())
+        repo = StoreScrapingPointerRepository(session)
+        pointers = await repo.list_active(store_key)
+        return list(pointers)
 
     async def trigger_scrape_job(
         self,
@@ -59,15 +57,15 @@ class ScraperClientService:
             until_models.extend(ptr_list)
 
         # Log audit record in ScrapingBatchLog for tracking
-        batch_log = ScrapingBatchLog(
-            id=uuid.UUID(job_id),
+        batch_repo = BatchLogRepository(session)
+        batch_log = await batch_repo.record_batch_log(
+            batch_id=uuid.UUID(job_id),
             store_key=targets[0] if len(targets) == 1 else "multi-store",
             trigger_type="ADMIN_TRIGGER" if request.force_full_crawl else "CRON",
             status="QUEUED",
-            pointers_sent=until_models,
         )
-        session.add(batch_log)
-        await session.commit()
+        batch_log.pointers_sent = until_models
+        await session.flush()
 
         # Build payload adhering to scraper-service ScrapeRequest DTO
         scrape_payload = {
@@ -98,18 +96,18 @@ class ScraperClientService:
 
             if resp.status_code in (200, 202):
                 batch_log.status = "DISPATCHED"
-                await session.commit()
+                await session.flush()
                 message = f"Scrape job successfully queued on scraper-service for {targets}."
             else:
                 batch_log.status = "DISPATCH_FAILED"
                 batch_log.error_message = f"HTTP {resp.status_code}: {resp.text}"
-                await session.commit()
+                await session.flush()
                 message = f"Scraper-service returned HTTP {resp.status_code}."
         except Exception as exc:
             logger.warning("Could not reach scraper-service at %s: %s", endpoint, exc)
             batch_log.status = "QUEUED_OFFLINE"
             batch_log.error_message = str(exc)
-            await session.commit()
+            await session.flush()
             message = f"Job queued in catalog database (scraper-service offline: {exc})."
 
         return ScrapeTriggerResponse(
