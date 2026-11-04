@@ -51,6 +51,11 @@ def upgrade() -> None:
     op.execute("ALTER TABLE laptop_offer DROP CONSTRAINT IF EXISTS laptop_offer_data_source_id_fkey CASCADE;")
     op.execute("ALTER TABLE laptop_offer DROP COLUMN IF EXISTS data_source_id CASCADE;")
 
+    op.add_column(
+        "laptop_offer", sa.Column("store_key", sa.String(length=50), nullable=False, server_default="generic")
+    )
+    op.add_column("laptop_offer", sa.Column("store_domain", sa.String(length=100), nullable=True))
+    op.execute("ALTER TABLE laptop_offer RENAME COLUMN offer_url TO product_url;")
     op.add_column("laptop_offer", sa.Column("mpn", sa.String(length=100), nullable=True))
     op.add_column("laptop_offer", sa.Column("previous_price_egp", sa.Numeric(precision=12, scale=2), nullable=True))
     op.add_column(
@@ -65,6 +70,14 @@ def upgrade() -> None:
         "laptop_offer",
         sa.Column("last_checked_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )
+    op.add_column(
+        "laptop_offer",
+        sa.Column("scraped_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+    )
+    op.execute("ALTER TABLE laptop_offer DROP COLUMN IF EXISTS updated_at CASCADE;")
+
+    op.create_index("ix_laptop_offer_store_key", "laptop_offer", ["store_key"])
+    op.create_index("ix_laptop_offer_in_stock", "laptop_offer", ["in_stock"])
 
     # 3. Drop legacy foreign keys and columns on laptop_configuration
     for fk_name in [

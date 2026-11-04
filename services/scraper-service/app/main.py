@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.common.logger import configure_logging, get_logger
 
 from app.api.routes.scrape import router as scrape_router
+from app.api.routes.price_monitor import router as price_monitor_router
 
 configure_logging()
 logger = get_logger("scraper.main")
@@ -30,6 +31,8 @@ app.add_middleware(
 # Route mounts
 app.include_router(scrape_router, prefix="/api/v1")
 app.include_router(scrape_router)
+app.include_router(price_monitor_router, prefix="/api/v1")
+app.include_router(price_monitor_router)
 
 
 @app.get("/health", tags=["Health"])
