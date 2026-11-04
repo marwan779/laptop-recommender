@@ -167,3 +167,34 @@ Before returning a commit message, verify:
   10. **Audio & Webcam**: `speaker_count`, `microphone`, `webcam.resolution`
   11. **Connectivity**: `wifi`, `bluetooth`, `ethernet`, `ports`
 * **Raw Live DOM Ground Truth**: Compare extracted structured data directly against the raw un-sanitized HTML/DOM content of the live page (including raw attributes like `data-raw-spec`, dynamic scripts, and collapsible tab disclosures) to guarantee zero undetected misses or hallucinations.
+---
+
+# Clean Architecture & SOLID Principles Enforcement Rules
+
+## Mandatory 3-Tier Layering Separation
+
+Every feature, service, or refactoring added to the codebase MUST strictly adhere to Clean Architecture:
+
+1. **Domain Layer (`app/domain/`) — Pure Business Logic & Math**:
+   - **Zero External Dependencies**: Absolutely NO database imports (no SQLAlchemy, asyncpg, psycopg), NO web framework imports (no FastAPI, Starlette), NO network client imports (no httpx, requests).
+   - **Pure Logic**: Contains pure Python dataclasses, domain entities, business policies, and mathematical algorithms (e.g., pricing evaluation, score calculations, hardware tiering).
+   - **Instant Testability**: Must be 100% unit-testable in isolation in milliseconds without spinning up PostgreSQL, test containers, or mocking database sessions.
+
+2. **Repository / Infrastructure Layer (`app/repositories/`, `app/common/storage/`) — Data Access**:
+   - Encapsulates all SQL execution, SQLAlchemy queries, ORM sessions, and external object storage (S3).
+   - All database access MUST go through dedicated repositories (e.g., `LaptopRepository`, `OfferRepository`, `BatchLogRepository`).
+   - Services and controllers are strictly forbidden from writing inline SQL statements (`select()`, `session.get()`, `update()`) or managing session transactions directly.
+
+3. **Application / Use Case Layer (`app/services/`, `app/jobs/`) — Orchestration**:
+   - Coordinates domain services and repositories to fulfill specific application workflows.
+   - Injects domain policies into repository results.
+   - Contains NO raw SQL queries and NO embedded mathematical formulas.
+
+## SOLID Principles Compliance Checklist
+
+Before finalizing any implementation, verify:
+* **Single Responsibility (SRP)**: Each class/module has exactly one reason to change. Data access, domain math, and API serialization are never mixed in the same file.
+* **Open/Closed (OCP)**: Code is open for extension (e.g., new store scrapers, new scoring dimensions) via interfaces and polymorphism, but closed for modification.
+* **Liskov Substitution (LSP)**: Subclasses or interface implementations honor the base contract without unexpected side effects.
+* **Interface Segregation (ISP)**: Clients depend only on the methods they use. Repositories expose focused, granular operations.
+* **Dependency Inversion (DIP)**: High-level business logic never depends on low-level database details. High-level policies depend on abstractions, and dependencies are injected.
