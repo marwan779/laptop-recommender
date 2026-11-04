@@ -217,3 +217,74 @@ def are_hardware_compatible(item_a: dict[str, Any], item_b: dict[str, Any]) -> b
                 return False
 
     return True
+
+
+
+def generate_canonical_id(
+    brand: str,
+    family: str | None,
+    model: str | None,
+    mpn: str | None,
+    specs: dict[str, Any],
+) -> str:
+    """Generate a globally deterministic, collision-free canonical ID.
+
+    Combines the laptop's physical identity and hardware configuration into a
+    reproducible slug:
+      1. If normalized MPN is present:
+         laptop_{brand}_{family_or_model}_{mpn}_{ram_gb}gb_{storage_gb}gb
+         (Guarantees distinct IDs when stores sell custom RAM/SSD upgrades under a factory MPN)
+      2. If MPN is omitted:
+         laptop_{brand}_{family_or_model}_{cpu}_{gpu}_{ram_gb}gb_{storage_gb}gb_{size_in}in
+    """
+    brand_slug = slugify(brand) or "laptop"
+    model_slug = slugify(family or model) or "generic"
+
+    mem = specs.get("memory") or {}
+    ram_gb = int(mem.get("capacity_gb") or 0)
+    ram_suffix = f"{ram_gb}gb" if ram_gb > 0 else None
+
+    storage = specs.get("storage") or {}
+    storage_gb = int(storage.get("capacity_gb") or 0)
+    storage_suffix = f"{storage_gb}gb" if storage_gb > 0 else None
+
+    disp = specs.get("display") or {}
+    size_in = disp.get("size_inches")
+    size_suffix = f"{float(size_in):.1f}in".replace(".", "_") if size_in else None
+
+    clean_mpn = normalize_mpn(mpn)
+    slug_tokens: list[str] = [brand_slug, model_slug]
+
+    if clean_mpn:
+        slug_tokens.append(slugify(clean_mpn))
+        if ram_suffix:
+            slug_tokens.append(ram_suffix)
+        if storage_suffix:
+            slug_tokens.append(storage_suffix)
+    else:
+        # Fallback to hardware silicon & chassis DNA
+        cpu = specs.get("cpu") or {}
+        cpu_model = cpu.get("model") or cpu.get("full_name") or specs.get("cpu_key") or "unknown_cpu"
+        cpu_slug = slugify(str(cpu_model))
+        cpu_slug = re.sub(r"^(?:intel_)?core_|^(?:amd_)?ryzen_|^(?:qualcomm_)?snapdragon_", "", cpu_slug)
+
+        gpu = specs.get("gpu") or {}
+        gpu_model = gpu.get("model") or "integrated"
+        gpu_slug = slugify(str(gpu_model))
+        gpu_slug = re.sub(r"^(?:nvidia_)?geforce_|^(?:amd_)?radeon_|^intel_graphics_|^intel_", "", gpu_slug)
+        gpu_vram = gpu.get("vram_gb")
+        if gpu_vram:
+            gpu_slug = f"{gpu_slug}_{int(gpu_vram)}gb"
+
+        if cpu_slug:
+            slug_tokens.append(cpu_slug)
+        if gpu_slug:
+            slug_tokens.append(gpu_slug)
+        if ram_suffix:
+            slug_tokens.append(ram_suffix)
+        if storage_suffix:
+            slug_tokens.append(storage_suffix)
+        if size_suffix:
+            slug_tokens.append(size_suffix)
+
+    return "laptop_" + "_".join(t for t in slug_tokens if t)

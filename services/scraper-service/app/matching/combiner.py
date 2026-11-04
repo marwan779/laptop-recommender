@@ -20,9 +20,9 @@ from app.common.resilience import ErrorCategory, resilient_boundary
 from app.matching.disjoint_set import DisjointSet
 from app.matching.fingerprint import (
     are_hardware_compatible,
+    generate_canonical_id,
     generate_hardware_fingerprint,
     normalize_mpn,
-    slugify,
 )
 from app.matching.fusion import merge_specifications, pick_best_title
 from app.matching.models import (
@@ -218,6 +218,7 @@ class CatalogCombiner:
             len(clusters),
         )
 
+        seen_canonical_ids: dict[str, int] = {}
         canonical_laptops: list[CanonicalLaptop] = []
 
         # Step 3: Canonical Fusion & Rollups
@@ -234,14 +235,6 @@ class CatalogCombiner:
             mpn = next((l["mpn"] for l in listings if l.get("mpn")), None)
             thumb = next((l["thumbnail_url"] for l in listings if l.get("thumbnail_url")), None)
 
-            # Build Canonical ID slug
-            slug_tokens = [slugify(brand), slugify(family or model)]
-            if mpn:
-                slug_tokens.append(slugify(mpn))
-            else:
-                slug_tokens.append(slugify(listings[0]["fingerprint"])[:40])
-            canon_id = "laptop_" + "_".join(t for t in slug_tokens if t)
-
             # Non-destructive Spec Fusion
             fused_specs: dict[str, Any] = {}
             merged_source_table: dict[str, Any] = {}
@@ -254,6 +247,29 @@ class CatalogCombiner:
                 desc = (l.get("raw_description") or "").strip()
                 if desc and desc not in raw_descriptions:
                     raw_descriptions.append(desc)
+
+            # Build stateless deterministic Canonical ID
+            canon_id = generate_canonical_id(
+                brand=brand,
+                family=family,
+                model=model,
+                mpn=mpn,
+                specs=fused_specs,
+            )
+
+            # Collision safeguard across clusters
+            if canon_id in seen_canonical_ids:
+                disp = fused_specs.get("display") or {}
+                hz = disp.get("refresh_rate_hz")
+                if hz and f"{hz}hz" not in canon_id:
+                    canon_id = f"{canon_id}_{hz}hz"
+                if canon_id in seen_canonical_ids:
+                    seen_canonical_ids[canon_id] += 1
+                    canon_id = f"{canon_id}_v{seen_canonical_ids[canon_id]}"
+                else:
+                    seen_canonical_ids[canon_id] = 1
+            else:
+                seen_canonical_ids[canon_id] = 1
 
             raw_store_context = {
                 "source_table": merged_source_table,
@@ -348,6 +364,13 @@ class CatalogCombiner:
                     offers=offers,
                     raw_store_context=raw_store_context,
                 )
+            )
+
+        # Assert zero duplicate canonical IDs can ever leave the combiner
+        unique_canonical_ids = {c.canonical_id for c in canonical_laptops}
+        if len(unique_canonical_ids) != len(canonical_laptops):
+            raise ValueError(
+                f"Duplicate canonical_id detected! Total: {len(canonical_laptops)}, Unique: {len(unique_canonical_ids)}"
             )
 
         # Sort: Multi-store laptops first (highest value), then alphabetically
