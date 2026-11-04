@@ -14,25 +14,25 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
     def __init__(self, session: AsyncSession):
         super().__init__(LaptopConfiguration, session)
 
-    async def get_by_identity_hash(self, identity_hash: str) -> LaptopConfiguration | None:
-        stmt = (
-            select(LaptopConfiguration)
-            .where(LaptopConfiguration.identity_hash == identity_hash)
-            .options(
-                selectinload(LaptopConfiguration.offers),
-                selectinload(LaptopConfiguration.category_scores),
-            )
-        )
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
-
     async def get_by_canonical_id(self, canonical_id: str) -> LaptopConfiguration | None:
         stmt = (
             select(LaptopConfiguration)
             .where(LaptopConfiguration.canonical_id == canonical_id)
             .options(
                 selectinload(LaptopConfiguration.offers),
-                selectinload(LaptopConfiguration.category_scores),
+                selectinload(LaptopConfiguration.metrics),
+            )
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_by_mpn(self, mpn: str) -> LaptopConfiguration | None:
+        stmt = (
+            select(LaptopConfiguration)
+            .where(LaptopConfiguration.mpn == mpn)
+            .options(
+                selectinload(LaptopConfiguration.offers),
+                selectinload(LaptopConfiguration.metrics),
             )
         )
         result = await self.session.execute(stmt)
@@ -47,7 +47,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
     ) -> Sequence[LaptopConfiguration]:
         stmt = select(LaptopConfiguration).options(
             selectinload(LaptopConfiguration.offers),
-            selectinload(LaptopConfiguration.category_scores),
+            selectinload(LaptopConfiguration.metrics),
         )
 
         if min_price is not None:

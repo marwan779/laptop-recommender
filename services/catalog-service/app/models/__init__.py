@@ -1,68 +1,15 @@
 from app.models.base import Base, utcnow
-from app.models.components import (
-    CPU,
-    GPU,
-    DataSource,
-    Display,
-    MemoryModule,
-    StorageDevice,
-    UsageCategory,
-)
-from app.models.configuration import (
-    Battery,
-    LaptopAudio,
-    LaptopBuild,
-    LaptopCategoryScore,
-    LaptopConfigurationAlias,
-    LaptopConnectivity,
-    LaptopMeasurement,
-    LaptopMemory,
-    LaptopOffer,
-    LaptopPort,
-    LaptopStorage,
-    LaptopStorageSlot,
-    LaptopThermals,
-    LaptopWebcam,
-)
-from app.models.laptop import (
-    Brand,
-    LaptopConfiguration,
-    LaptopFamily,
-    LaptopModel,
-)
-from app.models.pipeline import (
-    RawLaptopRecord,
-    SpecificationEvidence,
-)
+from app.models.laptop import LaptopConfiguration
+from app.models.metrics import LaptopMetrics
+from app.models.offer import LaptopOffer
+from app.models.scraping import ScrapingBatchLog, StoreScrapingPointer
 
 __all__ = [
     "Base",
     "utcnow",
-    "CPU",
-    "GPU",
-    "Display",
-    "MemoryModule",
-    "StorageDevice",
-    "DataSource",
-    "UsageCategory",
-    "Brand",
-    "LaptopFamily",
-    "LaptopModel",
     "LaptopConfiguration",
+    "LaptopMetrics",
     "LaptopOffer",
-    "LaptopCategoryScore",
-    "LaptopConfigurationAlias",
-    "LaptopMemory",
-    "LaptopStorage",
-    "LaptopStorageSlot",
-    "Battery",
-    "LaptopConnectivity",
-    "LaptopPort",
-    "LaptopBuild",
-    "LaptopMeasurement",
-    "LaptopThermals",
-    "LaptopAudio",
-    "LaptopWebcam",
-    "SpecificationEvidence",
-    "RawLaptopRecord",
+    "StoreScrapingPointer",
+    "ScrapingBatchLog",
 ]

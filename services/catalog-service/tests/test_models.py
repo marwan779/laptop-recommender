@@ -1,78 +1,116 @@
 import uuid
 
-from app.models.components import CPU, GPU, UsageCategory
-from app.models.configuration import LaptopCategoryScore, LaptopOffer
-from app.models.laptop import Brand, LaptopConfiguration, LaptopFamily, LaptopModel
+from app.models.laptop import LaptopConfiguration
+from app.models.metrics import LaptopMetrics
+from app.models.offer import LaptopOffer
+from app.models.scraping import ScrapingBatchLog, StoreScrapingPointer
 
 
-def test_cpu_model_instantiation():
-    cpu = CPU(
-        manufacturer="Intel",
-        name="Core i7-13620H",
-        architecture="Raptor Lake",
-        cores=10,
-        threads=16,
-        base_power_w=45,
-        cinebench_r23_single=1820,
-        cinebench_r23_multi=15400,
-        single_core_rating=75.0,
-        multi_core_rating=68.0,
-    )
-    assert cpu.name == "Core i7-13620H"
-    assert cpu.cinebench_r23_single == 1820
-    assert cpu.single_core_rating == 75.0
-
-
-def test_gpu_model_instantiation():
-    gpu = GPU(
-        manufacturer="NVIDIA",
-        name="GeForce RTX 4060 Laptop GPU",
-        vram_gb=8.0,
-        integrated=False,
-        timespy_graphics=10450,
-        gaming_rating=70.0,
-        creative_compute_rating=68.0,
-        tdp_min_w=35.0,
-        tdp_max_w=140.0,
-    )
-    assert gpu.name == "GeForce RTX 4060 Laptop GPU"
-    assert gpu.timespy_graphics == 10450
-    assert gpu.tdp_max_w == 140.0
-
-
-def test_laptop_configuration_and_scores_instantiation():
+def test_laptop_configuration_instantiation():
     config_id = uuid.uuid4()
-    cat_id = uuid.uuid4()
 
     config = LaptopConfiguration(
         id=config_id,
-        laptop_model_id=uuid.uuid4(),
-        canonical_id="lenovo_legion_pro_5_16irx8_rtx4060",
-        manufacturer_part_number="82WK0046US",
-        identity_hash="hash_test_123",
-        title="Lenovo Legion Pro 5 16IRX8",
-        min_price_egp=65000.0,
-        cheapest_store="Compumarts",
-        hardware_score=82.5,
-        cpu_id=uuid.uuid4(),
-    )
-
-    offer = LaptopOffer(
-        laptop_configuration_id=config_id,
-        store_name="Compumarts",
-        retailer_sku="82WK0046US",
-        price_egp=65000.0,
+        canonical_id="asus-tuf-a16-fa608pm-rv169w-ryzen-9-rtx-5060-8gb",
+        mpn="90NR0MC1-M003T0",
+        brand="ASUS",
+        laptop_family="Tuf Gaming",
+        laptop_model="ASUS TUF Gaming A16 FA608PM-RV169W",
+        title="ASUS TUF Gaming A16 FA608PM-RV169W - AMD Ryzen 9 8940HX - RTX 5060",
+        cpu_manufacturer="AMD",
+        cpu_model="Ryzen 9 8940HX",
+        cpu_cores=16,
+        cpu_threads=32,
+        gpu_manufacturer="NVIDIA",
+        gpu_model="GeForce RTX 5060",
+        gpu_vram_gb=8,
+        ram_capacity_gb=16,
+        ram_type="DDR5",
+        storage_capacity_gb=1024,
+        display_size_inches=16.0,
+        display_resolution="1920x1200",
+        display_width=1920,
+        display_height=1200,
+        min_price_egp=81500.0,
+        cheapest_store="elbadr",
+        stores_count=3,
         in_stock=True,
     )
 
-    score = LaptopCategoryScore(
-        laptop_configuration_id=config_id,
-        usage_category_id=cat_id,
-        score=8.5,
-        raw_percentile=85.0,
-        notes="High TGP RTX 4060 with strong multi-threaded CPU",
+    assert config.canonical_id == "asus-tuf-a16-fa608pm-rv169w-ryzen-9-rtx-5060-8gb"
+    assert config.cpu_cores == 16
+    assert config.gpu_vram_gb == 8
+    assert config.min_price_egp == 81500.0
+
+
+def test_laptop_metrics_instantiation():
+    config_id = uuid.uuid4()
+
+    metrics = LaptopMetrics(
+        laptop_id=config_id,
+        cpu_score=94.5,
+        gpu_score=88.2,
+        silicon_index=91.35,
+        power_therm_score=85.0,
+        display_score=78.4,
+        mobility_score=62.1,
+        longevity_score=84.0,
+        ergonomics_score=80.0,
+        connectivity_score=87.5,
+        community_nlp_score=82.0,
+        value_score=76.2,
+        effective_price_egp=81500.0,
+        is_recommendable_price=True,
+        in_stock_active=True,
+        delta_p_watts=110.0,
+        simultaneous_load_w=170.0,
+        electrical_status="BALANCED",
+        estimated_battery_hours=5.8,
+        silicon_tier="Enthusiast / Heavy Compute",
+        display_tier="Gaming High-Refresh (165Hz)",
+        portability_tier="Everyday Commuter (2.2kg)",
+        upgradeability_tier="High (Dual SO-DIMM + Dual M.2)",
+        pricing_status="FAIR_VALUE",
     )
 
-    assert config.canonical_id == "lenovo_legion_pro_5_16irx8_rtx4060"
-    assert offer.price_egp == 65000.0
-    assert score.score == 8.5
+    assert metrics.cpu_score == 94.5
+    assert metrics.silicon_index == 91.35
+    assert metrics.electrical_status == "BALANCED"
+
+
+def test_laptop_offer_instantiation():
+    config_id = uuid.uuid4()
+
+    offer = LaptopOffer(
+        laptop_configuration_id=config_id,
+        store_key="elbadr",
+        store_name="El Badr Group",
+        product_url="https://elbadrgroupeg.store/asus-tuf-gaming-a16",
+        price_egp=81500.0,
+        in_stock=True,
+    )
+
+    assert offer.store_key == "elbadr"
+    assert offer.price_egp == 81500.0
+    assert offer.in_stock is True
+
+
+def test_scraping_pointer_and_batch_log_instantiation():
+    pointer = StoreScrapingPointer(
+        store_key="compumarts",
+        store_name="Compumarts",
+        latest_pointers=["Laptop A", "Laptop B", "Laptop C"],
+        total_active_offers=125,
+    )
+    assert pointer.store_key == "compumarts"
+    assert len(pointer.latest_pointers) == 3
+
+    log = ScrapingBatchLog(
+        store_key="compumarts",
+        trigger_type="CRON",
+        status="SUCCESS",
+        new_laptops_added=5,
+        offers_updated=12,
+    )
+    assert log.status == "SUCCESS"
+    assert log.new_laptops_added == 5
