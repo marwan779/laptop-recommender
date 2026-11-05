@@ -99,6 +99,13 @@ class ScrapeRequest(BaseModel):
         examples=[False],
     )
 
+    # Batch identity correlation
+    batch_id: str | None = Field(
+        default=None,
+        description="Optional batch UUID for inter-service correlation and deterministic S3 key naming",
+        examples=["550e8400-e29b-41d4-a716-446655440000"],
+    )
+
     @field_validator("targets", mode="before")
     @classmethod
     def normalize_targets(cls, v: Any) -> list[str] | Literal["all"]:
@@ -199,6 +206,14 @@ class ScrapeResponse(BaseModel):
     total_items_scraped: int = 0
     started_at: str = Field(default_factory=utcnow_str)
     finished_at: str | None = None
+    unified_storage_key: str | None = Field(
+        default=None,
+        description="Object storage key for the combined unified catalog artifact",
+    )
+    unified_storage_bucket: str | None = Field(
+        default=None,
+        description="Object storage bucket containing the unified catalog artifact",
+    )
 
 
 # ─── Endpoint Trigger Response ──────────────────────────────────────────────

@@ -101,6 +101,8 @@ async def test_handle_catalog_scrape_command_success(mock_broker, mock_orchestra
         results=[mock_target],
         total_targets=1,
         total_items_scraped=10,
+        unified_storage_key="catalogs/catalog_batch-seed-001.json",
+        unified_storage_bucket="test-catalog-bucket",
     )
 
     cmd = ScrapeCatalogCommand(
@@ -120,6 +122,8 @@ async def test_handle_catalog_scrape_command_success(mock_broker, mock_orchestra
     assert published_call.kwargs["routing_key"] == EventType.CATALOG_READY_EVENT
     ready_evt: CatalogReadyEvent = published_call.kwargs["message"]
     assert ready_evt.payload.batch_id == "batch-seed-001"
+    assert ready_evt.payload.s3_key == "catalogs/catalog_batch-seed-001.json"
+    assert ready_evt.payload.s3_bucket == "test-catalog-bucket"
     assert ready_evt.payload.total_laptops == 10
     assert ready_evt.payload.pointers_found == {"compumarts": ["Legion 5"]}
 

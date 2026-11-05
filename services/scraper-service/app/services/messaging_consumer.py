@@ -91,6 +91,7 @@ class ScraperMessageConsumer:
         )
 
         scrape_request = ScrapeRequest(
+            batch_id=payload.batch_id,
             target_type="store",
             targets=payload.targets,
             level=payload.level,
@@ -120,8 +121,10 @@ class ScraperMessageConsumer:
                         if sample_models:
                             pointers[target_res.target_key] = [str(m) for m in sample_models]
 
-            s3_bucket = getattr(self.orchestrator.storage_service, "bucket_name", "laptop-recommender-raw-catalog")
-            s3_key = "catalogs/unified_catalog_latest.json"
+            s3_key = response.unified_storage_key or f"catalogs/catalog_{payload.batch_id}.json"
+            s3_bucket = response.unified_storage_bucket or getattr(
+                self.orchestrator.storage_service, "bucket_name", "laptop-recommender-raw-catalog"
+            )
 
             ready_event = CatalogReadyEvent(
                 correlation_id=command.correlation_id,
