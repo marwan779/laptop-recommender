@@ -139,4 +139,3 @@ def test_outbox_message_instantiation():
     assert msg.max_retries == 5
     assert msg.last_error == "Temporary broker connection timeout"
     assert msg.correlation_id == "corr-123"
-

@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -8,9 +9,11 @@ from app.api.middleware import CorrelationIdMiddleware
 from app.api.routes.health import router as health_router
 from app.api.routes.scraping import router as scraping_router
 from app.common.logger import configure_logging, get_logger
+from app.common.messaging.rabbitmq import RabbitMQBroker
 from app.core.config import settings
 from app.core.database import engine
-from app.jobs import price_sync_cron, scraping_cron
+from app.jobs import outbox_relay, price_sync_cron, scraping_cron
+from app.services.messaging_consumer import CatalogMessageConsumer
 
 # Initialize unified logging subsystem
 configure_logging()
@@ -18,14 +21,46 @@ logger = get_logger("catalog.main")
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting %s in %s mode", settings.service_name, settings.environment)
+
+    # 1. Initialize RabbitMQ broker & consumer
+    broker = RabbitMQBroker()
+    consumer = CatalogMessageConsumer(broker=broker)
+    app.state.broker = broker
+    app.state.consumer = consumer
+
+    # Wire broker into outbox_relay singleton
+    outbox_relay.broker = broker
+
+    try:
+        await broker.connect()
+        await consumer.start_listening()
+        logger.info("RabbitMQ broker connected and consumers successfully listening.")
+    except Exception as exc:
+        logger.warning(
+            "RabbitMQ broker could not connect on startup (%s). Operating in degraded mode.",
+            exc,
+        )
+
+    # 2. Start background workers
+    outbox_relay.start()
     scraping_cron.start()
     price_sync_cron.start()
+
     yield
-    logger.info("Shutting down %s: closing background jobs and database pool", settings.service_name)
+
+    logger.info("Shutting down %s: closing background jobs, broker, and database pool", settings.service_name)
     await price_sync_cron.stop()
     await scraping_cron.stop()
+    await outbox_relay.stop()
+
+    if getattr(app.state, "broker", None) and app.state.broker.is_connected:
+        try:
+            await app.state.broker.close()
+        except Exception as exc:
+            logger.warning("Error during RabbitMQ shutdown: %s", exc)
+
     await engine.dispose()
 
 

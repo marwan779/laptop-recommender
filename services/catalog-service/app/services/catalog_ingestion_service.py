@@ -66,6 +66,7 @@ class CatalogIngestionService:
         session: AsyncSession,
         s3_key: str = "catalogs/unified_catalog_latest.json",
         trigger_type: str = "S3_INGESTION",
+        batch_id: uuid.UUID | None = None,
     ) -> IngestionResult:
         """Download catalog from S3 and ingest into the catalog database."""
         logger.info("Starting catalog ingestion from S3 key: %s (bucket: %s)", s3_key, self.storage_service.bucket_name)
@@ -77,6 +78,7 @@ class CatalogIngestionService:
             catalog_data=catalog_dict,
             source=source_label,
             trigger_type=trigger_type,
+            batch_id=batch_id,
         )
 
     async def ingest_from_file(
@@ -84,6 +86,7 @@ class CatalogIngestionService:
         session: AsyncSession,
         file_path: Path,
         trigger_type: str = "FILE_SEEDER",
+        batch_id: uuid.UUID | None = None,
     ) -> IngestionResult:
         """Load catalog from local filesystem and ingest into the catalog database."""
         logger.info("Starting catalog ingestion from local file: %s", file_path)
@@ -98,6 +101,7 @@ class CatalogIngestionService:
             catalog_data=catalog_dict,
             source=str(file_path),
             trigger_type=trigger_type,
+            batch_id=batch_id,
         )
 
     async def ingest_catalog_dict(
@@ -106,34 +110,40 @@ class CatalogIngestionService:
         catalog_data: dict[str, Any],
         source: str,
         trigger_type: str = "INGESTION",
+        batch_id: uuid.UUID | None = None,
     ) -> IngestionResult:
         """Run the end-to-end ingestion pipeline on a catalog dictionary."""
         start_time = time.perf_counter()
-        batch_id = uuid.uuid4()
+        bid = batch_id or uuid.uuid4()
         batch_repo = BatchLogRepository(session)
         pointer_repo = StoreScrapingPointerRepository(session)
         seeder_repo = CatalogSeederRepository(session)
 
-        # 1. Initialize audit batch log
-        batch_log = await batch_repo.record_batch_log(
-            batch_id=batch_id,
-            store_key="catalog_ingestion",
-            trigger_type=trigger_type,
-            status="STARTED",
-        )
+        # 1. Initialize audit batch log (or update existing)
+        existing_log = await batch_repo.get_by_id(bid)
+        if existing_log:
+            batch_log = existing_log
+            batch_log.status = "STARTED"
+        else:
+            batch_log = await batch_repo.record_batch_log(
+                batch_id=bid,
+                store_key="catalog_ingestion",
+                trigger_type=trigger_type,
+                status="STARTED",
+            )
         await session.flush()
 
         try:
             # 2. Enrich catalog with hardware performance metrics & topsis inputs
-            logger.info("[%s] Running hardware metrics engine enrichment...", batch_id)
+            logger.info("[%s] Running hardware metrics engine enrichment...", bid)
             enriched_data, metrics_summary = self.metrics_service.enrich_catalog_dict(catalog_data)
 
             # 3. Future TOPSIS persona recommender hook
-            logger.info("[%s] Applying TOPSIS persona hook...", batch_id)
+            logger.info("[%s] Applying TOPSIS persona hook...", bid)
             ready_data = self.apply_topsis_personas(enriched_data)
 
             # 4. Relational database seeding via Seeder Repository
-            logger.info("[%s] Seeding catalog into PostgreSQL...", batch_id)
+            logger.info("[%s] Seeding catalog into PostgreSQL...", bid)
             seeder_summary: SeederSummary = await seeder_repo.upsert_catalog(ready_data)
 
             # 5. Update store scraping watermark checkpoints
@@ -152,7 +162,7 @@ class CatalogIngestionService:
 
             logger.info(
                 "[%s] Catalog ingestion successfully finished in %.3fs: %d processed (%d new, %d updated)",
-                batch_id,
+                bid,
                 elapsed,
                 seeder_summary.total_laptops_processed,
                 seeder_summary.new_laptops_created,
@@ -160,7 +170,7 @@ class CatalogIngestionService:
             )
 
             return IngestionResult(
-                batch_id=batch_id,
+                batch_id=bid,
                 status="SUCCESS",
                 source=source,
                 duration_seconds=elapsed,
@@ -176,7 +186,7 @@ class CatalogIngestionService:
 
         except Exception as exc:
             elapsed = round(time.perf_counter() - start_time, 3)
-            logger.exception("[%s] Catalog ingestion failed after %.3fs: %s", batch_id, elapsed, exc)
+            logger.exception("[%s] Catalog ingestion failed after %.3fs: %s", bid, elapsed, exc)
 
             batch_log.status = "FAILED"
             batch_log.completed_at = utcnow()
@@ -185,7 +195,7 @@ class CatalogIngestionService:
             await session.flush()
 
             return IngestionResult(
-                batch_id=batch_id,
+                batch_id=bid,
                 status="FAILED",
                 source=source,
                 duration_seconds=elapsed,
