@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     price_sync_cron_interval_hours: int = 24
     price_sync_batch_limit: int = 50
 
+    # RabbitMQ Messaging Broker
+    rabbitmq_url: str = "amqp://guest:guest@localhost:5672/"
+    rabbitmq_exchange_name: str = "laptop_events"
+    rabbitmq_dlx_exchange_name: str = "laptop_events.dlx"
+    rabbitmq_prefetch_count: int = 10
+    rabbitmq_connection_timeout_seconds: float = 10.0
+
     model_config = SettingsConfigDict(
         env_file=(SERVICE_ROOT / ".env", ".env"),
         env_file_encoding="utf-8",
