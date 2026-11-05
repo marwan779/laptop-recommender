@@ -142,6 +142,8 @@ class ScrapeOrchestrator:
                     logger.warning("[Orchestrator] Failed to dispatch background email report for %s: %s", key, exc)
 
         # Stage 2, 3 & 4: Dynamic Multi-Store Catalog Consolidation + Icecat Enrichment + Targeted LLM Fallback
+        uploaded_key: str | None = None
+        uploaded_bucket: str | None = None
         store_targets = [r for r in results if r.target_type == "store" and r.store_result is not None]
         if store_targets and request.level == 2:
             out_dir = Path(request.output_dir) if request.output_dir else Path("scraping results")
@@ -202,24 +204,28 @@ class ScrapeOrchestrator:
                         unified_catalog.save_json(unified_path)
                     logger.info("[Orchestrator] Saved enriched unified catalog to: %s", unified_path.resolve())
 
-                    # Upload to object storage if configured (both immutable timestamped snapshot and latest pointer)
+                    # Upload to object storage if configured (both immutable snapshot and latest pointer)
                     if self._should_upload(request):
                         try:
                             from datetime import UTC, datetime
 
-                            timestamp_str = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-                            dated_key = f"catalogs/unified_catalog_{timestamp_str}.json"
-                            latest_key = "catalogs/unified_catalog_latest.json"
+                            if request.batch_id:
+                                batch_key = f"catalogs/catalog_{request.batch_id}.json"
+                            else:
+                                timestamp_str = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+                                batch_key = f"catalogs/catalog_{timestamp_str}.json"
+
+                            latest_key = "catalogs/catalog_latest.json"
                             upload_meta = {
                                 "total_unique_laptops": str(unified_catalog.total_unique_laptops),
                                 "stores_included": ",".join(unified_catalog.stores_included),
-                                "timestamp": timestamp_str,
+                                "batch_id": request.batch_id or "",
                             }
 
-                            # 1. Primary: Upload immutable timestamped artifact
+                            # 1. Primary: Upload immutable batch artifact
                             self.storage_service.upload_json(
                                 data=unified_catalog.model_dump(),
-                                object_key=dated_key,
+                                object_key=batch_key,
                                 metadata=upload_meta,
                             )
                             # 2. Convenience: Overwrite latest pointer
@@ -228,9 +234,11 @@ class ScrapeOrchestrator:
                                 object_key=latest_key,
                                 metadata=upload_meta,
                             )
+                            uploaded_key = batch_key
+                            uploaded_bucket = getattr(self.storage_service, "bucket_name", None)
                             logger.info(
                                 "[Orchestrator] [+] Uploaded unified catalog to S3: '%s' and '%s'",
-                                dated_key,
+                                batch_key,
                                 latest_key,
                             )
                         except Exception as s3_exc:
@@ -244,6 +252,8 @@ class ScrapeOrchestrator:
             total_items_scraped=total_items,
             started_at=started_at,
             finished_at=utcnow_str(),
+            unified_storage_key=uploaded_key,
+            unified_storage_bucket=uploaded_bucket,
         )
 
     # ── private helpers ─────────────────────────────────────────────────

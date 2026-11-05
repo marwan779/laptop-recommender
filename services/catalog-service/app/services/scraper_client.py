@@ -6,7 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.models.scraping import StoreScrapingPointer
 from app.repositories.batch_log_repository import BatchLogRepository
+from app.repositories.outbox_repository import OutboxRepository
 from app.repositories.pointer_repository import StoreScrapingPointerRepository
+from app.schemas.events import EventType, ScrapeCatalogCommand, ScrapeCatalogPayload
 from app.schemas.scraping import ScrapeTriggerRequest, ScrapeTriggerResponse
 
 logger = logging.getLogger(__name__)
@@ -65,6 +67,28 @@ class ScraperClientService:
             status="QUEUED",
         )
         batch_log.pointers_sent = until_models
+
+        # Atomic Transactional Outbox insertion
+        outbox_repo = OutboxRepository(session)
+        command = ScrapeCatalogCommand(
+            correlation_id=job_id,
+            payload=ScrapeCatalogPayload(
+                batch_id=job_id,
+                targets=targets,
+                level=request.level,
+                until_models=until_models if until_models else None,
+                force_full_crawl=request.force_full_crawl,
+                upload_to_bucket=True,
+                send_email=request.send_email,
+            ),
+        )
+        await outbox_repo.insert_outbox_event(
+            event_type=EventType.CATALOG_SCRAPE_COMMAND,
+            routing_key=EventType.CATALOG_SCRAPE_COMMAND,
+            payload=command,
+            correlation_id=job_id,
+            message_id=uuid.UUID(job_id),
+        )
         await session.flush()
 
         # Build payload adhering to scraper-service ScrapeRequest DTO

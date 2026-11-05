@@ -3,6 +3,7 @@ import uuid
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
 from app.models.offer import LaptopOffer
+from app.models.outbox import OutboxMessage, OutboxStatus
 from app.models.scraping import ScrapingBatchLog, StoreScrapingPointer
 
 
@@ -114,3 +115,27 @@ def test_scraping_pointer_and_batch_log_instantiation():
     )
     assert log.status == "SUCCESS"
     assert log.new_laptops_added == 5
+
+
+def test_outbox_message_instantiation():
+    msg_id = uuid.uuid4()
+    msg = OutboxMessage(
+        id=msg_id,
+        event_type="catalog.scrape.command",
+        routing_key="catalog.scrape.command",
+        payload_json='{"batch_id": "batch-100", "targets": ["compumarts"]}',
+        status=OutboxStatus.PENDING,
+        retry_count=1,
+        max_retries=5,
+        last_error="Temporary broker connection timeout",
+        correlation_id="corr-123",
+    )
+
+    assert msg.id == msg_id
+    assert msg.event_type == "catalog.scrape.command"
+    assert msg.routing_key == "catalog.scrape.command"
+    assert msg.status == OutboxStatus.PENDING
+    assert msg.retry_count == 1
+    assert msg.max_retries == 5
+    assert msg.last_error == "Temporary broker connection timeout"
+    assert msg.correlation_id == "corr-123"

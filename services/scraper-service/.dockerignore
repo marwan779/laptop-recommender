@@ -9,4 +9,6 @@ __pycache__
 .vscode
 .idea
 .env
+scraping results/
 *.json
+!app/pipeline/data/*.json

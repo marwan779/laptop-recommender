@@ -1,12 +1,17 @@
 import asyncio
 import logging
 from typing import Any
+import uuid
+
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
+from app.repositories.outbox_repository import OutboxRepository
+from app.schemas.events import CheckPricesCommand, CheckPricesPayload, EventType
 from app.schemas.price_sync import (
+    PriceCheckBatchRequest,
     PriceCheckBatchResponse,
     PriceSyncSummary,
 )
@@ -31,6 +36,41 @@ class PriceSyncCronJob:
         self.scraper_url = (scraper_url or settings.scraper_service_url).rstrip("/")
         self._task: asyncio.Task | None = None
         self._is_running: bool = False
+
+    async def dispatch_batches_via_outbox(
+        self,
+        session: AsyncSession,
+        batches: list[PriceCheckBatchRequest],
+    ) -> list[str]:
+        """Dispatch price verification batches asynchronously via Transactional Outbox."""
+        outbox_repo = OutboxRepository(session)
+        message_ids: list[str] = []
+
+        for batch in batches:
+            cmd = CheckPricesCommand(
+                correlation_id=batch.batch_id,
+                payload=CheckPricesPayload(
+                    batch_id=batch.batch_id,
+                    store_key=batch.store_key,
+                    store_name=batch.store_name,
+                    items=batch.items,
+                ),
+            )
+            msg = await outbox_repo.insert_outbox_event(
+                event_type=EventType.PRICES_CHECK_COMMAND,
+                routing_key=EventType.PRICES_CHECK_COMMAND,
+                payload=cmd,
+                correlation_id=batch.batch_id,
+                message_id=uuid.UUID(batch.batch_id),
+            )
+            message_ids.append(str(msg.id))
+
+        await session.flush()
+        logger.info(
+            "Dispatched %d price check batches to transactional outbox table.",
+            len(message_ids),
+        )
+        return message_ids
 
     async def run_once(
         self,
