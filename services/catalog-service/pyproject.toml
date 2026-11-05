@@ -1,6 +1,6 @@
 [project]
 name = "catalog-service"
-version = "0.2.0"
+version = "2.0.0"
 description = "Relational Product Catalog, Hardware Scoring Engine, and Recommendation API"
 requires-python = ">=3.12"
 
