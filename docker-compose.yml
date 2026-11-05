@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: laptop-recommender-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"     # AMQP protocol port
+      - "15672:15672"   # RabbitMQ Management Web UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - laptop-network
+
+volumes:
+  rabbitmq_data:
+    driver: local
+
+networks:
+  laptop-network:
+    driver: bridge
