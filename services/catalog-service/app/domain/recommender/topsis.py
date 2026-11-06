@@ -38,8 +38,11 @@ class RankedLaptopResult:
     topsis_match_score: float
     effective_price_egp: float
     cheapest_store: str
+    cheapest_offer_url: str | None = None
     available_stores: list[str] = field(default_factory=list)
     prices_by_store: dict[str, float] = field(default_factory=dict)
+    urls_by_store: dict[str, str] = field(default_factory=dict)
+    offers: list[dict[str, Any]] = field(default_factory=list)
     why_recommended_ar: list[str] = field(default_factory=list)
     why_recommended_en: list[str] = field(default_factory=list)
     topsis_inputs: dict[str, Any] = field(default_factory=dict)
@@ -278,6 +281,11 @@ def rank_laptops_topsis(
         ti = lap["derived_metrics"]["topsis_inputs"]
         why = build_why_recommended(lap, p_key)
 
+        cheapest_store = lap.get("cheapest_store") or "unknown"
+        urls_by_store = lap.get("urls_by_store") or {}
+        cheapest_offer_url = lap.get("cheapest_offer_url") or urls_by_store.get(cheapest_store.lower().strip())
+        raw_offers = lap.get("offers") or []
+
         results.append(
             RankedLaptopResult(
                 rank=rank_idx,
@@ -289,9 +297,12 @@ def rank_laptops_topsis(
                 thumbnail_url=lap.get("thumbnail_url"),
                 topsis_match_score=score_val,
                 effective_price_egp=float(ti.get("effective_price_egp", 0.0)),
-                cheapest_store=lap.get("cheapest_store") or "unknown",
+                cheapest_store=cheapest_store,
+                cheapest_offer_url=cheapest_offer_url,
                 available_stores=lap.get("available_stores") or [],
                 prices_by_store=lap.get("prices_by_store") or {},
+                urls_by_store=urls_by_store,
+                offers=raw_offers,
                 why_recommended_ar=why["ar"],
                 why_recommended_en=why["en"],
                 topsis_inputs=ti,

@@ -38,7 +38,7 @@ async def test_recommendations_endpoint_missing_persona_fails():
 
 @pytest.mark.asyncio
 async def test_recommendations_endpoint_success(db_session: AsyncSession):
-    """Happy path with valid budget and persona returns 200 OK with ranked results."""
+    """Happy path with valid budget and persona returns 200 OK with ranked results and product URLs."""
     async def override_get_db():
         yield db_session
 
@@ -67,6 +67,13 @@ async def test_recommendations_endpoint_success(db_session: AsyncSession):
         assert winner["effective_price_egp"] <= 70000.0
         assert len(winner["why_recommended_ar"]) > 0
         assert len(winner["why_recommended_en"]) > 0
+
+        # Verify direct product URL & offers for high UX
+        assert winner["cheapest_offer_url"] is not None
+        assert winner["cheapest_offer_url"].startswith("http")
+        assert len(winner["offers"]) > 0
+        assert winner["offers"][0]["product_url"].startswith("http")
+        assert winner["cheapest_store"] in winner["urls_by_store"]
 
     app.dependency_overrides.clear()
 
@@ -97,6 +104,7 @@ async def test_recommendations_endpoint_arabic_prompt(db_session: AsyncSession):
         assert parsed["extracted_filters"].get("require_oled") is True
         assert parsed["weight_boosts"].get("mobility_score", 0.0) > 0.10
         assert len(data["results"]) > 0
+        assert data["results"][0]["cheapest_offer_url"].startswith("http")
 
     app.dependency_overrides.clear()
 
@@ -124,7 +132,6 @@ async def test_recommendations_endpoint_multiple_personas_blending(db_session: A
 
         assert len(data["results"]) > 0
         weights = data["effective_weights"]
-        # Balanced between gaming GPU focus and programming CPU focus
         assert weights["gpu_score"] > 0.10
         assert weights["cpu_score"] > 0.15
 

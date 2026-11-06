@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.errors import setup_exception_handlers
 from app.api.middleware import CorrelationIdMiddleware
+from app.api.routes.catalog import router as catalog_router
 from app.api.routes.health import router as health_router
 from app.api.routes.recommendations import router as recommendations_router
 from app.api.routes.scraping import router as scraping_router
@@ -89,6 +90,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(scraping_router, prefix=settings.api_prefix)
 app.include_router(recommendations_router, prefix=settings.api_prefix)
+app.include_router(catalog_router, prefix=settings.api_prefix)
 
 
 @app.get("/", tags=["Root"])

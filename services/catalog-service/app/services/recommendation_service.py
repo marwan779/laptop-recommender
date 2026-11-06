@@ -24,11 +24,56 @@ from app.schemas.recommendation import (
     RankedLaptopResponse,
     RecommendationRequest,
     RecommendationResponse,
+    StoreOfferResponse,
 )
 
 logger = get_logger("catalog.services.recommendation")
 
 FALLBACK_CATALOG_PATH = Path(__file__).resolve().parent.parent.parent / "scraping input" / "unified_catalog_latest.json"
+
+
+def _normalize_catalog_dict(lap: dict[str, Any]) -> dict[str, Any]:
+    """Ensure raw catalog dictionary has complete urls_by_store, cheapest_offer_url, and offers."""
+    cheapest_store = str(lap.get("cheapest_store") or "unknown").lower().strip()
+    prices_by_store = dict(lap.get("prices_by_store") or {})
+    urls_by_store = dict(lap.get("urls_by_store") or {})
+    raw_offers = list(lap.get("offers") or [])
+    cheapest_offer_url = lap.get("cheapest_offer_url")
+
+    clean_offers = []
+    for off in raw_offers:
+        store_k = str(off.get("store_key") or "generic").lower().strip()
+        p_url = off.get("product_url")
+        p_egp = off.get("price_egp")
+        in_stock = bool(off.get("in_stock", True))
+        is_valid = bool(off.get("is_valid_price", True))
+
+        if p_url:
+            urls_by_store[store_k] = p_url
+        if p_egp is not None and is_valid:
+            prices_by_store[store_k] = float(p_egp)
+
+        is_cheapest = (store_k == cheapest_store)
+        if is_cheapest and p_url and not cheapest_offer_url:
+            cheapest_offer_url = p_url
+
+        clean_offers.append({
+            "store_key": store_k,
+            "store_name": off.get("store_name") or store_k,
+            "price_egp": float(p_egp) if p_egp is not None else 0.0,
+            "product_url": p_url or "",
+            "in_stock": in_stock,
+            "is_cheapest": is_cheapest,
+        })
+
+    if not cheapest_offer_url and urls_by_store:
+        cheapest_offer_url = urls_by_store.get(cheapest_store) or next(iter(urls_by_store.values()), None)
+
+    lap["prices_by_store"] = prices_by_store
+    lap["urls_by_store"] = urls_by_store
+    lap["cheapest_offer_url"] = cheapest_offer_url
+    lap["offers"] = clean_offers
+    return lap
 
 
 class RecommendationService:
@@ -44,7 +89,8 @@ class RecommendationService:
                 try:
                     with open(FALLBACK_CATALOG_PATH, "r", encoding="utf-8") as f:
                         data = json.load(f)
-                    self._fallback_catalog = data.get("laptops", [])
+                    raw_laptops = data.get("laptops", [])
+                    self._fallback_catalog = [_normalize_catalog_dict(l) for l in raw_laptops]
                     logger.info("Loaded %d laptops from fallback catalog JSON.", len(self._fallback_catalog))
                 except Exception as exc:
                     logger.warning("Could not load fallback catalog JSON: %s", exc)
@@ -124,8 +170,21 @@ class RecommendationService:
                 topsis_match_score=r.topsis_match_score,
                 effective_price_egp=r.effective_price_egp,
                 cheapest_store=r.cheapest_store,
+                cheapest_offer_url=r.cheapest_offer_url,
                 available_stores=r.available_stores,
                 prices_by_store=r.prices_by_store,
+                urls_by_store=r.urls_by_store,
+                offers=[
+                    StoreOfferResponse(
+                        store_key=o.get("store_key", "generic"),
+                        store_name=o.get("store_name", o.get("store_key", "Store")),
+                        price_egp=float(o.get("price_egp", 0.0)),
+                        product_url=o.get("product_url", ""),
+                        in_stock=bool(o.get("in_stock", True)),
+                        is_cheapest=bool(o.get("is_cheapest", False)),
+                    )
+                    for o in r.offers
+                ],
                 why_recommended_ar=r.why_recommended_ar,
                 why_recommended_en=r.why_recommended_en,
                 topsis_inputs=r.topsis_inputs,

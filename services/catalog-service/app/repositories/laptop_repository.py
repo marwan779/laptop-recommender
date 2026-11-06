@@ -1,3 +1,4 @@
+import uuid
 from collections.abc import Sequence
 from typing import Any
 
@@ -31,10 +32,35 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
     }
 
     prices_by_store: dict[str, float] = {}
+    urls_by_store: dict[str, str] = {}
+    formatted_offers: list[dict[str, Any]] = []
+    cheapest_store = str(laptop.cheapest_store or "unknown").lower().strip()
+    cheapest_offer_url: str | None = None
+
     if laptop.offers:
         for offer in laptop.offers:
-            if offer.store_key and offer.price_egp is not None and offer.is_valid_price:
-                prices_by_store[offer.store_key] = float(offer.price_egp)
+            if offer.store_key and offer.is_valid_price:
+                store_k = offer.store_key.lower().strip()
+                if offer.price_egp is not None:
+                    prices_by_store[store_k] = float(offer.price_egp)
+                if offer.product_url:
+                    urls_by_store[store_k] = offer.product_url
+
+                is_cheapest = (store_k == cheapest_store)
+                if is_cheapest and offer.product_url and not cheapest_offer_url:
+                    cheapest_offer_url = offer.product_url
+
+                formatted_offers.append({
+                    "store_key": store_k,
+                    "store_name": offer.store_name or store_k,
+                    "price_egp": float(offer.price_egp) if offer.price_egp else 0.0,
+                    "product_url": offer.product_url or "",
+                    "in_stock": bool(offer.in_stock),
+                    "is_cheapest": is_cheapest,
+                })
+
+    if not cheapest_offer_url and urls_by_store:
+        cheapest_offer_url = urls_by_store.get(cheapest_store) or next(iter(urls_by_store.values()), None)
 
     return {
         "id": str(laptop.id),
@@ -46,8 +72,11 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
         "title": laptop.title,
         "thumbnail_url": laptop.thumbnail_url,
         "cheapest_store": laptop.cheapest_store or "unknown",
+        "cheapest_offer_url": cheapest_offer_url,
         "available_stores": laptop.available_stores or list(prices_by_store.keys()),
         "prices_by_store": prices_by_store,
+        "urls_by_store": urls_by_store,
+        "offers": formatted_offers,
         "price_spread_egp": float(laptop.price_spread_egp) if laptop.price_spread_egp else 0.0,
         "specs": {
             "identity": {
@@ -125,6 +154,35 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
 
     def __init__(self, session: AsyncSession):
         super().__init__(LaptopConfiguration, session)
+
+    async def get_by_identifier(self, identifier: str) -> LaptopConfiguration | None:
+        """Fetch a laptop configuration by UUID, canonical_id, or mpn with offers and metrics loaded."""
+        cleaned_id = identifier.strip()
+        parsed_uuid: uuid.UUID | None = None
+        try:
+            parsed_uuid = uuid.UUID(cleaned_id)
+        except (ValueError, AttributeError):
+            parsed_uuid = None
+
+        stmt = select(LaptopConfiguration).options(
+            selectinload(LaptopConfiguration.offers),
+            selectinload(LaptopConfiguration.metrics),
+        )
+
+        if parsed_uuid:
+            stmt = stmt.where(
+                (LaptopConfiguration.id == parsed_uuid)
+                | (func.lower(LaptopConfiguration.canonical_id) == cleaned_id.lower())
+                | (func.lower(LaptopConfiguration.mpn) == cleaned_id.lower())
+            )
+        else:
+            stmt = stmt.where(
+                (func.lower(LaptopConfiguration.canonical_id) == cleaned_id.lower())
+                | (func.lower(LaptopConfiguration.mpn) == cleaned_id.lower())
+            )
+
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
 
     async def get_by_canonical_id(self, canonical_id: str) -> LaptopConfiguration | None:
         stmt = (

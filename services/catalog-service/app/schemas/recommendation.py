@@ -82,6 +82,17 @@ class RecommendationRequest(BaseModel):
         return data
 
 
+class StoreOfferResponse(BaseModel):
+    """Store-specific listing details and direct purchase URL."""
+
+    store_key: str = Field(..., description="Store unique identifier (e.g. compumarts, sigma, elbadr, 2b).")
+    store_name: str = Field(..., description="Store display name.")
+    price_egp: float = Field(..., description="Price in EGP at this retailer.")
+    product_url: str = Field(..., description="Direct purchase link to the product on the retailer's store.")
+    in_stock: bool = Field(True, description="Stock availability status at this store.")
+    is_cheapest: bool = Field(False, description="True if this offer is the current lowest price.")
+
+
 class RankedLaptopResponse(BaseModel):
     """Structured details of a single ranked recommendation."""
 
@@ -95,8 +106,17 @@ class RankedLaptopResponse(BaseModel):
     topsis_match_score: float = Field(..., description="Relative closeness match percentage (0.0 - 100.0).")
     effective_price_egp: float = Field(..., description="Best current market price in EGP.")
     cheapest_store: str = Field(..., description="Store offering the lowest price.")
+    cheapest_offer_url: str | None = Field(
+        None,
+        description="Direct clickable link to buy the laptop from the cheapest store.",
+    )
     available_stores: list[str] = Field(default_factory=list, description="Stores with active stock.")
     prices_by_store: dict[str, float] = Field(default_factory=dict, description="Price breakdown per retailer.")
+    urls_by_store: dict[str, str] = Field(default_factory=dict, description="Map of retailer store to direct product URL.")
+    offers: list[StoreOfferResponse] = Field(
+        default_factory=list,
+        description="List of all retail offers with prices, stock status, and direct URLs.",
+    )
     why_recommended_ar: list[str] = Field(default_factory=list, description="Arabic explanation badges.")
     why_recommended_en: list[str] = Field(default_factory=list, description="English explanation badges.")
     topsis_inputs: dict[str, Any] = Field(default_factory=dict, description="Raw normalized 9-criteria input scores.")
