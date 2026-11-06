@@ -1,5 +1,66 @@
 # Changelog
 
+## [1.7.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.6.1...scraper-service-v1.7.0) (2026-11-05)
+
+
+### Features
+
+* **ai-fallback:** upgrade extraction model to nuextract-2.0-2b with dynamic vlm support ([932faf5](https://github.com/marwan779/laptop-recommender/commit/932faf57bb0d4482094fec0149b6ccbd78b902cb))
+* **catalog-service:** add price sync cron job and configure environment-based schedules ([da8642d](https://github.com/marwan779/laptop-recommender/commit/da8642d8d5f2ac6b6dbf36227fdcc6a17707fcbb))
+* **catalog-service:** implement catalog ingestion pipeline and database seeder repository ([c9c782a](https://github.com/marwan779/laptop-recommender/commit/c9c782a05070ea083ce783f110cd047c5811258d))
+* **catalog-service:** implement clean architecture catalog ingestion pipeline and database seeder ([4f82bb3](https://github.com/marwan779/laptop-recommender/commit/4f82bb3dbe308a6966eface01aa0e4b4cd001711))
+* **catalog-service:** modernize async db layer, scoring models, and tooling ([9523bac](https://github.com/marwan779/laptop-recommender/commit/9523bac89ce16d77101bb7d6d3c3fade14f2816c))
+* implement 8-metric hardware scoring engine, icecat spec enrichment, and core catalog infrastructure ([c787f06](https://github.com/marwan779/laptop-recommender/commit/c787f0693732da13e711b374bcd1c9df5e0117f7))
+* implement lightweight price monitor worker, catalog sync, and cron schedulers ([99bc74a](https://github.com/marwan779/laptop-recommender/commit/99bc74a3ee46aa175119142ad07b23e4619211e4))
+* **matching:** add hardware and display guards to multi-store catalog combiner ([27863bc](https://github.com/marwan779/laptop-recommender/commit/27863bcdc101a8317a745ce09726685d0186129d))
+* **matching:** implement multi-store catalog combiner and deduplication engine ([23edd6d](https://github.com/marwan779/laptop-recommender/commit/23edd6dc7fab99b89a1aa7e5b1e1bc704ca7a8cb))
+* **matching:** implement multi-store catalog combiner and deduplication engine ([da9edaf](https://github.com/marwan779/laptop-recommender/commit/da9edaf5ae5f417a8606587f7508b2738d7f01b7))
+* **messaging:** implement rabbitmq event-driven pipeline and transactional outbox ([d74b183](https://github.com/marwan779/laptop-recommender/commit/d74b183006058bfd64cbba3cca887f7b05e6bb15))
+* **pipeline:** add audit status flag, metadata tracking, and circuit breaker to llm auditor ([66755ef](https://github.com/marwan779/laptop-recommender/commit/66755ef61c32d61349d95ae8591bd588ca9e3b92))
+* **pipeline:** add envelope prompt normalizer for storage and memory ([d00664c](https://github.com/marwan779/laptop-recommender/commit/d00664c9336b0d08d8e96fd1655ce59abb868b23))
+* **pipeline:** add generic ocr fallback and integrate elbadr store into cli. ([85595f8](https://github.com/marwan779/laptop-recommender/commit/85595f8fa9a033b4a64615984d13684bd0566bd4))
+* **pipeline:** add post-pipeline ground-truth LLM auditor with Gemini API ([f62b51d](https://github.com/marwan779/laptop-recommender/commit/f62b51d65d81f5a0a3e8230d584ac438fc3e71ef))
+* **pipeline:** add post-pipeline ground-truth LLM auditor with Gemini API ([a697954](https://github.com/marwan779/laptop-recommender/commit/a6979544c7c2d696027ed7038637b03918c961e9))
+* **pipeline:** add storage arithmetic and group raw specs to LLM auditor ([7ad39b3](https://github.com/marwan779/laptop-recommender/commit/7ad39b3a830b54f2598c71c52adf394f1bf8ecfb))
+* **pipeline:** add streaming layer 8 llm auditor buffer and daily quota circuit breaker ([7bb2598](https://github.com/marwan779/laptop-recommender/commit/7bb2598103665f9a8a3120af2d485c49237af77c))
+* **pipeline:** add v6 post-audit catalog patcher script ([cec7c25](https://github.com/marwan779/laptop-recommender/commit/cec7c2538713bb002b6cb8fc9d136be4928c1630))
+* **pipeline:** enrich catalog with deterministic hardware metrics and preserve store pointers ([1361269](https://github.com/marwan779/laptop-recommender/commit/1361269fb1b2f101ce07292786f59c0af7ca25c6))
+* **pipeline:** expand icecat schema mapping and enforce store-first spec normalization ([3e6e65a](https://github.com/marwan779/laptop-recommender/commit/3e6e65a24c42faf7b61cae7684e1cbce7903168b))
+* **pipeline:** implement 7-layer extraction pipeline with nuextract-v1.5 gpu fallback ([610e21a](https://github.com/marwan779/laptop-recommender/commit/610e21a86341a778ef2cb841d9ddfd9de33bebbc))
+* **pipeline:** implement 7-layer extraction with nuextract onnx and zero-defect routing ([040e22e](https://github.com/marwan779/laptop-recommender/commit/040e22e141fec3fe8bc230c167db9a1b5c8f4f03))
+* **pipeline:** integrate elbadr store specifications and aliases ([a5e7e74](https://github.com/marwan779/laptop-recommender/commit/a5e7e74d5c99e580eec7aea2f940fd73fff88675))
+* **pipeline:** integrate icecat spec enrichment and post-combiner targeted llm workflow ([9823edd](https://github.com/marwan779/laptop-recommender/commit/9823edd6ad979f5e90992f2679c82ab4e79634ff))
+* **pipeline:** integrate sigma computer store into hardware extraction pipeline ([7861dcb](https://github.com/marwan779/laptop-recommender/commit/7861dcb0d0dd1a46e1510331abc3286ab956374f))
+* **pipeline:** integrate sigma computer store into hardware extraction pipeline ([fe7477d](https://github.com/marwan779/laptop-recommender/commit/fe7477d1bcce765caff20ed58b3fa253fa21ef7f))
+* **pipeline:** replace gemini with multi-provider qwen failover auditor ([1a7b2b7](https://github.com/marwan779/laptop-recommender/commit/1a7b2b7a3032e5240d33ddfc6bf1d3f64679beef))
+* **price-monitor:** add lightweight price and stock monitor worker ([e98595b](https://github.com/marwan779/laptop-recommender/commit/e98595b48b940f586841d2af0d6e30c0df890d0b))
+* **resilience:** implement global microservice error handler with dlq and circuit breaker ([f21a594](https://github.com/marwan779/laptop-recommender/commit/f21a59461437e956316b9de9b7bd5f575401479d))
+* **resilience:** implement global microservice error handler with dlq and circuit breaker ([df762d9](https://github.com/marwan779/laptop-recommender/commit/df762d98ceb6b1f4d7d32b4f13ebecfc2ccf424d))
+* **sandbox:** add targeted ai fallback script for high-entropy fields ([12338b8](https://github.com/marwan779/laptop-recommender/commit/12338b80dcbe7bb0bbd8bbe4f940624fc41c7fd3))
+* **scraper-service:** add scrapling web spec fallback and standalone icecat enrichment runner ([d146b64](https://github.com/marwan779/laptop-recommender/commit/d146b64d64dd6b15b899a72b367f0945e5d79f74))
+* **scraper-service:** define rabbitmq event schemas and contracts ([92a872d](https://github.com/marwan779/laptop-recommender/commit/92a872da410b01b5691dde0094c19c92248bcda0))
+* **scraper-service:** implement configurable rabbitmq broker and message contract ([806e993](https://github.com/marwan779/laptop-recommender/commit/806e993dca8304369bfad2581cbfe23d672d9e43))
+* **scraper-service:** use dynamic batch-id s3 keys for catalog artifacts ([ad02586](https://github.com/marwan779/laptop-recommender/commit/ad02586ff87cc27f69376f00a3a365c496672d3e))
+* **scraper-service:** wire rabbitmq consumer and lifecycle to scraper orchestrator ([07d47ed](https://github.com/marwan779/laptop-recommender/commit/07d47ed3e95d6a31716443e245a7432bfba4419d))
+* **scraper:** integrate 8-layer hardware extraction pipeline and clean up legacy sandboxes ([d0b0196](https://github.com/marwan779/laptop-recommender/commit/d0b01967336f3cb93033654936287de4df7bbfe3))
+* **scraper:** integrate 8-layer hardware extraction pipeline into compumarts orchestrator ([387ad2d](https://github.com/marwan779/laptop-recommender/commit/387ad2d03260c3feabea23020b34b7b6a2e6deac))
+
+
+### Bug Fixes
+
+* **ci:** add openai dependency and adjust catalog extraction timing ceiling for ci runners ([2c17783](https://github.com/marwan779/laptop-recommender/commit/2c1778329b823b82b2ed2366e15e27070e020059))
+* **fingerprint:** add missing newline at end of file in generate_canonical_id function ([ab3d97f](https://github.com/marwan779/laptop-recommender/commit/ab3d97fa650a54bbd9c7a2556e1fc3a336359390))
+* **fingerprint:** ensure newline at end of file in generate_canonical_id function ([cb75b09](https://github.com/marwan779/laptop-recommender/commit/cb75b09bef0cbaa4c0b2dc0ad9e6cfcfadd69771))
+* **ocr:** harden token sanitization and cross-platform font loading ([b43d592](https://github.com/marwan779/laptop-recommender/commit/b43d5928e6d32bfc27c4e5e403c3e3c093e76bab))
+* **pipeline:** add missing re import in orchestrator and add nuextract benchmark script ([0eb61ca](https://github.com/marwan779/laptop-recommender/commit/0eb61cad2f3aaee0a7d613de49f266b67a720a08))
+* **pipeline:** prevent marketing leakage into raw specs and enforce table precedence ([dd89dec](https://github.com/marwan779/laptop-recommender/commit/dd89deca450a8f61622e8d226326c0126bb1a51d))
+* **pipeline:** resolve audit findings on power margins, displays, inputs, and catalog deduplication ([16b8188](https://github.com/marwan779/laptop-recommender/commit/16b8188958156fa0651007227bbb83ec2b326a41))
+* **pipeline:** resolve catalog audit raw spec contradictions ([9868719](https://github.com/marwan779/laptop-recommender/commit/986871904ed838f93ed7c88bd322e368c2a2c090))
+* **pipeline:** resolve catalog audit raw spec contradictions ([24ad190](https://github.com/marwan779/laptop-recommender/commit/24ad190d09c0e266365fb2651ec6d623c515b26f))
+* **pipeline:** streamline llm auditor prompt and anchor discrete gpus over integrated ([34bbbfe](https://github.com/marwan779/laptop-recommender/commit/34bbbfe9ef7c445f57f8402f79f74dd395c6e293))
+* **scraper-service:** preserve pipeline data json files in docker build context ([8a2c803](https://github.com/marwan779/laptop-recommender/commit/8a2c80304a39d0dfa871261b522eea1d5b084fa3))
+* **scraper:** preserve watermark pointers on zero scrapes and fix soldered memory slots ([cd6b257](https://github.com/marwan779/laptop-recommender/commit/cd6b2572e5aa6768f144540796562b51be7e988e))
+
 ## [1.6.1](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.6.0...scraper-service-v1.6.1) (2026-10-10)
 
 
