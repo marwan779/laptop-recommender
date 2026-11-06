@@ -2,7 +2,7 @@ from collections.abc import AsyncGenerator
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import NullPool
 
 from app.core.config import Settings
@@ -11,12 +11,18 @@ from app.main import app
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
-    """Provides an isolated database session for testing using NullPool."""
+    """Provides an isolated database session for testing that automatically rolls back."""
     settings = Settings()
     engine = create_async_engine(settings.async_database_url, poolclass=NullPool)
-    session_factory = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
-    async with session_factory() as session:
+    async with engine.connect() as conn:
+        trans = await conn.begin()
+        session = AsyncSession(
+            bind=conn,
+            expire_on_commit=False,
+            join_transaction_mode="create_savepoint",
+        )
         yield session
+        await trans.rollback()
     await engine.dispose()
 
 

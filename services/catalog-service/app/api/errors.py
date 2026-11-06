@@ -1,6 +1,7 @@
 """Global API exception handlers for structured error responses."""
 
 from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -55,7 +56,7 @@ def setup_exception_handlers(app: FastAPI) -> None:
                 "error": {
                     "code": status.HTTP_422_UNPROCESSABLE_ENTITY,
                     "message": "Validation failed",
-                    "details": exc.errors(),
+                    "details": jsonable_encoder(exc.errors()),
                     "correlation_id": correlation_id,
                 }
             },

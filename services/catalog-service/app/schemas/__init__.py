@@ -6,13 +6,21 @@ from app.schemas.laptop import (
     LaptopConfigurationSummary,
     LaptopOfferRead,
 )
+from app.schemas.recommendation import (
+    RankedLaptopResponse,
+    RecommendationRequest,
+    RecommendationResponse,
+)
 
 __all__ = [
     "HealthResponse",
+    "LaptopCategoryScoreRead",
+    "LaptopConfigurationDetail",
+    "LaptopConfigurationSummary",
+    "LaptopOfferRead",
     "MessageResponse",
     "PaginationParams",
-    "LaptopOfferRead",
-    "LaptopCategoryScoreRead",
-    "LaptopConfigurationSummary",
-    "LaptopConfigurationDetail",
+    "RankedLaptopResponse",
+    "RecommendationRequest",
+    "RecommendationResponse",
 ]
