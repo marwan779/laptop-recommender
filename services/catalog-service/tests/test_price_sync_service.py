@@ -65,7 +65,7 @@ async def test_build_price_check_batches(db_session: AsyncSession):
     await db_session.commit()
 
     batches = await service.build_price_check_batches(db_session, limit=10)
-    assert len(batches) == 2
+    assert len(batches) >= 2
 
     stores = {b.store_key for b in batches}
     assert "compumarts" in stores

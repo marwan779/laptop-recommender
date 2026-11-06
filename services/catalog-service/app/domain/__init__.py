@@ -6,12 +6,38 @@ from app.domain.pricing import (
     PricingDomainService,
     ValueScoreCalculation,
 )
+from app.domain.recommender import (
+    IS_BENEFIT_CRITERION,
+    PERSONA_CONFIGS,
+    TOPSIS_CRITERIA_KEYS,
+    PersonaType,
+    RankedLaptopResult,
+    TopsisExecutionResult,
+    build_why_recommended,
+    enrich_catalog_with_persona_scores,
+    get_persona_db_query_spec,
+    parse_user_text_prompt,
+    rank_laptops_topsis,
+    run_topsis_vector,
+)
 
 __all__ = [
+    "IS_BENEFIT_CRITERION",
     "LaptopRollupCalculation",
     "OfferPriceTransition",
     "OfferSnapshot",
+    "PERSONA_CONFIGS",
+    "PersonaType",
     "PriceChangeType",
     "PricingDomainService",
+    "RankedLaptopResult",
+    "TOPSIS_CRITERIA_KEYS",
+    "TopsisExecutionResult",
     "ValueScoreCalculation",
+    "build_why_recommended",
+    "enrich_catalog_with_persona_scores",
+    "get_persona_db_query_spec",
+    "parse_user_text_prompt",
+    "rank_laptops_topsis",
+    "run_topsis_vector",
 ]
