@@ -5,11 +5,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.errors import setup_exception_handlers
-from app.api.middleware import CorrelationIdMiddleware
+from app.api.middleware import CorrelationIdMiddleware, ResponseCacheMiddleware
 from app.api.routes.catalog import router as catalog_router
 from app.api.routes.health import router as health_router
 from app.api.routes.recommendations import router as recommendations_router
 from app.api.routes.scraping import router as scraping_router
+from app.common.cache import InMemoryCacheProvider, RedisCacheProvider
 from app.common.logger import configure_logging, get_logger
 from app.common.messaging.rabbitmq import RabbitMQBroker
 from app.core.config import settings
@@ -26,7 +27,19 @@ logger = get_logger("catalog.main")
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting %s in %s mode", settings.service_name, settings.environment)
 
-    # 1. Initialize RabbitMQ broker & consumer
+    # 1. Initialize Cache Provider (Redis with graceful fallback to In-Memory)
+    redis_cache = RedisCacheProvider()
+    await redis_cache.connect()
+    if await redis_cache.health_check():
+        app.state.cache = redis_cache
+    else:
+        await redis_cache.close()
+        memory_cache = InMemoryCacheProvider()
+        await memory_cache.connect()
+        app.state.cache = memory_cache
+        logger.info("Using InMemoryCacheProvider fallback while Redis is offline.")
+
+    # 2. Initialize RabbitMQ broker & consumer
     broker = RabbitMQBroker()
     consumer = CatalogMessageConsumer(broker=broker)
     app.state.broker = broker
@@ -45,17 +58,23 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             exc,
         )
 
-    # 2. Start background workers
+    # 3. Start background workers
     outbox_relay.start()
     scraping_cron.start()
     price_sync_cron.start()
 
     yield
 
-    logger.info("Shutting down %s: closing background jobs, broker, and database pool", settings.service_name)
+    logger.info("Shutting down %s: closing background jobs, cache, broker, and database pool", settings.service_name)
     await price_sync_cron.stop()
     await scraping_cron.stop()
     await outbox_relay.stop()
+
+    if getattr(app.state, "cache", None):
+        try:
+            await app.state.cache.close()
+        except Exception as exc:
+            logger.warning("Error during cache provider shutdown: %s", exc)
 
     if getattr(app.state, "broker", None) and app.state.broker.is_connected:
         try:
@@ -76,7 +95,8 @@ app = FastAPI(
 # Exception handlers
 setup_exception_handlers(app)
 
-# Middlewares
+# Middlewares (LIFO execution: CorrelationId -> ResponseCache -> Route)
+app.add_middleware(ResponseCacheMiddleware)
 app.add_middleware(CorrelationIdMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -84,6 +104,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Cache", "X-Cache-Key", "X-Cache-Lookup-Time-Ms", "X-Correlation-ID"],
 )
 
 # Register routes
