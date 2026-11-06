@@ -12,6 +12,7 @@ class LaptopOfferRead(BaseModel):
     price_egp: float
     in_stock: bool
     offer_url: str | None = None
+    last_checked_at: datetime | str | None = None
 
 
 class LaptopCategoryScoreRead(BaseModel):
@@ -198,6 +199,7 @@ class DetailedOfferRead(BaseModel):
     is_valid_price: bool = True
     is_cheapest: bool = False
     price_updated_at: datetime | str | None = None
+    last_checked_at: datetime | str | None = None
 
 
 class FullLaptopDetailResponse(BaseModel):
@@ -229,6 +231,8 @@ class FullLaptopDetailResponse(BaseModel):
     price_spread_egp: float | None = None
     stores_count: int = 1
     in_stock: bool = True
+    price_updated_at: datetime | str | None = None
+    price_checked_at: datetime | str | None = None
     available_stores: list[str] = Field(default_factory=list)
     prices_by_store: dict[str, float] = Field(default_factory=dict)
     urls_by_store: dict[str, str] = Field(default_factory=dict)

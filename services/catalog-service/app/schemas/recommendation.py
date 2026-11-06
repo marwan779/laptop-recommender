@@ -1,5 +1,6 @@
 """Pydantic v2 schemas for the TOPSIS recommendation endpoint."""
 
+from datetime import datetime
 from typing import Any
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
@@ -91,6 +92,10 @@ class StoreOfferResponse(BaseModel):
     product_url: str = Field(..., description="Direct purchase link to the product on the retailer's store.")
     in_stock: bool = Field(True, description="Stock availability status at this store.")
     is_cheapest: bool = Field(False, description="True if this offer is the current lowest price.")
+    last_checked_at: datetime | str | None = Field(
+        None,
+        description="Timestamp of when the price and availability were last verified.",
+    )
 
 
 class RankedLaptopResponse(BaseModel):

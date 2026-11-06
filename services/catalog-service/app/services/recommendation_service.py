@@ -64,6 +64,8 @@ def _normalize_catalog_dict(lap: dict[str, Any]) -> dict[str, Any]:
             "product_url": p_url or "",
             "in_stock": in_stock,
             "is_cheapest": is_cheapest,
+            "last_checked_at": off.get("last_checked_at") or off.get("last_checked") or off.get("scraped_at"),
+            "price_updated_at": off.get("price_updated_at") or off.get("scraped_at"),
         })
 
     if not cheapest_offer_url and urls_by_store:
@@ -182,6 +184,7 @@ class RecommendationService:
                         product_url=o.get("product_url", ""),
                         in_stock=bool(o.get("in_stock", True)),
                         is_cheapest=bool(o.get("is_cheapest", False)),
+                        last_checked_at=o.get("last_checked_at"),
                     )
                     for o in r.offers
                 ],

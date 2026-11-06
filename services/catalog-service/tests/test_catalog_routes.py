@@ -55,12 +55,14 @@ async def test_get_laptop_detail_by_canonical_id_success(db_session: AsyncSessio
         assert "audio_webcam" in data
         assert "connectivity_os" in data
 
-        # Live Offers with direct URLs
+        # Live Offers with direct URLs and freshness
         assert len(data["offers"]) >= 1
         first_offer = data["offers"][0]
         assert first_offer["store_key"] != ""
         assert first_offer["price_egp"] > 0
         assert first_offer["product_url"].startswith("http")
+        assert first_offer["last_checked_at"] is not None
+        assert data["price_checked_at"] is not None
 
         # Metrics
         assert data["metrics"] is not None

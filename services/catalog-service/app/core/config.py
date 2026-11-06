@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     rabbitmq_prefetch_count: int = 10
     rabbitmq_connection_timeout_seconds: float = 10.0
 
+    # Redis Cache Store
+    redis_url: str = "redis://localhost:6379/0"
+    enable_cache: bool = True
+    cache_default_ttl_seconds: int = 3600
+
     model_config = SettingsConfigDict(
         env_file=(SERVICE_ROOT / ".env", ".env"),
         env_file_encoding="utf-8",

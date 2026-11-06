@@ -57,6 +57,8 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
                     "product_url": offer.product_url or "",
                     "in_stock": bool(offer.in_stock),
                     "is_cheapest": is_cheapest,
+                    "last_checked_at": offer.last_checked_at,
+                    "price_updated_at": offer.price_updated_at,
                 })
 
     if not cheapest_offer_url and urls_by_store:

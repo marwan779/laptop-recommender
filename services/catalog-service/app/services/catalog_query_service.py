@@ -168,6 +168,7 @@ class CatalogQueryService:
                         is_valid_price=is_valid,
                         is_cheapest=is_chp,
                         price_updated_at=off.price_updated_at,
+                        last_checked_at=off.last_checked_at,
                     )
                 )
 
@@ -233,6 +234,8 @@ class CatalogQueryService:
             price_spread_egp=float(laptop.price_spread_egp) if laptop.price_spread_egp else 0.0,
             stores_count=laptop.stores_count or len(formatted_offers) or 1,
             in_stock=bool(laptop.in_stock),
+            price_updated_at=laptop.price_updated_at,
+            price_checked_at=laptop.price_checked_at,
             available_stores=available_stores,
             prices_by_store=prices_by_store,
             urls_by_store=urls_by_store,
@@ -392,6 +395,7 @@ class CatalogQueryService:
                     is_valid_price=bool(off.get("is_valid_price", True)),
                     is_cheapest=is_chp,
                     price_updated_at=off.get("price_updated_at") or off.get("scraped_at"),
+                    last_checked_at=off.get("last_checked_at") or off.get("last_checked") or off.get("price_updated_at") or off.get("scraped_at"),
                 )
             )
 
@@ -449,6 +453,8 @@ class CatalogQueryService:
             price_spread_egp=float(lap.get("price_spread_egp") or 0.0),
             stores_count=int(lap.get("stores_count") or len(formatted_offers) or 1),
             in_stock=bool(lap.get("in_stock", True)),
+            price_updated_at=lap.get("price_updated_at"),
+            price_checked_at=lap.get("price_checked_at") or lap.get("price_updated_at"),
             available_stores=available_stores,
             prices_by_store=prices_by_store,
             urls_by_store=urls_by_store,
