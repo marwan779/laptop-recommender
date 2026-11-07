@@ -213,10 +213,6 @@ class LaptopReviewTarget(BaseModel):
         description="Known product page URLs for additional identity context",
     )
     thumbnail_url: str | None = Field(default=None, description="Product thumbnail URL")
-    search_queries: list[str] = Field(
-        default_factory=list,
-        description="Optional caller-supplied query variants to run before generated queries",
-    )
 
 
 class ScrapeReviewsPayload(BaseModel):
@@ -224,7 +220,6 @@ class ScrapeReviewsPayload(BaseModel):
 
     job_id: str = Field(description="User recommendation session / Phase 2 job ID")
     targets: list[LaptopReviewTarget] = Field(
-        max_length=REVIEWS_BATCH_MAX_TARGETS,
         description="Batch of up to 15 candidate laptops to scrape reviews for",
     )
 

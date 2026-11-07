@@ -1,11 +1,13 @@
 import uuid
 from collections.abc import Sequence
+from datetime import datetime
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.repositories.base import BaseRepository
 
@@ -255,3 +257,43 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         stmt = stmt.order_by(LaptopConfiguration.min_price_egp.asc())
         result = await self.session.execute(stmt)
         return result.scalars().unique().all()
+
+    async def get_unreviewed_laptops(self) -> Sequence[LaptopConfiguration]:
+        """Fetch laptop configurations that have not had community reviews collected.
+
+        Offers are eagerly loaded so the caller can aggregate every store product
+        URL for a chassis without triggering lazy-load I/O outside the session.
+        """
+        stmt = (
+            select(LaptopConfiguration)
+            .options(selectinload(LaptopConfiguration.offers))
+            .where(LaptopConfiguration.has_reviews.is_(False))
+            .order_by(LaptopConfiguration.laptop_added_at.asc())
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().unique().all()
+
+    async def mark_laptops_as_reviewed(
+        self,
+        laptop_ids: Sequence[uuid.UUID],
+        timestamp: datetime | None = None,
+    ) -> int:
+        """Flag the given laptops as reviewed and stamp their review check time.
+
+        Returns the number of rows matched by the bulk update.
+        """
+        ids = list(laptop_ids)
+        if not ids:
+            return 0
+
+        stmt = (
+            update(LaptopConfiguration)
+            .where(LaptopConfiguration.id.in_(ids))
+            .values(
+                has_reviews=True,
+                reviews_checked_at=timestamp or utcnow(),
+            )
+        )
+        result = await self.session.execute(stmt)
+        await self.session.flush()
+        return result.rowcount or 0

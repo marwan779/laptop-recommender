@@ -1,10 +1,6 @@
 """Contract tests for the batched review command in catalog-service."""
 
-import pytest
-from pydantic import ValidationError
-
 from app.schemas.events import (
-    REVIEWS_BATCH_MAX_TARGETS,
     LaptopReviewTarget,
     ScrapeReviewsPayload,
 )
@@ -25,23 +21,27 @@ def _target(index: int) -> LaptopReviewTarget:
         mpns=["83DV01HSED"],
         product_urls=["https://example.com/lenovo-loq-15"],
         thumbnail_url="https://example.com/lenovo-loq-15.jpg",
-        search_queries=["Lenovo LOQ 15 review"],
     )
 
 
-def test_catalog_review_batch_accepts_15_targets():
+def test_catalog_review_batch_accepts_full_chassis_batch():
     payload = ScrapeReviewsPayload(
         job_id="job-123",
-        targets=[_target(index) for index in range(REVIEWS_BATCH_MAX_TARGETS)],
+        targets=[_target(index) for index in range(70)],
     )
 
-    assert len(payload.targets) == 15
+    assert len(payload.targets) == 70
     assert payload.targets[0].skus == ["83DV01HSED"]
 
 
-def test_catalog_review_batch_rejects_16_targets():
-    with pytest.raises(ValidationError):
-        ScrapeReviewsPayload(
-            job_id="job-123",
-            targets=[_target(index) for index in range(REVIEWS_BATCH_MAX_TARGETS + 1)],
-        )
+def test_catalog_review_batch_has_no_upper_target_cap():
+    payload = ScrapeReviewsPayload(
+        job_id="job-123",
+        targets=[_target(index) for index in range(150)],
+    )
+
+    assert len(payload.targets) == 150
+
+
+def test_catalog_review_target_exposes_no_search_queries():
+    assert "search_queries" not in LaptopReviewTarget.model_fields

@@ -6,7 +6,8 @@ Wires the complete catalog pipeline:
 3. Placeholder hook for future TOPSIS persona modeling.
 4. Relational database persistence via CatalogSeederRepository.
 5. Store scraping watermark checkpoint updates via StoreScrapingPointerRepository.
-6. Execution audit logging via BatchLogRepository.
+6. Chassis-level community review dispatch via the transactional outbox.
+7. Execution audit logging via BatchLogRepository.
 """
 
 from __future__ import annotations
@@ -22,10 +23,20 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.storage import IObjectStorageService, get_storage_service
+from app.domain.reviews import ChassisTargetResolver, LaptopInputDto, ResolvedReviewTarget
 from app.models.base import utcnow
+from app.models.laptop import LaptopConfiguration
 from app.repositories.batch_log_repository import BatchLogRepository
+from app.repositories.laptop_repository import LaptopRepository
+from app.repositories.outbox_repository import OutboxRepository
 from app.repositories.pointer_repository import StoreScrapingPointerRepository
 from app.repositories.seeder import CatalogSeederRepository, SeederSummary
+from app.schemas.events import (
+    EventType,
+    LaptopReviewTarget,
+    ScrapeReviewsCommand,
+    ScrapeReviewsPayload,
+)
 from app.services.catalog_metrics_service import CatalogMetricsService
 
 logger = logging.getLogger("catalog.services.ingestion")
@@ -57,9 +68,11 @@ class CatalogIngestionService:
         self,
         storage_service: IObjectStorageService | None = None,
         metrics_service: CatalogMetricsService | None = None,
+        review_resolver: ChassisTargetResolver | None = None,
     ) -> None:
         self.storage_service = storage_service or get_storage_service()
         self.metrics_service = metrics_service or CatalogMetricsService()
+        self.review_resolver = review_resolver or ChassisTargetResolver()
 
     async def ingest_from_s3(
         self,
@@ -146,12 +159,18 @@ class CatalogIngestionService:
             logger.info("[%s] Seeding catalog into PostgreSQL...", bid)
             seeder_summary: SeederSummary = await seeder_repo.upsert_catalog(ready_data)
 
-            # 5. Update store scraping watermark checkpoints
+            # 5. Resolve unreviewed chassis and enqueue the review scrape command
+            review_targets_queued = await self._dispatch_review_scrape_command(
+                session=session,
+                batch_id=bid,
+            )
+
+            # 6. Update store scraping watermark checkpoints
             await self._update_store_watermarks(pointer_repo, ready_data)
 
             elapsed = round(time.perf_counter() - start_time, 3)
 
-            # 6. Finalize batch log
+            # 7. Finalize batch log
             batch_log.status = "SUCCESS"
             batch_log.completed_at = utcnow()
             batch_log.duration_seconds = elapsed
@@ -161,12 +180,14 @@ class CatalogIngestionService:
             await session.flush()
 
             logger.info(
-                "[%s] Catalog ingestion successfully finished in %.3fs: %d processed (%d new, %d updated)",
+                "[%s] Catalog ingestion successfully finished in %.3fs: %d processed (%d new, %d updated, "
+                "%d chassis queued for reviews)",
                 bid,
                 elapsed,
                 seeder_summary.total_laptops_processed,
                 seeder_summary.new_laptops_created,
                 seeder_summary.laptops_updated,
+                review_targets_queued,
             )
 
             return IngestionResult(
@@ -217,6 +238,102 @@ class CatalogIngestionService:
         Currently passes through catalog unchanged.
         """
         return catalog_data
+
+    async def _dispatch_review_scrape_command(
+        self,
+        session: AsyncSession,
+        batch_id: uuid.UUID,
+    ) -> int:
+        """Resolve unreviewed chassis and enqueue one review scrape command.
+
+        Runs inside the caller's transaction: the seeding writes, the outbox
+        message, and the reviewed flags commit or roll back together.
+
+        Returns:
+            The number of chassis targets queued (0 when nothing to review).
+        """
+        laptop_repo = LaptopRepository(session)
+        unreviewed = await laptop_repo.get_unreviewed_laptops()
+        if not unreviewed:
+            logger.info("[%s] No unreviewed laptops; skipping review scrape command.", batch_id)
+            return 0
+
+        inputs = [self._to_review_input(laptop) for laptop in unreviewed]
+        targets = self.review_resolver.resolve(inputs)
+        if not targets:
+            logger.info("[%s] Chassis resolver produced no targets.", batch_id)
+            return 0
+
+        command = ScrapeReviewsCommand(
+            correlation_id=str(batch_id),
+            payload=ScrapeReviewsPayload(
+                job_id=f"reviews_batch_{batch_id}",
+                targets=[self._to_review_target(target) for target in targets],
+            ),
+        )
+
+        await OutboxRepository(session).insert_outbox_event(
+            event_type=EventType.REVIEWS_SCRAPE_COMMAND,
+            routing_key=EventType.REVIEWS_SCRAPE_COMMAND,
+            payload=command,
+            correlation_id=str(batch_id),
+        )
+
+        await laptop_repo.mark_laptops_as_reviewed([laptop.id for laptop in unreviewed])
+
+        logger.info(
+            "[%s] Queued review scrape command: %d laptops collapsed into %d chassis targets.",
+            batch_id,
+            len(unreviewed),
+            len(targets),
+        )
+        return len(targets)
+
+    @staticmethod
+    def _to_review_input(laptop: LaptopConfiguration) -> LaptopInputDto:
+        """Project a LaptopConfiguration ORM row into a pure domain DTO."""
+        offers = list(laptop.offers or [])
+        product_urls = tuple(
+            dict.fromkeys(
+                offer.product_url.strip() for offer in offers if offer.product_url and offer.product_url.strip()
+            )
+        )
+        retailer_skus = tuple(
+            dict.fromkeys(
+                offer.retailer_sku.strip() for offer in offers if offer.retailer_sku and offer.retailer_sku.strip()
+            )
+        )
+        return LaptopInputDto(
+            laptop_id=str(laptop.id),
+            canonical_id=laptop.canonical_id,
+            title=laptop.title,
+            brand=laptop.brand,
+            laptop_family=laptop.laptop_family,
+            laptop_model=laptop.laptop_model,
+            mpn=laptop.mpn,
+            thumbnail_url=laptop.thumbnail_url,
+            retailer_skus=retailer_skus,
+            product_urls=product_urls,
+        )
+
+    @staticmethod
+    def _to_review_target(target: ResolvedReviewTarget) -> LaptopReviewTarget:
+        """Map a pure resolved chassis target onto the transport event schema."""
+        return LaptopReviewTarget(
+            laptop_id=target.laptop_id,
+            canonical_id=target.canonical_id,
+            title=target.title,
+            brand=target.brand,
+            laptop_family=target.laptop_family,
+            laptop_model=target.laptop_model,
+            mpn=target.mpn,
+            manufacturer_part_number=target.manufacturer_part_number,
+            retailer_sku=target.retailer_sku,
+            skus=list(target.skus),
+            mpns=list(target.mpns),
+            product_urls=list(target.product_urls),
+            thumbnail_url=target.thumbnail_url,
+        )
 
     async def _update_store_watermarks(
         self,

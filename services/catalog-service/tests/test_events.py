@@ -135,7 +135,10 @@ def test_reviews_command_and_ready_event_serialization():
                 LaptopReviewTarget(
                     laptop_id="lap-123",
                     canonical_id="lenovo-legion-pro-5-16irx8",
-                    search_queries=["Lenovo Legion Pro 5 review Reddit", "Legion Pro 5 YouTube review"],
+                    brand="Lenovo",
+                    laptop_family="Legion Pro",
+                    laptop_model="Legion Pro 5 16IRX8",
+                    mpn="83DE007VUS",
                 )
             ],
         )
