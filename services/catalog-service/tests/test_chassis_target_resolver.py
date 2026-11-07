@@ -81,9 +81,15 @@ def test_variants_of_same_chassis_collapse_into_one_target():
     assert set(loq.skus) == {"83DV01HSED", "83DV01HTED"}
     assert loq.chassis_key.startswith("lenovo:")
     assert "15IRX9" in loq.chassis_key
+    # Every grouped variant ID is carried on the resolved target.
+    assert loq.matched_laptop_ids == ("lap-1", "lap-2")
+    assert loq.matched_canonical_ids == ("lenovo-loq-15irx9-16gb", "lenovo-loq-15irx9-32gb")
+    assert loq.laptop_id == loq.matched_laptop_ids[0]
 
     assert tuf.variant_count == 1
     assert tuf.mpns == ("90NR0MC1-M008A0",)
+    assert tuf.matched_laptop_ids == ("lap-3",)
+    assert tuf.matched_canonical_ids == ("asus-tuf-a16-fa608pm",)
 
 
 def test_grouping_preserves_all_mpns_and_deduplicates_skus():
@@ -107,6 +113,29 @@ def test_grouping_preserves_all_mpns_and_deduplicates_skus():
     assert target.skus == (shared_sku, "83DV01HXED")
     # Duplicate product URL collapses, distinct URLs are kept.
     assert target.product_urls == ("https://store-a.com/loq", "https://store-b.com/loq")
+    # Matched IDs preserve every variant, in input order, without deduplication loss.
+    assert target.matched_laptop_ids == ("lap-1", "lap-2", "lap-3")
+    assert target.matched_canonical_ids == ("loq-a", "loq-b", "loq-c")
+
+
+def test_every_variant_id_is_matched_exactly_once():
+    resolver = ChassisTargetResolver()
+
+    targets = resolver.resolve(
+        [
+            _lenovo_loq("lap-1", "loq-a", "MPN-AAA"),
+            _lenovo_loq("lap-2", "loq-b", "MPN-BBB"),
+            _asus_tuf("lap-3", "tuf-a", "90NR0MC1-M008A0"),
+        ]
+    )
+
+    all_laptop_ids = [lid for target in targets for lid in target.matched_laptop_ids]
+    all_canonical_ids = [cid for target in targets for cid in target.matched_canonical_ids]
+
+    assert sorted(all_laptop_ids) == ["lap-1", "lap-2", "lap-3"]
+    assert sorted(all_canonical_ids) == ["loq-a", "loq-b", "tuf-a"]
+    assert all(len(target.matched_laptop_ids) == target.variant_count for target in targets)
+    assert all(len(target.matched_canonical_ids) == target.variant_count for target in targets)
 
 
 def test_representative_identity_comes_from_first_variant():

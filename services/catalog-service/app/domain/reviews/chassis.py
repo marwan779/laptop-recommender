@@ -65,6 +65,8 @@ class ResolvedReviewTarget:
     mpns: tuple[str, ...] = ()
     product_urls: tuple[str, ...] = ()
     thumbnail_url: str | None = None
+    matched_laptop_ids: tuple[str, ...] = ()
+    matched_canonical_ids: tuple[str, ...] = ()
 
 
 # ─── Chassis code extraction ────────────────────────────────────────────────
@@ -292,6 +294,8 @@ class ChassisTargetResolver:
             mpns=tuple(mpns),
             product_urls=tuple(product_urls),
             thumbnail_url=representative.thumbnail_url,
+            matched_laptop_ids=tuple(member.laptop_id for member in members),
+            matched_canonical_ids=tuple(member.canonical_id for member in members),
         )
 
     @staticmethod

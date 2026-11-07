@@ -210,6 +210,14 @@ class LaptopReviewTarget(BaseModel):
         description="Known product page URLs for additional identity context",
     )
     thumbnail_url: str | None = Field(default=None, description="Product thumbnail URL")
+    matched_laptop_ids: list[str] = Field(
+        default_factory=list,
+        description="All laptop UUIDs belonging to this chassis group",
+    )
+    matched_canonical_ids: list[str] = Field(
+        default_factory=list,
+        description="All canonical slugs belonging to this chassis group",
+    )
 
 
 class ScrapeReviewsPayload(BaseModel):

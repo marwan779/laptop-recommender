@@ -333,6 +333,8 @@ class CatalogIngestionService:
             mpns=list(target.mpns),
             product_urls=list(target.product_urls),
             thumbnail_url=target.thumbnail_url,
+            matched_laptop_ids=list(target.matched_laptop_ids),
+            matched_canonical_ids=list(target.matched_canonical_ids),
         )
 
     async def _update_store_watermarks(

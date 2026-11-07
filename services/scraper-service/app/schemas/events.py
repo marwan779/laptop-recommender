@@ -182,9 +182,6 @@ class PricesCheckedEvent(BaseEvent):
 # ─── Flow 3: Community Reviews Scraping (Phase 2) ───────────────────────────
 
 
-REVIEWS_BATCH_MAX_TARGETS = 15
-
-
 class LaptopReviewTarget(BaseModel):
     """Target laptop to search YouTube reviews for."""
 
@@ -213,14 +210,26 @@ class LaptopReviewTarget(BaseModel):
         description="Known product page URLs for additional identity context",
     )
     thumbnail_url: str | None = Field(default=None, description="Product thumbnail URL")
+    matched_laptop_ids: list[str] = Field(
+        default_factory=list,
+        description="All laptop UUIDs belonging to this chassis group",
+    )
+    matched_canonical_ids: list[str] = Field(
+        default_factory=list,
+        description="All canonical slugs belonging to this chassis group",
+    )
 
 
 class ScrapeReviewsPayload(BaseModel):
-    """Payload instructing the scraper to search YouTube for review candidates."""
+    """Payload instructing the scraper to search YouTube for review candidates.
+
+    Carries the full resolved chassis batch (e.g. 70-100 targets) in a single
+    payload; there is deliberately no per-message target cap.
+    """
 
     job_id: str = Field(description="User recommendation session / Phase 2 job ID")
     targets: list[LaptopReviewTarget] = Field(
-        description="Batch of up to 15 candidate laptops to scrape reviews for",
+        description="Full batch of resolved chassis targets to scrape reviews for",
     )
 
 
