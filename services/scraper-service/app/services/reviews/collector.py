@@ -40,10 +40,10 @@ from app.schemas.reviews_s3 import (
     YouTubeReviewData,
 )
 from app.services.reviews.chassis_key import build_chassis_key
+from app.services.reviews.community.collector import CommunitiesReviewsCollector
 from app.services.reviews.contracts import (
     ICommunitiesReviewsCollector,
     IYouTubeReviewsCollector,
-    StubCommunitiesReviewsCollector,
 )
 from app.services.reviews.youtube.collector import YouTubeReviewsCollector
 
@@ -71,7 +71,7 @@ class ReviewCollectorService:
         self.storage_service = storage_service or get_storage_service()
         self.broker = broker
         self.youtube_collector = youtube_collector or YouTubeReviewsCollector()
-        self.communities_collector = communities_collector or StubCommunitiesReviewsCollector()
+        self.communities_collector = communities_collector or CommunitiesReviewsCollector()
 
     async def process_reviews_batch(self, command: ScrapeReviewsCommand) -> str:
         """Collect reviews for every chassis target, upload the artifact, and emit the event.
