@@ -182,23 +182,50 @@ class PricesCheckedEvent(BaseEvent):
 # ─── Flow 3: Community Reviews Scraping (Phase 2) ───────────────────────────
 
 
+REVIEWS_BATCH_MAX_TARGETS = 15
+
+
 class LaptopReviewTarget(BaseModel):
-    """Target laptop to search community reviews for."""
+    """Target laptop to search YouTube reviews for."""
 
     laptop_id: str = Field(description="Laptop configuration UUID from catalog database")
     canonical_id: str = Field(description="Laptop canonical slug identifier")
+    title: str | None = Field(default=None, description="Full retail or catalog product title")
+    brand: str | None = Field(default=None, description="Brand name, e.g. ASUS")
+    laptop_family: str | None = Field(default=None, description="Product family, e.g. Vivobook")
+    laptop_model: str | None = Field(default=None, description="Model name, e.g. Vivobook 16")
+    mpn: str | None = Field(default=None, description="Manufacturer part number")
+    manufacturer_part_number: str | None = Field(
+        default=None,
+        description="Canonical manufacturer part number",
+    )
+    retailer_sku: str | None = Field(default=None, description="Retailer-specific SKU")
+    skus: list[str] = Field(
+        default_factory=list,
+        description="Additional SKU or model-code candidates",
+    )
+    mpns: list[str] = Field(
+        default_factory=list,
+        description="Additional manufacturer part number candidates",
+    )
+    product_urls: list[str] = Field(
+        default_factory=list,
+        description="Known product page URLs for additional identity context",
+    )
+    thumbnail_url: str | None = Field(default=None, description="Product thumbnail URL")
     search_queries: list[str] = Field(
         default_factory=list,
-        description="Search query variants (e.g. 'Lenovo Legion Pro 5 review Reddit')",
+        description="Optional caller-supplied query variants to run before generated queries",
     )
 
 
 class ScrapeReviewsPayload(BaseModel):
-    """Payload instructing the scraper to search Reddit/YouTube for candidate laptops."""
+    """Payload instructing the scraper to search YouTube for review candidates."""
 
     job_id: str = Field(description="User recommendation session / Phase 2 job ID")
     targets: list[LaptopReviewTarget] = Field(
-        description="The top candidate laptops (e.g. up to 15) to scrape reviews for",
+        max_length=REVIEWS_BATCH_MAX_TARGETS,
+        description="Batch of up to 15 candidate laptops to scrape reviews for",
     )
 
 
