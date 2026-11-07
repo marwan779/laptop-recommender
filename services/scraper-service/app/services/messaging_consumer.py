@@ -25,13 +25,12 @@ from app.schemas.events import (
     EventType,
     PricesCheckedEvent,
     PricesCheckedPayload,
-    ReviewsReadyEvent,
-    ReviewsReadyPayload,
     ScrapeCatalogCommand,
     ScrapeReviewsCommand,
 )
 from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse
 from app.services.orchestrator import ScrapeOrchestrator
+from app.services.reviews.collector import ReviewCollectorService
 
 logger = logging.getLogger("scraper.messaging.consumer")
 
@@ -44,10 +43,12 @@ class ScraperMessageConsumer:
         broker: IMessageBroker,
         orchestrator: ScrapeOrchestrator | None = None,
         price_monitor: PriceMonitorService | None = None,
+        review_collector: ReviewCollectorService | None = None,
     ) -> None:
         self.broker = broker
         self.orchestrator = orchestrator or ScrapeOrchestrator()
         self.price_monitor = price_monitor or PriceMonitorService()
+        self.review_collector = review_collector or ReviewCollectorService(broker=self.broker)
 
     async def start_listening(self) -> None:
         """Subscribe message handlers to designated RabbitMQ queues."""
@@ -225,27 +226,19 @@ class ScraperMessageConsumer:
         )
 
     async def handle_reviews_scrape_command(self, raw_data: dict[str, Any]) -> None:
-        """Process a community reviews scraping command (Phase 2)."""
+        """Process a community reviews scraping command (Phase 2).
+
+        Delegates to ``ReviewCollectorService``, which runs the YouTube and
+        communities collectors, uploads the raw reviews artifact, and publishes
+        the ``reviews.ready.event`` carrying the object storage key.
+        """
         command = ScrapeReviewsCommand.model_validate(raw_data)
         payload = command.payload
         logger.info(
-            "Received ScrapeReviewsCommand [job_id=%s, laptops=%d]",
+            "Received ScrapeReviewsCommand [job_id=%s, chassis=%d]",
             payload.job_id,
             len(payload.targets),
         )
 
-        # Phase 2 stub implementation returning clean empty results until Phase 2 scrapers are active
-        reviews_event = ReviewsReadyEvent(
-            correlation_id=command.correlation_id,
-            payload=ReviewsReadyPayload(
-                job_id=payload.job_id,
-                total_laptops=len(payload.targets),
-                total_snippets=0,
-                results=[],
-            ),
-        )
-        await self.broker.publish(
-            routing_key=EventType.REVIEWS_READY_EVENT,
-            message=reviews_event,
-        )
-        logger.info("Published ReviewsReadyEvent for job [%s]", payload.job_id)
+        s3_key = await self.review_collector.process_reviews_batch(command)
+        logger.info("Reviews batch completed [job_id=%s, s3_key=%s]", payload.job_id, s3_key)

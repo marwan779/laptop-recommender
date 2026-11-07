@@ -15,7 +15,6 @@ from app.schemas.events import (
     CheckPricesPayload,
     EventType,
     PricesCheckedEvent,
-    ReviewsReadyEvent,
     ScrapeCatalogCommand,
     ScrapeCatalogPayload,
     ScrapeReviewsCommand,
@@ -206,7 +205,11 @@ async def test_handle_check_prices_command(mock_broker, mock_price_monitor):
 
 @pytest.mark.anyio
 async def test_handle_reviews_scrape_command(mock_broker):
-    consumer = ScraperMessageConsumer(broker=mock_broker)
+    collector = MagicMock()
+    collector.process_reviews_batch = AsyncMock(
+        return_value="reviews/raw_chassis_reviews_job-rec-001.json"
+    )
+    consumer = ScraperMessageConsumer(broker=mock_broker, review_collector=collector)
 
     cmd = ScrapeReviewsCommand(
         payload=ScrapeReviewsPayload(
@@ -217,8 +220,6 @@ async def test_handle_reviews_scrape_command(mock_broker):
 
     await consumer.handle_reviews_scrape_command(cmd.model_dump())
 
-    mock_broker.publish.assert_called_once()
-    published_call = mock_broker.publish.call_args
-    assert published_call.kwargs["routing_key"] == EventType.REVIEWS_READY_EVENT
-    rev_evt: ReviewsReadyEvent = published_call.kwargs["message"]
-    assert rev_evt.payload.job_id == "job-rec-001"
+    collector.process_reviews_batch.assert_awaited_once()
+    delegated: ScrapeReviewsCommand = collector.process_reviews_batch.await_args.args[0]
+    assert delegated.payload.job_id == "job-rec-001"

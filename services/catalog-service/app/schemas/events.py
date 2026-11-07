@@ -268,6 +268,14 @@ class ReviewsReadyPayload(BaseModel):
         default_factory=list,
         description="Extracted review snippets grouped by laptop",
     )
+    s3_key: str | None = Field(
+        default=None,
+        description="Object storage key for the raw reviews JSON file",
+    )
+    total_chassis: int = Field(
+        default=0,
+        description="Total unique chassis targets processed",
+    )
 
 
 class ReviewsReadyEvent(BaseEvent):
