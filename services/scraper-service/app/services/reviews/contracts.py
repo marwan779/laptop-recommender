@@ -1,77 +1,81 @@
-"""Abstract contracts for chassis review collection.
+"""Abstract contracts for chassis review collection (Pattern B).
 
-Enforces Dependency Inversion: the orchestrator depends on these narrow
-interfaces rather than concrete YouTube/community scrapers. Concrete collectors
-can be swapped, mocked, or extended (e.g. TikTok, forums) without touching the
-orchestration logic.
+Collectors receive the raw ``LaptopReviewTarget`` list and return **pure platform
+mappings** keyed by chassis key. They never receive or construct the S3 root
+artifact, and they never touch object storage — only the orchestrator persists.
 
-Both collectors mutate-or-return the same ``LaptopChassisReviewItem`` list, which
-keeps the pipeline a simple sequential fold.
+This keeps each collector a single-responsibility data producer:
+
+    IYouTubeReviewsCollector.collect_for_targets  -> dict[chassis_key, YouTubeReviewData]
+    ICommunitiesReviewsCollector.collect_for_targets -> dict[chassis_key, CommunitiesData]
+
+The contracts stay narrow (Interface Segregation) and depend on abstractions
+(Dependency Inversion), so concrete collectors can be swapped, mocked, or added
+(e.g. TikTok) without changing orchestration.
 """
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from app.schemas.reviews_s3 import LaptopChassisReviewItem
+from app.schemas.events import LaptopReviewTarget
+from app.schemas.reviews_s3 import CommunitiesData, YouTubeReviewData
 
 
 class IYouTubeReviewsCollector(ABC):
-    """Contract for collecting YouTube review evidence for chassis items."""
+    """Contract for collecting YouTube review evidence for each chassis target."""
 
     @abstractmethod
-    async def collect(
+    async def collect_for_targets(
         self,
-        items: list[LaptopChassisReviewItem],
-    ) -> list[LaptopChassisReviewItem]:
-        """Enrich each item's ``youtube`` section and return the list.
+        targets: list[LaptopReviewTarget],
+    ) -> dict[str, YouTubeReviewData]:
+        """Collect YouTube review data for every target.
 
-        Implementations must preserve item order and must not drop items.
+        Returns:
+            A mapping from ``chassis_key`` -> ``YouTubeReviewData``.
         """
         ...
 
 
 class ICommunitiesReviewsCollector(ABC):
-    """Contract for collecting community (Reddit, Facebook, ...) evidence."""
+    """Contract for collecting community (Reddit, Facebook, ...) review evidence."""
 
     @abstractmethod
-    async def collect(
+    async def collect_for_targets(
         self,
-        items: list[LaptopChassisReviewItem],
-    ) -> list[LaptopChassisReviewItem]:
-        """Enrich each item's ``communities`` section and return the list.
+        targets: list[LaptopReviewTarget],
+    ) -> dict[str, CommunitiesData]:
+        """Collect community platform review data for every target.
 
-        Implementations must preserve item order and must not drop items.
+        Returns:
+            A mapping from ``chassis_key`` -> ``CommunitiesData``.
         """
         ...
 
 
 class StubYouTubeReviewsCollector(IYouTubeReviewsCollector):
-    """No-op YouTube collector.
+    """No-op YouTube collector returning an empty mapping.
 
-    Returns items unchanged, leaving each ``youtube`` field at its initialized
-    (empty) value. Used until the real YouTube collector is implemented.
+    Used as a test double and as a safe placeholder when the concrete pipeline is
+    intentionally disabled.
     """
 
-    async def collect(
+    async def collect_for_targets(
         self,
-        items: list[LaptopChassisReviewItem],
-    ) -> list[LaptopChassisReviewItem]:
-        return items
+        targets: list[LaptopReviewTarget],
+    ) -> dict[str, YouTubeReviewData]:
+        return {}
 
 
 class StubCommunitiesReviewsCollector(ICommunitiesReviewsCollector):
-    """No-op communities collector.
+    """No-op communities collector returning an empty mapping."""
 
-    Returns items unchanged, leaving each ``communities`` field at its
-    initialized (empty) value.
-    """
-
-    async def collect(
+    async def collect_for_targets(
         self,
-        items: list[LaptopChassisReviewItem],
-    ) -> list[LaptopChassisReviewItem]:
-        return items
+        targets: list[LaptopReviewTarget],
+    ) -> dict[str, CommunitiesData]:
+        return {}
 
 
 __all__ = [

@@ -1,22 +1,23 @@
 """Review collection orchestrator.
 
-Application-layer use case that turns a ``ScrapeReviewsCommand`` into a single
-S3 artifact and a ``reviews.ready.event``:
+The **only** class that persists review artifacts and emits
+``reviews.ready.event``. Collectors are pure data producers (Pattern B):
 
-1. Map each ``LaptopReviewTarget`` into a ``LaptopChassisReviewItem``.
-2. Run the YouTube collector, then the communities collector (sequential fold).
-3. Aggregate batch metrics.
-4. Upload ``raw_chassis_reviews_{job_id}.json`` to object storage.
-5. Publish ``ReviewsReadyEvent`` carrying the S3 key.
+    youtube_collector.collect_for_targets(targets)      -> dict[chassis_key, YouTubeReviewData]
+    communities_collector.collect_for_targets(targets)  -> dict[chassis_key, CommunitiesData]
 
-All collaborators are constructor-injected so the use case is fully testable
+The orchestrator merges those mappings with chassis identity into
+``LaptopChassisReviewItem`` models, assembles the ``RawChassisReviewsFile``,
+uploads it to object storage, and publishes the ready event.
+
+All collaborators are constructor-injected, so the use case is fully testable
 without network, S3, or RabbitMQ.
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
-import re
 from datetime import UTC, datetime
 
 from app.common.messaging.contract import IMessageBroker
@@ -38,12 +39,13 @@ from app.schemas.reviews_s3 import (
     RawChassisReviewsFile,
     YouTubeReviewData,
 )
+from app.services.reviews.chassis_key import build_chassis_key
 from app.services.reviews.contracts import (
     ICommunitiesReviewsCollector,
     IYouTubeReviewsCollector,
     StubCommunitiesReviewsCollector,
-    StubYouTubeReviewsCollector,
 )
+from app.services.reviews.youtube.collector import YouTubeReviewsCollector
 
 logger = logging.getLogger("scraper.services.reviews.collector")
 
@@ -68,7 +70,7 @@ class ReviewCollectorService:
     ) -> None:
         self.storage_service = storage_service or get_storage_service()
         self.broker = broker
-        self.youtube_collector = youtube_collector or StubYouTubeReviewsCollector()
+        self.youtube_collector = youtube_collector or YouTubeReviewsCollector()
         self.communities_collector = communities_collector or StubCommunitiesReviewsCollector()
 
     async def process_reviews_batch(self, command: ScrapeReviewsCommand) -> str:
@@ -89,12 +91,11 @@ class ReviewCollectorService:
             len(targets),
         )
 
-        # 1. Map transport targets into domain review items.
-        items = [self._to_review_item(target) for target in targets]
+        # 1. Run the platform collectors independently, in parallel.
+        youtube_map, communities_map = await self._collect_platforms(targets)
 
-        # 2. Sequential enrichment: YouTube first, then communities.
-        items = await self.youtube_collector.collect(items)
-        items = await self.communities_collector.collect(items)
+        # 2. Merge platform outputs with chassis identity.
+        items = [self._assemble_item(target, youtube_map, communities_map) for target in targets]
 
         # 3. Aggregate batch-level metrics.
         metrics_summary = self._summarize(items)
@@ -149,18 +150,64 @@ class ReviewCollectorService:
 
         return s3_key
 
+    async def _collect_platforms(
+        self,
+        targets: list[LaptopReviewTarget],
+    ) -> tuple[dict[str, YouTubeReviewData], dict[str, CommunitiesData]]:
+        """Run both collectors independently and in parallel.
+
+        A failure in one platform must not prevent the other from contributing,
+        so each task is wrapped with ``return_exceptions``.
+        """
+        raw_results = await asyncio.gather(
+            self.youtube_collector.collect_for_targets(targets),
+            self.communities_collector.collect_for_targets(targets),
+            return_exceptions=True,
+        )
+
+        youtube_map = self._coerce_result(
+            raw_results[0],
+            label="youtube",
+            empty={},
+        )
+        communities_map = self._coerce_result(
+            raw_results[1],
+            label="communities",
+            empty={},
+        )
+        return youtube_map, communities_map
+
     @staticmethod
-    def _to_review_item(target: LaptopReviewTarget) -> LaptopChassisReviewItem:
-        """Map one ``LaptopReviewTarget`` into a ``LaptopChassisReviewItem``."""
-        matched_laptop_ids = list(target.matched_laptop_ids) or [target.laptop_id]
-        matched_canonical_ids = list(target.matched_canonical_ids) or [target.canonical_id]
+    def _coerce_result(
+        result: object,
+        *,
+        label: str,
+        empty: dict,
+    ) -> dict:
+        """Normalize a collector outcome, logging and falling back on failure."""
+        if isinstance(result, BaseException):
+            logger.warning("%s collector failed: %s", label.capitalize(), result)
+            return empty
+        if not isinstance(result, dict):
+            logger.warning("%s collector returned an unexpected type: %r", label.capitalize(), type(result))
+            return empty
+        return result
+
+    def _assemble_item(
+        self,
+        target: LaptopReviewTarget,
+        youtube_map: dict[str, YouTubeReviewData],
+        communities_map: dict[str, CommunitiesData],
+    ) -> LaptopChassisReviewItem:
+        """Merge one target's identity with its collected platform data."""
+        chassis_key = build_chassis_key(target)
 
         return LaptopChassisReviewItem(
-            chassis_key=ReviewCollectorService._chassis_key(target),
+            chassis_key=chassis_key,
             primary_laptop_id=target.laptop_id,
             primary_canonical_id=target.canonical_id,
-            matched_laptop_ids=matched_laptop_ids,
-            matched_canonical_ids=matched_canonical_ids,
+            matched_laptop_ids=list(target.matched_laptop_ids) or [target.laptop_id],
+            matched_canonical_ids=list(target.matched_canonical_ids) or [target.canonical_id],
             identity=ChassisIdentity(
                 brand=target.brand,
                 laptop_family=target.laptop_family,
@@ -168,42 +215,9 @@ class ReviewCollectorService:
                 aggregated_mpns=list(target.mpns),
                 aggregated_skus=list(target.skus),
             ),
-            youtube=YouTubeReviewData(),
-            communities=CommunitiesData(),
+            youtube=youtube_map.get(chassis_key, YouTubeReviewData()),
+            communities=communities_map.get(chassis_key, CommunitiesData()),
         )
-
-    @staticmethod
-    def _chassis_key(target: LaptopReviewTarget) -> str:
-        """Derive a stable chassis key from the target identity fields.
-
-        Produces the same ``brand:family:sub_model`` shape the catalog-service
-        resolver uses, so both services agree on chassis identity. The family
-        prefix is stripped from the model to avoid ``lenovo:loq:loq-15irx9``.
-
-        Falls back to the canonical id when identity fields are absent so the
-        key is never blank.
-        """
-        brand = ReviewCollectorService._normalize_key_part(target.brand)
-        family = ReviewCollectorService._normalize_key_part(target.laptop_family)
-        model = ReviewCollectorService._normalize_key_part(target.laptop_model)
-
-        if model and family:
-            family_prefix = f"{family}-"
-            if model.startswith(family_prefix):
-                model = model[len(family_prefix) :]
-
-        parts = [part for part in (brand, family, model) if part]
-        if parts:
-            return ":".join(parts)
-        return str(target.canonical_id).strip().lower()
-
-    @staticmethod
-    def _normalize_key_part(value: str | None) -> str | None:
-        """Lowercase and collapse non-alphanumerics to single hyphens."""
-        if not value:
-            return None
-        cleaned = re.sub(r"[^a-z0-9]+", "-", str(value).strip().lower()).strip("-")
-        return cleaned or None
 
     @staticmethod
     def _summarize(items: list[LaptopChassisReviewItem]) -> BatchMetadataSummary:
