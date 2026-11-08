@@ -210,6 +210,7 @@ class LaptopReviewTarget(BaseModel):
         description="Known product page URLs for additional identity context",
     )
     thumbnail_url: str | None = Field(default=None, description="Product thumbnail URL")
+    screen_size: float | None = Field(default=None, description="Display size in inches e.g. 15.6, 16.0")
     matched_laptop_ids: list[str] = Field(
         default_factory=list,
         description="All laptop UUIDs belonging to this chassis group",

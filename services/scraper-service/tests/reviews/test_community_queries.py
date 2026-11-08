@@ -48,3 +48,54 @@ def test_build_queries_falls_back_when_sparse():
 
     assert len(queries) == 4
     assert queries[3] == "dell-g15-5530 review"
+
+
+# ─── Platform-tailored queries ──────────────────────────────────────────────
+
+
+def test_platform_queries_use_screen_size_and_sub_model():
+    target = LaptopReviewTarget(
+        laptop_id="lap-1",
+        canonical_id="lenovo-loq-15irx9",
+        brand="Lenovo",
+        laptop_family="LOQ",
+        laptop_model="LOQ 15IRX9",
+        screen_size=15.0,
+    )
+
+    queries = CommunityQueryBuilder().build_platform_queries(target)
+
+    assert queries.editorial == "Lenovo LOQ 15 review"
+    assert queries.forum == "Lenovo 15IRX9"
+    assert queries.regional == "LOQ 15IRX9"
+
+
+def test_platform_forum_query_falls_back_without_sub_model():
+    target = LaptopReviewTarget(
+        laptop_id="lap-2",
+        canonical_id="lenovo-yoga-7",
+        brand="Lenovo",
+        laptop_family="Yoga",
+        screen_size=14.0,
+    )
+
+    queries = CommunityQueryBuilder().build_platform_queries(target)
+
+    assert queries.forum == "Lenovo Yoga 14"
+    assert queries.regional == "Yoga 14"
+
+
+def test_platform_queries_truncate_screen_size_to_marketing_tier():
+    target = LaptopReviewTarget(
+        laptop_id="lap-3",
+        canonical_id="hp-victus-15-fa2352tx",
+        brand="HP",
+        laptop_family="Victus",
+        laptop_model="HP Victus 15-fa2352TX",
+        screen_size=15.6,
+    )
+
+    queries = CommunityQueryBuilder().build_platform_queries(target)
+
+    assert queries.editorial == "HP Victus 15 review"
+    assert "FA2352TX" in queries.regional or "15-FA2352TX" in queries.regional

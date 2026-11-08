@@ -312,6 +312,7 @@ class CatalogIngestionService:
             laptop_model=laptop.laptop_model,
             mpn=laptop.mpn,
             thumbnail_url=laptop.thumbnail_url,
+            screen_size=float(laptop.display_size_inches) if laptop.display_size_inches is not None else None,
             retailer_skus=retailer_skus,
             product_urls=product_urls,
         )
@@ -333,6 +334,7 @@ class CatalogIngestionService:
             mpns=list(target.mpns),
             product_urls=list(target.product_urls),
             thumbnail_url=target.thumbnail_url,
+            screen_size=target.screen_size,
             matched_laptop_ids=list(target.matched_laptop_ids),
             matched_canonical_ids=list(target.matched_canonical_ids),
         )

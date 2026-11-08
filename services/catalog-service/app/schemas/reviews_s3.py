@@ -121,6 +121,31 @@ class FacebookPost(BaseModel):
     reaction_count: int | None = None
 
 
+class EditorialReview(BaseModel):
+    """A professional editorial review for a chassis."""
+
+    source: str
+    review_url: str
+    rating: float | None = None
+    pros: list[str] = Field(default_factory=list)
+    cons: list[str] = Field(default_factory=list)
+    verdict: str = ""
+
+
+class CommunityPost(BaseModel):
+    """A forum or community discussion thread about a chassis."""
+
+    platform: str
+    post_id: str
+    author: str | None = None
+    post_title: str = ""
+    post_url: str = ""
+    post_body: str = ""
+    score: int | None = None
+    published_at: datetime | str | None = None
+    comments: list[CommunityComment] = Field(default_factory=list)
+
+
 class CommunitiesData(BaseModel):
     """Community platform evidence for one chassis.
 
@@ -131,6 +156,8 @@ class CommunitiesData(BaseModel):
 
     reddit: list[RedditPost] = Field(default_factory=list)
     facebook: list[FacebookPost] = Field(default_factory=list)
+    editorial: list[EditorialReview] = Field(default_factory=list)
+    discussions: list[CommunityPost] = Field(default_factory=list)
 
 
 # ─── Per-chassis review item ────────────────────────────────────────────────
@@ -173,6 +200,8 @@ __all__ = [
     "ChassisIdentity",
     "CommunitiesData",
     "CommunityComment",
+    "CommunityPost",
+    "EditorialReview",
     "FacebookPost",
     "LaptopChassisReviewItem",
     "RawChassisReviewsFile",

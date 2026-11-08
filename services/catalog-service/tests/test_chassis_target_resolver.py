@@ -303,5 +303,60 @@ def test_empty_input_returns_empty_list():
     assert ChassisTargetResolver().resolve([]) == []
 
 
+# ─── Screen size aggregation ────────────────────────────────────────────────
+
+
+def test_resolver_uses_modal_screen_size_across_variants():
+    resolver = ChassisTargetResolver()
+
+    def variant(laptop_id: str, screen_size: float | None) -> LaptopInputDto:
+        return LaptopInputDto(
+            laptop_id=laptop_id,
+            canonical_id=f"loq-{laptop_id}",
+            brand="Lenovo",
+            laptop_family="LOQ",
+            laptop_model="LOQ 15IRX9",
+            screen_size=screen_size,
+        )
+
+    targets = resolver.resolve(
+        [
+            variant("a", 15.6),
+            variant("b", 16.0),
+            variant("c", 15.6),
+        ]
+    )
+
+    assert len(targets) == 1
+    assert targets[0].screen_size == 15.6
+
+
+def test_resolver_falls_back_to_first_non_null_screen_size():
+    resolver = ChassisTargetResolver()
+
+    def variant(laptop_id: str, screen_size: float | None) -> LaptopInputDto:
+        return LaptopInputDto(
+            laptop_id=laptop_id,
+            canonical_id=f"loq-{laptop_id}",
+            brand="Lenovo",
+            laptop_family="LOQ",
+            laptop_model="LOQ 15IRX9",
+            screen_size=screen_size,
+        )
+
+    targets = resolver.resolve([variant("a", None), variant("b", 16.0), variant("c", 15.6)])
+
+    assert len(targets) == 1
+    assert targets[0].screen_size == 16.0
+
+
+def test_resolver_leaves_screen_size_none_without_data():
+    targets = ChassisTargetResolver().resolve(
+        [LaptopInputDto(laptop_id="a", canonical_id="c", brand="Lenovo", laptop_family="LOQ")]
+    )
+
+    assert targets[0].screen_size is None
+
+
 def test_none_like_input_returns_empty_list():
     assert ChassisTargetResolver().resolve(()) == []

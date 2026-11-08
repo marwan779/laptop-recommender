@@ -190,3 +190,46 @@ async def test_outbox_message_and_flags_share_the_same_transaction(db_session: A
 
     # ...and both are discarded when the transaction rolls back.
     await db_session.rollback()
+
+
+def test_to_review_input_and_target_carry_screen_size():
+    """The application projection must forward display size into the event."""
+    from types import SimpleNamespace
+
+    laptop = SimpleNamespace(
+        id="lap-1",
+        canonical_id="lenovo-loq-15irx9",
+        title="Lenovo LOQ 15IRX9",
+        brand="Lenovo",
+        laptop_family="LOQ",
+        laptop_model="LOQ 15IRX9",
+        mpn="83DV01HSED",
+        thumbnail_url=None,
+        display_size_inches=15.6,
+        offers=[],
+    )
+
+    dto = CatalogIngestionService._to_review_input(laptop)
+    assert dto.screen_size == 15.6
+
+    resolved = SimpleNamespace(
+        laptop_id="lap-1",
+        canonical_id="lenovo-loq-15irx9",
+        title="Lenovo LOQ 15IRX9",
+        brand="Lenovo",
+        laptop_family="LOQ",
+        laptop_model="LOQ 15IRX9",
+        mpn="83DV01HSED",
+        manufacturer_part_number="83DV01HSED",
+        retailer_sku=None,
+        skus=(),
+        mpns=(),
+        product_urls=(),
+        thumbnail_url=None,
+        screen_size=15.6,
+        matched_laptop_ids=("lap-1",),
+        matched_canonical_ids=("lenovo-loq-15irx9",),
+    )
+
+    target = CatalogIngestionService._to_review_target(resolved)
+    assert target.screen_size == 15.6

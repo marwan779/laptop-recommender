@@ -36,6 +36,7 @@ class LaptopInputDto:
     laptop_model: str | None = None
     mpn: str | None = None
     thumbnail_url: str | None = None
+    screen_size: float | None = None
     retailer_skus: tuple[str, ...] = ()
     product_urls: tuple[str, ...] = ()
 
@@ -65,6 +66,7 @@ class ResolvedReviewTarget:
     mpns: tuple[str, ...] = ()
     product_urls: tuple[str, ...] = ()
     thumbnail_url: str | None = None
+    screen_size: float | None = None
     matched_laptop_ids: tuple[str, ...] = ()
     matched_canonical_ids: tuple[str, ...] = ()
 
@@ -294,9 +296,31 @@ class ChassisTargetResolver:
             mpns=tuple(mpns),
             product_urls=tuple(product_urls),
             thumbnail_url=representative.thumbnail_url,
+            screen_size=self._resolve_screen_size(members),
             matched_laptop_ids=tuple(member.laptop_id for member in members),
             matched_canonical_ids=tuple(member.canonical_id for member in members),
         )
+
+    @staticmethod
+    def _resolve_screen_size(members: Sequence[LaptopInputDto]) -> float | None:
+        """Pick the group's most common non-null screen size.
+
+        Variants of one chassis normally share a screen size; when a bad row
+        disagrees, the modal value wins. Ties fall back to the first member
+        that reported a size, which keeps resolution deterministic.
+        """
+        counts: dict[float, int] = {}
+        first_seen: dict[float, int] = {}
+        for index, member in enumerate(members):
+            if member.screen_size is None:
+                continue
+            counts[member.screen_size] = counts.get(member.screen_size, 0) + 1
+            first_seen.setdefault(member.screen_size, index)
+
+        if not counts:
+            return None
+
+        return max(counts, key=lambda size: (counts[size], -first_seen[size]))
 
     @staticmethod
     def _append_unique(target: list[str], value: str | None) -> None:
