@@ -17,6 +17,10 @@ import logging
 from typing import Any
 
 from app.schemas.reviews_s3 import TranscriptSegment
+from app.services.reviews.youtube.cookies import (
+    build_authenticated_session,
+    resolve_youtube_cookiefile,
+)
 
 logger = logging.getLogger("scraper.services.reviews.youtube.transcript")
 
@@ -30,8 +34,14 @@ EMPTY_TRANSCRIPT: tuple[str, list[TranscriptSegment], str, bool] = ("", [], "en"
 class YouTubeTranscriptService:
     """Fetch captions for a YouTube video, preferring the transcript API."""
 
-    def __init__(self, languages: tuple[str, ...] = TRANSCRIPT_LANGUAGES) -> None:
+    def __init__(
+        self,
+        languages: tuple[str, ...] = TRANSCRIPT_LANGUAGES,
+        cookiefile: str | None = None,
+    ) -> None:
         self.languages = languages
+        self.cookiefile = resolve_youtube_cookiefile(cookiefile)
+        self._ip_blocked: bool = False
 
     async def fetch_transcript(
         self,
@@ -41,7 +51,7 @@ class YouTubeTranscriptService:
 
         Never raises: returns :data:`EMPTY_TRANSCRIPT` when every strategy fails.
         """
-        if not video_id:
+        if not video_id or self._ip_blocked:
             return EMPTY_TRANSCRIPT
 
         result = await asyncio.to_thread(self._fetch_sync, video_id)
@@ -50,9 +60,15 @@ class YouTubeTranscriptService:
     # ── Internal synchronous implementation (runs in a worker thread) ──────
 
     def _fetch_sync(self, video_id: str) -> tuple[str, list[TranscriptSegment], str, bool]:
+        if self._ip_blocked:
+            return EMPTY_TRANSCRIPT
+
         primary = self._fetch_via_api(video_id)
         if primary is not None:
             return primary
+
+        if self._ip_blocked:
+            return EMPTY_TRANSCRIPT
 
         fallback = self._fetch_via_ytdlp(video_id)
         if fallback is not None:
@@ -71,9 +87,15 @@ class YouTubeTranscriptService:
             return None
 
         try:
-            api = YouTubeTranscriptApi()
+            session = build_authenticated_session(self.cookiefile)
+            api = YouTubeTranscriptApi(http_client=session) if session else YouTubeTranscriptApi()
             fetched = api.fetch(video_id, languages=list(self.languages))
         except Exception as exc:  # noqa: BLE001 - TranscriptsDisabled / NoTranscriptFound / network
+            exc_str = str(exc)
+            if "blocking requests from your IP" in exc_str or "IpBlocked" in type(exc).__name__:
+                if not self._ip_blocked:
+                    logger.warning("YouTube is blocking transcript requests from this IP. Tripping circuit breaker for session.")
+                self._ip_blocked = True
             logger.debug("Transcript API failed for %s: %s", video_id, exc)
             return None
 
@@ -113,11 +135,14 @@ class YouTubeTranscriptService:
             "writeautomaticsub": True,
             "subtitleslangs": ["en", "ar"],
             "subtitlesformat": "json3/vtt/best",
+            "format": "all",
             "quiet": True,
             "no_warnings": True,
             "ignoreerrors": True,
             "noprogress": True,
         }
+        if self.cookiefile:
+            opts["cookiefile"] = str(self.cookiefile)
 
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -126,6 +151,9 @@ class YouTubeTranscriptService:
                     download=False,
                 )
         except Exception as exc:  # noqa: BLE001 - subtitle extraction is best-effort
+            exc_str = str(exc)
+            if "403" in exc_str or "Forbidden" in exc_str or "blocking requests from your IP" in exc_str:
+                self._ip_blocked = True
             logger.debug("yt-dlp subtitle fallback failed for %s: %s", video_id, exc)
             return None
 
@@ -193,12 +221,12 @@ class YouTubeTranscriptService:
                     return track
         return None
 
-    @staticmethod
-    def _parse_subtitle_entries(track: Any) -> list[TranscriptSegment]:
+    def _parse_subtitle_entries(self, track: Any) -> list[TranscriptSegment]:
         """Parse yt-dlp subtitle metadata into transcript segments."""
         if not isinstance(track, list):
             return []
 
+        # Strategy 1: Pre-parsed segment text dictionaries
         segments: list[TranscriptSegment] = []
         for item in track:
             if not isinstance(item, dict):
@@ -213,7 +241,49 @@ class YouTubeTranscriptService:
             except (TypeError, ValueError):
                 start_seconds = 0.0
             segments.append(TranscriptSegment(start_seconds=start_seconds, text=str(text).strip()))
-        return segments
+
+        if segments:
+            return segments
+
+        # Strategy 2: Format descriptors containing signed URLs (e.g. json3)
+        for item in track:
+            if not isinstance(item, dict):
+                continue
+            if item.get("ext") == "json3" and item.get("url"):
+                json_segs = self._fetch_json3_segments(item["url"])
+                if json_segs:
+                    return json_segs
+
+        return []
+
+    def _fetch_json3_segments(self, url: str) -> list[TranscriptSegment]:
+        """Fetch and parse signed json3 subtitle events."""
+        try:
+            import requests  # noqa: PLC0415
+
+            session = build_authenticated_session(self.cookiefile)
+            client = session or requests.Session()
+            resp = client.get(url, timeout=10)
+            if resp.status_code != 200:
+                return []
+            data = resp.json()
+            events = data.get("events") or []
+            segments: list[TranscriptSegment] = []
+            for ev in events:
+                start_ms = ev.get("tStartMs", 0)
+                segs = ev.get("segs", [])
+                text = "".join(s.get("utf8", "") for s in segs if isinstance(s, dict)).strip()
+                if text and text != "\n":
+                    segments.append(
+                        TranscriptSegment(
+                            start_seconds=round(float(start_ms) / 1000.0, 3),
+                            text=text,
+                        )
+                    )
+            return segments
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("Failed to fetch or parse json3 subtitles from %s: %s", url, exc)
+            return []
 
     @staticmethod
     def _build_result(

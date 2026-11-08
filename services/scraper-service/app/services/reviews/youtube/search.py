@@ -15,6 +15,7 @@ import logging
 from typing import Any
 
 from app.schemas.reviews_s3 import YouTubeComment
+from app.services.reviews.youtube.cookies import resolve_youtube_cookiefile
 
 logger = logging.getLogger("scraper.services.reviews.youtube.search")
 
@@ -40,6 +41,27 @@ def _import_yt_dlp() -> Any:
         return None
 
 
+class _YtDlpCommentLogger:
+    """Intercepts yt-dlp internal logging to detect 403 Forbidden and trip the circuit breaker."""
+
+    def __init__(self, service: YouTubeSearchService) -> None:
+        self.service = service
+
+    def debug(self, msg: str) -> None:
+        pass
+
+    def warning(self, msg: str) -> None:
+        pass
+
+    def error(self, msg: str) -> None:
+        if "403" in msg or "Forbidden" in msg:
+            if not self.service._comments_blocked:
+                logger.warning(
+                    "YouTube comments API is returning 403 Forbidden for this IP. Tripping circuit breaker for session."
+                )
+            self.service._comments_blocked = True
+
+
 class YouTubeSearchService:
     """Search YouTube for review videos and attach top comments.
 
@@ -54,10 +76,13 @@ class YouTubeSearchService:
         max_results: int = 3,
         min_duration_seconds: int = 90,
         max_comments: int = 10,
+        cookiefile: str | None = None,
     ) -> None:
         self.max_results = max_results
         self.min_duration_seconds = min_duration_seconds
         self.max_comments = max_comments
+        self.cookiefile = resolve_youtube_cookiefile(cookiefile)
+        self._comments_blocked: bool = False
 
     async def search_reviews(self, query: str) -> list[dict[str, Any]]:
         """Search YouTube for ``query`` and return validated video metadata dicts.
@@ -76,6 +101,8 @@ class YouTubeSearchService:
             return []
 
         opts = {**_BASE_YDL_OPTS, "extract_flat": True}
+        if self.cookiefile:
+            opts["cookiefile"] = str(self.cookiefile)
         # Over-fetch so Shorts filtering still yields max_results.
         search_target = f"ytsearch{self.max_results * 2}:{query}"
 
@@ -126,6 +153,9 @@ class YouTubeSearchService:
 
     def _fetch_top_comments_sync(self, video_url: str, max_comments: int) -> list[YouTubeComment]:
         """Fetch top comments for one video. Fail-open to an empty list."""
+        if self._comments_blocked:
+            return []
+
         yt_dlp = _import_yt_dlp()
         if yt_dlp is None:
             return []
@@ -134,13 +164,24 @@ class YouTubeSearchService:
             **_BASE_YDL_OPTS,
             "getcomments": True,
             "extract_flat": False,
+            "format": "all",
             "extractor_args": {"youtube": {"comment_sort": ["top"]}},
+            "logger": _YtDlpCommentLogger(self),
         }
+        if self.cookiefile:
+            opts["cookiefile"] = str(self.cookiefile)
 
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
                 info = ydl.extract_info(video_url, download=False)
         except Exception as exc:  # noqa: BLE001 - comments are best-effort
+            exc_str = str(exc)
+            if "403" in exc_str or "Forbidden" in exc_str:
+                if not self._comments_blocked:
+                    logger.warning(
+                        "YouTube comments API is returning 403 Forbidden for this IP. Tripping circuit breaker for session."
+                    )
+                self._comments_blocked = True
             logger.debug("Comment fetch failed for %s: %s", video_url, exc)
             return []
 

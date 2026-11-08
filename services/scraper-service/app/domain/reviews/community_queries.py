@@ -34,7 +34,7 @@ ASPECT_QUERY_TEMPLATES: tuple[str, ...] = (
 _LENOVO_CHASSIS_RE = re.compile(r"\b(\d{2}[A-Z]{3}\d{1,2}[A-Z]?)\b")
 _HP_DASH_CODE_RE = re.compile(r"\b(\d{2}-[A-Z]{1,3}\d{3,4}[A-Z]{0,3})\b", re.IGNORECASE)
 _DASHED_CHASSIS_RE = re.compile(r"\b([A-Z]{2,4}\d{2,4}-[A-Z0-9]{2,6})\b")
-_ASUS_CODE_RE = re.compile(r"\b([A-Z]{1,3}\d{3,4}[A-Z]{0,3})\b")
+_ASUS_CODE_RE = re.compile(r"\b([A-Z]{1,3}\d{2,4}[A-Z]{0,3})\b")
 
 # Tokens that are hardware components or OS markers, not chassis identifiers.
 _COMPONENT_TOKENS: frozenset[str] = frozenset(
@@ -169,26 +169,41 @@ class CommunityQueryBuilder:
         return self._squash(" ".join(part for part in parts if part))
 
     def forum_query(self, target: LaptopReviewTarget) -> str:
-        """Hardware-forum query, e.g. ``"Lenovo 15IRX9"``.
+        """Hardware-forum query, e.g. ``"Lenovo LOQ 15"`` or ``"ASUS ROG Strix G16"``.
 
-        Falls back to brand + family + screen size when no chassis code exists.
+        Combines brand + family + (sub_model or screen size) to match user discussion
+        threads on forums like Discourse, where exact warehouse SKUs yield zero results.
         """
         brand = clean_text(target.brand)
-        sub_model = clean_sub_model(target)
-        if sub_model:
-            return self._squash(f"{brand} {sub_model}")
-
         family = clean_text(target.laptop_family)
-        parts = [brand, family, screen_size_token(target)]
-        query = self._squash(" ".join(part for part in parts if part))
-        return query or clean_text(target.canonical_id)
+        size = screen_size_token(target)
+        sub_model = clean_sub_model(target)
+
+        # Use marketing sub-model (e.g. "G16", "G14") if short and not a warehouse MPN
+        anchor = size
+        if sub_model and re.match(r"^[A-Z]{1,2}\d{2}$", sub_model):
+            anchor = sub_model
+
+        if brand and family:
+            if brand.lower() in family.lower():
+                base = family
+            else:
+                base = f"{brand} {family}"
+        else:
+            base = family or brand or clean_text(target.canonical_id)
+
+        parts = [base, anchor]
+        return self._squash(" ".join(part for part in parts if part))
 
     def regional_query(self, target: LaptopReviewTarget) -> str:
-        """Regional/Arabic community query, e.g. ``"LOQ 15IRX9"``."""
+        """Regional/Arabic community query, e.g. ``"Lenovo LOQ"`` or ``"HP Victus"``."""
+        brand = clean_text(target.brand)
         family = clean_text(target.laptop_family)
-        anchor = clean_sub_model(target) or screen_size_token(target)
-        query = self._squash(f"{family} {anchor}")
-        return query or clean_text(target.canonical_id)
+        if brand and family:
+            if brand.lower() in family.lower():
+                return family
+            return self._squash(f"{brand} {family}")
+        return family or brand or clean_text(target.canonical_id)
 
     def build_platform_queries(self, target: LaptopReviewTarget) -> CommunityQuerySet:
         """Return every tailored query for one target."""

@@ -11,6 +11,7 @@ no file or object-storage I/O.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -45,23 +46,27 @@ class CommunitiesReviewsCollector(ICommunitiesReviewsCollector):
     async def collect_for_targets(
         self,
         targets: list[LaptopReviewTarget],
+        concurrency: int = 5,
     ) -> dict[str, CommunitiesData]:
         """Return ``chassis_key -> CommunitiesData`` for every target."""
-        results: dict[str, CommunitiesData] = {}
+        semaphore = asyncio.Semaphore(concurrency)
 
-        for target in targets:
+        async def _collect(target: LaptopReviewTarget) -> tuple[str, CommunitiesData]:
             chassis_key = build_chassis_key(target)
-            try:
-                results[chassis_key] = await self._collect_for_target(target)
-            except Exception as exc:  # noqa: BLE001 - one target must not abort the batch
-                logger.warning(
-                    "Community collection failed for chassis '%s': %s",
-                    chassis_key,
-                    exc,
-                )
-                results[chassis_key] = CommunitiesData()
+            async with semaphore:
+                try:
+                    data = await self._collect_for_target(target)
+                    return chassis_key, data
+                except Exception as exc:  # noqa: BLE001 - one target must not abort the batch
+                    logger.warning(
+                        "Community collection failed for chassis '%s': %s",
+                        chassis_key,
+                        exc,
+                    )
+                    return chassis_key, CommunitiesData()
 
-        return results
+        collected = await asyncio.gather(*[_collect(target) for target in targets])
+        return dict(collected)
 
     async def _collect_for_target(self, target: LaptopReviewTarget) -> CommunitiesData:
         """Query every registered platform and merge results into one model."""
@@ -72,8 +77,11 @@ class CommunitiesReviewsCollector(ICommunitiesReviewsCollector):
         editorial_reviews: list[EditorialReview] = []
         discussions: list[CommunityPost] = []
 
-        for scraper in self.scrapers:
-            posts = await self._run_scraper(scraper, target, queries)
+        scraper_results = await asyncio.gather(
+            *[self._run_scraper(scraper, target, queries) for scraper in self.scrapers]
+        )
+
+        for scraper, posts in zip(self.scrapers, scraper_results, strict=True):
             if scraper.platform_name == "reddit":
                 reddit_posts.extend(post for post in posts if isinstance(post, RedditPost))
             elif scraper.platform_name == "facebook":

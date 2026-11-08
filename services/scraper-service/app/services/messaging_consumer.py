@@ -75,7 +75,7 @@ class ScraperMessageConsumer:
             queue_name="scraper.reviews.jobs",
             routing_key=EventType.REVIEWS_SCRAPE_COMMAND,
             handler=self.handle_reviews_scrape_command,
-            prefetch_count=2,
+            prefetch_count=1,
         )
 
         logger.info("RabbitMQ consumers are actively listening for commands.")

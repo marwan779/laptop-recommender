@@ -18,8 +18,9 @@ Execution modes
 ---------------
 ``single``  Resolve exactly one chassis (by ``--canonical-id``, ``--query``, or
             the first unreviewed laptop). Default timeout: 90s.
-``full``    Resolve every unreviewed laptop (falling back to all laptops) into
-            its unique chassis targets (~70 for a populated catalog).
+``full``    Resolve unreviewed laptops (falling back to all laptops) into
+            unique physical chassis targets (189 distinct chassis across 71 families).
+            Use ``--limit <N>`` to cap the batch size for fast smoke testing.
             Default timeout: 600s.
 
 Scraper worker handling
@@ -152,6 +153,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Exact canonical slug to select one laptop.",
     )
     parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Max number of chassis targets to dispatch (useful for batch testing without scraping all 189 targets).",
+    )
+    parser.add_argument(
         "--upload-s3",
         action="store_true",
         default=False,
@@ -269,6 +276,22 @@ async def count_queue_consumers(queue_name: str) -> int:
         declaration = queue.declaration_result
         return int(getattr(declaration, "consumer_count", 0) or 0)
     except Exception:  # noqa: BLE001 - absence of the queue simply means "no worker"
+        return 0
+    finally:
+        if connection is not None and not connection.is_closed:
+            await connection.close()
+
+
+async def purge_queue(queue_name: str) -> int:
+    """Purge stale unconsumed messages from a queue before test dispatch."""
+    connection = None
+    try:
+        connection = await aio_pika.connect_robust(settings.rabbitmq_url)
+        channel = await connection.channel()
+        queue = await channel.declare_queue(queue_name, passive=True)
+        purged = await queue.purge()
+        return int(purged.message_count or 0)
+    except Exception:  # noqa: BLE001
         return 0
     finally:
         if connection is not None and not connection.is_closed:
@@ -483,11 +506,15 @@ async def run(args: argparse.Namespace) -> int:
     print(f"  exchange      : {settings.rabbitmq_exchange_name}")
     print(f"  output dir    : {output_dir}")
     print(f"  upload to s3  : {args.upload_s3}")
+    if args.limit is not None:
+        print(f"  limit         : {args.limit}")
     print(f"  timeout       : {timeout}s")
 
     try:
         laptops = await select_laptops(args)
         targets = build_targets(laptops)
+        if args.limit is not None and args.limit > 0:
+            targets = targets[: args.limit]
     finally:
         await engine.dispose()
 
@@ -502,6 +529,10 @@ async def run(args: argparse.Namespace) -> int:
 
     worker: subprocess.Popen | None = None
     consumers = await count_queue_consumers(SCRAPER_QUEUE)
+    if consumers == 0:
+        purged = await purge_queue(SCRAPER_QUEUE)
+        if purged > 0:
+            logger.info("Purged %d stale message(s) from '%s'.", purged, SCRAPER_QUEUE)
     if consumers > 0:
         logger.info("Reusing %d existing consumer(s) on '%s'.", consumers, SCRAPER_QUEUE)
         if args.upload_s3:

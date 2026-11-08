@@ -109,6 +109,27 @@ async def test_laptopmag_fails_open():
     assert await LaptopMagPlatformScraper(http_client=broken).scrape_for_target(_target(), []) == []
 
 
+@pytest.mark.anyio
+async def test_laptopmag_discards_empty_shell_and_navigation_links():
+    search_html = """
+    <html><body>
+      <a href="/reviews">Reviews Hub</a>
+      <a href="/reviews/lenovo-loq-15-review">Lenovo LOQ 15 review</a>
+    </body></html>
+    """
+    empty_review_html = "<html><body><div>No verdict or ratings</div></body></html>"
+    client = FakeClient(
+        routes={
+            "/search?searchTerm=": FakeResponse(text=search_html),
+            "/reviews/lenovo-loq-15-review": FakeResponse(text=empty_review_html),
+        }
+    )
+    scraper = LaptopMagPlatformScraper(http_client=client)
+
+    reviews = await scraper.scrape_for_target(_target(), [])
+    assert reviews == []
+
+
 # ─── Level1Techs ────────────────────────────────────────────────────────────
 
 _LEVEL1TECHS_PAYLOAD = {
@@ -161,7 +182,7 @@ async def test_level1techs_applies_three_layer_gate():
     assert post.author == "owner42"
     assert post.post_title == "Lenovo LOQ experience"
     assert post.post_url == "https://forum.level1techs.com/t/lenovo-loq-experience/42/1"
-    assert "15IRX9" in client.requested_urls[0]
+    assert "LOQ" in client.requested_urls[0]
 
 
 @pytest.mark.anyio
@@ -171,6 +192,30 @@ async def test_level1techs_fails_open():
 
     malformed = FakeClient(routes={"/search.json": FakeResponse(json_data=["not", "a", "dict"])})
     assert await Level1TechsPlatformScraper(http_client=malformed).scrape_for_target(_target(), []) == []
+
+
+@pytest.mark.anyio
+async def test_level1techs_hydrates_full_post_body():
+    client = FakeClient(
+        routes={
+            "/search.json": FakeResponse(json_data=_LEVEL1TECHS_PAYLOAD),
+            "/posts/101.json": FakeResponse(
+                json_data={
+                    "id": 101,
+                    "raw": "This is the full un-truncated post body explaining thermal performance in deep detail without trailing dots.",
+                }
+            ),
+        }
+    )
+    scraper = Level1TechsPlatformScraper(http_client=client)
+
+    posts = await scraper.scrape_for_target(_target(), ["aspect query"])
+
+    assert len(posts) == 1
+    assert posts[0].post_id == "101"
+    assert posts[0].post_body == (
+        "This is the full un-truncated post body explaining thermal performance in deep detail without trailing dots."
+    )
 
 
 # ─── Arabhardware ──────────────────────────────────────────────────────────
@@ -191,7 +236,7 @@ _ARABHARDWARE_SEARCH_HTML = """
 
 @pytest.mark.anyio
 async def test_arabhardware_extracts_discussion_snippets():
-    client = FakeClient(routes={"/search?q=": FakeResponse(text=_ARABHARDWARE_SEARCH_HTML)})
+    client = FakeClient(routes={"/search?s=": FakeResponse(text=_ARABHARDWARE_SEARCH_HTML)})
     scraper = ArabhardwarePlatformScraper(http_client=client)
 
     posts = await scraper.scrape_for_target(_target(), ["aspect query"])
@@ -210,6 +255,31 @@ async def test_arabhardware_extracts_discussion_snippets():
 async def test_arabhardware_fails_open():
     raising = FakeClient(raise_error=ConnectionError("unreachable"))
     assert await ArabhardwarePlatformScraper(http_client=raising).scrape_for_target(_target(), []) == []
+
+
+@pytest.mark.anyio
+async def test_arabhardware_hydrates_full_article_body():
+    article_html = """
+    <html><body>
+      <div class="post-content">
+        <p>الفقرة الأولى التفصيلية للمراجعة مع تقييم شامل لكافة الجوانب والمواصفات التقنية.</p>
+        <p>الفقرة الثانية التفصيلية لشرح درجات الحرارة والأداء تحت الضغط المستمر لساعات.</p>
+      </div>
+    </body></html>
+    """
+    client = FakeClient(
+        routes={
+            "/search?s=": FakeResponse(text=_ARABHARDWARE_SEARCH_HTML),
+            "/reviews/lenovo-loq-15irx9": FakeResponse(text=article_html),
+        }
+    )
+    scraper = ArabhardwarePlatformScraper(http_client=client)
+
+    posts = await scraper.scrape_for_target(_target(), [])
+
+    assert len(posts) == 2
+    assert "الفقرة الأولى التفصيلية" in posts[0].post_body
+    assert "الفقرة الثانية التفصيلية" in posts[0].post_body
 
 
 # ─── Collector mapping ──────────────────────────────────────────────────────

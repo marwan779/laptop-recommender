@@ -66,8 +66,8 @@ def test_platform_queries_use_screen_size_and_sub_model():
     queries = CommunityQueryBuilder().build_platform_queries(target)
 
     assert queries.editorial == "Lenovo LOQ 15 review"
-    assert queries.forum == "Lenovo 15IRX9"
-    assert queries.regional == "LOQ 15IRX9"
+    assert queries.forum == "Lenovo LOQ 15"
+    assert queries.regional == "Lenovo LOQ"
 
 
 def test_platform_forum_query_falls_back_without_sub_model():
@@ -82,7 +82,7 @@ def test_platform_forum_query_falls_back_without_sub_model():
     queries = CommunityQueryBuilder().build_platform_queries(target)
 
     assert queries.forum == "Lenovo Yoga 14"
-    assert queries.regional == "Yoga 14"
+    assert queries.regional == "Lenovo Yoga"
 
 
 def test_platform_queries_truncate_screen_size_to_marketing_tier():
@@ -98,4 +98,21 @@ def test_platform_queries_truncate_screen_size_to_marketing_tier():
     queries = CommunityQueryBuilder().build_platform_queries(target)
 
     assert queries.editorial == "HP Victus 15 review"
-    assert "FA2352TX" in queries.regional or "15-FA2352TX" in queries.regional
+    assert queries.forum == "HP Victus 15"
+    assert queries.regional == "HP Victus"
+
+
+def test_platform_queries_preserve_sub_model_code_when_compact():
+    target = LaptopReviewTarget(
+        laptop_id="lap-4",
+        canonical_id="asus-rog-strix-g16",
+        brand="ASUS",
+        laptop_family="ROG Strix",
+        laptop_model="ROG Strix G16",
+        screen_size=16.0,
+    )
+
+    queries = CommunityQueryBuilder().build_platform_queries(target)
+
+    assert queries.forum == "ASUS ROG Strix G16"
+    assert queries.regional == "ASUS ROG Strix"

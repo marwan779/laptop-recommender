@@ -8,12 +8,13 @@ Pipeline per target:
     1. Build prioritized queries (English primary, Arabic secondary).
     2. Search YouTube for the primary query.
     3. If too few results, top up with the secondary query (deduplicated).
-    4. Fetch transcripts for each video.
+    4. Fetch transcripts for each unique video (cached across targets).
     5. Assemble ``YouTubeVideo`` -> ``YouTubeReviewData``.
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -39,31 +40,42 @@ class YouTubeReviewsCollector(IYouTubeReviewsCollector):
         query_builder: YouTubeQueryBuilder | None = None,
         search_service: YouTubeSearchService | None = None,
         transcript_service: YouTubeTranscriptService | None = None,
+        cookiefile: str | None = None,
     ) -> None:
         self.query_builder = query_builder or YouTubeQueryBuilder()
-        self.search_service = search_service or YouTubeSearchService()
-        self.transcript_service = transcript_service or YouTubeTranscriptService()
+        self.search_service = search_service or YouTubeSearchService(cookiefile=cookiefile)
+        self.transcript_service = transcript_service or YouTubeTranscriptService(cookiefile=cookiefile)
+
+        # Batch-level cache and per-video locks. Targets are collected
+        # concurrently, so the lock guarantees a video shared by two targets is
+        # only fetched once while the first fetch is still in flight.
+        self._video_cache: dict[str, YouTubeVideo] = {}
+        self._video_locks: dict[str, asyncio.Lock] = {}
 
     async def collect_for_targets(
         self,
         targets: list[LaptopReviewTarget],
+        concurrency: int = 5,
     ) -> dict[str, YouTubeReviewData]:
         """Return ``chassis_key -> YouTubeReviewData`` for every target."""
-        results: dict[str, YouTubeReviewData] = {}
+        semaphore = asyncio.Semaphore(concurrency)
 
-        for target in targets:
+        async def _collect(target: LaptopReviewTarget) -> tuple[str, YouTubeReviewData]:
             chassis_key = build_chassis_key(target)
-            try:
-                results[chassis_key] = await self._collect_for_target(target)
-            except Exception as exc:  # noqa: BLE001 - one target must not abort the batch
-                logger.warning(
-                    "YouTube collection failed for chassis '%s': %s",
-                    chassis_key,
-                    exc,
-                )
-                results[chassis_key] = YouTubeReviewData()
+            async with semaphore:
+                try:
+                    data = await self._collect_for_target(target)
+                    return chassis_key, data
+                except Exception as exc:  # noqa: BLE001 - one target must not abort the batch
+                    logger.warning(
+                        "YouTube collection failed for chassis '%s': %s",
+                        chassis_key,
+                        exc,
+                    )
+                    return chassis_key, YouTubeReviewData()
 
-        return results
+        collected = await asyncio.gather(*[_collect(target) for target in targets])
+        return dict(collected)
 
     async def _collect_for_target(self, target: LaptopReviewTarget) -> YouTubeReviewData:
         """Collect and assemble YouTube data for a single target."""
@@ -79,7 +91,9 @@ class YouTubeReviewsCollector(IYouTubeReviewsCollector):
                 queries[1],
             )
 
-        video_models = [await self._to_video_model(video) for video in found_videos]
+        video_models = list(
+            await asyncio.gather(*[self._to_video_model(video) for video in found_videos])
+        )
 
         return YouTubeReviewData(
             query_used=primary_query,
@@ -109,9 +123,34 @@ class YouTubeReviewsCollector(IYouTubeReviewsCollector):
         return merged
 
     async def _to_video_model(self, video: dict[str, Any]) -> YouTubeVideo:
-        """Convert a search-result dict into a fully populated ``YouTubeVideo``."""
+        """Convert a search-result dict into a fully populated ``YouTubeVideo``.
+
+        Results are cached per ``video_id`` for the lifetime of the collector so
+        videos discovered by multiple chassis targets (and their secondary
+        queries) are only fetched once.
+        """
         video_id = str(video.get("video_id") or "")
 
+        if not video_id:
+            return await self._build_video_model(video_id, video)
+
+        cached = self._video_cache.get(video_id)
+        if cached is not None:
+            return cached
+
+        lock = self._video_locks.setdefault(video_id, asyncio.Lock())
+        async with lock:
+            # Another target may have populated the cache while we waited.
+            cached = self._video_cache.get(video_id)
+            if cached is not None:
+                return cached
+
+            model = await self._build_video_model(video_id, video)
+            self._video_cache[video_id] = model
+            return model
+
+    async def _build_video_model(self, video_id: str, video: dict[str, Any]) -> YouTubeVideo:
+        """Fetch transcript data and assemble one ``YouTubeVideo``."""
         transcript_text, segments, language, is_auto = await self.transcript_service.fetch_transcript(video_id)
 
         return YouTubeVideo(
