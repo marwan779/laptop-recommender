@@ -17,8 +17,10 @@ without network, S3, or RabbitMQ.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from datetime import UTC, datetime
+from pathlib import Path
 
 from app.common.messaging.contract import IMessageBroker
 from app.common.storage.base import IObjectStorageService
@@ -52,10 +54,21 @@ logger = logging.getLogger("scraper.services.reviews.collector")
 # Object storage prefix for generated review artifacts.
 REVIEWS_S3_PREFIX = "reviews"
 
+# Service root: app/services/reviews/collector.py -> app/services/reviews -> app/services -> app -> service root
+SERVICE_ROOT = Path(__file__).resolve().parents[3]
+
+# Local inspection copy of every generated artifact, independent of S3.
+LOCAL_REVIEWS_DIR = SERVICE_ROOT / "scraping results" / "reviews"
+
 
 def build_s3_key(job_id: str) -> str:
     """Return the canonical object key for a job's raw reviews artifact."""
     return f"{REVIEWS_S3_PREFIX}/raw_chassis_reviews_{job_id}.json"
+
+
+def build_local_path(job_id: str, output_dir: Path) -> Path:
+    """Return the local inspection path for a job's raw reviews artifact."""
+    return output_dir / f"raw_chassis_reviews_{job_id}.json"
 
 
 class ReviewCollectorService:
@@ -67,20 +80,29 @@ class ReviewCollectorService:
         broker: IMessageBroker | None = None,
         youtube_collector: IYouTubeReviewsCollector | None = None,
         communities_collector: ICommunitiesReviewsCollector | None = None,
+        upload_to_s3: bool = True,
+        local_output_dir: Path | None = None,
     ) -> None:
         self.storage_service = storage_service or get_storage_service()
         self.broker = broker
         self.youtube_collector = youtube_collector or YouTubeReviewsCollector()
         self.communities_collector = communities_collector or CommunitiesReviewsCollector()
+        self.upload_to_s3 = upload_to_s3
+        self.local_output_dir = Path(local_output_dir) if local_output_dir else LOCAL_REVIEWS_DIR
 
     async def process_reviews_batch(self, command: ScrapeReviewsCommand) -> str:
-        """Collect reviews for every chassis target, upload the artifact, and emit the event.
+        """Collect reviews for every chassis target, persist the artifact, and emit the event.
+
+        The artifact is always written to ``local_output_dir`` for manual
+        inspection. It is additionally uploaded to object storage unless this
+        service was constructed with ``upload_to_s3=False``.
 
         Args:
             command: The validated ``reviews.scrape.command`` message.
 
         Returns:
-            The object storage key of the uploaded reviews artifact.
+            The object storage key of the uploaded artifact, or the local file
+            path when S3 upload is disabled.
         """
         job_id = command.payload.job_id
         targets = command.payload.targets
@@ -111,12 +133,24 @@ class ReviewCollectorService:
             laptops=items,
         )
 
-        # 5. Upload to object storage. ``upload_json`` is synchronous by contract.
-        s3_key = build_s3_key(job_id)
-        self.storage_service.upload_json(
-            data=artifact.model_dump(mode="json"),
-            object_key=s3_key,
-        )
+        # 5. Always persist a local inspection copy, then optionally upload to S3.
+        artifact_data = artifact.model_dump(mode="json")
+        local_path = build_local_path(job_id, self.local_output_dir)
+        self._write_local_artifact(artifact_data, local_path)
+
+        if self.upload_to_s3:
+            s3_key = build_s3_key(job_id)
+            self.storage_service.upload_json(
+                data=artifact_data,
+                object_key=s3_key,
+            )
+        else:
+            s3_key = str(local_path)
+            logger.info(
+                "S3 upload disabled [job_id=%s]; using local artifact path '%s'.",
+                job_id,
+                s3_key,
+            )
 
         total_laptops = sum(len(item.matched_laptop_ids) for item in items)
         logger.info(
@@ -149,6 +183,14 @@ class ReviewCollectorService:
             logger.info("Published ReviewsReadyEvent for job [%s].", job_id)
 
         return s3_key
+
+    @staticmethod
+    def _write_local_artifact(artifact_data: dict, local_path: Path) -> None:
+        """Write the artifact JSON to disk, creating parent directories."""
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(local_path, "w", encoding="utf-8") as handle:
+            json.dump(artifact_data, handle, indent=2, ensure_ascii=False, default=str)
+        logger.info("Saved local reviews artifact to '%s'.", local_path)
 
     async def _collect_platforms(
         self,
@@ -232,7 +274,12 @@ class ReviewCollectorService:
             total_comments += sum(len(video.top_comments) for video in youtube.videos)
 
             communities = item.communities
-            total_posts += len(communities.reddit) + len(communities.facebook)
+            total_posts += (
+                len(communities.reddit)
+                + len(communities.facebook)
+                + len(communities.editorial)
+                + len(communities.discussions)
+            )
 
         return BatchMetadataSummary(
             total_youtube_videos=total_videos,
@@ -241,4 +288,10 @@ class ReviewCollectorService:
         )
 
 
-__all__ = ["REVIEWS_S3_PREFIX", "ReviewCollectorService", "build_s3_key"]
+__all__ = [
+    "LOCAL_REVIEWS_DIR",
+    "REVIEWS_S3_PREFIX",
+    "ReviewCollectorService",
+    "build_local_path",
+    "build_s3_key",
+]

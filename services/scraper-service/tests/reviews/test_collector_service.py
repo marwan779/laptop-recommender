@@ -59,7 +59,7 @@ class FakeCommunitiesCollector(ICommunitiesReviewsCollector):
 
 
 @pytest.mark.anyio
-async def test_process_reviews_batch_merges_and_uploads():
+async def test_process_reviews_batch_merges_and_uploads(tmp_path):
     target = LaptopReviewTarget(
         laptop_id="lap-loq",
         canonical_id="lenovo-loq-15irx9",
@@ -85,6 +85,7 @@ async def test_process_reviews_batch_merges_and_uploads():
         broker=broker_mock,
         youtube_collector=FakeYouTubeCollector(),
         communities_collector=FakeCommunitiesCollector(),
+        local_output_dir=tmp_path,
     )
 
     s3_key = await service.process_reviews_batch(cmd)
@@ -106,3 +107,79 @@ async def test_process_reviews_batch_merges_and_uploads():
     assert len(item.youtube.videos) == 1
     assert len(item.communities.reddit) == 1
     assert item.communities.reddit[0].post_id == "post_red_1"
+
+
+@pytest.mark.anyio
+async def test_process_reviews_batch_always_writes_local_copy(tmp_path):
+    cmd = ScrapeReviewsCommand(
+        payload=ScrapeReviewsPayload(
+            job_id="job-local-1",
+            targets=[
+                LaptopReviewTarget(
+                    laptop_id="lap-loq",
+                    canonical_id="lenovo-loq-15irx9",
+                    brand="Lenovo",
+                    laptop_family="LOQ",
+                    laptop_model="15irx9",
+                    screen_size=15.6,
+                )
+            ],
+        )
+    )
+
+    storage_mock = MagicMock()
+    storage_mock.upload_json = MagicMock(return_value="reviews/raw_chassis_reviews_job-local-1.json")
+
+    service = ReviewCollectorService(
+        storage_service=storage_mock,
+        youtube_collector=FakeYouTubeCollector(),
+        communities_collector=FakeCommunitiesCollector(),
+        local_output_dir=tmp_path / "nested" / "reviews",
+    )
+
+    await service.process_reviews_batch(cmd)
+
+    local_file = tmp_path / "nested" / "reviews" / "raw_chassis_reviews_job-local-1.json"
+    assert local_file.exists()
+    restored = RawChassisReviewsFile.model_validate_json(local_file.read_text(encoding="utf-8"))
+    assert restored.batch_metadata.job_id == "job-local-1"
+    storage_mock.upload_json.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_upload_to_s3_disabled_returns_local_path_and_skips_upload(tmp_path):
+    cmd = ScrapeReviewsCommand(
+        payload=ScrapeReviewsPayload(
+            job_id="job-local-only",
+            targets=[
+                LaptopReviewTarget(
+                    laptop_id="lap-loq",
+                    canonical_id="lenovo-loq-15irx9",
+                    brand="Lenovo",
+                    laptop_family="LOQ",
+                    laptop_model="15irx9",
+                )
+            ],
+        )
+    )
+
+    storage_mock = MagicMock()
+    broker_mock = AsyncMock()
+
+    service = ReviewCollectorService(
+        storage_service=storage_mock,
+        broker=broker_mock,
+        youtube_collector=FakeYouTubeCollector(),
+        communities_collector=FakeCommunitiesCollector(),
+        upload_to_s3=False,
+        local_output_dir=tmp_path,
+    )
+
+    s3_key = await service.process_reviews_batch(cmd)
+
+    assert s3_key == str(tmp_path / "raw_chassis_reviews_job-local-only.json")
+    assert (tmp_path / "raw_chassis_reviews_job-local-only.json").exists()
+    storage_mock.upload_json.assert_not_called()
+    broker_mock.publish.assert_awaited_once()
+    published_event = broker_mock.publish.call_args.kwargs["message"]
+    assert published_event.payload.s3_key == s3_key
