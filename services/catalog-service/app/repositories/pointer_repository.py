@@ -21,6 +21,12 @@ class StoreScrapingPointerRepository(BaseRepository[StoreScrapingPointer]):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def list_all_ordered(self) -> Sequence[StoreScrapingPointer]:
+        """Fetch every store watermark ordered by store key."""
+        stmt = select(StoreScrapingPointer).order_by(StoreScrapingPointer.store_key)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
     async def list_active(self, store_key: str | None = None) -> Sequence[StoreScrapingPointer]:
         """Fetch active scraping pointers for one or all stores."""
         stmt = select(StoreScrapingPointer).where(StoreScrapingPointer.is_active.is_(True))

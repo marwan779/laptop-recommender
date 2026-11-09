@@ -183,22 +183,54 @@ class PricesCheckedEvent(BaseEvent):
 
 
 class LaptopReviewTarget(BaseModel):
-    """Target laptop to search community reviews for."""
+    """Target laptop to search YouTube reviews for."""
 
     laptop_id: str = Field(description="Laptop configuration UUID from catalog database")
     canonical_id: str = Field(description="Laptop canonical slug identifier")
-    search_queries: list[str] = Field(
+    title: str | None = Field(default=None, description="Full retail or catalog product title")
+    brand: str | None = Field(default=None, description="Brand name, e.g. ASUS")
+    laptop_family: str | None = Field(default=None, description="Product family, e.g. Vivobook")
+    laptop_model: str | None = Field(default=None, description="Model name, e.g. Vivobook 16")
+    mpn: str | None = Field(default=None, description="Manufacturer part number")
+    manufacturer_part_number: str | None = Field(
+        default=None,
+        description="Canonical manufacturer part number",
+    )
+    retailer_sku: str | None = Field(default=None, description="Retailer-specific SKU")
+    skus: list[str] = Field(
         default_factory=list,
-        description="Search query variants (e.g. 'Lenovo Legion Pro 5 review Reddit')",
+        description="Additional SKU or model-code candidates",
+    )
+    mpns: list[str] = Field(
+        default_factory=list,
+        description="Additional manufacturer part number candidates",
+    )
+    product_urls: list[str] = Field(
+        default_factory=list,
+        description="Known product page URLs for additional identity context",
+    )
+    thumbnail_url: str | None = Field(default=None, description="Product thumbnail URL")
+    screen_size: float | None = Field(default=None, description="Display size in inches e.g. 15.6, 16.0")
+    matched_laptop_ids: list[str] = Field(
+        default_factory=list,
+        description="All laptop UUIDs belonging to this chassis group",
+    )
+    matched_canonical_ids: list[str] = Field(
+        default_factory=list,
+        description="All canonical slugs belonging to this chassis group",
     )
 
 
 class ScrapeReviewsPayload(BaseModel):
-    """Payload instructing the scraper to search Reddit/YouTube for candidate laptops."""
+    """Payload instructing the scraper to search YouTube for review candidates.
+
+    Carries the full resolved chassis batch (e.g. 70-100 targets) in a single
+    payload; there is deliberately no per-message target cap.
+    """
 
     job_id: str = Field(description="User recommendation session / Phase 2 job ID")
     targets: list[LaptopReviewTarget] = Field(
-        description="The top candidate laptops (e.g. up to 15) to scrape reviews for",
+        description="Full batch of resolved chassis targets to scrape reviews for",
     )
 
 
@@ -236,6 +268,14 @@ class ReviewsReadyPayload(BaseModel):
     results: list[LaptopReviewsResult] = Field(
         default_factory=list,
         description="Extracted review snippets grouped by laptop",
+    )
+    s3_key: str | None = Field(
+        default=None,
+        description="Object storage key for the raw reviews JSON file",
+    )
+    total_chassis: int = Field(
+        default=0,
+        description="Total unique chassis targets processed",
     )
 
 

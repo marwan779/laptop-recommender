@@ -12,6 +12,7 @@ from app.services.catalog_query_service import CatalogQueryService
 @pytest.mark.asyncio
 async def test_get_laptop_detail_by_canonical_id_success(db_session: AsyncSession):
     """Querying by canonical_id returns 200 OK with full 35+ hardware specs, offers, and metrics."""
+
     async def override_get_db():
         yield db_session
 
@@ -79,6 +80,7 @@ async def test_get_laptop_detail_by_canonical_id_success(db_session: AsyncSessio
 @pytest.mark.asyncio
 async def test_get_laptop_detail_by_uuid_success(db_session: AsyncSession):
     """Querying by database UUID resolves correctly."""
+
     async def override_get_db():
         yield db_session
 
@@ -104,6 +106,7 @@ async def test_get_laptop_detail_by_uuid_success(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_get_laptop_detail_by_mpn_success(db_session: AsyncSession):
     """Querying by manufacturer part number (MPN) resolves correctly."""
+
     async def override_get_db():
         yield db_session
 
@@ -129,6 +132,7 @@ async def test_get_laptop_detail_by_mpn_success(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_get_catalog_laptop_detail_alias(db_session: AsyncSession):
     """The alias route /api/v1/catalog/laptops/{laptop_id} also works."""
+
     async def override_get_db():
         yield db_session
 
@@ -146,6 +150,7 @@ async def test_get_catalog_laptop_detail_alias(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_get_laptop_detail_not_found(db_session: AsyncSession):
     """Querying a non-existent laptop returns 404 Not Found."""
+
     async def override_get_db():
         yield db_session
 
@@ -170,3 +175,104 @@ async def test_catalog_query_service_offline_fallback():
     assert result.min_price_egp == 47999.0
     assert result.cpu.manufacturer == "Intel"
     assert len(result.offers) >= 1
+
+
+@pytest.mark.asyncio
+async def test_list_laptops_paginated_with_review_fields(db_session: AsyncSession):
+    """The catalog browse endpoint returns paginated cards with review intelligence."""
+
+    async def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/api/v1/laptops?offset=0&limit=5")
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert data["offset"] == 0
+        assert data["limit"] == 5
+        assert data["total"] >= 5
+        assert len(data["items"]) == 5
+        assert data["total"] >= len(data["items"])
+
+        item = data["items"][0]
+        for field in (
+            "id",
+            "canonical_id",
+            "brand",
+            "laptop_model",
+            "title",
+            "min_price_egp",
+            "cheapest_store",
+            "ram_capacity_gb",
+            "storage_capacity_gb",
+            "gpu_model",
+            "cpu_model",
+            "display_size_inches",
+            "community_nlp_score",
+            "value_score",
+            "has_reviews",
+            "reviews_evidence_count",
+            "pros_ar",
+            "pros_en",
+            "cons_ar",
+            "cons_en",
+        ):
+            assert field in item
+
+        assert isinstance(item["community_nlp_score"], float)
+        assert isinstance(item["reviews_evidence_count"], int)
+        assert isinstance(item["pros_ar"], list)
+
+        reviewed_item = next(
+            (candidate for candidate in data["items"] if candidate["has_reviews"]),
+            None,
+        )
+        if reviewed_item is not None:
+            assert reviewed_item["reviews_evidence_count"] >= 0
+            assert reviewed_item["community_nlp_score"] >= 0.0
+
+    app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_list_laptops_price_and_brand_filters(db_session: AsyncSession):
+    """Price and brand query parameters strictly constrain catalog results."""
+
+    async def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/api/v1/laptops?brand=ASUS&max_price=90000&limit=100")
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert data["total"] >= 1
+        assert len(data["items"]) >= 1
+        for item in data["items"]:
+            assert item["brand"].upper() == "ASUS"
+            assert item["min_price_egp"] <= 90000.0
+
+        alias_resp = await client.get("/api/v1/catalog/laptops?limit=2")
+        assert alias_resp.status_code == 200
+        assert len(alias_resp.json()["items"]) == 2
+
+    app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_catalog_query_service_list_laptops_offline_fallback():
+    """Catalog browse still works from the local JSON catalog without a DB session."""
+    service = CatalogQueryService(session=None)
+    result = await service.list_laptops(limit=10, offset=0)
+
+    assert result.total > 0
+    assert len(result.items) == 10
+    assert result.items[0].canonical_id
+    assert result.items[0].min_price_egp > 0

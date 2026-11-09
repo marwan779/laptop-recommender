@@ -117,14 +117,31 @@ class RankedLaptopResponse(BaseModel):
     )
     available_stores: list[str] = Field(default_factory=list, description="Stores with active stock.")
     prices_by_store: dict[str, float] = Field(default_factory=dict, description="Price breakdown per retailer.")
-    urls_by_store: dict[str, str] = Field(default_factory=dict, description="Map of retailer store to direct product URL.")
+    urls_by_store: dict[str, str] = Field(
+        default_factory=dict, description="Map of retailer store to direct product URL."
+    )
     offers: list[StoreOfferResponse] = Field(
         default_factory=list,
         description="List of all retail offers with prices, stock status, and direct URLs.",
     )
     why_recommended_ar: list[str] = Field(default_factory=list, description="Arabic explanation badges.")
     why_recommended_en: list[str] = Field(default_factory=list, description="English explanation badges.")
-    topsis_inputs: dict[str, Any] = Field(default_factory=dict, description="Raw normalized 9-criteria input scores.")
+    pros_en: list[str] = Field(default_factory=list, description="English community review pros.")
+    pros_ar: list[str] = Field(default_factory=list, description="Arabic community review pros.")
+    cons_en: list[str] = Field(default_factory=list, description="English community review cons.")
+    cons_ar: list[str] = Field(default_factory=list, description="Arabic community review cons.")
+    reviews_evidence_count: int = Field(
+        default=0,
+        description="Number of community review sources analyzed for this chassis.",
+    )
+    aspect_scores: dict[str, float] = Field(
+        default_factory=dict,
+        description=(
+            "5 real-world NLP aspect scores (thermals, acoustics, build_and_hinges, "
+            "keyboard_and_trackpad, real_battery_and_reliability)."
+        ),
+    )
+    topsis_inputs: dict[str, Any] = Field(default_factory=dict, description="Raw normalized 10-criteria input scores.")
 
 
 class RecommendationResponse(BaseModel):
@@ -160,4 +177,10 @@ class RecommendationResponse(BaseModel):
     results: list[RankedLaptopResponse] = Field(
         default_factory=list,
         description="Top-K ranked laptops in descending order of match score.",
+    )
+    status: str = Field(
+        default="OK",
+        description=(
+            "Recommendation execution status: OK, GATES_RELAXED_FOR_LOW_BUDGET, or BUDGET_TOO_LOW_FOR_CATEGORY."
+        ),
     )

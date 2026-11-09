@@ -14,12 +14,15 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.logger import get_logger
+from app.common.review_text import align_bilingual_lists
 from app.domain.recommender.explainer import build_why_recommended
 from app.models.laptop import LaptopConfiguration
 from app.repositories.laptop_repository import LaptopRepository, to_recommender_dict
 from app.schemas.laptop import (
     AudioWebcamSpecDetail,
     BuildSecuritySpecDetail,
+    CatalogListItemResponse,
+    CatalogListResponse,
     ConnectivityOsSpecDetail,
     CpuSpecDetail,
     DetailedOfferRead,
@@ -35,9 +38,7 @@ from app.schemas.laptop import (
 
 logger = get_logger("catalog.services.catalog_query")
 
-FALLBACK_CATALOG_PATH = (
-    Path(__file__).resolve().parent.parent.parent / "scraping input" / "unified_catalog_latest.json"
-)
+FALLBACK_CATALOG_PATH = Path(__file__).resolve().parent.parent.parent / "scraping input" / "unified_catalog_latest.json"
 
 
 def _safe_int(val: Any, default: int | None = None) -> int | None:
@@ -77,7 +78,7 @@ class CatalogQueryService:
         if self._fallback_catalog is None:
             if FALLBACK_CATALOG_PATH.exists():
                 try:
-                    with open(FALLBACK_CATALOG_PATH, "r", encoding="utf-8") as f:
+                    with open(FALLBACK_CATALOG_PATH, encoding="utf-8") as f:
                         data = json.load(f)
                     self._fallback_catalog = data.get("laptops", [])
                     logger.info("Loaded %d laptops into query fallback cache.", len(self._fallback_catalog))
@@ -87,6 +88,180 @@ class CatalogQueryService:
             else:
                 self._fallback_catalog = []
         return self._fallback_catalog
+
+    async def list_laptops(
+        self,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        brand: str | None = None,
+        in_stock_only: bool = True,
+        offset: int = 0,
+        limit: int = 20,
+    ) -> CatalogListResponse:
+        """Return a paginated catalog browse page with review intelligence."""
+        if self.laptop_repo is not None:
+            try:
+                laptops, total = await self.laptop_repo.list_and_count_configurations(
+                    min_price=min_price,
+                    max_price=max_price,
+                    brand=brand,
+                    in_stock_only=in_stock_only,
+                    offset=offset,
+                    limit=limit,
+                )
+                return CatalogListResponse(
+                    total=total,
+                    offset=offset,
+                    limit=limit,
+                    items=[self._orm_to_list_item(laptop) for laptop in laptops],
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Database catalog listing failed (%s); serving fallback catalog JSON.",
+                    exc,
+                )
+
+        return self._list_from_fallback(
+            min_price=min_price,
+            max_price=max_price,
+            brand=brand,
+            in_stock_only=in_stock_only,
+            offset=offset,
+            limit=limit,
+        )
+
+    def _list_from_fallback(
+        self,
+        min_price: float | None,
+        max_price: float | None,
+        brand: str | None,
+        in_stock_only: bool,
+        offset: int,
+        limit: int,
+    ) -> CatalogListResponse:
+        """Filter and paginate the offline JSON catalog."""
+        brand_key = brand.lower().strip() if brand else None
+        filtered: list[dict[str, Any]] = []
+
+        for lap in self._load_fallback_catalog():
+            price = float(lap.get("min_price_egp") or 0.0)
+            if min_price is not None and price < min_price:
+                continue
+            if max_price is not None and price > max_price:
+                continue
+            if brand_key and str(lap.get("brand") or "").lower().strip() != brand_key:
+                continue
+            if in_stock_only and not self._dict_in_stock(lap):
+                continue
+            filtered.append(lap)
+
+        filtered.sort(
+            key=lambda lap: (
+                float(lap.get("min_price_egp") or 0.0),
+                str(lap.get("title") or ""),
+            )
+        )
+        page = filtered[offset : offset + limit]
+        return CatalogListResponse(
+            total=len(filtered),
+            offset=offset,
+            limit=limit,
+            items=[self._dict_to_list_item(lap) for lap in page],
+        )
+
+    @staticmethod
+    def _dict_in_stock(lap: dict[str, Any]) -> bool:
+        explicit = lap.get("in_stock")
+        if explicit is not None:
+            return bool(explicit)
+
+        topsis = (lap.get("derived_metrics") or {}).get("topsis_inputs") or {}
+        if topsis.get("in_stock_active") is not None:
+            return bool(topsis.get("in_stock_active"))
+        return any(bool(offer.get("in_stock", True)) for offer in lap.get("offers") or [])
+
+    @staticmethod
+    def _orm_to_list_item(laptop: LaptopConfiguration) -> CatalogListItemResponse:
+        metrics = laptop.metrics
+        return CatalogListItemResponse(
+            id=str(laptop.id),
+            canonical_id=laptop.canonical_id,
+            mpn=laptop.mpn,
+            brand=laptop.brand or "Generic",
+            laptop_family=laptop.laptop_family,
+            laptop_model=laptop.laptop_model or "Laptop",
+            title=laptop.title or "Laptop",
+            thumbnail_url=laptop.thumbnail_url,
+            min_price_egp=float(laptop.min_price_egp or 0.0),
+            cheapest_store=laptop.cheapest_store or "unknown",
+            in_stock=bool(laptop.in_stock),
+            stores_count=laptop.stores_count or len(laptop.offers or []) or 1,
+            ram_capacity_gb=laptop.ram_capacity_gb or 0,
+            storage_capacity_gb=laptop.storage_capacity_gb or 0,
+            gpu_model=laptop.gpu_model or "Integrated Graphics",
+            cpu_model=laptop.cpu_model or "CPU",
+            display_size_inches=(float(laptop.display_size_inches) if laptop.display_size_inches else 15.6),
+            community_nlp_score=(
+                float(metrics.community_nlp_score)
+                if metrics is not None and metrics.community_nlp_score is not None
+                else 75.0
+            ),
+            value_score=(
+                float(metrics.value_score) if metrics is not None and metrics.value_score is not None else 50.0
+            ),
+            has_reviews=bool(laptop.has_reviews),
+            reviews_evidence_count=laptop.reviews_evidence_count or 0,
+            pros_ar=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[1],
+            pros_en=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[0],
+            cons_ar=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[1],
+            cons_en=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[0],
+        )
+
+    @staticmethod
+    def _dict_to_list_item(lap: dict[str, Any]) -> CatalogListItemResponse:
+        specs = lap.get("specs") or {}
+        cpu = specs.get("cpu") or {}
+        gpu = specs.get("gpu") or {}
+        mem = specs.get("memory") or {}
+        sto = specs.get("storage") or {}
+        display = specs.get("display") or {}
+        derived = lap.get("derived_metrics") or {}
+        topsis = derived.get("topsis_inputs") or {}
+
+        raw_reviews = derived.get("community_reviews") or lap.get("community_reviews") or {}
+        reviews = raw_reviews if isinstance(raw_reviews, dict) else {}
+
+        nlp_score = reviews.get("community_nlp_score")
+        if nlp_score is None:
+            nlp_score = topsis.get("community_nlp_score", 75.0)
+
+        return CatalogListItemResponse(
+            id=str(lap.get("id") or lap.get("canonical_id") or "unknown"),
+            canonical_id=str(lap.get("canonical_id") or "unknown"),
+            mpn=lap.get("mpn"),
+            brand=str(lap.get("brand") or "Generic"),
+            laptop_family=lap.get("laptop_family"),
+            laptop_model=str(lap.get("laptop_model") or "Laptop"),
+            title=str(lap.get("title") or "Laptop"),
+            thumbnail_url=lap.get("thumbnail_url"),
+            min_price_egp=float(lap.get("min_price_egp") or 0.0),
+            cheapest_store=str(lap.get("cheapest_store") or "unknown"),
+            in_stock=CatalogQueryService._dict_in_stock(lap),
+            stores_count=int(lap.get("stores_count") or len(lap.get("offers") or []) or 1),
+            ram_capacity_gb=_safe_int(mem.get("capacity_gb"), 0) or 0,
+            storage_capacity_gb=_safe_int(sto.get("capacity_gb"), 0) or 0,
+            gpu_model=str(gpu.get("model") or "Integrated Graphics"),
+            cpu_model=str(cpu.get("model") or "CPU"),
+            display_size_inches=_safe_float(display.get("size_inches"), 15.6) or 15.6,
+            community_nlp_score=_safe_float(nlp_score, 75.0) or 75.0,
+            value_score=_safe_float(topsis.get("value_score"), 50.0) or 50.0,
+            has_reviews=bool(lap.get("has_reviews", bool(reviews))),
+            reviews_evidence_count=_safe_int(reviews.get("evidence_count"), 0) or 0,
+            pros_ar=align_bilingual_lists(reviews.get("pros_en"), reviews.get("pros_ar"))[1],
+            pros_en=align_bilingual_lists(reviews.get("pros_en"), reviews.get("pros_ar"))[0],
+            cons_ar=align_bilingual_lists(reviews.get("cons_en"), reviews.get("cons_ar"))[1],
+            cons_en=align_bilingual_lists(reviews.get("cons_en"), reviews.get("cons_ar"))[0],
+        )
 
     async def get_laptop_detail(self, identifier: str) -> FullLaptopDetailResponse:
         """Fetch complete laptop specifications, offers, and metrics by UUID, canonical_id, or MPN."""
@@ -141,7 +316,7 @@ class CatalogQueryService:
                 p_url = off.product_url or ""
                 in_stk = bool(off.in_stock)
                 is_valid = bool(off.is_valid_price) if off.is_valid_price is not None else True
-                is_chp = (store_k == cheapest_store_key)
+                is_chp = store_k == cheapest_store_key
 
                 if store_k not in available_stores:
                     available_stores.append(store_k)
@@ -193,13 +368,28 @@ class CatalogQueryService:
                 ergonomics_score=float(m.ergonomics_score) if m.ergonomics_score is not None else 50.0,
                 connectivity_score=float(m.connectivity_score) if m.connectivity_score is not None else 50.0,
                 community_nlp_score=float(m.community_nlp_score) if m.community_nlp_score is not None else None,
+                thermals_score=float(m.thermals_score) if m.thermals_score is not None else None,
+                acoustics_score=float(m.acoustics_score) if m.acoustics_score is not None else None,
+                build_and_hinges_score=(
+                    float(m.build_and_hinges_score) if m.build_and_hinges_score is not None else None
+                ),
+                keyboard_and_trackpad_score=(
+                    float(m.keyboard_and_trackpad_score) if m.keyboard_and_trackpad_score is not None else None
+                ),
+                real_battery_and_reliability_score=(
+                    float(m.real_battery_and_reliability_score)
+                    if m.real_battery_and_reliability_score is not None
+                    else None
+                ),
                 value_score=float(m.value_score) if m.value_score is not None else 50.0,
                 effective_price_egp=(
                     float(m.effective_price_egp)
                     if m.effective_price_egp is not None
                     else float(laptop.min_price_egp or 0.0)
                 ),
-                estimated_battery_hours=float(m.estimated_battery_hours) if m.estimated_battery_hours is not None else None,
+                estimated_battery_hours=float(m.estimated_battery_hours)
+                if m.estimated_battery_hours is not None
+                else None,
                 silicon_tier=m.silicon_tier,
                 display_tier=m.display_tier,
                 portability_tier=m.portability_tier,
@@ -331,6 +521,11 @@ class CatalogQueryService:
                 ports=list(laptop.ports or []),
             ),
             metrics=metrics_detail,
+            reviews_evidence_count=laptop.reviews_evidence_count or 0,
+            pros_en=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[0],
+            pros_ar=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[1],
+            cons_en=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[0],
+            cons_ar=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[1],
             why_recommended_ar=reasons.get("ar", []),
             why_recommended_en=reasons.get("en", []),
         )
@@ -357,6 +552,12 @@ class CatalogQueryService:
         mob_dm = dm.get("mobility") or {}
         lon_dm = dm.get("longevity") or {}
 
+        raw_community_reviews = dm.get("community_reviews") or lap.get("community_reviews") or {}
+        community_reviews = raw_community_reviews if isinstance(raw_community_reviews, dict) else {}
+        aspect_scores = community_reviews.get("aspect_scores") or {}
+        if not isinstance(aspect_scores, dict):
+            aspect_scores = {}
+
         cheapest_store_key = str(lap.get("cheapest_store") or "unknown").lower().strip()
         prices_by_store = dict(lap.get("prices_by_store") or {})
         urls_by_store = dict(lap.get("urls_by_store") or {})
@@ -369,7 +570,7 @@ class CatalogQueryService:
             store_k = str(off.get("store_key") or "generic").lower().strip()
             price_val = float(off.get("price_egp") or 0.0)
             p_url = off.get("product_url") or ""
-            is_chp = (store_k == cheapest_store_key)
+            is_chp = store_k == cheapest_store_key
 
             if store_k not in available_stores:
                 available_stores.append(store_k)
@@ -395,7 +596,10 @@ class CatalogQueryService:
                     is_valid_price=bool(off.get("is_valid_price", True)),
                     is_cheapest=is_chp,
                     price_updated_at=off.get("price_updated_at") or off.get("scraped_at"),
-                    last_checked_at=off.get("last_checked_at") or off.get("last_checked") or off.get("price_updated_at") or off.get("scraped_at"),
+                    last_checked_at=off.get("last_checked_at")
+                    or off.get("last_checked")
+                    or off.get("price_updated_at")
+                    or off.get("scraped_at"),
                 )
             )
 
@@ -404,6 +608,10 @@ class CatalogQueryService:
 
         min_price = float(lap.get("min_price_egp") or 0.0)
         max_price = float(lap.get("max_price_egp") or min_price)
+
+        community_nlp_score = community_reviews.get("community_nlp_score")
+        if community_nlp_score is None:
+            community_nlp_score = topsis.get("community_nlp_score")
 
         metrics_detail: HardwareMetricsDetail | None = None
         if topsis:
@@ -417,10 +625,17 @@ class CatalogQueryService:
                 longevity_score=float(topsis.get("longevity_score", 50.0)),
                 ergonomics_score=float(topsis.get("ergonomics_score", 50.0)),
                 connectivity_score=float(topsis.get("connectivity_score", 50.0)),
-                community_nlp_score=float(topsis.get("community_nlp_score", 50.0)) if topsis.get("community_nlp_score") else None,
+                community_nlp_score=float(community_nlp_score) if community_nlp_score is not None else None,
+                thermals_score=_safe_float(aspect_scores.get("thermals_score")),
+                acoustics_score=_safe_float(aspect_scores.get("acoustics_score")),
+                build_and_hinges_score=_safe_float(aspect_scores.get("build_and_hinges_score")),
+                keyboard_and_trackpad_score=_safe_float(aspect_scores.get("keyboard_and_trackpad_score")),
+                real_battery_and_reliability_score=_safe_float(aspect_scores.get("real_battery_and_reliability_score")),
                 value_score=float(topsis.get("value_score", 50.0)),
                 effective_price_egp=float(topsis.get("effective_price_egp", min_price)),
-                estimated_battery_hours=float(mob_dm.get("battery_hours_estimate")) if mob_dm.get("battery_hours_estimate") else None,
+                estimated_battery_hours=float(mob_dm.get("battery_hours_estimate"))
+                if mob_dm.get("battery_hours_estimate")
+                else None,
                 silicon_tier=sil_dm.get("silicon_tier"),
                 display_tier=dsp_dm.get("display_tier"),
                 portability_tier=mob_dm.get("portability_tier"),
@@ -447,7 +662,9 @@ class CatalogQueryService:
             warranty_years=lap.get("warranty_years"),
             min_price_egp=min_price,
             max_price_egp=max_price,
-            previous_min_price_egp=float(lap.get("previous_min_price_egp")) if lap.get("previous_min_price_egp") else None,
+            previous_min_price_egp=float(lap.get("previous_min_price_egp"))
+            if lap.get("previous_min_price_egp")
+            else None,
             cheapest_store=cheapest_store_key,
             cheapest_offer_url=cheapest_offer_url,
             price_spread_egp=float(lap.get("price_spread_egp") or 0.0),
@@ -550,6 +767,11 @@ class CatalogQueryService:
                 ports=list(con.get("ports") or []),
             ),
             metrics=metrics_detail,
+            reviews_evidence_count=_safe_int(community_reviews.get("evidence_count"), 0) or 0,
+            pros_en=align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))[0],
+            pros_ar=align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))[1],
+            cons_en=align_bilingual_lists(community_reviews.get("cons_en"), community_reviews.get("cons_ar"))[0],
+            cons_ar=align_bilingual_lists(community_reviews.get("cons_en"), community_reviews.get("cons_ar"))[1],
             why_recommended_ar=reasons.get("ar", []),
             why_recommended_en=reasons.get("en", []),
         )

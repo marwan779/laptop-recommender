@@ -11,7 +11,7 @@ from typing import Any
 # =============================================================================
 # 1. TOPSIS CRITERIA & BENEFIT/COST KEYS
 # =============================================================================
-# 8 Benefit criteria (higher is better) + 1 Cost criterion (effective_price_egp, lower is better)
+# 9 Benefit criteria (higher is better) + 1 Cost criterion (effective_price_egp, lower is better)
 TOPSIS_CRITERIA_KEYS: list[str] = [
     "cpu_score",
     "gpu_score",
@@ -21,18 +21,20 @@ TOPSIS_CRITERIA_KEYS: list[str] = [
     "longevity_score",
     "ergonomics_score",
     "connectivity_score",
+    "community_nlp_score",
     "effective_price_egp",
 ]
 
 IS_BENEFIT_CRITERION: list[bool] = [
-    True,   # cpu_score
-    True,   # gpu_score
-    True,   # power_therm_score
-    True,   # display_score
-    True,   # mobility_score
-    True,   # longevity_score
-    True,   # ergonomics_score
-    True,   # connectivity_score
+    True,  # cpu_score
+    True,  # gpu_score
+    True,  # power_therm_score
+    True,  # display_score
+    True,  # mobility_score
+    True,  # longevity_score
+    True,  # ergonomics_score
+    True,  # connectivity_score
+    True,  # community_nlp_score (Benefit: higher real-world review score is better)
     False,  # effective_price_egp (Cost criterion: cheaper within the budget window is better)
 ]
 
@@ -54,14 +56,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "الألعاب الثقيلة والـ Esports",
         "label_en": "Heavy Gaming & Esports",
         "weights": {
-            "cpu_score": 0.16,
-            "gpu_score": 0.32,
-            "power_therm_score": 0.14,
-            "display_score": 0.14,
+            "cpu_score": 0.15,
+            "gpu_score": 0.30,
+            "power_therm_score": 0.13,
+            "display_score": 0.13,
             "mobility_score": 0.03,
-            "longevity_score": 0.06,
+            "longevity_score": 0.05,
             "ergonomics_score": 0.02,
             "connectivity_score": 0.03,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.10,
         },
         "implicit_gates": {
@@ -74,14 +77,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "الذكاء الاصطناعي وتطوير الألعاب والـ 3D",
         "label_en": "AI / ML, Game Dev & 3D Rendering",
         "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.28,
-            "power_therm_score": 0.12,
+            "cpu_score": 0.19,
+            "gpu_score": 0.26,
+            "power_therm_score": 0.11,
             "display_score": 0.10,
             "mobility_score": 0.03,
-            "longevity_score": 0.10,
+            "longevity_score": 0.09,
             "ergonomics_score": 0.03,
-            "connectivity_score": 0.04,
+            "connectivity_score": 0.03,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.10,
         },
         "implicit_gates": {
@@ -93,14 +97,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "البرمجة وهندسة البرمجيات",
         "label_en": "Programming & Software Engineering",
         "weights": {
-            "cpu_score": 0.26,
+            "cpu_score": 0.24,
             "gpu_score": 0.06,
             "power_therm_score": 0.08,
             "display_score": 0.10,
-            "mobility_score": 0.12,
-            "longevity_score": 0.14,
-            "ergonomics_score": 0.08,
-            "connectivity_score": 0.06,
+            "mobility_score": 0.11,
+            "longevity_score": 0.13,
+            "ergonomics_score": 0.07,
+            "connectivity_score": 0.05,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.10,
         },
         "implicit_gates": {
@@ -112,15 +117,16 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "المونتاج والتصميم الجرافيكي وصناعة المحتوى",
         "label_en": "Video Editing, Design & Content Creation",
         "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.22,
-            "power_therm_score": 0.10,
-            "display_score": 0.24,
+            "cpu_score": 0.19,
+            "gpu_score": 0.21,
+            "power_therm_score": 0.09,
+            "display_score": 0.23,
             "mobility_score": 0.05,
             "longevity_score": 0.05,
             "ergonomics_score": 0.03,
             "connectivity_score": 0.03,
-            "effective_price_egp": 0.08,
+            "community_nlp_score": 0.06,
+            "effective_price_egp": 0.06,
         },
         "implicit_gates": {
             "min_ram_gb": 16,
@@ -131,15 +137,16 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "الدراسة والجامعة والعمل المكتبي",
         "label_en": "Student, University & Office Work",
         "weights": {
-            "cpu_score": 0.16,
+            "cpu_score": 0.15,
             "gpu_score": 0.03,
             "power_therm_score": 0.05,
             "display_score": 0.10,
-            "mobility_score": 0.24,
-            "longevity_score": 0.08,
-            "ergonomics_score": 0.12,
+            "mobility_score": 0.22,
+            "longevity_score": 0.07,
+            "ergonomics_score": 0.11,
             "connectivity_score": 0.04,
-            "effective_price_egp": 0.18,
+            "community_nlp_score": 0.06,
+            "effective_price_egp": 0.17,
         },
         "implicit_gates": {
             "min_ram_gb": 8,
@@ -150,14 +157,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "البيزنس والتنقل المستمر والاجتماعات",
         "label_en": "Executive Business & Ultraportable Mobility",
         "weights": {
-            "cpu_score": 0.16,
+            "cpu_score": 0.15,
             "gpu_score": 0.03,
             "power_therm_score": 0.05,
-            "display_score": 0.12,
-            "mobility_score": 0.30,
+            "display_score": 0.11,
+            "mobility_score": 0.28,
             "longevity_score": 0.05,
-            "ergonomics_score": 0.14,
-            "connectivity_score": 0.07,
+            "ergonomics_score": 0.13,
+            "connectivity_score": 0.06,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.08,
         },
         "implicit_gates": {
@@ -169,14 +177,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "استخدام شامل متوازن (أفضل قيمة)",
         "label_en": "Balanced All-Rounder",
         "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.18,
+            "cpu_score": 0.19,
+            "gpu_score": 0.17,
             "power_therm_score": 0.08,
-            "display_score": 0.14,
-            "mobility_score": 0.10,
-            "longevity_score": 0.08,
-            "ergonomics_score": 0.06,
+            "display_score": 0.13,
+            "mobility_score": 0.09,
+            "longevity_score": 0.07,
+            "ergonomics_score": 0.05,
             "connectivity_score": 0.04,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.12,
         },
         "implicit_gates": {
@@ -205,6 +214,34 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     extracted_filters: dict[str, Any] = {}
     weight_boosts: dict[str, float] = {}
 
+    # --- A0. Baseline Dual-Impact Review Weight Boost ---
+    # Any free-text prompt signals that real-world experiential evidence matters.
+    weight_boosts["community_nlp_score"] = weight_boosts.get("community_nlp_score", 0.0) + 0.08
+    if any(
+        k in txt
+        for k in [
+            "خامات",
+            "مفصلات",
+            "عيوب",
+            "مشاكل",
+            "مضمون",
+            "اعتمادية",
+            "صوت المراوح",
+            "سخونة",
+            "بيسخن",
+            "مبيسخنش",
+            "build",
+            "hinge",
+            "reliable",
+            "reliability",
+            "issues",
+            "quiet",
+            "fan noise",
+            "thermals",
+        ]
+    ):
+        weight_boosts["community_nlp_score"] = weight_boosts.get("community_nlp_score", 0.0) + 0.06
+
     # --- A. Extract Explicit Hardware Constraints from Text ---
     if re.search(r"\b(64\s*gb|64\s*جيجا)\b", txt):
         extracted_filters["min_ram_gb"] = 64
@@ -225,13 +262,46 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(k in txt for k in ["touch", "تاتش", "لمس", "x360", "flip", "2-in-1"]):
         extracted_filters["require_touchscreen"] = True
 
+    # Explicit AAA / Ultra / dedicated-GPU intent forces a real discrete GPU.
+    if any(
+        k in txt
+        for k in [
+            "cyberpunk",
+            "سايبر بانك",
+            "سايبربانك",
+            "الترا",
+            "ألترا",
+            "ultra",
+            "aaa",
+            "rtx",
+            "كارت خارجي",
+            "dedicated gpu",
+            "warzone",
+            "red dead",
+            "بلندر",
+            "blender",
+            "unreal",
+        ]
+    ):
+        extracted_filters["require_dgpu"] = True
+
     # --- B. Extract Dynamic Weight Boosts from Intent Keywords ---
     # 1. Mobility / Battery / Lightweight
     if any(
         k in txt
         for k in [
-            "بطاريه", "بطارية", "خفيف", "تنقل", "سفر", "مواصلات", "محاضرات",
-            "battery", "lightweight", "portable", "travel", "thin",
+            "بطاريه",
+            "بطارية",
+            "خفيف",
+            "تنقل",
+            "سفر",
+            "مواصلات",
+            "محاضرات",
+            "battery",
+            "lightweight",
+            "portable",
+            "travel",
+            "thin",
         ]
     ):
         weight_boosts["mobility_score"] = weight_boosts.get("mobility_score", 0.0) + 0.15
@@ -240,8 +310,20 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "شاشه", "شاشة", "الوان", "ألوان", "دقة", "سطوع", "مونتاج", "جرافيك",
-            "display", "screen", "color", "srgb", "oled", "hdr",
+            "شاشه",
+            "شاشة",
+            "الوان",
+            "ألوان",
+            "دقة",
+            "سطوع",
+            "مونتاج",
+            "جرافيك",
+            "display",
+            "screen",
+            "color",
+            "srgb",
+            "oled",
+            "hdr",
         ]
     ):
         weight_boosts["display_score"] = weight_boosts.get("display_score", 0.0) + 0.14
@@ -250,8 +332,45 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "كارت شاشه", "كارت شاشة", "العاب", "ألعاب", "فريمات", "رندر", "جيمز",
-            "gaming", "fps", "rtx", "gpu", "render", "3d",
+            "كارت شاشه",
+            "كارت شاشة",
+            "العاب",
+            "ألعاب",
+            "فريمات",
+            "رندر",
+            "جيمز",
+            "جيمنج",
+            "يشغل",
+            "الترا",
+            "ألترا",
+            "سايبر بانك",
+            "سايبربانك",
+            "فيفا",
+            "فورزا",
+            "فالورانت",
+            "بيس",
+            "ببجي",
+            "جاتا",
+            "بلندر",
+            "gaming",
+            "fps",
+            "rtx",
+            "gpu",
+            "render",
+            "3d",
+            "ultra",
+            "cyberpunk",
+            "gta",
+            "fifa",
+            "fc24",
+            "fc25",
+            "valorant",
+            "cs2",
+            "warzone",
+            "aaa",
+            "unreal",
+            "unity",
+            "blender",
         ]
     ):
         weight_boosts["gpu_score"] = weight_boosts.get("gpu_score", 0.0) + 0.15
@@ -261,8 +380,19 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "معالج", "بروسيسور", "برمجه", "برمجة", "محاكاة", "داتا", "كود",
-            "cpu", "processor", "coding", "docker", "vm", "multitask",
+            "معالج",
+            "بروسيسور",
+            "برمجه",
+            "برمجة",
+            "محاكاة",
+            "داتا",
+            "كود",
+            "cpu",
+            "processor",
+            "coding",
+            "docker",
+            "vm",
+            "multitask",
         ]
     ):
         weight_boosts["cpu_score"] = weight_boosts.get("cpu_score", 0.0) + 0.14
@@ -271,8 +401,17 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "تبريد", "حراره", "حرارة", "مراوح", "سخونة", "باور",
-            "cooling", "thermal", "heat", "tgp", "watt",
+            "تبريد",
+            "حراره",
+            "حرارة",
+            "مراوح",
+            "سخونة",
+            "باور",
+            "cooling",
+            "thermal",
+            "heat",
+            "tgp",
+            "watt",
         ]
     ):
         weight_boosts["power_therm_score"] = weight_boosts.get("power_therm_score", 0.0) + 0.14
@@ -281,8 +420,17 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "تطوير", "ترقيه", "ترقية", "يعيش", "مستقبل", "رامات بتزيد",
-            "upgrade", "future", "slots", "longevity", "expand",
+            "تطوير",
+            "ترقيه",
+            "ترقية",
+            "يعيش",
+            "مستقبل",
+            "رامات بتزيد",
+            "upgrade",
+            "future",
+            "slots",
+            "longevity",
+            "expand",
         ]
     ):
         weight_boosts["longevity_score"] = weight_boosts.get("longevity_score", 0.0) + 0.14
@@ -291,8 +439,19 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "كيبورد", "كاميرا", "صوت", "اجتماعات", "زووم", "بصمه", "بصمة",
-            "keyboard", "webcam", "camera", "mic", "audio", "zoom",
+            "كيبورد",
+            "كاميرا",
+            "صوت",
+            "اجتماعات",
+            "زووم",
+            "بصمه",
+            "بصمة",
+            "keyboard",
+            "webcam",
+            "camera",
+            "mic",
+            "audio",
+            "zoom",
         ]
     ):
         weight_boosts["ergonomics_score"] = weight_boosts.get("ergonomics_score", 0.0) + 0.12
@@ -301,8 +460,17 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "منافذ", "تايب سي", "ثندربولت", "لان", "شاشات خارجية",
-            "ports", "thunderbolt", "usb-c", "hdmi", "ethernet", "lan",
+            "منافذ",
+            "تايب سي",
+            "ثندربولت",
+            "لان",
+            "شاشات خارجية",
+            "ports",
+            "thunderbolt",
+            "usb-c",
+            "hdmi",
+            "ethernet",
+            "lan",
         ]
     ):
         weight_boosts["connectivity_score"] = weight_boosts.get("connectivity_score", 0.0) + 0.12
@@ -311,8 +479,17 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "ارخص", "أرخص", "توفير", "سعر", "اقتصادي", "على قد الايد",
-            "cheap", "budget", "value", "save", "affordable",
+            "ارخص",
+            "أرخص",
+            "توفير",
+            "سعر",
+            "اقتصادي",
+            "على قد الايد",
+            "cheap",
+            "budget",
+            "value",
+            "save",
+            "affordable",
         ]
     ):
         weight_boosts["effective_price_egp"] = weight_boosts.get("effective_price_egp", 0.0) + 0.14

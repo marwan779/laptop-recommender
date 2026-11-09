@@ -17,6 +17,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.common.review_text import align_bilingual_lists
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
@@ -185,11 +186,13 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 if laptop.canonical_id:
                     existing_by_canonical[laptop.canonical_id] = laptop
                 if laptop.mpn:
-                    existing_by_mpn_and_specs[(
-                        laptop.mpn.strip().upper(),
-                        laptop.ram_capacity_gb,
-                        laptop.storage_capacity_gb,
-                    )] = laptop
+                    existing_by_mpn_and_specs[
+                        (
+                            laptop.mpn.strip().upper(),
+                            laptop.ram_capacity_gb,
+                            laptop.storage_capacity_gb,
+                        )
+                    ] = laptop
 
         # Step 3: Iterate and upsert
         for item in raw_laptops:
@@ -228,11 +231,13 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 updated_laptops_count += 1
                 existing_by_canonical[target_laptop.canonical_id] = target_laptop
                 if target_laptop.mpn:
-                    existing_by_mpn_and_specs[(
-                        target_laptop.mpn.strip().upper(),
-                        target_laptop.ram_capacity_gb,
-                        target_laptop.storage_capacity_gb,
-                    )] = target_laptop
+                    existing_by_mpn_and_specs[
+                        (
+                            target_laptop.mpn.strip().upper(),
+                            target_laptop.ram_capacity_gb,
+                            target_laptop.storage_capacity_gb,
+                        )
+                    ] = target_laptop
             else:
                 target_laptop = LaptopConfiguration(id=uuid.uuid4(), canonical_id=cid_str)
                 self._populate_laptop_fields(target_laptop, item, now)
@@ -240,11 +245,13 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 self.session.add(target_laptop)
                 existing_by_canonical[cid_str] = target_laptop
                 if target_laptop.mpn:
-                    existing_by_mpn_and_specs[(
-                        target_laptop.mpn.strip().upper(),
-                        target_laptop.ram_capacity_gb,
-                        target_laptop.storage_capacity_gb,
-                    )] = target_laptop
+                    existing_by_mpn_and_specs[
+                        (
+                            target_laptop.mpn.strip().upper(),
+                            target_laptop.ram_capacity_gb,
+                            target_laptop.storage_capacity_gb,
+                        )
+                    ] = target_laptop
                 new_laptops_count += 1
 
             # Step 4: Upsert offers
@@ -476,6 +483,28 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
             str(o.get("store_key")).strip() for o in item.get("offers", []) if o.get("store_key")
         ]
 
+        # Community Review Intelligence
+        derived_metrics: dict[str, Any] = item.get("derived_metrics") or {}
+        community_reviews = derived_metrics.get("community_reviews") or {}
+        if isinstance(community_reviews, dict) and community_reviews:
+            laptop.pros_en, laptop.pros_ar = align_bilingual_lists(
+                community_reviews.get("pros_en"), community_reviews.get("pros_ar")
+            )
+            laptop.cons_en, laptop.cons_ar = align_bilingual_lists(
+                community_reviews.get("cons_en"), community_reviews.get("cons_ar")
+            )
+
+            laptop.reviews_evidence_count = _safe_int(community_reviews.get("evidence_count"), default=0) or 0
+            if (
+                laptop.pros_en
+                or laptop.pros_ar
+                or laptop.cons_en
+                or laptop.cons_ar
+                or laptop.reviews_evidence_count > 0
+            ):
+                laptop.has_reviews = True
+                laptop.reviews_checked_at = laptop.reviews_checked_at or now
+
         # Timestamps
         laptop.price_checked_at = now
         laptop.updated_at = now
@@ -525,6 +554,12 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         mob: dict[str, Any] = item.get("mobility") or {}
         longv: dict[str, Any] = item.get("longevity") or {}
         econ: dict[str, Any] = item.get("economics") or {}
+        community_reviews: dict[str, Any] = item.get("community_reviews") or {}
+        if not isinstance(community_reviews, dict):
+            community_reviews = {}
+        aspect_scores: dict[str, Any] = community_reviews.get("aspect_scores") or {}
+        if not isinstance(aspect_scores, dict):
+            aspect_scores = {}
 
         # 11 Flat TOPSIS Float Scores (0.00 to 100.00)
         metrics.cpu_score = (
@@ -550,8 +585,25 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         )
         metrics.ergonomics_score = _safe_float(topsis.get("ergonomics_score"), default=0.0) or 0.0
         metrics.connectivity_score = _safe_float(topsis.get("connectivity_score"), default=0.0) or 0.0
-        metrics.community_nlp_score = _safe_float(topsis.get("community_nlp_score"), default=50.0) or 50.0
+        nlp_score = topsis.get("community_nlp_score")
+        if nlp_score is None:
+            nlp_score = community_reviews.get("community_nlp_score")
+        metrics.community_nlp_score = _safe_float(nlp_score, default=75.0)
+        if metrics.community_nlp_score is None:
+            metrics.community_nlp_score = 75.0
         metrics.value_score = _safe_float(topsis.get("value_score") or econ.get("value_score"), default=0.0) or 0.0
+
+        # Community Review Sub-Aspect Scores (default neutral 75.00)
+        aspect_columns = (
+            ("thermals_score", "thermals_score"),
+            ("acoustics_score", "acoustics_score"),
+            ("build_and_hinges_score", "build_and_hinges_score"),
+            ("keyboard_and_trackpad_score", "keyboard_and_trackpad_score"),
+            ("real_battery_and_reliability_score", "real_battery_and_reliability_score"),
+        )
+        for column_name, aspect_key in aspect_columns:
+            score = _safe_float(aspect_scores.get(aspect_key), default=75.0)
+            setattr(metrics, column_name, 75.0 if score is None else score)
 
         # Operational Meta
         metrics.effective_price_egp = (

@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 import numpy as np
 
+from app.common.review_text import align_bilingual_lists
 from app.domain.recommender import (
     PersonaType,
     enrich_catalog_with_persona_scores,
@@ -20,7 +21,7 @@ def real_catalog_laptops() -> list[dict]:
     """Load the clean 295-laptop catalog for domain simulation tests."""
     if not CATALOG_PATH.exists():
         pytest.skip(f"Unified catalog not found at {CATALOG_PATH}")
-    with open(CATALOG_PATH, "r", encoding="utf-8") as f:
+    with open(CATALOG_PATH, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("laptops", [])
 
@@ -78,11 +79,13 @@ def test_run_topsis_vector_multi_candidates():
     # Laptop A: [90, 90, 50000] - high perf, high price
     # Laptop B: [50, 50, 20000] - low perf, cheap
     # Laptop C: [85, 85, 25000] - high perf, cheap (Clear Winner)
-    mat = np.array([
-        [90.0, 90.0, 50000.0],
-        [50.0, 50.0, 20000.0],
-        [85.0, 85.0, 25000.0],
-    ])
+    mat = np.array(
+        [
+            [90.0, 90.0, 50000.0],
+            [50.0, 50.0, 20000.0],
+            [85.0, 85.0, 25000.0],
+        ]
+    )
     weights = np.array([0.4, 0.4, 0.2])
     is_benefit = [True, True, False]
 
@@ -239,3 +242,47 @@ def test_get_persona_db_query_spec():
     # Low budget relaxation check
     relaxed_spec = get_persona_db_query_spec("gaming", 25000.0)
     assert relaxed_spec["persona_gates"]["require_dgpu"] is False
+
+
+def test_parse_user_text_prompt_cyberpunk_ultra():
+    prompt = "عايز لاب يشغل Cyberpunk على Ultra"
+    parsed = parse_user_text_prompt(prompt)
+
+    filters = parsed["extracted_filters"]
+    boosts = parsed["weight_boosts"]
+
+    assert filters.get("require_dgpu") is True
+    assert boosts.get("gpu_score", 0.0) >= 0.15
+    assert boosts.get("power_therm_score", 0.0) >= 0.06
+    assert boosts.get("community_nlp_score", 0.0) >= 0.08
+
+
+def test_gaming_budget_too_low_fallback(real_catalog_laptops):
+    """When budget is too low for gaming (e.g. 12k EGP), fallback must return real gaming laptops."""
+    result = rank_laptops_topsis(
+        laptops=real_catalog_laptops,
+        max_budget_egp=12000.0,
+        persona=PersonaType.GAMING,
+        user_text_prompt="عايز لاب يشغل Cyberpunk على Ultra",
+        top_k=5,
+    )
+
+    assert result.status == "BUDGET_TOO_LOW_FOR_CATEGORY"
+    assert result.gates_relaxed_for_low_budget is True
+    assert len(result.results) > 0
+    # Every suggested alternative must be a real gaming laptop with a discrete GPU
+    for r in result.results:
+        # Find matching laptop in catalog to check GPU spec
+        matched = next(l for l in real_catalog_laptops if l.get("canonical_id") == r.canonical_id)
+        gpu = (matched.get("specs") or {}).get("gpu") or {}
+        assert gpu.get("integrated") is False
+
+
+def test_align_bilingual_lists():
+    en = ["Pro 1", "Pro 2", "Pro 3", "Extra Editorial Tag 4", "Extra Editorial Tag 5"]
+    ar = ["الميزة 1", "الميزة 2", "الميزة 3"]
+
+    aligned_en, aligned_ar = align_bilingual_lists(en, ar)
+    assert len(aligned_en) == len(aligned_ar) == 3
+    assert aligned_en == ["Pro 1", "Pro 2", "Pro 3"]
+    assert aligned_ar == ["الميزة 1", "الميزة 2", "الميزة 3"]

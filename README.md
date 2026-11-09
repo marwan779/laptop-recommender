@@ -22,18 +22,19 @@ An enterprise-grade, distributed recommendation platform designed to conquer the
    - [SOLID Principles Compliance](#solid-principles-compliance)
    - [Transactional Outbox Pattern & Event-Driven Reliability](#transactional-outbox-pattern--event-driven-reliability)
    - [Idempotent Seeding & Reverse Watermark Polling](#idempotent-seeding--reverse-watermark-polling)
-4. [Implemented Subsystems (Phase 1)](#-implemented-subsystems-phase-1)
+4. [Implemented Subsystems (Phase 1 & Phase 2)](#-implemented-subsystems-phase-1--phase-2)
    - [1. Data Acquisition Engine (`scraper-service`)](#1-data-acquisition-engine-scraper-service)
    - [2. Global Specification & OCR Pipeline (Icecat & Tesseract)](#2-global-specification--ocr-pipeline-icecat--tesseract)
    - [3. Relational Catalog Core (`catalog-service`)](#3-relational-catalog-core-catalog-service)
    - [4. Hardware Metrics Engine (11 TOPSIS Criteria)](#4-hardware-metrics-engine-11-topsis-criteria)
    - [5. Domain Pricing Engine & Corrupted Price Defense](#5-domain-pricing-engine--corrupted-price-defense)
    - [6. Asynchronous Event-Driven Price Synchronization](#6-asynchronous-event-driven-price-synchronization)
-5. [Upcoming & In-Flight Subsystems (Phase 2 & 3)](#-upcoming--in-flight-subsystems-phase-2--3)
-   - [7. Dynamic TOPSIS Recommendation Engine](#7-dynamic-topsis-recommendation-engine)
-   - [8. Review & Sentiment Intelligence Pipeline (YouTube & Reddit NLP)](#8-review--sentiment-intelligence-pipeline-youtube--reddit-nlp)
-   - [9. High-Performance Redis Caching Layer](#9-high-performance-redis-caching-layer)
-   - [10. Interactive Client API & Persona Quiz](#10-interactive-client-api--persona-quiz)
+   - [7. Review Intelligence Pipeline & Multi-Platform Mining](#7-review-intelligence-pipeline--multi-platform-mining)
+5. [Upcoming & In-Flight Subsystems (Phase 3)](#-upcoming--in-flight-subsystems-phase-3)
+   - [8. Dynamic TOPSIS Recommendation Engine](#8-dynamic-topsis-recommendation-engine)
+   - [9. Aspect-Based Sentiment Analysis (ABSA) & Downstream NLP](#9-aspect-based-sentiment-analysis-absa--downstream-nlp)
+   - [10. High-Performance Redis Caching Layer](#10-high-performance-redis-caching-layer)
+   - [11. Interactive Client API & Persona Quiz](#11-interactive-client-api--persona-quiz)
 6. [Data Model & Relational Schema (35+ Dimensions)](#-data-model--relational-schema-35-dimensions)
 7. [Repository Layout](#-repository-layout)
 8. [Local Developer Setup & Verification](#-local-developer-setup--verification)
@@ -57,7 +58,7 @@ This platform automates the end-to-end intelligence cycle:
 - **Normalizes** hardware into 35+ relational dimensions and 11 mathematical criteria scores.
 - **Syncs** price adjustments asynchronously via RabbitMQ with a rock-solid Transactional Outbox pattern.
 - **Evaluates** options through a dynamic, persona-weighted TOPSIS multi-criteria decision engine.
-- **Augments** technical scores with Aspect-Based Sentiment Analysis (ABSA) extracted from YouTube video transcripts and Reddit community threads.
+- **Augments** technical scores with Aspect-Based Sentiment Analysis (ABSA) extracted from YouTube video reviews, editorial verdicts (LaptopMag), and enthusiast technical communities (Level1Techs, Arabhardware, Reddit).
 - **Delivers** sub-50ms query responses through a distributed Redis caching layer.
 
 ---
@@ -79,13 +80,19 @@ flowchart TD
 
     subgraph S2 ["2. Event Bus & Messaging Broker (RabbitMQ)"]
         direction TB
-        EX_SYNC["catalog.exchange.sync<br/>(Direct Exchange)"]
+        EX_SYNC["catalog.exchange.sync<br/>(Direct Price Exchange)"]
         Q_PRICE["catalog.queue.price_updates"]
+        EX_REV["catalog.exchange.reviews<br/>(Direct Reviews Exchange)"]
+        Q_SCRAPE["catalog.queue.scrape_reviews"]
+        Q_READY["catalog.queue.reviews_ready"]
         EX_DLX["catalog.exchange.dlx<br/>(Dead Letter Exchange)"]
         Q_DLQ["catalog.queue.dead_letter"]
         
         EX_SYNC --> Q_PRICE
+        EX_REV --> Q_SCRAPE
+        EX_REV --> Q_READY
         Q_PRICE -.->|Max Retries Exceeded| EX_DLX
+        Q_SCRAPE -.->|Max Retries Exceeded| EX_DLX
         EX_DLX --> Q_DLQ
     end
 
@@ -93,6 +100,7 @@ flowchart TD
         direction TB
         ING_SRV["Catalog Ingestion Service<br/>(S3 / File Seeder)"]
         HW_ENG["Hardware Metrics Engine<br/>(11 Criteria Normalization)"]
+        CHASSIS_RES["Chassis Target Resolver<br/>(Modal Screen Size & Identity)"]
         
         subgraph DB ["PostgreSQL 16 Relational Engine"]
             CONF[("laptop_configuration<br/>(35+ Dimensions)")]
@@ -106,33 +114,49 @@ flowchart TD
         OUTBOX_WORKER["Transactional Outbox Publisher<br/>(At-Least-Once Delivery)"]
     end
 
-    subgraph S4 ["4. Review & Sentiment Pipeline (Upcoming)"]
+    subgraph S4 ["4. Review Intelligence Pipeline (scraper-service)"]
         direction TB
-        YT_CRAWL["YouTube Review Scraper<br/>(Transcripts & Timestamps)"]
-        RED_CRAWL["Reddit Community Scraper<br/>(r/SuggestALaptop, r/GamingLaptops)"]
-        ABSA_MODEL["Aspect-Based Sentiment (ABSA)<br/>(Thermals, Fan Noise, Hinges, Battery)"]
-        SENT_SCORES[("laptop_sentiment_scores<br/>(Dimension Penalties & Boosts)")]
+        COLL_SRV["CommunitiesReviewsCollector<br/>(Multi-Platform Orchestration)"]
+        YT_CRAWL["YouTube Scraper<br/>(yt-dlp Transcripts & Comments)"]
+        MAG_CRAWL["LaptopMag Scraper<br/>(Editorial Pros/Cons/Verdict)"]
+        L1_CRAWL["Level1Techs Scraper<br/>(Discourse 3-Layer Gated REST API)"]
+        AH_CRAWL["Arabhardware Scraper<br/>(Egyptian Regional Market Data)"]
+        RED_CRAWL["Reddit Scraper<br/>(Injectable Fallback Strategy)"]
+        S3_STORAGE[("S3 / Local Claim Check<br/>raw_chassis_reviews_{job_id}.json")]
         
-        YT_CRAWL --> ABSA_MODEL
-        RED_CRAWL --> ABSA_MODEL
-        ABSA_MODEL --> SENT_SCORES
+        COLL_SRV --> YT_CRAWL
+        COLL_SRV --> MAG_CRAWL
+        COLL_SRV --> L1_CRAWL
+        COLL_SRV --> AH_CRAWL
+        COLL_SRV --> RED_CRAWL
+        COLL_SRV --> S3_STORAGE
     end
 
-    subgraph S5 ["5. Recommender & Caching (catalog-service)"]
+    subgraph S5 ["5. Recommender & NLP Engine (catalog-service / NLP)"]
         direction TB
+        ABSA_MODEL["Aspect-Based Sentiment (ABSA)<br/>(Thermals, Fan Noise, Hinges, Battery)"]
+        SENT_SCORES[("laptop_sentiment_scores<br/>(Dimension Penalties & Boosts)")]
         REDIS[("Redis In-Memory Cache<br/>(TOPSIS Matrix, Laptops, Sessions)")]
         TOPSIS["Dynamic TOPSIS Engine<br/>(In-Memory Persona Multi-Criteria MCDM)"]
         API["FastAPI Presentation Gateway<br/>(Interactive Quiz, Comparison Matrix)"]
+        
+        ABSA_MODEL --> SENT_SCORES
     end
 
     JSON_OUT --> ING_SRV
     ING_SRV --> HW_ENG
+    ING_SRV --> CHASSIS_RES
+    CHASSIS_RES --> DB
     HW_ENG --> DB
     
     PRICE_SYNC --> DB
     DB --> OUTBOX_WORKER
     OUTBOX_WORKER --> EX_SYNC
+    OUTBOX_WORKER --> EX_REV
     Q_PRICE --> PRICE_SYNC
+    Q_SCRAPE --> COLL_SRV
+    COLL_SRV --> EX_REV
+    Q_READY --> ABSA_MODEL
     
     METRICS --> TOPSIS
     SENT_SCORES --> TOPSIS
@@ -214,7 +238,7 @@ sequenceDiagram
 
 ---
 
-## 🛠️ Implemented Subsystems (Phase 1)
+## 🛠️ Implemented Subsystems (Phase 1 & Phase 2)
 
 ### 1. Data Acquisition Engine (`scraper-service`)
 - **Anti-Bot Defense**: Utilizes `ScraplingEngine` and `StealthyFetcher` (Patchright / Playwright Chromium engine) with randomized viewport geometry, user-agent rotation, and Chrome TLS fingerprint impersonation (`curl_cffi`) to bypass Cloudflare and perimeter firewalls.
@@ -233,7 +257,7 @@ Many retail stores in Egypt do not list structured specs in their HTML; instead,
 - **OCR Fallback Engine**: When Icecat lacks data and the store provides an image-only spec sheet, the scraper runs **Tesseract OCR with OpenCV pre-processing** (grayscale conversion, Otsu thresholding, noise reduction) to transcribe spec text directly from poster graphics into structured JSON.
 
 ### 3. Relational Catalog Core (`catalog-service`)
-- **Technology Stack**: Python 3.11, FastAPI, SQLAlchemy 2.0 (fully typed `Mapped` async annotations), PostgreSQL 16+, Alembic migrations, Pydantic v2.
+- **Technology Stack**: Python 3.11+, FastAPI, SQLAlchemy 2.0 (fully typed `Mapped` async annotations), PostgreSQL 16+, Alembic migrations, Pydantic v2.
 - **Canonical Architecture**:
   - `laptop_configuration`: The single source of truth for physical hardware configurations.
   - `laptop_offer`: Many-to-one relationship tracking every store listing, URL, availability, stock, and live price in EGP.
@@ -272,11 +296,85 @@ Retail scrapers frequently ingest bad data (promotional teasers, missing digits,
 - **RabbitMQ Pipeline**: The ingestion service pushes price batches to `catalog.exchange.sync`.
 - **`CatalogMessageConsumer`**: Listens asynchronously, executes batch price synchronization inside an atomic PostgreSQL transaction, updates the configuration rollup, and recalculates the laptop's `value_score` in real time.
 
+### 7. Review Intelligence Pipeline & Multi-Platform Mining
+Spec sheets only tell half the story. A laptop might boast an RTX 4070 and an i9 CPU on paper, but suffer from thermal throttling that drops performance by 40%, loud coil whine, or fragile plastic hinges that snap after six months.
+
+To uncover real-world ground truth, the platform incorporates an autonomous **Multi-Platform Review Intelligence Pipeline** spanning video reviews, editorial verdicts, and enthusiast community forums:
+
+```mermaid
+flowchart LR
+    subgraph CatalogService ["catalog-service (Trigger & Resolution)"]
+        INGEST["Catalog Ingestion Service"]
+        CHASSIS["ChassisTargetResolver<br/>(Modal Screen Size & Identity)"]
+        OUTBOX["Transactional Outbox<br/>ScrapeReviewsCommand"]
+    end
+
+    subgraph MessagingBroker ["RabbitMQ Broker"]
+        EX_REV["catalog.exchange.reviews<br/>(Direct Reviews Exchange)"]
+        Q_CMD["catalog.queue.scrape_reviews"]
+        Q_RDY["catalog.queue.reviews_ready"]
+    end
+
+    subgraph ScraperService ["scraper-service (Mining Engine)"]
+        COLLECTOR["CommunitiesReviewsCollector<br/>(Multi-Platform Orchestration)"]
+        YT["YouTube Scraper<br/>(yt-dlp Transcripts & Comments)"]
+        MAG["LaptopMag Scraper<br/>(Editorial Pros/Cons/Verdict)"]
+        L1["Level1Techs Scraper<br/>(Discourse 3-Layer Gated REST API)"]
+        AH["Arabhardware Scraper<br/>(Egyptian Regional Coverage)"]
+        RED["Reddit Scraper<br/>(Injectable Fallback Strategy)"]
+    end
+
+    subgraph ClaimCheck ["Object Storage (Claim-Check Pattern)"]
+        S3_JSON[("S3 / Local JSON Artifact<br/>raw_chassis_reviews_{job_id}.json")]
+    end
+
+    subgraph DownstreamNLP ["Catalog Core / NLP Worker"]
+        ABSA["DeBERTa-v3 ABSA Model<br/>(Aspect-Based Sentiment)"]
+        SENT_MOD[("Sentiment Penalties & Multipliers<br/>in TOPSIS Decision Matrix")]
+    end
+
+    INGEST --> CHASSIS --> OUTBOX
+    OUTBOX --> EX_REV --> Q_CMD
+    Q_CMD --> COLLECTOR
+    COLLECTOR --> YT
+    COLLECTOR --> MAG
+    COLLECTOR --> L1
+    COLLECTOR --> AH
+    COLLECTOR --> RED
+    COLLECTOR --> S3_JSON
+    COLLECTOR --> EX_REV --> Q_RDY
+    Q_RDY --> ABSA
+    ABSA --> SENT_MOD
+```
+
+#### Key Architecture & Capabilities
+1. **Chassis Target Resolution (`ChassisTargetResolver`)**:
+   - Hardware configurations are clustered by physical chassis family: `(brand, laptop_family, modal screen_size, cpu_line, gpu_model)`.
+   - Different configurations of the same chassis (e.g. 16GB RAM vs 32GB RAM, 512GB vs 1TB SSD) share the identical cooling assembly, thermal dissipation limits, keyboard travel, screen chassis, and hinge rigidity. Clustered review targets avoid redundant network crawls.
+   - **Modal Screen Size Resolution**: Deterministically resolves the modal display size across family members (e.g., resolving `15.6"` across configurations, tie-breaking deterministically to first-seen).
+   - **Integer Floor Tokenization**: Floor truncation converts float display sizes into standard commercial chassis family tokens (`int(screen_size)` so `15.6"` -> `15`, `17.3"` -> `17`), matching real-world review titles (e.g., `"Lenovo LOQ 15 review"` instead of false-positive `"LOQ 16"` queries).
+2. **Asynchronous Command & Event Orchestration (RabbitMQ & Transactional Outbox)**:
+   - When new configurations are ingested, `catalog-service` publishes a `ScrapeReviewsCommand` payload via the Transactional Outbox pattern into `catalog.exchange.reviews` bound to `catalog.queue.scrape_reviews`.
+   - Dedicated dead-letter routing (`catalog.exchange.dlx` / `catalog.queue.dead_letter`) ensures fault tolerance and dead-lettering if workers exceed retry limits.
+   - Upon completing multi-platform scraping, `scraper-service` emits a `ReviewsReadyEvent` to `catalog.queue.reviews_ready` for downstream processing.
+3. **S3 Claim-Check Storage Architecture (`RawChassisReviewsPayload`)**:
+   - Long-form video transcripts and multi-threaded discussion posts easily exceed standard message broker payload limits (128 KB - 1 MB).
+   - Review payloads are saved via the **Claim Check Pattern** to Amazon S3 (or local disk in development environments) under `reviews/{job_id}/raw_chassis_reviews_{job_id}.json`.
+   - `reviews_s3.py` maintains **100% byte-for-byte schema lockstep** between `catalog-service` and `scraper-service` via Pydantic v2 validation.
+4. **Multi-Platform Scraper Engine**:
+   - **YouTube Review Scraper**: Crawls top video reviews using `yt-dlp` and `youtube-transcript-api` for English and Arabic transcripts with timestamps, plus top-ranked viewer comments.
+   - **LaptopMag Platform Scraper**: Parses structured editorial reviews extracting rating scores, summary verdicts, `.reasons-to-buy` (pros), and `.reasons-to-avoid` (cons).
+   - **Level1Techs Platform Scraper**: High-signal enthusiast discussions queried via Discourse REST JSON API with a strict 3-layer relevance gate (title match, brand/family verification, query hit).
+   - **Arabhardware Platform Scraper**: Harvests local Egyptian tech community reviews, regional Arabic feedback, and local market context.
+   - **Reddit Platform Scraper (Fallback Strategy)**: Preserves targeted querying for `r/SuggestALaptop` and `r/GamingLaptops` with a 4-layer keyword gate, fully preserved for future authenticated OAuth2 deployments.
+   - **Fail-Open HTTP Architecture**: Injected `httpx.AsyncClient` context with resilient error handling ensures network anomalies or rate-limits on a single source never disrupt collection from remaining platforms.
+   - **Deduplication & Hygiene**: Automatic URL normalization, `(platform, post_id)` deduplication, and deal/sales filtering.
+
 ---
 
-## 🔮 Upcoming & In-Flight Subsystems (Phase 2 & 3)
+## 🔮 Upcoming & In-Flight Subsystems (Phase 3)
 
-### 7. Dynamic TOPSIS Recommendation Engine
+### 8. Dynamic TOPSIS Recommendation Engine
 Instead of arbitrary hardcoded rules, recommendations are powered by **TOPSIS** (*Technique for Order of Preference by Similarity to Ideal Solution*), a proven Multi-Criteria Decision-Making (MCDM) algorithm.
 
 #### Mathematical Foundation
@@ -331,56 +429,18 @@ A key architectural design decision was **not storing final TOPSIS ranking resul
 
 ---
 
-### 8. Review & Sentiment Intelligence Pipeline (YouTube & Reddit NLP)
-Spec sheets only tell half the story. A laptop might boast an RTX 4070 and an i9 CPU on paper, but suffer from thermal throttling that drops performance by 40%, or have fragile plastic hinges that snap after six months.
-To capture the ground truth, we are building a dedicated **Review Intelligence Pipeline**:
-
-```mermaid
-flowchart LR
-    subgraph DataMining ["Multimedia & Community Scrapers"]
-        YT["YouTube Reviews<br/>(Dave2D, Jarrod's Tech, Just Josh)"]
-        REDDIT["Reddit Discussions<br/>(r/SuggestALaptop, r/GamingLaptops)"]
-    end
-
-    subgraph Processing ["NLP & Transformer Pipeline"]
-        TRANS["Whisper / YouTube Transcript Extractor"]
-        TOKEN["Text Chunking & Cleaning"]
-        ABSA["Aspect-Based Sentiment Analysis (ABSA)<br/>(DeBERTa-v3 Fine-Tuned)"]
-        LLM["LLM Pros & Cons Synthesizer"]
-    end
-
-    subgraph Scoring ["Feedback into Catalog Core"]
-        PENALTY["Thermal / Fan Noise Modifier"]
-        HINGE["Chassis Durability Modifier"]
-        BATTERY_MOD["Real-World Battery Modifier"]
-        FINAL_SENT[("Sentiment Multipliers<br/>in TOPSIS Decision Matrix")]
-    end
-
-    YT --> TRANS --> TOKEN
-    REDDIT --> TOKEN
-    TOKEN --> ABSA
-    TOKEN --> LLM
-    ABSA --> PENALTY
-    ABSA --> HINGE
-    ABSA --> BATTERY_MOD
-    PENALTY --> FINAL_SENT
-    HINGE --> FINAL_SENT
-    BATTERY_MOD --> FINAL_SENT
-```
-
-#### Key Capabilities
-- **YouTube Review Mining**: Crawls video reviews for matching laptop canonical models, extracts English & Arabic transcripts, and timestamps specific testing chapters (thermal benchmarks, display testing, fan decibel measurements).
-- **Reddit Community Mining**: Scrapes user feedback from `r/SuggestALaptop`, `r/GamingLaptops`, and brand subreddits (`r/Lenovo`, `r/ASUS`, `r/Dell`), focusing on long-term ownership durability.
-- **Fine-Grained Aspect-Based Sentiment Analysis (ABSA)**:
-  - `Thermals & Throttling`: Detects complaints regarding surface temperature, cooling failure, and thermal throttling under gaming/compilation loads.
-  - `Acoustics / Fan Whine`: Quantifies user irritation regarding aggressive fan curves and high-pitch coil whine.
-  - `Chassis & Hinge Durability`: Flags notorious hinge cracking or chassis flex issues.
-  - `Real Battery vs Claimed`: Measures the delta between manufacturer-advertised battery life and real-world user experience.
+### 9. Aspect-Based Sentiment Analysis (ABSA) & Downstream NLP
+Using the rich transcripts and editorial feedback harvested in Phase 2, the downstream NLP worker parses unstructured sentiment into quantitative penalties and multipliers:
+- **Aspect Extraction**:
+  - `Thermals & Throttling`: Quantifies complaints regarding surface temperature, cooling failure, and thermal throttling under gaming/compilation loads.
+  - `Acoustics / Fan Whine`: Detects user dissatisfaction with aggressive fan curves and high-pitch coil whine.
+  - `Chassis & Hinge Durability`: Flags notorious hinge cracking, deck flex, and plastic breakage.
+  - `Real Battery vs Claimed`: Measures the delta between manufacturer-advertised battery life and real-world reviewer benchmarks.
 - **Sentiment-Adjusted TOPSIS Modifiers**: Sentiment scores feed directly into the TOPSIS decision matrix as penalties or multipliers, ensuring laptops with notorious hardware flaws drop in ranking regardless of their paper specs.
 
 ---
 
-### 9. High-Performance Redis Caching Layer
+### 10. High-Performance Redis Caching Layer
 To support high-concurrency client requests and sub-second recommendation generation, **Redis** is introduced across two tiers:
 
 ```
@@ -417,7 +477,7 @@ To support high-concurrency client requests and sub-second recommendation genera
 
 ---
 
-### 10. Interactive Client API & Persona Quiz
+### 11. Interactive Client API & Persona Quiz
 The upcoming presentation layer exposed via FastAPI will feature:
 - **Interactive Quiz Endpoint (`POST /api/v1/recommendations/quiz`)**: A simple 5-question questionnaire (budget range in EGP, primary use-case, portability importance, preferred brands, required battery life) that dynamically translates answers into TOPSIS weights.
 - **Side-by-Side Comparison Matrix (`GET /api/v1/catalog/compare?ids=...`)**: Detailed hardware diffing across 35+ dimensions, highlighting advantages, price spread between stores, and review pros/cons.
@@ -512,7 +572,7 @@ erDiagram
 
     laptop_metrics {
         uuid id PK
-        uuid laptop_id FK UK
+        uuid laptop_id FK "1:1 unique relation to configuration"
         float cpu_perf_score "0-100 normalized"
         float gpu_perf_score "0-100 normalized"
         float ram_score "0-100 normalized"
@@ -527,9 +587,17 @@ erDiagram
         float effective_price_egp
     }
 
+    scraping_batch_log {
+        uuid id PK
+        string batch_id UK
+        string status "COMPLETED, FAILED"
+        int total_items
+        timestamp created_at
+    }
+
     outbox_message {
         uuid id PK
-        string event_type "PRICE_UPDATE, STOCK_CHANGE"
+        string event_type "PRICE_UPDATE, SCRAPE_REVIEWS"
         string routing_key
         jsonb payload
         string status "PENDING, PUBLISHED, FAILED"
@@ -552,26 +620,37 @@ laptop-recommender/
 │   ├── STORE_SCRAPING_GUIDE.md            # Retailer store crawler schemas
 │   └── CATALOG_SPECIFICATIONS_REPORT.md   # Field audit across all 35+ dimensions
 ├── services/
-│   ├── scraper-service/                   # Autonomous Ingestion Engine
+│   ├── scraper-service/                   # Autonomous Ingestion & Review Mining Engine
 │   │   ├── app/
 │   │   │   ├── cli.py                     # CLI for Brand & Store scraping
 │   │   │   ├── core/                      # Constants, URLs, and token normalizers
+│   │   │   ├── domain/                    # PURE DOMAIN LAYER (Zero DB / external dependencies)
+│   │   │   │   └── reviews/               # CommunityQuerySet builder & integer floor screen tokens
 │   │   │   ├── engine/                    # Scrapling headless browser & HTTP abstraction
 │   │   │   ├── enrichment/                # Icecat API client & Tesseract OCR fallback
-│   │   │   ├── schemas/                   # Pydantic v2 schemas for raw scraped listings
+│   │   │   ├── schemas/                   # Pydantic v2 schemas (Catalog, Events, S3 Reviews)
+│   │   │   │   ├── events.py              # Review & Price sync AMQP events
+│   │   │   │   └── reviews_s3.py          # Byte-identical S3 Claim-Check schema
 │   │   │   ├── scrapers/                  # Brand scrapers (ASUS, Lenovo, Dell, HP)
+│   │   │   ├── services/                  # Review Mining & Extraction Services
+│   │   │   │   └── reviews/
+│   │   │   │       ├── youtube/           # YouTube scraper (yt-dlp, transcripts, comments)
+│   │   │   │       └── community/         # CommunitiesReviewsCollector, LaptopMag, Level1Techs, Arabhardware, Reddit
 │   │   │   └── stores/                    # Store scrapers (Compumarts, Sigma, 2B, El Badr)
+│   │   ├── tests/                         # Scraper & Review Test Suite (604 tests)
 │   │   ├── requirements.txt               # Scraper dependencies
 │   │   └── README.md                      # Scraper-specific documentation
 │   │
 │   └── catalog-service/                   # Relational Core, Messaging & Recommender
 │       ├── alembic/                       # Database schema migrations
 │       ├── app/
-│       │   ├── api/                       # FastAPI router endpoints (Health, Catalog)
-│       │   ├── common/                    # Logging, utilities, and date formatters
+│       │   ├── api/                       # FastAPI router endpoints (Health, Catalog, Recommendations)
+│       │   ├── common/                    # Logging, caching (Redis / Memory), storage & resilience
 │       │   ├── core/                      # Settings, PostgreSQL connection engine
 │       │   ├── domain/                    # PURE DOMAIN LAYER (Zero external dependencies)
-│       │   │   └── pricing.py             # PricingDomainService, Rollups, Transitions
+│       │   │   ├── pricing.py             # PricingDomainService, Rollups, Transitions
+│       │   │   ├── recommender/           # Dynamic TOPSIS, 7 Personas & Decision Explainer
+│       │   │   └── reviews/               # ChassisTargetResolver & modal screen size logic
 │       │   ├── messaging/                 # Event-Driven Messaging Layer (RabbitMQ)
 │       │   │   ├── config.py              # Exchange, Queue, and Routing Key setup
 │       │   │   ├── consumer.py            # Async CatalogMessageConsumer (RabbitMQ)
@@ -588,14 +667,18 @@ laptop-recommender/
 │       │   │   ├── outbox_repository.py   # Atomic outbox message persistence
 │       │   │   ├── seeder.py              # Bulk upserting & entity resolution
 │       │   │   └── pointer_repository.py  # Watermark pointers
+│       │   ├── schemas/                   # Pydantic v2 schemas (Events, S3 Claim Check)
+│       │   │   ├── events.py              # Review & Price sync AMQP events
+│       │   │   └── reviews_s3.py          # Byte-identical S3 Claim-Check schema
 │       │   ├── services/                  # Application Layer (Use Cases)
-│       │   │   ├── catalog_ingestion_service.py # End-to-end ingestion orchestrator
+│       │   │   ├── catalog_ingestion_service.py # Ingestion & Chassis resolution orchestrator
 │       │   │   ├── hardware_metrics_service.py  # 11 Criteria normalizer
-│       │   │   └── price_sync_service.py        # Price reconciliation & outbox
+│       │   │   ├── price_sync_service.py        # Price reconciliation & outbox
+│       │   │   └── recommendation_service.py    # In-memory TOPSIS evaluation & Redis caching
 │       │   └── main.py                    # FastAPI application initialization
 │       ├── scripts/                       # CLI operational utilities
 │       │   └── run_catalog_seeder.py      # Standalone catalog seeder CLI
-│       ├── tests/                         # Test Suite (Zero DB pollution savepoints)
+│       ├── tests/                         # Test Suite (200 tests, Savepoint isolation)
 │       ├── requirements.txt               # Catalog dependencies
 │       └── README.md                      # Catalog-specific documentation
 └── README.md                              # Master Project Documentation (This File)
@@ -673,7 +756,7 @@ python -m app.cli --mode store --stores compumarts --limit 10
 
 ## 🧪 Automated Testing Strategy & Zero-DB-Pollution Guarantee
 
-The test suite across `catalog-service` contains **93+ automated unit and integration tests** verifying Clean Architecture, pricing rollups, outbox publishing, and concurrent RabbitMQ consumers.
+The monorepo contains **804 automated unit and integration tests** (200 in `catalog-service`, 604 in `scraper-service`) verifying Clean Architecture, pricing rollups, outbox publishing, chassis resolution, multi-platform review scrapers, and concurrent RabbitMQ consumers.
 
 ### Zero Database Pollution via Transactional Savepoints
 To ensure automated test suites never leave test records in local or CI databases:
@@ -682,9 +765,13 @@ To ensure automated test suites never leave test records in local or CI database
 - Upon test completion, the savepoint **rolls back 100% of mutations**, guaranteeing a clean database state after every run.
 
 ```powershell
+# Run catalog-service test suite (200 tests in ~7s)
 cd "services/catalog-service"
 pytest tests/ -v
-# Output: 93 passed in 1.71s (100% clean database)
+
+# Run scraper-service test suite (604 tests in ~44s)
+cd "services/scraper-service"
+pytest tests/ -v
 ```
 
 ---
@@ -698,10 +785,10 @@ pytest tests/ -v
 - [x] **Milestone 5**: Hardware Metrics Engine normalizing 11 TOPSIS criteria.
 - [x] **Milestone 6**: Pure Domain Pricing Service with corrupted price defense (handling `1.00 EGP` placeholders).
 - [x] **Milestone 7**: RabbitMQ Event-Driven Price Synchronization & Transactional Outbox pattern.
-- [ ] **Milestone 8**: In-Memory Dynamic TOPSIS Recommendation Engine with Persona Weight Profiles.
-- [ ] **Milestone 9**: Social Listening Scrapers for YouTube review transcripts and Reddit discussions.
+- [x] **Milestone 8**: In-Memory Dynamic TOPSIS Recommendation Engine with 7 Persona Weight Profiles & Decision Explainer.
+- [x] **Milestone 9**: Multi-Platform Review Intelligence Pipeline (YouTube `yt-dlp` transcripts & comments, LaptopMag editorial reviews, Level1Techs Discourse REST API, Arabhardware regional data, Reddit fallback, and S3 Claim-Check Storage).
 - [ ] **Milestone 10**: DeBERTa-v3 Aspect-Based Sentiment Analysis (ABSA) model for thermals, fan noise, and hinges.
-- [ ] **Milestone 11**: Distributed Redis Caching layer for TOPSIS matrix and catalog endpoints.
+- [x] **Milestone 11**: Distributed Redis Caching layer for TOPSIS matrix and catalog endpoints.
 - [ ] **Milestone 12**: Interactive Consumer Frontend with Persona Quiz and Side-by-Side Comparison Matrix.
 
 ---

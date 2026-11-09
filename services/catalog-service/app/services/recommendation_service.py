@@ -11,11 +11,11 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.logger import get_logger
+from app.common.review_text import align_bilingual_lists
 from app.domain.recommender import (
     PERSONA_CONFIGS,
     TOPSIS_CRITERIA_KEYS,
     PersonaType,
-    RankedLaptopResult,
     TopsisExecutionResult,
     rank_laptops_topsis,
 )
@@ -25,6 +25,10 @@ from app.schemas.recommendation import (
     RecommendationRequest,
     RecommendationResponse,
     StoreOfferResponse,
+)
+from app.services.chroma_reviews_service import (
+    ChromaReviewsService,
+    get_chroma_reviews_service,
 )
 
 logger = get_logger("catalog.services.recommendation")
@@ -53,20 +57,22 @@ def _normalize_catalog_dict(lap: dict[str, Any]) -> dict[str, Any]:
         if p_egp is not None and is_valid:
             prices_by_store[store_k] = float(p_egp)
 
-        is_cheapest = (store_k == cheapest_store)
+        is_cheapest = store_k == cheapest_store
         if is_cheapest and p_url and not cheapest_offer_url:
             cheapest_offer_url = p_url
 
-        clean_offers.append({
-            "store_key": store_k,
-            "store_name": off.get("store_name") or store_k,
-            "price_egp": float(p_egp) if p_egp is not None else 0.0,
-            "product_url": p_url or "",
-            "in_stock": in_stock,
-            "is_cheapest": is_cheapest,
-            "last_checked_at": off.get("last_checked_at") or off.get("last_checked") or off.get("scraped_at"),
-            "price_updated_at": off.get("price_updated_at") or off.get("scraped_at"),
-        })
+        clean_offers.append(
+            {
+                "store_key": store_k,
+                "store_name": off.get("store_name") or store_k,
+                "price_egp": float(p_egp) if p_egp is not None else 0.0,
+                "product_url": p_url or "",
+                "in_stock": in_stock,
+                "is_cheapest": is_cheapest,
+                "last_checked_at": off.get("last_checked_at") or off.get("last_checked") or off.get("scraped_at"),
+                "price_updated_at": off.get("price_updated_at") or off.get("scraped_at"),
+            }
+        )
 
     if not cheapest_offer_url and urls_by_store:
         cheapest_offer_url = urls_by_store.get(cheapest_store) or next(iter(urls_by_store.values()), None)
@@ -75,21 +81,41 @@ def _normalize_catalog_dict(lap: dict[str, Any]) -> dict[str, Any]:
     lap["urls_by_store"] = urls_by_store
     lap["cheapest_offer_url"] = cheapest_offer_url
     lap["offers"] = clean_offers
+
+    comm = (lap.get("derived_metrics") or {}).get("community_reviews")
+    if isinstance(comm, dict):
+        p_en, p_ar = align_bilingual_lists(comm.get("pros_en"), comm.get("pros_ar"))
+        c_en, c_ar = align_bilingual_lists(comm.get("cons_en"), comm.get("cons_ar"))
+        comm["pros_en"] = p_en
+        comm["pros_ar"] = p_ar
+        comm["cons_en"] = c_en
+        comm["cons_ar"] = c_ar
+
     return lap
 
 
 class RecommendationService:
     """Application use-case service for TOPSIS laptop recommendations."""
 
-    def __init__(self, session: AsyncSession | None = None):
+    def __init__(
+        self,
+        session: AsyncSession | None = None,
+        chroma_service: ChromaReviewsService | None = None,
+    ):
         self.session = session
+        self.chroma_service = chroma_service
         self._fallback_catalog: list[dict[str, Any]] | None = None
+
+    def _resolve_chroma_service(self) -> ChromaReviewsService:
+        if self.chroma_service is None:
+            self.chroma_service = get_chroma_reviews_service()
+        return self.chroma_service
 
     def _load_fallback_catalog(self) -> list[dict[str, Any]]:
         if self._fallback_catalog is None:
             if FALLBACK_CATALOG_PATH.exists():
                 try:
-                    with open(FALLBACK_CATALOG_PATH, "r", encoding="utf-8") as f:
+                    with open(FALLBACK_CATALOG_PATH, encoding="utf-8") as f:
                         data = json.load(f)
                     raw_laptops = data.get("laptops", [])
                     self._fallback_catalog = [_normalize_catalog_dict(l) for l in raw_laptops]
@@ -110,10 +136,18 @@ class RecommendationService:
 
         if self.session is not None:
             repo = LaptopRepository(self.session)
+            # Load the full active catalog (unbounded by budget) so the domain
+            # engine can apply budget windows and still return the cheapest
+            # alternatives when the requested category has zero candidates.
             db_candidates = await repo.get_candidates_for_recommendation(
-                max_budget_egp=request.budget_egp,
+                max_budget_egp=None,
                 brand_filter=request.brand_filter,
             )
+            if not db_candidates and request.brand_filter:
+                db_candidates = await repo.get_candidates_for_recommendation(
+                    max_budget_egp=None,
+                    brand_filter=None,
+                )
             if db_candidates:
                 candidate_dicts = [to_recommender_dict(c) for c in db_candidates]
 
@@ -144,6 +178,16 @@ class RecommendationService:
                 if k in blended_weights and v is not None:
                     blended_weights[k] = float(v)
 
+        # Dual-Impact: translate the free-text prompt into per-laptop
+        # community-NLP score adjustments via dual-vector cosine similarity.
+        chroma_scores: dict[str, float] | None = None
+        if request.user_text_prompt and request.user_text_prompt.strip():
+            try:
+                chroma_scores = self._resolve_chroma_service().query_dual_similarity(request.user_text_prompt)
+            except Exception:
+                logger.exception("Chroma review similarity failed; continuing with base NLP scores")
+                chroma_scores = {}
+
         # Execute pure domain TOPSIS engine
         domain_result: TopsisExecutionResult = rank_laptops_topsis(
             laptops=candidate_dicts,
@@ -157,6 +201,7 @@ class RecommendationService:
             brand_filter=request.brand_filter,
             custom_weights=blended_weights,
             top_k=request.top_k,
+            chroma_adjusted_nlp_scores=chroma_scores,
         )
 
         # Map domain dataclasses to Pydantic presentation response
@@ -190,6 +235,12 @@ class RecommendationService:
                 ],
                 why_recommended_ar=r.why_recommended_ar,
                 why_recommended_en=r.why_recommended_en,
+                pros_en=r.pros_en,
+                pros_ar=r.pros_ar,
+                cons_en=r.cons_en,
+                cons_ar=r.cons_ar,
+                reviews_evidence_count=r.reviews_evidence_count,
+                aspect_scores=r.aspect_scores,
                 topsis_inputs=r.topsis_inputs,
             )
             for r in domain_result.results
@@ -206,4 +257,5 @@ class RecommendationService:
             parsed_text_prompt=domain_result.parsed_text_prompt,
             effective_weights=domain_result.effective_weights,
             results=ranked_responses,
+            status=domain_result.status,
         )

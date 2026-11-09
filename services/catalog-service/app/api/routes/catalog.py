@@ -1,17 +1,60 @@
 """Catalog and Laptop Details API Routes.
 
-Provides endpoints for fetching authoritative laptop configurations, 35+ structured
-hardware specifications, store-specific live offers with URLs, and 11 TOPSIS hardware scores.
+Provides endpoints for browsing and fetching authoritative laptop configurations,
+35+ structured hardware specifications, live store offers with URLs, 11 TOPSIS
+hardware scores, 5 community aspect scores, and bilingual review intelligence.
+All database access is delegated to application services and repositories.
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.schemas.laptop import FullLaptopDetailResponse
+from app.schemas.laptop import (
+    CatalogListResponse,
+    FullLaptopDetailResponse,
+)
 from app.services.catalog_query_service import CatalogQueryService
 
 router = APIRouter(tags=["Catalog & Laptop Details"])
+
+
+@router.get(
+    "/laptops",
+    response_model=CatalogListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Browse the paginated laptop catalog",
+    description=(
+        "Returns compact catalog cards with pricing, key hardware specs, and community review "
+        "intelligence (community NLP score, evidence count, and bilingual pros/cons). "
+        "Supports price range, brand, stock, and pagination filters."
+    ),
+)
+@router.get(
+    "/catalog/laptops",
+    response_model=CatalogListResponse,
+    status_code=status.HTTP_200_OK,
+    include_in_schema=False,
+)
+async def list_laptops(
+    min_price: float | None = Query(default=None, ge=0, description="Minimum price in EGP."),
+    max_price: float | None = Query(default=None, ge=0, description="Maximum price in EGP."),
+    brand: str | None = Query(default=None, description="Case-insensitive brand filter."),
+    in_stock_only: bool = Query(default=True, description="Only return in-stock laptops."),
+    offset: int = Query(default=0, ge=0, description="Number of items to skip."),
+    limit: int = Query(default=20, ge=1, le=100, description="Page size (1-100)."),
+    db: AsyncSession = Depends(get_db),
+) -> CatalogListResponse:
+    """Browse the catalog with filtering and pagination."""
+    service = CatalogQueryService(session=db)
+    return await service.list_laptops(
+        min_price=min_price,
+        max_price=max_price,
+        brand=brand,
+        in_stock_only=in_stock_only,
+        offset=offset,
+        limit=limit,
+    )
 
 
 @router.get(
@@ -20,10 +63,11 @@ router = APIRouter(tags=["Catalog & Laptop Details"])
     status_code=status.HTTP_200_OK,
     summary="Get complete laptop specifications, offers, and hardware scores",
     description=(
-        "Retrieve comprehensive 35+ hardware dimensions, all live store offers "
-        "with direct product URLs, and 11 normalized TOPSIS metrics for a laptop. "
-        "Accepts database UUID, canonical_id (e.g. 'laptop_msi_prestige_9s713q222261'), "
-        "or manufacturer part number (MPN)."
+        "Retrieve comprehensive 35+ hardware dimensions, all live store offers with direct "
+        "product URLs, 11 normalized TOPSIS hardware and review metrics, the 5 community aspect "
+        "scores (thermals, acoustics, build/hinges, keyboard/trackpad, real battery/reliability), "
+        "and bilingual pros_ar/en and cons_ar/en. Accepts a database UUID, canonical_id "
+        "(e.g. 'laptop_msi_prestige_9s713q222261'), or manufacturer part number (MPN)."
     ),
 )
 async def get_laptop_detail(

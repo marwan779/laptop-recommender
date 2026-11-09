@@ -49,12 +49,57 @@ class LaptopConfigurationDetail(LaptopConfigurationSummary):
     category_scores: list[LaptopCategoryScoreRead] = []
 
 
+class CatalogListItemResponse(BaseModel):
+    """Compact catalog card payload with pricing, key specs, and review intelligence."""
+
+    id: str
+    canonical_id: str
+    mpn: str | None = None
+    brand: str
+    laptop_family: str | None = None
+    laptop_model: str
+    title: str
+    thumbnail_url: str | None = None
+
+    min_price_egp: float
+    cheapest_store: str
+    in_stock: bool = True
+    stores_count: int = 1
+
+    ram_capacity_gb: int
+    storage_capacity_gb: int
+    gpu_model: str
+    cpu_model: str
+    display_size_inches: float
+
+    community_nlp_score: float = 75.0
+    value_score: float = 50.0
+    has_reviews: bool = False
+    reviews_evidence_count: int = 0
+
+    pros_ar: list[str] = Field(default_factory=list)
+    pros_en: list[str] = Field(default_factory=list)
+    cons_ar: list[str] = Field(default_factory=list)
+    cons_en: list[str] = Field(default_factory=list)
+
+
+class CatalogListResponse(BaseModel):
+    """Paginated catalog browse response."""
+
+    total: int
+    offset: int
+    limit: int
+    items: list[CatalogListItemResponse] = Field(default_factory=list)
+
+
 # =============================================================================
 # DETAILED SPECIFICATION SCHEMAS FOR FULL UX VIEW
 # =============================================================================
 
+
 class CpuSpecDetail(BaseModel):
     """Deep CPU specifications."""
+
     manufacturer: str
     line: str | None = None
     model: str
@@ -72,6 +117,7 @@ class CpuSpecDetail(BaseModel):
 
 class GpuSpecDetail(BaseModel):
     """Deep GPU specifications."""
+
     manufacturer: str
     model: str
     variant: str | None = None
@@ -85,6 +131,7 @@ class GpuSpecDetail(BaseModel):
 
 class MemorySpecDetail(BaseModel):
     """Deep Memory (RAM) specifications."""
+
     capacity_gb: int
     memory_type: str
     speed_mhz: int | None = None
@@ -96,6 +143,7 @@ class MemorySpecDetail(BaseModel):
 
 class StorageSpecDetail(BaseModel):
     """Deep Storage specifications."""
+
     capacity_gb: int
     storage_type: str = "SSD"
     interface: str | None = None
@@ -104,6 +152,7 @@ class StorageSpecDetail(BaseModel):
 
 class DisplaySpecDetail(BaseModel):
     """Deep Display specifications."""
+
     size_inches: float
     resolution: str
     width: int
@@ -119,6 +168,7 @@ class DisplaySpecDetail(BaseModel):
 
 class PowerBatterySpecDetail(BaseModel):
     """Deep Power and Battery specifications."""
+
     battery_capacity_wh: float | None = None
     battery_cells: int | None = None
     power_adapter_w: float | None = None
@@ -128,6 +178,7 @@ class PowerBatterySpecDetail(BaseModel):
 
 class PhysicalSpecDetail(BaseModel):
     """Physical dimensions and chassis measurements."""
+
     weight_kg: float | None = None
     width_mm: float | None = None
     depth_mm: float | None = None
@@ -136,6 +187,7 @@ class PhysicalSpecDetail(BaseModel):
 
 class BuildSecuritySpecDetail(BaseModel):
     """Chassis build, keyboard, and biometric security features."""
+
     has_backlit_keyboard: bool = False
     keyboard_backlight_type: str | None = None
     has_fingerprint: bool = False
@@ -145,6 +197,7 @@ class BuildSecuritySpecDetail(BaseModel):
 
 class AudioWebcamSpecDetail(BaseModel):
     """Sound system and webcam specifications."""
+
     speaker_count: int = 2
     audio_system: str | None = None
     webcam_resolution: str | None = None
@@ -154,6 +207,7 @@ class AudioWebcamSpecDetail(BaseModel):
 
 class ConnectivityOsSpecDetail(BaseModel):
     """Networking, ports, and operating system."""
+
     wifi: str | None = None
     bluetooth: str | None = None
     has_ethernet: bool = False
@@ -165,6 +219,7 @@ class ConnectivityOsSpecDetail(BaseModel):
 
 class HardwareMetricsDetail(BaseModel):
     """11 normalized performance scores and operational tiers."""
+
     cpu_score: float
     gpu_score: float
     silicon_index: float | None = None
@@ -175,6 +230,11 @@ class HardwareMetricsDetail(BaseModel):
     ergonomics_score: float
     connectivity_score: float
     community_nlp_score: float | None = None
+    thermals_score: float | None = None
+    acoustics_score: float | None = None
+    build_and_hinges_score: float | None = None
+    keyboard_and_trackpad_score: float | None = None
+    real_battery_and_reliability_score: float | None = None
     value_score: float
     effective_price_egp: float
     estimated_battery_hours: float | None = None
@@ -186,6 +246,7 @@ class HardwareMetricsDetail(BaseModel):
 
 class DetailedOfferRead(BaseModel):
     """Store-specific listing details with live prices and product URLs."""
+
     id: str | None = None
     store_key: str
     store_name: str
@@ -204,6 +265,7 @@ class DetailedOfferRead(BaseModel):
 
 class FullLaptopDetailResponse(BaseModel):
     """Comprehensive, 35+ dimension laptop detail payload for frontend product pages."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: str
@@ -252,6 +314,13 @@ class FullLaptopDetailResponse(BaseModel):
 
     # Normalized 1:1 TOPSIS Metrics
     metrics: HardwareMetricsDetail | None = None
+
+    # Community Review Intelligence
+    reviews_evidence_count: int = 0
+    pros_en: list[str] = Field(default_factory=list)
+    pros_ar: list[str] = Field(default_factory=list)
+    cons_en: list[str] = Field(default_factory=list)
+    cons_ar: list[str] = Field(default_factory=list)
 
     # Human-Grade Explainable Badges
     why_recommended_ar: list[str] = Field(default_factory=list)

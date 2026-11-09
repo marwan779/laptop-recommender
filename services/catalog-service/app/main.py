@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -16,6 +17,7 @@ from app.common.messaging.rabbitmq import RabbitMQBroker
 from app.core.config import settings
 from app.core.database import engine
 from app.jobs import outbox_relay, price_sync_cron, scraping_cron
+from app.services.chroma_reviews_service import get_chroma_reviews_service
 from app.services.messaging_consumer import CatalogMessageConsumer
 
 # Initialize unified logging subsystem
@@ -26,6 +28,24 @@ logger = get_logger("catalog.main")
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting %s in %s mode", settings.service_name, settings.environment)
+
+    # 0. Pre-warm the singleton ChromaDB review engine (loads the embedding model
+    # once per process so request-time similarity queries stay fast).
+    try:
+        chroma_service = get_chroma_reviews_service()
+        initialized = await asyncio.to_thread(chroma_service.initialize, True)
+        app.state.chroma_reviews = chroma_service
+        if initialized:
+            logger.info("ChromaDB review engine initialized and ready.")
+        else:
+            logger.warning("ChromaDB review engine unavailable; review similarity disabled.")
+    except Exception as exc:
+        app.state.chroma_reviews = None
+        logger.warning(
+            "ChromaDB review engine failed to initialize on startup (%s). "
+            "Recommendations will use base community NLP scores.",
+            exc,
+        )
 
     # 1. Initialize Cache Provider (Redis with graceful fallback to In-Memory)
     redis_cache = RedisCacheProvider()

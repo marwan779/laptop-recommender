@@ -68,6 +68,30 @@ class CatalogMetricsService:
 
         return self._cpu_benchmarks, self._gpu_benchmarks
 
+    @staticmethod
+    def _incoming_review_intelligence(
+        laptop: dict[str, Any],
+    ) -> tuple[dict[str, Any] | None, float | None]:
+        """Extract community review intelligence before derived metrics are recomputed.
+
+        Returns the ``community_reviews`` mapping (when present) and the best
+        available NLP score, preferring the review block over the TOPSIS input.
+        """
+        existing = laptop.get("derived_metrics") or {}
+        if not isinstance(existing, dict):
+            return None, None
+
+        community_reviews = existing.get("community_reviews")
+        if not isinstance(community_reviews, dict) or not community_reviews:
+            community_reviews = None
+
+        topsis = existing.get("topsis_inputs") or {}
+        nlp_score = topsis.get("community_nlp_score") if isinstance(topsis, dict) else None
+        if community_reviews and community_reviews.get("community_nlp_score") is not None:
+            nlp_score = community_reviews.get("community_nlp_score")
+
+        return community_reviews, nlp_score
+
     def enrich_catalog_dict(
         self,
         catalog_data: dict[str, Any],
@@ -110,11 +134,21 @@ class CatalogMetricsService:
                 skipped_unverified += 1
                 continue
 
+            community_reviews, community_nlp_score = self._incoming_review_intelligence(laptop)
+
             metrics = calculate_all_hardware_metrics(
                 laptop=laptop,
                 cpu_benchmarks=cpu_benchmarks,
                 gpu_benchmarks=gpu_benchmarks,
             )
+
+            # Preserve review intelligence: recomputing hardware metrics must not
+            # wipe the community review block or reset the NLP score to neutral.
+            if community_reviews is not None:
+                metrics["community_reviews"] = community_reviews
+            if community_nlp_score is not None:
+                metrics.setdefault("topsis_inputs", {})["community_nlp_score"] = community_nlp_score
+
             laptop["hardware_metrics"] = metrics
             laptop["derived_metrics"] = metrics
             processed_count += 1

@@ -1,15 +1,27 @@
+"""Scraping coordination and Stage 2 review intelligence API routes.
+
+All persistence is delegated to repositories and application services; this
+module contains no SQL statements or transaction management.
+"""
+
 import logging
-from fastapi import APIRouter, Depends, status
-from sqlalchemy import desc, select
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.scraping import ScrapingBatchLog, StoreScrapingPointer
+from app.repositories.batch_log_repository import BatchLogRepository
+from app.repositories.pointer_repository import StoreScrapingPointerRepository
 from app.schemas.scraping import (
+    ReviewsIngestRequest,
+    ReviewsIngestResponse,
+    ReviewsTriggerRequest,
+    ReviewsTriggerResponse,
     ScrapeTriggerRequest,
     ScrapeTriggerResponse,
     StorePointerResponse,
 )
+from app.services.review_intelligence_service import ReviewIntelligenceService
 from app.services.scraper_client import ScraperClientService
 
 logger = logging.getLogger(__name__)
@@ -47,9 +59,7 @@ async def get_store_pointers(
     db: AsyncSession = Depends(get_db),
 ) -> list[StorePointerResponse]:
     """Retrieve all store scraping watermarks."""
-    stmt = select(StoreScrapingPointer).order_by(StoreScrapingPointer.store_key)
-    result = await db.execute(stmt)
-    records = result.scalars().all()
+    records = await StoreScrapingPointerRepository(db).list_all_ordered()
     return [
         StorePointerResponse(
             store_key=r.store_key,
@@ -75,9 +85,7 @@ async def get_scraping_logs(
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve recent scraping audit logs."""
-    stmt = select(ScrapingBatchLog).order_by(desc(ScrapingBatchLog.started_at)).limit(limit)
-    result = await db.execute(stmt)
-    logs = result.scalars().all()
+    logs = await BatchLogRepository(db).list_recent_logs(limit=limit)
     return [
         {
             "id": str(log.id),
@@ -94,3 +102,63 @@ async def get_scraping_logs(
         }
         for log in logs
     ]
+
+
+@router.post(
+    "/reviews/trigger",
+    response_model=ReviewsTriggerResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Dispatch Stage 2 community review scraping",
+    description=(
+        "Resolves unreviewed catalog laptops into physical chassis targets and enqueues a "
+        "`reviews.scrape.command` through the transactional outbox. Use `force_all=true` to "
+        "re-resolve the entire catalog even when `has_reviews` is already true."
+    ),
+)
+async def trigger_reviews_scraping(
+    request: ReviewsTriggerRequest,
+    db: AsyncSession = Depends(get_db),
+) -> ReviewsTriggerResponse:
+    """Queue chassis review scraping targets for scraper-service."""
+    service = ReviewIntelligenceService()
+    return await service.dispatch_review_scraping(session=db, force_all=request.force_all)
+
+
+@router.post(
+    "/reviews/ingest",
+    response_model=ReviewsIngestResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Ingest enriched reviews into ChromaDB and PostgreSQL",
+    description=(
+        "Loads an enriched chassis reviews artifact from local disk or S3, embeds bilingual "
+        "pro/con/context vectors into ChromaDB, and persists `community_nlp_score`, the 5 aspect "
+        "scores, evidence counts, bilingual pros/cons, and reviewed flags into PostgreSQL."
+    ),
+)
+async def ingest_reviews(
+    request: ReviewsIngestRequest,
+    http_request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> ReviewsIngestResponse:
+    """Run Stage 2 review intelligence ingestion."""
+    chroma_service = getattr(http_request.app.state, "chroma_reviews", None)
+    service = ReviewIntelligenceService(chroma_service=chroma_service)
+
+    try:
+        if request.from_s3:
+            result = await service.ingest_from_s3(db, request.source_path)
+        else:
+            result = await service.ingest_from_file(db, request.source_path)
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+
+    return ReviewsIngestResponse(
+        status=result.status,
+        chassis_processed=result.chassis_processed,
+        chroma_documents_upserted=result.chroma_documents_upserted,
+        sql_laptops_updated=result.sql_laptops_updated,
+        duration_seconds=result.duration_seconds,
+    )

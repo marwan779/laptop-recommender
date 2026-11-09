@@ -24,6 +24,12 @@ Thumbs.db
 # Raw Scrapes and Local Data Caches
 raw_scrapes/
 scraping-results/
+scraping results/
+
+# YouTube & Scraper Session Cookies / Secrets
+cookies.txt
+*cookies.txt
+cookies*.txt
 
 # Scraper Runtime Outputs & Audit Dumps
 pipeline_results_*.json
