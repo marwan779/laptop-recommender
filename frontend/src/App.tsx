@@ -1,0 +1,152 @@
+import { useState, useEffect } from 'react'
+import { Navbar } from './components/Navbar'
+import { BudgetPersonaBar } from './components/BudgetPersonaBar'
+import { StatusBanner } from './components/StatusBanner'
+import { LaptopCard } from './components/LaptopCard'
+import { LaptopDetailModal } from './components/LaptopDetailModal'
+import { CatalogBrowser } from './components/CatalogBrowser'
+import type { PersonaType, RankedLaptop, RecommendationResponse } from './types/api'
+import { fetchRecommendations } from './services/api'
+import { Sparkles, AlertCircle } from 'lucide-react'
+
+export function App() {
+  const [lang, setLang] = useState<'ar' | 'en'>('ar')
+  const [tab, setTab] = useState<'recommend' | 'catalog'>('recommend')
+  const [budget, setBudget] = useState<number>(45000)
+  const [persona, setPersona] = useState<PersonaType>('balanced')
+  const [promptText, setPromptText] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
+  const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null)
+  const [selectedLaptop, setSelectedLaptop] = useState<RankedLaptop | null>(null)
+
+  const isAr = lang === 'ar'
+
+  const handleGetRecommendations = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchRecommendations({
+        budget_egp: budget,
+        persona,
+        user_text_prompt: promptText.trim() ? promptText.trim() : undefined,
+        top_k: 8,
+      })
+      setRecommendations(data)
+    } catch (err: any) {
+      console.error(err)
+      setError(err?.message || 'Failed to connect to recommendation service')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Load initial recommendation on first render
+  useEffect(() => {
+    handleGetRecommendations()
+  }, [])
+
+  return (
+    <div
+      dir={isAr ? 'rtl' : 'ltr'}
+      className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans"
+    >
+      {/* 1. Top Navigation Bar */}
+      <Navbar
+        currentTab={tab}
+        onTabChange={setTab}
+        lang={lang}
+        onToggleLang={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+      />
+
+      {/* 2. Main Body Content */}
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+        {tab === 'recommend' ? (
+          <>
+            {/* Budget & Persona Selector */}
+            <BudgetPersonaBar
+              budget={budget}
+              onBudgetChange={setBudget}
+              selectedPersona={persona}
+              onPersonaChange={setPersona}
+              promptText={promptText}
+              onPromptChange={setPromptText}
+              onSubmit={handleGetRecommendations}
+              isLoading={loading}
+              lang={lang}
+            />
+
+            {/* Error Message if API fails */}
+            {error && (
+              <div className="bg-rose-950/40 border border-rose-500/40 rounded-2xl p-4 flex items-center gap-3 text-rose-300 text-xs">
+                <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Status & Results Section */}
+            {recommendations && (
+              <div className="space-y-6">
+                {/* Status Notice Banner */}
+                <StatusBanner response={recommendations} lang={lang} />
+
+                {/* Section Title */}
+                <div className="flex items-center justify-between">
+                  <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-indigo-400" />
+                    <span>
+                      {isAr
+                        ? `أفضل ترشيحات لابتوب تناسبك (${recommendations.results.length} خيارات)`
+                        : `Top Recommended Laptops (${recommendations.results.length} matches)`}
+                    </span>
+                  </h3>
+                  <span className="text-xs text-slate-400 font-mono">
+                    {isAr ? 'مرتبة بواسطة Vector TOPSIS' : 'Ranked via Vector TOPSIS'}
+                  </span>
+                </div>
+
+                {/* Laptop Cards List */}
+                <div className="grid grid-cols-1 gap-6">
+                  {recommendations.results.map((laptop) => (
+                    <LaptopCard
+                      key={laptop.canonical_id}
+                      laptop={laptop}
+                      lang={lang}
+                      onSelect={(lap) => setSelectedLaptop(lap)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          /* Catalog Browser Tab */
+          <CatalogBrowser lang={lang} />
+        )}
+      </main>
+
+      {/* 3. Full Specifications Modal */}
+      <LaptopDetailModal
+        laptop={selectedLaptop}
+        onClose={() => setSelectedLaptop(null)}
+        lang={lang}
+      />
+
+      {/* 4. Footer */}
+      <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div>
+            {isAr
+              ? 'مرشح اللابتوبات الذكي • أسعار ومواصفات حية من المتاجر المصرية'
+              : 'Smart Laptop Recommender • Live Retailer Scrapes & Vector Intelligence'}
+          </div>
+          <div className="font-mono text-slate-400 text-[11px]">
+            Powered by FastAPI • ChromaDB • Vector TOPSIS
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+export default App
