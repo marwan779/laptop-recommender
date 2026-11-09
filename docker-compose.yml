@@ -12,6 +12,20 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       - catalog-service
+      - frontend
+    networks:
+      - laptop-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: laptop-recommender-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - catalog-service
     networks:
       - laptop-network
 
