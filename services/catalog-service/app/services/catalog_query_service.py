@@ -14,6 +14,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.logger import get_logger
+from app.common.review_text import align_bilingual_lists
 from app.domain.recommender.explainer import build_why_recommended
 from app.models.laptop import LaptopConfiguration
 from app.repositories.laptop_repository import LaptopRepository, to_recommender_dict
@@ -216,10 +217,10 @@ class CatalogQueryService:
             ),
             has_reviews=bool(laptop.has_reviews),
             reviews_evidence_count=laptop.reviews_evidence_count or 0,
-            pros_ar=list(laptop.pros_ar or []),
-            pros_en=list(laptop.pros_en or []),
-            cons_ar=list(laptop.cons_ar or []),
-            cons_en=list(laptop.cons_en or []),
+            pros_ar=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[1],
+            pros_en=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[0],
+            cons_ar=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[1],
+            cons_en=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[0],
         )
 
     @staticmethod
@@ -262,10 +263,10 @@ class CatalogQueryService:
             value_score=_safe_float(topsis.get("value_score"), 50.0) or 50.0,
             has_reviews=bool(lap.get("has_reviews", bool(reviews))),
             reviews_evidence_count=_safe_int(reviews.get("evidence_count"), 0) or 0,
-            pros_ar=list(reviews.get("pros_ar") or []),
-            pros_en=list(reviews.get("pros_en") or []),
-            cons_ar=list(reviews.get("cons_ar") or []),
-            cons_en=list(reviews.get("cons_en") or []),
+            pros_ar=align_bilingual_lists(reviews.get("pros_en"), reviews.get("pros_ar"))[1],
+            pros_en=align_bilingual_lists(reviews.get("pros_en"), reviews.get("pros_ar"))[0],
+            cons_ar=align_bilingual_lists(reviews.get("cons_en"), reviews.get("cons_ar"))[1],
+            cons_en=align_bilingual_lists(reviews.get("cons_en"), reviews.get("cons_ar"))[0],
         )
 
     async def get_laptop_detail(self, identifier: str) -> FullLaptopDetailResponse:
@@ -525,10 +526,10 @@ class CatalogQueryService:
             ),
             metrics=metrics_detail,
             reviews_evidence_count=laptop.reviews_evidence_count or 0,
-            pros_en=list(laptop.pros_en or []),
-            pros_ar=list(laptop.pros_ar or []),
-            cons_en=list(laptop.cons_en or []),
-            cons_ar=list(laptop.cons_ar or []),
+            pros_en=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[0],
+            pros_ar=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[1],
+            cons_en=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[0],
+            cons_ar=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[1],
             why_recommended_ar=reasons.get("ar", []),
             why_recommended_en=reasons.get("en", []),
         )
@@ -766,10 +767,10 @@ class CatalogQueryService:
             ),
             metrics=metrics_detail,
             reviews_evidence_count=_safe_int(community_reviews.get("evidence_count"), 0) or 0,
-            pros_en=list(community_reviews.get("pros_en") or []),
-            pros_ar=list(community_reviews.get("pros_ar") or []),
-            cons_en=list(community_reviews.get("cons_en") or []),
-            cons_ar=list(community_reviews.get("cons_ar") or []),
+            pros_en=align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))[0],
+            pros_ar=align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))[1],
+            cons_en=align_bilingual_lists(community_reviews.get("cons_en"), community_reviews.get("cons_ar"))[0],
+            cons_ar=align_bilingual_lists(community_reviews.get("cons_en"), community_reviews.get("cons_ar"))[1],
             why_recommended_ar=reasons.get("ar", []),
             why_recommended_en=reasons.get("en", []),
         )

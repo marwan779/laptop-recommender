@@ -11,6 +11,7 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.logger import get_logger
+from app.common.review_text import align_bilingual_lists
 from app.domain.recommender import (
     PERSONA_CONFIGS,
     TOPSIS_CRITERIA_KEYS,
@@ -78,6 +79,16 @@ def _normalize_catalog_dict(lap: dict[str, Any]) -> dict[str, Any]:
     lap["urls_by_store"] = urls_by_store
     lap["cheapest_offer_url"] = cheapest_offer_url
     lap["offers"] = clean_offers
+
+    comm = (lap.get("derived_metrics") or {}).get("community_reviews")
+    if isinstance(comm, dict):
+        p_en, p_ar = align_bilingual_lists(comm.get("pros_en"), comm.get("pros_ar"))
+        c_en, c_ar = align_bilingual_lists(comm.get("cons_en"), comm.get("cons_ar"))
+        comm["pros_en"] = p_en
+        comm["pros_ar"] = p_ar
+        comm["cons_en"] = c_en
+        comm["cons_ar"] = c_ar
+
     return lap
 
 

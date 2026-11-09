@@ -25,6 +25,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.common.review_text import align_bilingual_lists
 from app.common.storage import IObjectStorageService, get_storage_service
 from app.domain.reviews import ChassisTargetResolver, LaptopInputDto, ResolvedReviewTarget
 from app.models.laptop import LaptopConfiguration
@@ -233,6 +234,14 @@ class ReviewIntelligenceService:
             if not isinstance(profile, dict) or not profile:
                 continue
 
+            clean_profile = dict(profile)
+            p_en, p_ar = align_bilingual_lists(profile.get("pros_en"), profile.get("pros_ar"))
+            c_en, c_ar = align_bilingual_lists(profile.get("cons_en"), profile.get("cons_ar"))
+            clean_profile["pros_en"] = p_en
+            clean_profile["pros_ar"] = p_ar
+            clean_profile["cons_en"] = c_en
+            clean_profile["cons_ar"] = c_ar
+
             canonical_ids = list(item.get("matched_canonical_ids") or [])
             primary_canonical_id = item.get("primary_canonical_id")
             if primary_canonical_id and primary_canonical_id not in canonical_ids:
@@ -240,7 +249,7 @@ class ReviewIntelligenceService:
 
             for canonical_id in canonical_ids:
                 if canonical_id:
-                    profiles[str(canonical_id)] = profile
+                    profiles[str(canonical_id)] = clean_profile
 
         return profiles
 

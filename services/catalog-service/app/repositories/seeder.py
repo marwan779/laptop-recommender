@@ -17,6 +17,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.common.review_text import align_bilingual_lists
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
@@ -480,10 +481,15 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         derived_metrics: dict[str, Any] = item.get("derived_metrics") or {}
         community_reviews = derived_metrics.get("community_reviews") or {}
         if isinstance(community_reviews, dict) and community_reviews:
-            laptop.pros_en = _safe_list(community_reviews.get("pros_en"))
-            laptop.pros_ar = _safe_list(community_reviews.get("pros_ar"))
-            laptop.cons_en = _safe_list(community_reviews.get("cons_en"))
-            laptop.cons_ar = _safe_list(community_reviews.get("cons_ar"))
+            laptop.pros_en, laptop.pros_ar = align_bilingual_lists(
+                community_reviews.get("pros_en"), community_reviews.get("pros_ar")
+            )
+            laptop.cons_en, laptop.cons_ar = align_bilingual_lists(
+                community_reviews.get("cons_en"), community_reviews.get("cons_ar")
+            )
+
+
+
             laptop.reviews_evidence_count = _safe_int(community_reviews.get("evidence_count"), default=0) or 0
             if (
                 laptop.pros_en

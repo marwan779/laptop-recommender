@@ -119,6 +119,36 @@ def _effective_topsis_inputs(
     return inputs
 
 
+def _passes_persona_gates(
+    lap: dict[str, Any],
+    gates: Mapping[str, Any],
+) -> bool:
+    """Return True when a laptop satisfies every implicit persona gate."""
+    specs = lap.get("specs") or {}
+    derived = lap.get("derived_metrics") or {}
+    gpu = specs.get("gpu") or {}
+    display = specs.get("display") or {}
+    memory = specs.get("memory") or {}
+    cpu = specs.get("cpu") or {}
+
+    if gates.get("require_dgpu") and gpu.get("integrated", True):
+        return False
+    if gates.get("min_refresh_hz") and (display.get("refresh_rate_hz") or 60) < gates["min_refresh_hz"]:
+        return False
+    if gates.get("min_ram_gb") and (memory.get("capacity_gb") or 0) < gates["min_ram_gb"]:
+        return False
+    if gates.get("min_cpu_cores") and (cpu.get("cores") or 0) < gates["min_cpu_cores"]:
+        return False
+    if gates.get("require_creator_display"):
+        gamut_tier = str((derived.get("display") or {}).get("color_gamut_tier", "")).lower()
+        if "100% srgb" not in gamut_tier and "dci-p3" not in gamut_tier:
+            return False
+    if gates.get("max_weight_kg") and (derived.get("mobility") or {}).get("weight_kg", 2.0) > gates["max_weight_kg"]:
+        return False
+
+    return True
+
+
 def run_topsis_vector(
     decision_matrix: np.ndarray,
     weights_vec: np.ndarray,
@@ -214,6 +244,9 @@ def rank_laptops_topsis(
     # 3. Base Hard Filters: active in-stock, budget boundary, explicit hardware constraints
     eff_min_ram = min_ram_gb or ext_filters.get("min_ram_gb")
     eff_min_sto = min_storage_gb or ext_filters.get("min_storage_gb")
+    eff_require_dgpu = (
+        require_dgpu if require_dgpu is not None else ext_filters.get("require_dgpu")
+    )
     brands_norm = {b.lower().strip() for b in brand_filter} if brand_filter else None
 
     base_pool: list[dict[str, Any]] = []
@@ -239,7 +272,9 @@ def rank_laptops_topsis(
             continue
         if eff_min_sto and (storage.get("capacity_gb") or 0) < eff_min_sto:
             continue
-        if require_dgpu is True and gpu.get("integrated", True):
+        if eff_require_dgpu is True and gpu.get("integrated", True):
+            continue
+        if eff_require_dgpu is False and not gpu.get("integrated", True):
             continue
         if ext_filters.get("require_oled") and "OLED" not in str(disp.get("panel_type") or "").upper():
             continue
@@ -250,31 +285,7 @@ def rank_laptops_topsis(
 
     # 4. Apply Implicit Persona Gates (with graceful relaxation for low budgets)
     gates = p_cfg["implicit_gates"]
-    persona_pool: list[dict[str, Any]] = []
-    for lap in base_pool:
-        s = lap.get("specs") or {}
-        dm = lap.get("derived_metrics") or {}
-        gpu_spec = s.get("gpu") or {}
-        disp_spec = s.get("display") or {}
-        mem_spec = s.get("memory") or {}
-        cpu_spec = s.get("cpu") or {}
-
-        if gates.get("require_dgpu") and gpu_spec.get("integrated", True):
-            continue
-        if gates.get("min_refresh_hz") and (disp_spec.get("refresh_rate_hz") or 60) < gates["min_refresh_hz"]:
-            continue
-        if gates.get("min_ram_gb") and (mem_spec.get("capacity_gb") or 0) < gates["min_ram_gb"]:
-            continue
-        if gates.get("min_cpu_cores") and (cpu_spec.get("cores") or 0) < gates["min_cpu_cores"]:
-            continue
-        if gates.get("require_creator_display"):
-            gtier = str(dm.get("display", {}).get("color_gamut_tier", "")).lower()
-            if "100% srgb" not in gtier and "dci-p3" not in gtier:
-                continue
-        if gates.get("max_weight_kg") and dm.get("mobility", {}).get("weight_kg", 2.0) > gates["max_weight_kg"]:
-            continue
-
-        persona_pool.append(lap)
+    persona_pool = [lap for lap in base_pool if _passes_persona_gates(lap, gates)]
 
     # Graceful relaxation: if strict gates left fewer than 3 options (or 0 options),
     # fall back to base pool so long as base pool has candidates
@@ -327,6 +338,19 @@ def rank_laptops_topsis(
             ]
             if branded_fallback:
                 fallback_pool = branded_fallback
+
+        persona_fallback = [lap for lap in fallback_pool if _passes_persona_gates(lap, gates)]
+        if eff_require_dgpu is True:
+            dgpu_fallback = [
+                lap for lap in (persona_fallback or fallback_pool)
+                if not (lap.get("specs") or {}).get("gpu", {}).get("integrated", True)
+            ]
+            if dgpu_fallback:
+                fallback_pool = dgpu_fallback
+            elif persona_fallback:
+                fallback_pool = persona_fallback
+        elif persona_fallback:
+            fallback_pool = persona_fallback
 
         fallback_pool.sort(
             key=lambda l: float(

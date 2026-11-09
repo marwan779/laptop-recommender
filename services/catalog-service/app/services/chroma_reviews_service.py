@@ -21,6 +21,8 @@ from pathlib import Path
 import threading
 from typing import Any, ClassVar
 
+from app.common.review_text import align_bilingual_lists
+
 logger = logging.getLogger("catalog.services.chroma_reviews")
 
 SERVICE_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -183,7 +185,14 @@ class ChromaReviewsService:
             brand = (item.get("identity") or {}).get("brand", "")
             base_score = float(profile.get("community_nlp_score", 75.0))
 
-            pros_text = " | ".join(profile.get("pros_ar", []) + profile.get("pros_en", []))
+            pros_en, pros_ar = align_bilingual_lists(
+                profile.get("pros_en"), profile.get("pros_ar")
+            )
+            cons_en, cons_ar = align_bilingual_lists(
+                profile.get("cons_en"), profile.get("cons_ar")
+            )
+
+            pros_text = " | ".join(pros_ar + pros_en)
             if pros_text:
                 records[f"{chassis_key}__pro"] = (
                     pros_text,
@@ -196,7 +205,7 @@ class ChromaReviewsService:
                     },
                 )
 
-            cons_text = " | ".join(profile.get("cons_ar", []) + profile.get("cons_en", []))
+            cons_text = " | ".join(cons_ar + cons_en)
             if cons_text:
                 records[f"{chassis_key}__con"] = (
                     cons_text,

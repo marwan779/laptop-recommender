@@ -7,6 +7,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.common.review_text import align_bilingual_lists
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.repositories.base import BaseRepository
@@ -123,6 +124,9 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
     if not cheapest_offer_url and urls_by_store:
         cheapest_offer_url = urls_by_store.get(cheapest_store) or next(iter(urls_by_store.values()), None)
 
+    pros_en, pros_ar = align_bilingual_lists(laptop.pros_en, laptop.pros_ar)
+    cons_en, cons_ar = align_bilingual_lists(laptop.cons_en, laptop.cons_ar)
+
     return {
         "id": str(laptop.id),
         "canonical_id": laptop.canonical_id,
@@ -209,10 +213,10 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
             "community_reviews": {
                 "community_nlp_score": topsis_inputs["community_nlp_score"],
                 "evidence_count": laptop.reviews_evidence_count or 0,
-                "pros_en": list(laptop.pros_en or []),
-                "pros_ar": list(laptop.pros_ar or []),
-                "cons_en": list(laptop.cons_en or []),
-                "cons_ar": list(laptop.cons_ar or []),
+                "pros_en": pros_en,
+                "pros_ar": pros_ar,
+                "cons_en": cons_en,
+                "cons_ar": cons_ar,
                 "aspect_scores": {
                     key: (
                         float(getattr(metrics, key))
@@ -458,10 +462,12 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             if not isinstance(aspects, Mapping):
                 aspects = {}
 
-            laptop.pros_en = _coerce_str_list(payload.get("pros_en"))
-            laptop.pros_ar = _coerce_str_list(payload.get("pros_ar"))
-            laptop.cons_en = _coerce_str_list(payload.get("cons_en"))
-            laptop.cons_ar = _coerce_str_list(payload.get("cons_ar"))
+            laptop.pros_en, laptop.pros_ar = align_bilingual_lists(
+                payload.get("pros_en"), payload.get("pros_ar")
+            )
+            laptop.cons_en, laptop.cons_ar = align_bilingual_lists(
+                payload.get("cons_en"), payload.get("cons_ar")
+            )
             laptop.reviews_evidence_count = _coerce_optional_int(payload.get("evidence_count")) or 0
             laptop.has_reviews = True
             laptop.reviews_checked_at = reviewed_at

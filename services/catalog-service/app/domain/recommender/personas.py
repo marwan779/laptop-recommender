@@ -247,6 +247,17 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(k in txt for k in ["touch", "تاتش", "لمس", "x360", "flip", "2-in-1"]):
         extracted_filters["require_touchscreen"] = True
 
+    # Explicit AAA / Ultra / dedicated-GPU intent forces a real discrete GPU.
+    if any(
+        k in txt
+        for k in [
+            "cyberpunk", "سايبر بانك", "سايبربانك", "الترا", "ألترا", "ultra",
+            "aaa", "rtx", "كارت خارجي", "dedicated gpu", "warzone", "red dead",
+            "بلندر", "blender", "unreal",
+        ]
+    ):
+        extracted_filters["require_dgpu"] = True
+
     # --- B. Extract Dynamic Weight Boosts from Intent Keywords ---
     # 1. Mobility / Battery / Lightweight
     if any(
@@ -272,8 +283,11 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "كارت شاشه", "كارت شاشة", "العاب", "ألعاب", "فريمات", "رندر", "جيمز",
-            "gaming", "fps", "rtx", "gpu", "render", "3d",
+            "كارت شاشه", "كارت شاشة", "العاب", "ألعاب", "فريمات", "رندر", "جيمز", "جيمنج",
+            "يشغل", "الترا", "ألترا", "سايبر بانك", "سايبربانك", "فيفا", "فورزا", "فالورانت",
+            "بيس", "ببجي", "جاتا", "بلندر", "gaming", "fps", "rtx", "gpu", "render", "3d",
+            "ultra", "cyberpunk", "gta", "fifa", "fc24", "fc25", "valorant", "cs2",
+            "warzone", "aaa", "unreal", "unity", "blender",
         ]
     ):
         weight_boosts["gpu_score"] = weight_boosts.get("gpu_score", 0.0) + 0.15
