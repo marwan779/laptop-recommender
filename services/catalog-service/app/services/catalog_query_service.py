@@ -91,6 +91,7 @@ class CatalogQueryService:
 
     async def list_laptops(
         self,
+        search: str | None = None,
         min_price: float | None = None,
         max_price: float | None = None,
         brand: str | None = None,
@@ -102,6 +103,7 @@ class CatalogQueryService:
         if self.laptop_repo is not None:
             try:
                 laptops, total = await self.laptop_repo.list_and_count_configurations(
+                    search=search,
                     min_price=min_price,
                     max_price=max_price,
                     brand=brand,
@@ -122,6 +124,7 @@ class CatalogQueryService:
                 )
 
         return self._list_from_fallback(
+            search=search,
             min_price=min_price,
             max_price=max_price,
             brand=brand,
@@ -132,6 +135,7 @@ class CatalogQueryService:
 
     def _list_from_fallback(
         self,
+        search: str | None,
         min_price: float | None,
         max_price: float | None,
         brand: str | None,
@@ -141,9 +145,19 @@ class CatalogQueryService:
     ) -> CatalogListResponse:
         """Filter and paginate the offline JSON catalog."""
         brand_key = brand.lower().strip() if brand else None
+        search_key = search.lower().strip() if search and search.strip() else None
         filtered: list[dict[str, Any]] = []
 
         for lap in self._load_fallback_catalog():
+            if search_key and not (
+                search_key in str(lap.get("title") or "").lower()
+                or search_key in str(lap.get("laptop_model") or "").lower()
+                or search_key in str(lap.get("laptop_family") or "").lower()
+                or search_key in str(lap.get("mpn") or "").lower()
+                or search_key in str(lap.get("canonical_id") or "").lower()
+                or search_key in str(lap.get("brand") or "").lower()
+            ):
+                continue
             price = float(lap.get("min_price_egp") or 0.0)
             if min_price is not None and price < min_price:
                 continue

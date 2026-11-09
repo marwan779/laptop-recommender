@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Gamepad2,
   Code2,
@@ -12,6 +12,13 @@ import {
   Filter,
   Check,
   Layers,
+  SlidersHorizontal,
+  ChevronDown,
+  ChevronUp,
+  Cpu,
+  HardDrive,
+  Monitor,
+  RotateCcw,
 } from 'lucide-react'
 import type { PersonaType } from '../types/api'
 
@@ -22,6 +29,19 @@ interface BudgetPersonaBarProps {
   onTogglePersona: (p: PersonaType) => void
   promptText: string
   onPromptChange: (text: string) => void
+  // Hardware gate filters
+  minRam: number | null
+  onMinRamChange: (ram: number | null) => void
+  minStorage: number | null
+  onMinStorageChange: (ssd: number | null) => void
+  requireDgpu: boolean | null
+  onRequireDgpuChange: (dgpu: boolean | null) => void
+  selectedBrands: string[]
+  onToggleBrand: (brand: string) => void
+  // Top K selector
+  topK: number
+  onTopKChange: (k: number) => void
+  onResetAdvancedFilters: () => void
   onSubmit: () => void
   isLoading: boolean
   lang: 'ar' | 'en'
@@ -96,6 +116,8 @@ const PERSONAS: PersonaOption[] = [
 ]
 
 const BUDGET_PRESETS = [25000, 35000, 45000, 60000, 85000, 120000]
+const AVAILABLE_BRANDS = ['ASUS', 'Lenovo', 'HP', 'Dell', 'Apple', 'Acer', 'MSI', 'Gigabyte']
+const TOP_K_OPTIONS = [3, 5, 8, 12, 15]
 
 export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
   budget,
@@ -104,11 +126,30 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
   onTogglePersona,
   promptText,
   onPromptChange,
+  minRam,
+  onMinRamChange,
+  minStorage,
+  onMinStorageChange,
+  requireDgpu,
+  onRequireDgpuChange,
+  selectedBrands,
+  onToggleBrand,
+  topK,
+  onTopKChange,
+  onResetAdvancedFilters,
   onSubmit,
   isLoading,
   lang,
 }) => {
   const isAr = lang === 'ar'
+  const [showAdvanced, setShowAdvanced] = useState(false)
+
+  const activeFiltersCount =
+    (minRam ? 1 : 0) +
+    (minStorage ? 1 : 0) +
+    (requireDgpu !== null ? 1 : 0) +
+    selectedBrands.length +
+    (topK !== 8 ? 1 : 0)
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -124,7 +165,7 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
   }
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur-xl relative overflow-hidden">
+    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-xl relative overflow-hidden">
       {/* Decorative gradient glow */}
       <div className="absolute -top-24 -right-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -198,7 +239,7 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
       </div>
 
       {/* 2. Persona Selector (Multi-Select Enabled) */}
-      <div className="space-y-2.5 mb-6">
+      <div className="space-y-2.5 mb-5">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
             <Filter className="w-3.5 h-3.5 text-indigo-400" />
@@ -263,7 +304,186 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
         </div>
       </div>
 
-      {/* 3. Bilingual Free-Text Prompt & Search Action */}
+      {/* 3. Collapsible Advanced Hardware Filters & Top K Accordion */}
+      <div className="mb-5">
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="w-full flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 hover:bg-slate-950/80 border border-slate-800 transition-colors text-left"
+        >
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-indigo-400" />
+            <span className="text-xs font-bold text-white">
+              {isAr ? 'شروط العتاد المتقدمة (الرام، التخزين، كارت الشاشة، الماركات)' : 'Advanced Hardware Gates (RAM, Storage, GPU, Brands)'}
+            </span>
+            {activeFiltersCount > 0 && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white font-mono">
+                {activeFiltersCount}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-indigo-400 font-semibold">
+            <span>{showAdvanced ? (isAr ? 'إخفاء' : 'Collapse') : (isAr ? 'تخصيص' : 'Customize')}</span>
+            {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </div>
+        </button>
+
+        {showAdvanced && (
+          <div className="mt-2.5 p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-4 animate-in fade-in duration-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* RAM Minimum Gate */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                  <Cpu className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>{isAr ? 'الحد الأدنى للرام:' : 'Min RAM Capacity:'}</span>
+                </label>
+                <div className="flex gap-1.5">
+                  {[
+                    { val: null, label: isAr ? 'الكل' : 'Any' },
+                    { val: 8, label: '8GB+' },
+                    { val: 16, label: '16GB+' },
+                    { val: 32, label: '32GB+' },
+                  ].map((opt) => (
+                    <button
+                      key={String(opt.val)}
+                      type="button"
+                      onClick={() => onMinRamChange(opt.val)}
+                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-medium border transition-all ${
+                        minRam === opt.val
+                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20 font-bold'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Storage SSD Minimum Gate */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                  <HardDrive className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>{isAr ? 'الحد الأدنى للتخزين:' : 'Min SSD Storage:'}</span>
+                </label>
+                <div className="flex gap-1.5">
+                  {[
+                    { val: null, label: isAr ? 'الكل' : 'Any' },
+                    { val: 512, label: '512GB+' },
+                    { val: 1024, label: '1TB+' },
+                  ].map((opt) => (
+                    <button
+                      key={String(opt.val)}
+                      type="button"
+                      onClick={() => onMinStorageChange(opt.val)}
+                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-medium border transition-all ${
+                        minStorage === opt.val
+                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20 font-bold'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* GPU Requirement Gate */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                  <Monitor className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>{isAr ? 'نوع كارت الشاشة:' : 'GPU Requirement:'}</span>
+                </label>
+                <div className="flex gap-1.5">
+                  {[
+                    { val: null, label: isAr ? 'الكل' : 'Any' },
+                    { val: true, label: isAr ? 'خارجي (dGPU)' : 'dGPU Only' },
+                    { val: false, label: isAr ? 'مدمج (iGPU)' : 'iGPU Only' },
+                  ].map((opt) => (
+                    <button
+                      key={String(opt.val)}
+                      type="button"
+                      onClick={() => onRequireDgpuChange(opt.val)}
+                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-medium border transition-all ${
+                        requireDgpu === opt.val
+                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20 font-bold'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Top K Selector */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>{isAr ? 'عدد الترشيحات المطلوبة:' : 'Max Returned Results (Top K):'}</span>
+                </label>
+                <div className="flex gap-1.5">
+                  {TOP_K_OPTIONS.map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => onTopKChange(k)}
+                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-mono font-medium border transition-all ${
+                        topK === k
+                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20 font-bold'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {k}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Brand Filter Multi-Select */}
+            <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                  <Filter className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>{isAr ? 'تفضيل ماركات معينة (اختياري):' : 'Preferred Brands (Optional):'}</span>
+                </label>
+                {activeFiltersCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={onResetAdvancedFilters}
+                    className="text-[11px] text-slate-400 hover:text-rose-400 transition-colors inline-flex items-center gap-1"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>{isAr ? 'إعادة ضبط الشروط' : 'Reset filters'}</span>
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {AVAILABLE_BRANDS.map((b) => {
+                  const isChecked = selectedBrands.includes(b)
+                  return (
+                    <button
+                      key={b}
+                      type="button"
+                      onClick={() => onToggleBrand(b)}
+                      className={`px-3 py-1 rounded-xl text-xs font-medium border transition-all ${
+                        isChecked
+                          ? 'bg-indigo-600/30 border-indigo-500 text-white font-semibold ring-1 ring-indigo-500/40'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                      }`}
+                    >
+                      {b}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Bilingual Free-Text Prompt & Search Action */}
       <div className="space-y-2">
         <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
           <Search className="w-3.5 h-3.5 text-indigo-400" />
@@ -285,7 +505,7 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
                   ? 'مثال: عايز لاب يشغل Cyberpunk على Ultra وتبريده مبيسخنش...'
                   : 'e.g. Need good battery, quiet fans, 16GB RAM for heavy coding and Docker...'
               }
-              className="w-full px-4 py-3.5 pl-11 bg-slate-950/70 border border-slate-700/80 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              className="w-full px-4 py-3.5 pl-11 bg-slate-950/70 border border-slate-700/80 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
             />
             <Sparkles className="w-4 h-4 text-indigo-400 absolute left-4 top-1/2 -translate-y-1/2" />
           </div>

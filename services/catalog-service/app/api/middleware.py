@@ -99,9 +99,13 @@ class ResponseCacheMiddleware(BaseHTTPMiddleware):
     def _match_cacheable_prefix(method: str, path: str) -> str | None:
         """Return cache namespace prefix if the route is cacheable, else None."""
         prefix = settings.api_prefix
-        if method == "GET" and (path.startswith(f"{prefix}/laptops/") or path.startswith(f"{prefix}/catalog/laptops/")):
-            return "catalog:laptop"
-        if method == "POST" and path.rstrip("/") == f"{prefix}/recommendations":
+        norm_path = path.rstrip("/")
+        if method == "GET":
+            if norm_path == f"{prefix}/laptops" or norm_path == f"{prefix}/catalog/laptops":
+                return "catalog:browse"
+            if path.startswith(f"{prefix}/laptops/") or path.startswith(f"{prefix}/catalog/laptops/"):
+                return "catalog:laptop"
+        if method == "POST" and norm_path == f"{prefix}/recommendations":
             return "catalog:recommendation"
         return None
 

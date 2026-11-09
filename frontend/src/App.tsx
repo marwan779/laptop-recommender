@@ -15,6 +15,11 @@ export function App() {
   const [budget, setBudget] = useState<number>(45000)
   const [selectedPersonas, setSelectedPersonas] = useState<PersonaType[]>(['balanced'])
   const [promptText, setPromptText] = useState<string>('')
+  const [minRam, setMinRam] = useState<number | null>(null)
+  const [minStorage, setMinStorage] = useState<number | null>(null)
+  const [requireDgpu, setRequireDgpu] = useState<boolean | null>(null)
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([])
+  const [topK, setTopK] = useState<number>(8)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null)
@@ -32,6 +37,20 @@ export function App() {
     }
   }
 
+  const handleToggleBrand = (brand: string) => {
+    setSelectedBrands((prev) =>
+      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
+    )
+  }
+
+  const handleResetAdvancedFilters = () => {
+    setMinRam(null)
+    setMinStorage(null)
+    setRequireDgpu(null)
+    setSelectedBrands([])
+    setTopK(8)
+  }
+
   const handleGetRecommendations = async () => {
     setLoading(true)
     setError(null)
@@ -41,7 +60,11 @@ export function App() {
         persona: selectedPersonas[0],
         personas: selectedPersonas,
         user_text_prompt: promptText.trim() ? promptText.trim() : undefined,
-        top_k: 8,
+        min_ram_gb: minRam !== null ? minRam : undefined,
+        min_storage_gb: minStorage !== null ? minStorage : undefined,
+        require_dgpu: requireDgpu !== null ? requireDgpu : undefined,
+        brand_filter: selectedBrands.length > 0 ? selectedBrands : undefined,
+        top_k: topK,
       })
       setRecommendations(data)
     } catch (err: any) {
@@ -82,6 +105,17 @@ export function App() {
               onTogglePersona={handleTogglePersona}
               promptText={promptText}
               onPromptChange={setPromptText}
+              minRam={minRam}
+              onMinRamChange={setMinRam}
+              minStorage={minStorage}
+              onMinStorageChange={setMinStorage}
+              requireDgpu={requireDgpu}
+              onRequireDgpuChange={setRequireDgpu}
+              selectedBrands={selectedBrands}
+              onToggleBrand={handleToggleBrand}
+              topK={topK}
+              onTopKChange={setTopK}
+              onResetAdvancedFilters={handleResetAdvancedFilters}
               onSubmit={handleGetRecommendations}
               isLoading={loading}
               lang={lang}

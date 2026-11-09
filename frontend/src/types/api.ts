@@ -114,6 +114,7 @@ export interface RecommendationResponse {
 }
 
 export interface CatalogQueryParams {
+  search?: string;
   min_price?: number;
   max_price?: number;
   brand?: string;

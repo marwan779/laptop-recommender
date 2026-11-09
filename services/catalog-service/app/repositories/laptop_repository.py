@@ -3,7 +3,7 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import func, select, update
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -318,6 +318,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
 
     async def list_and_count_configurations(
         self,
+        search: str | None = None,
         min_price: float | None = None,
         max_price: float | None = None,
         brand: str | None = None,
@@ -327,6 +328,18 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
     ) -> tuple[Sequence[LaptopConfiguration], int]:
         """Return one catalog page plus the total number of matching configurations."""
         filters: list[Any] = []
+        if search and search.strip():
+            term = f"%{search.lower().strip()}%"
+            filters.append(
+                or_(
+                    func.lower(LaptopConfiguration.title).like(term),
+                    func.lower(LaptopConfiguration.laptop_model).like(term),
+                    func.lower(LaptopConfiguration.laptop_family).like(term),
+                    func.lower(LaptopConfiguration.mpn).like(term),
+                    func.lower(LaptopConfiguration.canonical_id).like(term),
+                    func.lower(LaptopConfiguration.brand).like(term),
+                )
+            )
         if min_price is not None:
             filters.append(LaptopConfiguration.min_price_egp >= min_price)
         if max_price is not None:

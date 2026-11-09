@@ -37,6 +37,7 @@ router = APIRouter(tags=["Catalog & Laptop Details"])
     include_in_schema=False,
 )
 async def list_laptops(
+    search: str | None = Query(default=None, description="Universal keyword search (model, name, MPN, SKU, title)."),
     min_price: float | None = Query(default=None, ge=0, description="Minimum price in EGP."),
     max_price: float | None = Query(default=None, ge=0, description="Maximum price in EGP."),
     brand: str | None = Query(default=None, description="Case-insensitive brand filter."),
@@ -45,9 +46,10 @@ async def list_laptops(
     limit: int = Query(default=20, ge=1, le=100, description="Page size (1-100)."),
     db: AsyncSession = Depends(get_db),
 ) -> CatalogListResponse:
-    """Browse the catalog with filtering and pagination."""
+    """Browse the catalog with filtering, universal search, and pagination."""
     service = CatalogQueryService(session=db)
     return await service.list_laptops(
+        search=search,
         min_price=min_price,
         max_price=max_price,
         brand=brand,
