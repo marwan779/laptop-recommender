@@ -20,6 +20,8 @@ from app.repositories.laptop_repository import LaptopRepository, to_recommender_
 from app.schemas.laptop import (
     AudioWebcamSpecDetail,
     BuildSecuritySpecDetail,
+    CatalogListItemResponse,
+    CatalogListResponse,
     ConnectivityOsSpecDetail,
     CpuSpecDetail,
     DetailedOfferRead,
@@ -87,6 +89,184 @@ class CatalogQueryService:
             else:
                 self._fallback_catalog = []
         return self._fallback_catalog
+
+    async def list_laptops(
+        self,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        brand: str | None = None,
+        in_stock_only: bool = True,
+        offset: int = 0,
+        limit: int = 20,
+    ) -> CatalogListResponse:
+        """Return a paginated catalog browse page with review intelligence."""
+        if self.laptop_repo is not None:
+            try:
+                laptops, total = await self.laptop_repo.list_and_count_configurations(
+                    min_price=min_price,
+                    max_price=max_price,
+                    brand=brand,
+                    in_stock_only=in_stock_only,
+                    offset=offset,
+                    limit=limit,
+                )
+                return CatalogListResponse(
+                    total=total,
+                    offset=offset,
+                    limit=limit,
+                    items=[self._orm_to_list_item(laptop) for laptop in laptops],
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Database catalog listing failed (%s); serving fallback catalog JSON.",
+                    exc,
+                )
+
+        return self._list_from_fallback(
+            min_price=min_price,
+            max_price=max_price,
+            brand=brand,
+            in_stock_only=in_stock_only,
+            offset=offset,
+            limit=limit,
+        )
+
+    def _list_from_fallback(
+        self,
+        min_price: float | None,
+        max_price: float | None,
+        brand: str | None,
+        in_stock_only: bool,
+        offset: int,
+        limit: int,
+    ) -> CatalogListResponse:
+        """Filter and paginate the offline JSON catalog."""
+        brand_key = brand.lower().strip() if brand else None
+        filtered: list[dict[str, Any]] = []
+
+        for lap in self._load_fallback_catalog():
+            price = float(lap.get("min_price_egp") or 0.0)
+            if min_price is not None and price < min_price:
+                continue
+            if max_price is not None and price > max_price:
+                continue
+            if brand_key and str(lap.get("brand") or "").lower().strip() != brand_key:
+                continue
+            if in_stock_only and not self._dict_in_stock(lap):
+                continue
+            filtered.append(lap)
+
+        filtered.sort(
+            key=lambda lap: (
+                float(lap.get("min_price_egp") or 0.0),
+                str(lap.get("title") or ""),
+            )
+        )
+        page = filtered[offset : offset + limit]
+        return CatalogListResponse(
+            total=len(filtered),
+            offset=offset,
+            limit=limit,
+            items=[self._dict_to_list_item(lap) for lap in page],
+        )
+
+    @staticmethod
+    def _dict_in_stock(lap: dict[str, Any]) -> bool:
+        explicit = lap.get("in_stock")
+        if explicit is not None:
+            return bool(explicit)
+
+        topsis = (lap.get("derived_metrics") or {}).get("topsis_inputs") or {}
+        if topsis.get("in_stock_active") is not None:
+            return bool(topsis.get("in_stock_active"))
+        return any(bool(offer.get("in_stock", True)) for offer in lap.get("offers") or [])
+
+    @staticmethod
+    def _orm_to_list_item(laptop: LaptopConfiguration) -> CatalogListItemResponse:
+        metrics = laptop.metrics
+        return CatalogListItemResponse(
+            id=str(laptop.id),
+            canonical_id=laptop.canonical_id,
+            mpn=laptop.mpn,
+            brand=laptop.brand or "Generic",
+            laptop_family=laptop.laptop_family,
+            laptop_model=laptop.laptop_model or "Laptop",
+            title=laptop.title or "Laptop",
+            thumbnail_url=laptop.thumbnail_url,
+            min_price_egp=float(laptop.min_price_egp or 0.0),
+            cheapest_store=laptop.cheapest_store or "unknown",
+            in_stock=bool(laptop.in_stock),
+            stores_count=laptop.stores_count or len(laptop.offers or []) or 1,
+            ram_capacity_gb=laptop.ram_capacity_gb or 0,
+            storage_capacity_gb=laptop.storage_capacity_gb or 0,
+            gpu_model=laptop.gpu_model or "Integrated Graphics",
+            cpu_model=laptop.cpu_model or "CPU",
+            display_size_inches=(
+                float(laptop.display_size_inches) if laptop.display_size_inches else 15.6
+            ),
+            community_nlp_score=(
+                float(metrics.community_nlp_score)
+                if metrics is not None and metrics.community_nlp_score is not None
+                else 75.0
+            ),
+            value_score=(
+                float(metrics.value_score)
+                if metrics is not None and metrics.value_score is not None
+                else 50.0
+            ),
+            has_reviews=bool(laptop.has_reviews),
+            reviews_evidence_count=laptop.reviews_evidence_count or 0,
+            pros_ar=list(laptop.pros_ar or []),
+            pros_en=list(laptop.pros_en or []),
+            cons_ar=list(laptop.cons_ar or []),
+            cons_en=list(laptop.cons_en or []),
+        )
+
+    @staticmethod
+    def _dict_to_list_item(lap: dict[str, Any]) -> CatalogListItemResponse:
+        specs = lap.get("specs") or {}
+        cpu = specs.get("cpu") or {}
+        gpu = specs.get("gpu") or {}
+        mem = specs.get("memory") or {}
+        sto = specs.get("storage") or {}
+        display = specs.get("display") or {}
+        derived = lap.get("derived_metrics") or {}
+        topsis = derived.get("topsis_inputs") or {}
+
+        raw_reviews = derived.get("community_reviews") or lap.get("community_reviews") or {}
+        reviews = raw_reviews if isinstance(raw_reviews, dict) else {}
+
+        nlp_score = reviews.get("community_nlp_score")
+        if nlp_score is None:
+            nlp_score = topsis.get("community_nlp_score", 75.0)
+
+        return CatalogListItemResponse(
+            id=str(lap.get("id") or lap.get("canonical_id") or "unknown"),
+            canonical_id=str(lap.get("canonical_id") or "unknown"),
+            mpn=lap.get("mpn"),
+            brand=str(lap.get("brand") or "Generic"),
+            laptop_family=lap.get("laptop_family"),
+            laptop_model=str(lap.get("laptop_model") or "Laptop"),
+            title=str(lap.get("title") or "Laptop"),
+            thumbnail_url=lap.get("thumbnail_url"),
+            min_price_egp=float(lap.get("min_price_egp") or 0.0),
+            cheapest_store=str(lap.get("cheapest_store") or "unknown"),
+            in_stock=CatalogQueryService._dict_in_stock(lap),
+            stores_count=int(lap.get("stores_count") or len(lap.get("offers") or []) or 1),
+            ram_capacity_gb=_safe_int(mem.get("capacity_gb"), 0) or 0,
+            storage_capacity_gb=_safe_int(sto.get("capacity_gb"), 0) or 0,
+            gpu_model=str(gpu.get("model") or "Integrated Graphics"),
+            cpu_model=str(cpu.get("model") or "CPU"),
+            display_size_inches=_safe_float(display.get("size_inches"), 15.6) or 15.6,
+            community_nlp_score=_safe_float(nlp_score, 75.0) or 75.0,
+            value_score=_safe_float(topsis.get("value_score"), 50.0) or 50.0,
+            has_reviews=bool(lap.get("has_reviews", bool(reviews))),
+            reviews_evidence_count=_safe_int(reviews.get("evidence_count"), 0) or 0,
+            pros_ar=list(reviews.get("pros_ar") or []),
+            pros_en=list(reviews.get("pros_en") or []),
+            cons_ar=list(reviews.get("cons_ar") or []),
+            cons_en=list(reviews.get("cons_en") or []),
+        )
 
     async def get_laptop_detail(self, identifier: str) -> FullLaptopDetailResponse:
         """Fetch complete laptop specifications, offers, and metrics by UUID, canonical_id, or MPN."""

@@ -11,7 +11,7 @@ from typing import Any
 # =============================================================================
 # 1. TOPSIS CRITERIA & BENEFIT/COST KEYS
 # =============================================================================
-# 8 Benefit criteria (higher is better) + 1 Cost criterion (effective_price_egp, lower is better)
+# 9 Benefit criteria (higher is better) + 1 Cost criterion (effective_price_egp, lower is better)
 TOPSIS_CRITERIA_KEYS: list[str] = [
     "cpu_score",
     "gpu_score",
@@ -21,6 +21,7 @@ TOPSIS_CRITERIA_KEYS: list[str] = [
     "longevity_score",
     "ergonomics_score",
     "connectivity_score",
+    "community_nlp_score",
     "effective_price_egp",
 ]
 
@@ -33,6 +34,7 @@ IS_BENEFIT_CRITERION: list[bool] = [
     True,   # longevity_score
     True,   # ergonomics_score
     True,   # connectivity_score
+    True,   # community_nlp_score (Benefit: higher real-world review score is better)
     False,  # effective_price_egp (Cost criterion: cheaper within the budget window is better)
 ]
 
@@ -54,14 +56,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "الألعاب الثقيلة والـ Esports",
         "label_en": "Heavy Gaming & Esports",
         "weights": {
-            "cpu_score": 0.16,
-            "gpu_score": 0.32,
-            "power_therm_score": 0.14,
-            "display_score": 0.14,
+            "cpu_score": 0.15,
+            "gpu_score": 0.30,
+            "power_therm_score": 0.13,
+            "display_score": 0.13,
             "mobility_score": 0.03,
-            "longevity_score": 0.06,
+            "longevity_score": 0.05,
             "ergonomics_score": 0.02,
             "connectivity_score": 0.03,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.10,
         },
         "implicit_gates": {
@@ -74,14 +77,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "الذكاء الاصطناعي وتطوير الألعاب والـ 3D",
         "label_en": "AI / ML, Game Dev & 3D Rendering",
         "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.28,
-            "power_therm_score": 0.12,
+            "cpu_score": 0.19,
+            "gpu_score": 0.26,
+            "power_therm_score": 0.11,
             "display_score": 0.10,
             "mobility_score": 0.03,
-            "longevity_score": 0.10,
+            "longevity_score": 0.09,
             "ergonomics_score": 0.03,
-            "connectivity_score": 0.04,
+            "connectivity_score": 0.03,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.10,
         },
         "implicit_gates": {
@@ -93,14 +97,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "البرمجة وهندسة البرمجيات",
         "label_en": "Programming & Software Engineering",
         "weights": {
-            "cpu_score": 0.26,
+            "cpu_score": 0.24,
             "gpu_score": 0.06,
             "power_therm_score": 0.08,
             "display_score": 0.10,
-            "mobility_score": 0.12,
-            "longevity_score": 0.14,
-            "ergonomics_score": 0.08,
-            "connectivity_score": 0.06,
+            "mobility_score": 0.11,
+            "longevity_score": 0.13,
+            "ergonomics_score": 0.07,
+            "connectivity_score": 0.05,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.10,
         },
         "implicit_gates": {
@@ -112,15 +117,16 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "المونتاج والتصميم الجرافيكي وصناعة المحتوى",
         "label_en": "Video Editing, Design & Content Creation",
         "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.22,
-            "power_therm_score": 0.10,
-            "display_score": 0.24,
+            "cpu_score": 0.19,
+            "gpu_score": 0.21,
+            "power_therm_score": 0.09,
+            "display_score": 0.23,
             "mobility_score": 0.05,
             "longevity_score": 0.05,
             "ergonomics_score": 0.03,
             "connectivity_score": 0.03,
-            "effective_price_egp": 0.08,
+            "community_nlp_score": 0.06,
+            "effective_price_egp": 0.06,
         },
         "implicit_gates": {
             "min_ram_gb": 16,
@@ -131,15 +137,16 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "الدراسة والجامعة والعمل المكتبي",
         "label_en": "Student, University & Office Work",
         "weights": {
-            "cpu_score": 0.16,
+            "cpu_score": 0.15,
             "gpu_score": 0.03,
             "power_therm_score": 0.05,
             "display_score": 0.10,
-            "mobility_score": 0.24,
-            "longevity_score": 0.08,
-            "ergonomics_score": 0.12,
+            "mobility_score": 0.22,
+            "longevity_score": 0.07,
+            "ergonomics_score": 0.11,
             "connectivity_score": 0.04,
-            "effective_price_egp": 0.18,
+            "community_nlp_score": 0.06,
+            "effective_price_egp": 0.17,
         },
         "implicit_gates": {
             "min_ram_gb": 8,
@@ -150,14 +157,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "البيزنس والتنقل المستمر والاجتماعات",
         "label_en": "Executive Business & Ultraportable Mobility",
         "weights": {
-            "cpu_score": 0.16,
+            "cpu_score": 0.15,
             "gpu_score": 0.03,
             "power_therm_score": 0.05,
-            "display_score": 0.12,
-            "mobility_score": 0.30,
+            "display_score": 0.11,
+            "mobility_score": 0.28,
             "longevity_score": 0.05,
-            "ergonomics_score": 0.14,
-            "connectivity_score": 0.07,
+            "ergonomics_score": 0.13,
+            "connectivity_score": 0.06,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.08,
         },
         "implicit_gates": {
@@ -169,14 +177,15 @@ PERSONA_CONFIGS: dict[str, dict[str, Any]] = {
         "label_ar": "استخدام شامل متوازن (أفضل قيمة)",
         "label_en": "Balanced All-Rounder",
         "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.18,
+            "cpu_score": 0.19,
+            "gpu_score": 0.17,
             "power_therm_score": 0.08,
-            "display_score": 0.14,
-            "mobility_score": 0.10,
-            "longevity_score": 0.08,
-            "ergonomics_score": 0.06,
+            "display_score": 0.13,
+            "mobility_score": 0.09,
+            "longevity_score": 0.07,
+            "ergonomics_score": 0.05,
             "connectivity_score": 0.04,
+            "community_nlp_score": 0.06,
             "effective_price_egp": 0.12,
         },
         "implicit_gates": {
@@ -204,6 +213,19 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     txt = str(prompt).lower()
     extracted_filters: dict[str, Any] = {}
     weight_boosts: dict[str, float] = {}
+
+    # --- A0. Baseline Dual-Impact Review Weight Boost ---
+    # Any free-text prompt signals that real-world experiential evidence matters.
+    weight_boosts["community_nlp_score"] = weight_boosts.get("community_nlp_score", 0.0) + 0.08
+    if any(
+        k in txt
+        for k in [
+            "خامات", "مفصلات", "عيوب", "مشاكل", "مضمون", "اعتمادية", "صوت المراوح",
+            "سخونة", "بيسخن", "مبيسخنش", "build", "hinge", "reliable", "reliability",
+            "issues", "quiet", "fan noise", "thermals",
+        ]
+    ):
+        weight_boosts["community_nlp_score"] = weight_boosts.get("community_nlp_score", 0.0) + 0.06
 
     # --- A. Extract Explicit Hardware Constraints from Text ---
     if re.search(r"\b(64\s*gb|64\s*جيجا)\b", txt):

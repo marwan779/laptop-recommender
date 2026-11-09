@@ -168,8 +168,8 @@ async def test_low_budget_gate_relaxation(api_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_impossible_constraints_returns_empty_results_gracefully(api_client: AsyncClient):
-    """Mutually exclusive hardware/budget filters return 200 OK with empty results list."""
+async def test_impossible_constraints_fall_back_to_cheapest_alternatives(api_client: AsyncClient):
+    """Zero candidates under strict filters return the 3 cheapest active alternatives."""
     resp = await api_client.post(
         "/api/v1/recommendations",
         json={
@@ -182,8 +182,8 @@ async def test_impossible_constraints_returns_empty_results_gracefully(api_clien
     )
     assert resp.status_code == 200
     data = resp.json()
-    assert data["results"] == []
-    assert data["total_candidates_after_gates_and_floor"] == 0
+    assert data["status"] == "BUDGET_TOO_LOW_FOR_CATEGORY"
+    assert 0 < len(data["results"]) <= 3
 
 
 @pytest.mark.asyncio
@@ -228,6 +228,45 @@ async def test_bilingual_english_and_arabic_prompt_parsing(api_client: AsyncClie
     assert en_parsed["weight_boosts"].get("display_score", 0) > 0
     assert en_parsed["weight_boosts"].get("power_therm_score", 0) > 0
     assert en_parsed["weight_boosts"].get("longevity_score", 0) > 0
+
+
+@pytest.mark.asyncio
+async def test_recommendation_response_includes_review_intelligence(api_client: AsyncClient):
+    """Recommendation cards carry status and the full review breakdown."""
+    resp = await api_client.post(
+        "/api/v1/recommendations",
+        json={
+            "budget": 85000.0,
+            "persona": "gaming",
+            "user_text_prompt": "quiet fans and solid hinges",
+            "top_k": 3,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert data["status"] in {
+        "OK",
+        "GATES_RELAXED_FOR_LOW_BUDGET",
+        "BUDGET_TOO_LOW_FOR_CATEGORY",
+    }
+    assert len(data["results"]) >= 1
+
+    card = data["results"][0]
+    for field in (
+        "reviews_evidence_count",
+        "aspect_scores",
+        "pros_ar",
+        "pros_en",
+        "cons_ar",
+        "cons_en",
+    ):
+        assert field in card
+
+    assert isinstance(card["reviews_evidence_count"], int)
+    assert isinstance(card["aspect_scores"], dict)
+    assert isinstance(card["pros_ar"], list)
+    assert isinstance(card["cons_en"], list)
 
 
 @pytest.mark.asyncio

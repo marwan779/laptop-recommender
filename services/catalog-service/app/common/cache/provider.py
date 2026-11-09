@@ -15,9 +15,11 @@ class ICacheProvider(ABC):
 
     async def connect(self) -> None:
         """Initialize connections or underlying resources (optional lifecycle hook)."""
+        return None
 
     async def close(self) -> None:
         """Gracefully release connections and resources (optional lifecycle hook)."""
+        return None
 
     @abstractmethod
     async def get(self, key: str) -> bytes | None:

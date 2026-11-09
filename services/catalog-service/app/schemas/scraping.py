@@ -47,3 +47,51 @@ class StorePointerResponse(BaseModel):
     total_active_offers: int = 0
     scrape_interval_hours: int = 24
     is_active: bool = True
+
+
+class ReviewsTriggerRequest(BaseModel):
+    """Admin request to dispatch Stage 2 community review scraping."""
+
+    force_all: bool = Field(
+        default=False,
+        description=(
+            "If True, resolves all catalog laptops into chassis targets even if "
+            "has_reviews is already True."
+        ),
+    )
+
+
+class ReviewsTriggerResponse(BaseModel):
+    """Acknowledgment returned when a review scraping batch is queued."""
+
+    job_id: str
+    status: str
+    chassis_targets_queued: int = 0
+    laptops_matched: int = 0
+    message: str
+
+
+class ReviewsIngestRequest(BaseModel):
+    """Request to ingest an enriched chassis reviews artifact into ChromaDB and PostgreSQL."""
+
+    source_path: str | None = Field(
+        default=None,
+        description=(
+            "Optional local file path or S3 key; defaults to "
+            "data/cleaned_and_enriched_chassis_reviews_v6.json."
+        ),
+    )
+    from_s3: bool = Field(
+        default=False,
+        description="If True, read source_path from S3 object storage.",
+    )
+
+
+class ReviewsIngestResponse(BaseModel):
+    """Result summary of a review intelligence ingestion run."""
+
+    status: str
+    chassis_processed: int = 0
+    chroma_documents_upserted: int = 0
+    sql_laptops_updated: int = 0
+    duration_seconds: float = 0.0

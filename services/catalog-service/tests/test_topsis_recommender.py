@@ -20,7 +20,7 @@ def real_catalog_laptops() -> list[dict]:
     """Load the clean 295-laptop catalog for domain simulation tests."""
     if not CATALOG_PATH.exists():
         pytest.skip(f"Unified catalog not found at {CATALOG_PATH}")
-    with open(CATALOG_PATH, "r", encoding="utf-8") as f:
+    with open(CATALOG_PATH, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("laptops", [])
 

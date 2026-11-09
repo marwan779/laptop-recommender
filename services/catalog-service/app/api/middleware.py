@@ -122,7 +122,7 @@ class ResponseCacheMiddleware(BaseHTTPMiddleware):
 
         # Build strict 100%-exact SHA-256 request fingerprint
         raw_body = await request.body() if request.method == "POST" else b""
-        fingerprint = f"{request.method}:{request.url.path}?{request.url.query}:".encode("utf-8") + raw_body
+        fingerprint = f"{request.method}:{request.url.path}?{request.url.query}:".encode() + raw_body
         digest = hashlib.sha256(fingerprint).hexdigest()
         cache_key = f"{key_prefix}:{digest}"
 

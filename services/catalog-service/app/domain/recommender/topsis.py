@@ -8,6 +8,7 @@ Implements dynamic budget-scoped TOPSIS ranking in < 1ms:
 5. In-memory pre-computation of static `persona_scores` (hardware_fit and value_fit).
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -48,6 +49,8 @@ class RankedLaptopResult:
     pros_ar: list[str] = field(default_factory=list)
     cons_en: list[str] = field(default_factory=list)
     cons_ar: list[str] = field(default_factory=list)
+    reviews_evidence_count: int = 0
+    aspect_scores: dict[str, float] = field(default_factory=dict)
     topsis_inputs: dict[str, Any] = field(default_factory=dict)
 
 
@@ -65,6 +68,55 @@ class TopsisExecutionResult:
     parsed_text_prompt: dict[str, Any]
     effective_weights: dict[str, float]
     results: list[RankedLaptopResult]
+    status: str = "OK"
+
+
+def _normalize_evidence_count(value: Any) -> int:
+    """Coerce a review evidence count into a non-negative integer."""
+    if value is None or isinstance(value, bool):
+        return 0
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _normalize_aspect_scores(value: Any) -> dict[str, float]:
+    """Coerce a raw aspect-score mapping into clean ``str -> float`` values."""
+    if not isinstance(value, Mapping):
+        return {}
+
+    scores: dict[str, float] = {}
+    for key, raw_score in value.items():
+        if raw_score is None or isinstance(raw_score, bool):
+            continue
+        try:
+            scores[str(key)] = float(raw_score)
+        except (TypeError, ValueError):
+            continue
+    return scores
+
+
+def _effective_topsis_inputs(
+    lap: dict[str, Any],
+    chroma_adjusted_nlp_scores: Mapping[str, float] | None = None,
+) -> dict[str, Any]:
+    """Return a copy of a laptop's TOPSIS inputs with review-score overrides applied.
+
+    The input laptop dictionary is never mutated. Missing ``community_nlp_score``
+    values fall back to the neutral 75.0 baseline.
+    """
+    raw_inputs = (lap.get("derived_metrics") or {}).get("topsis_inputs") or {}
+    inputs = dict(raw_inputs)
+    if inputs.get("community_nlp_score") is None:
+        inputs["community_nlp_score"] = 75.0
+
+    if chroma_adjusted_nlp_scores:
+        canonical_id = lap.get("canonical_id")
+        if canonical_id in chroma_adjusted_nlp_scores:
+            inputs["community_nlp_score"] = float(chroma_adjusted_nlp_scores[canonical_id])
+
+    return inputs
 
 
 def run_topsis_vector(
@@ -128,6 +180,7 @@ def rank_laptops_topsis(
     apply_smart_60pct_floor: bool = True,
     min_floor_candidates: int = 5,
     top_k: int = 10,
+    chroma_adjusted_nlp_scores: Mapping[str, float] | None = None,
 ) -> TopsisExecutionResult:
     """Execute dynamic, budget-scoped TOPSIS ranking on candidate laptops.
 
@@ -253,6 +306,39 @@ def rank_laptops_topsis(
                 scoped_pool = pool_45
                 applied_floor_egp = floor_45
 
+    # 6. Zero-Candidate Edge Case: return the cheapest active alternatives instead
+    # of an empty list so the front-end can still suggest something actionable.
+    status = "OK"
+    if not scoped_pool:
+        fallback_pool: list[dict[str, Any]] = []
+        for lap in laptops:
+            ti = (lap.get("derived_metrics") or {}).get("topsis_inputs") or {}
+            if not ti.get("in_stock_active", False):
+                continue
+            price = ti.get("effective_price_egp")
+            if price is None or float(price) <= 0:
+                continue
+            fallback_pool.append(lap)
+
+        if brands_norm:
+            branded_fallback = [
+                l for l in fallback_pool
+                if str(l.get("brand") or "").lower().strip() in brands_norm
+            ]
+            if branded_fallback:
+                fallback_pool = branded_fallback
+
+        fallback_pool.sort(
+            key=lambda l: float(
+                (((l.get("derived_metrics") or {}).get("topsis_inputs") or {}).get("effective_price_egp")) or 0.0
+            )
+        )
+        scoped_pool = fallback_pool[: min(3, top_k)]
+        status = "BUDGET_TOO_LOW_FOR_CATEGORY"
+        gates_relaxed = True
+    elif gates_relaxed:
+        status = "GATES_RELAXED_FOR_LOW_BUDGET"
+
     if not scoped_pool:
         return TopsisExecutionResult(
             persona=p_key,
@@ -265,27 +351,32 @@ def rank_laptops_topsis(
             parsed_text_prompt=parsed_prompt,
             effective_weights=final_weights_dict,
             results=[],
+            status=status,
         )
 
-    # 6. Build Decision Matrix (M x 9) and Run Vector TOPSIS
+    # 7. Build Decision Matrix (M x 10) with optional Chroma review-score overrides
+    decision_inputs = [
+        _effective_topsis_inputs(lap, chroma_adjusted_nlp_scores) for lap in scoped_pool
+    ]
     mat = np.array(
-        [[l["derived_metrics"]["topsis_inputs"][k] for k in TOPSIS_CRITERIA_KEYS] for l in scoped_pool],
+        [[ti[k] for k in TOPSIS_CRITERIA_KEYS] for ti in decision_inputs],
         dtype=float,
     )
     scores = run_topsis_vector(mat, weights_vec, IS_BENEFIT_CRITERION)
 
-    # 7. Sort and Format Top-K Results
+    # 8. Sort and Format Top-K Results
     ranked_indices = np.argsort(-scores)[:top_k]
     results: list[RankedLaptopResult] = []
 
     for rank_idx, idx in enumerate(ranked_indices, start=1):
         lap = scoped_pool[int(idx)]
         score_val = float(scores[int(idx)])
-        ti = lap["derived_metrics"]["topsis_inputs"]
+        ti = decision_inputs[int(idx)]
         why = build_why_recommended(lap, p_key)
         community_reviews = (lap.get("derived_metrics") or {}).get("community_reviews") or {}
         if not isinstance(community_reviews, dict):
             community_reviews = {}
+        aspect_scores = _normalize_aspect_scores(community_reviews.get("aspect_scores"))
 
         cheapest_store = lap.get("cheapest_store") or "unknown"
         urls_by_store = lap.get("urls_by_store") or {}
@@ -315,6 +406,10 @@ def rank_laptops_topsis(
                 pros_ar=list(community_reviews.get("pros_ar") or []),
                 cons_en=list(community_reviews.get("cons_en") or []),
                 cons_ar=list(community_reviews.get("cons_ar") or []),
+                reviews_evidence_count=_normalize_evidence_count(
+                    community_reviews.get("evidence_count")
+                ),
+                aspect_scores=aspect_scores,
                 topsis_inputs=ti,
             )
         )
@@ -330,25 +425,31 @@ def rank_laptops_topsis(
         parsed_text_prompt=parsed_prompt,
         effective_weights=final_weights_dict,
         results=results,
+        status=status,
     )
 
 
 def enrich_catalog_with_persona_scores(catalog_dict: dict[str, Any]) -> dict[str, Any]:
     """Calculate and attach `derived_metrics.persona_scores` across all personas.
 
-    - hardware_fit: 0-100 score using only the 8 hardware benefit metrics (price-independent).
-    - value_fit: 0-100 score combining the 8 hardware metrics + value_score.
+    - hardware_fit: 0-100 score using the 9 benefit criteria (8 hardware metrics + community NLP).
+    - value_fit: 0-100 score combining the 9 benefit criteria + value_score.
     Allows static landing pages to do instant SQL ORDER BY without running dynamic TOPSIS.
     """
     laptops = catalog_dict.get("laptops", [])
     if not laptops:
         return catalog_dict
 
-    hw_keys = TOPSIS_CRITERIA_KEYS[:8]  # The 8 hardware benefit criteria
-    hw_mat = np.array(
-        [[l["derived_metrics"]["topsis_inputs"][k] for k in hw_keys] for l in laptops],
-        dtype=float,
-    )
+    hw_keys = TOPSIS_CRITERIA_KEYS[:9]  # 8 hardware benefit criteria + community_nlp_score
+
+    def _hw_row(lap: dict[str, Any]) -> list[float]:
+        inputs = lap["derived_metrics"]["topsis_inputs"]
+        return [
+            float(inputs[k]) if inputs.get(k) is not None else (75.0 if k == "community_nlp_score" else 0.0)
+            for k in hw_keys
+        ]
+
+    hw_mat = np.array([_hw_row(lap) for lap in laptops], dtype=float)
     val_col = np.array(
         [[l["derived_metrics"]["topsis_inputs"]["value_score"]] for l in laptops],
         dtype=float,
@@ -362,8 +463,8 @@ def enrich_catalog_with_persona_scores(catalog_dict: dict[str, Any]) -> dict[str
             dtype=float,
         )
 
-        hw_scores = run_topsis_vector(hw_mat, w_hw, [True] * 8)
-        val_scores = run_topsis_vector(hw_plus_val_mat, w_val, [True] * 9)
+        hw_scores = run_topsis_vector(hw_mat, w_hw, [True] * 9)
+        val_scores = run_topsis_vector(hw_plus_val_mat, w_val, [True] * 10)
 
         for i, lap in enumerate(laptops):
             dm = lap.setdefault("derived_metrics", {})

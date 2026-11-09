@@ -30,6 +30,7 @@ from app.schemas.events import (
 )
 from app.services.catalog_ingestion_service import CatalogIngestionService
 from app.services.price_sync_service import PriceSyncService
+from app.services.review_intelligence_service import ReviewIntelligenceService
 
 logger = logging.getLogger("catalog.messaging.consumer")
 
@@ -43,12 +44,19 @@ class CatalogMessageConsumer:
         session_factory: Callable[[], AsyncSession] | None = None,
         ingestion_service: CatalogIngestionService | None = None,
         price_sync_service: PriceSyncService | None = None,
+        review_intelligence_service: ReviewIntelligenceService | None = None,
     ) -> None:
         self.broker = broker
         self._session_factory = session_factory or AsyncSessionLocal
         self.ingestion_service = ingestion_service or CatalogIngestionService()
         self.price_sync_service = price_sync_service or PriceSyncService()
+        self.review_intelligence_service = review_intelligence_service
         self._is_listening: bool = False
+
+    def _resolve_review_intelligence_service(self) -> ReviewIntelligenceService:
+        if self.review_intelligence_service is None:
+            self.review_intelligence_service = ReviewIntelligenceService()
+        return self.review_intelligence_service
 
     async def start_listening(self) -> None:
         """Declare queues and register event consumer handlers on RabbitMQ."""
@@ -191,13 +199,35 @@ class CatalogMessageConsumer:
                 )
 
     async def handle_reviews_ready_event(self, raw_data: dict[str, Any]) -> None:
-        """Process extracted community review snippets (Phase 2)."""
+        """Persist completed community review intelligence into ChromaDB and PostgreSQL."""
         event = ReviewsReadyEvent.model_validate(raw_data)
         payload = event.payload
         logger.info(
-            "Processing ReviewsReadyEvent [job_id=%s, laptops=%d, snippets=%d]",
+            "Processing ReviewsReadyEvent [job_id=%s, laptops=%d, snippets=%d, s3_key=%s]",
             payload.job_id,
             payload.total_laptops,
             payload.total_snippets,
+            payload.s3_key,
         )
-        # Phase 2: NLP ingestion hook
+
+        if not payload.s3_key:
+            logger.info(
+                "ReviewsReadyEvent [%s] has no s3_key; nothing to ingest into the NLP stores.",
+                payload.job_id,
+            )
+            return
+
+        async with self._session_factory() as session:
+            result = await self._resolve_review_intelligence_service().ingest_from_s3(
+                session=session,
+                s3_key=payload.s3_key,
+            )
+
+        logger.info(
+            "ReviewsReadyEvent [%s] ingested: status=%s, chassis=%d, chroma_docs=%d, sql_laptops=%d",
+            payload.job_id,
+            result.status,
+            result.chassis_processed,
+            result.chroma_documents_upserted,
+            result.sql_laptops_updated,
+        )

@@ -49,6 +49,49 @@ class LaptopConfigurationDetail(LaptopConfigurationSummary):
     category_scores: list[LaptopCategoryScoreRead] = []
 
 
+class CatalogListItemResponse(BaseModel):
+    """Compact catalog card payload with pricing, key specs, and review intelligence."""
+
+    id: str
+    canonical_id: str
+    mpn: str | None = None
+    brand: str
+    laptop_family: str | None = None
+    laptop_model: str
+    title: str
+    thumbnail_url: str | None = None
+
+    min_price_egp: float
+    cheapest_store: str
+    in_stock: bool = True
+    stores_count: int = 1
+
+    ram_capacity_gb: int
+    storage_capacity_gb: int
+    gpu_model: str
+    cpu_model: str
+    display_size_inches: float
+
+    community_nlp_score: float = 75.0
+    value_score: float = 50.0
+    has_reviews: bool = False
+    reviews_evidence_count: int = 0
+
+    pros_ar: list[str] = Field(default_factory=list)
+    pros_en: list[str] = Field(default_factory=list)
+    cons_ar: list[str] = Field(default_factory=list)
+    cons_en: list[str] = Field(default_factory=list)
+
+
+class CatalogListResponse(BaseModel):
+    """Paginated catalog browse response."""
+
+    total: int
+    offset: int
+    limit: int
+    items: list[CatalogListItemResponse] = Field(default_factory=list)
+
+
 # =============================================================================
 # DETAILED SPECIFICATION SCHEMAS FOR FULL UX VIEW
 # =============================================================================

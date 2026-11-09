@@ -306,6 +306,56 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    async def list_and_count_configurations(
+        self,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        brand: str | None = None,
+        in_stock_only: bool = True,
+        offset: int = 0,
+        limit: int = 20,
+    ) -> tuple[Sequence[LaptopConfiguration], int]:
+        """Return one catalog page plus the total number of matching configurations."""
+        filters: list[Any] = []
+        if min_price is not None:
+            filters.append(LaptopConfiguration.min_price_egp >= min_price)
+        if max_price is not None:
+            filters.append(LaptopConfiguration.min_price_egp <= max_price)
+        if brand:
+            filters.append(func.lower(LaptopConfiguration.brand) == brand.lower().strip())
+        if in_stock_only:
+            filters.append(LaptopConfiguration.in_stock.is_(True))
+
+        count_stmt = select(func.count()).select_from(LaptopConfiguration).where(*filters)
+        total = int((await self.session.execute(count_stmt)).scalar_one() or 0)
+
+        stmt = (
+            select(LaptopConfiguration)
+            .options(
+                selectinload(LaptopConfiguration.offers),
+                selectinload(LaptopConfiguration.metrics),
+            )
+            .where(*filters)
+            .order_by(
+                LaptopConfiguration.min_price_egp.asc(),
+                LaptopConfiguration.title.asc(),
+            )
+            .offset(offset)
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().unique().all(), total
+
+    async def list_all_with_offers(self) -> Sequence[LaptopConfiguration]:
+        """Fetch every configuration with eager-loaded offers for review dispatching."""
+        stmt = (
+            select(LaptopConfiguration)
+            .options(selectinload(LaptopConfiguration.offers))
+            .order_by(LaptopConfiguration.laptop_added_at.asc())
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().unique().all()
+
     async def get_candidates_for_recommendation(
         self,
         max_budget_egp: float | None = None,

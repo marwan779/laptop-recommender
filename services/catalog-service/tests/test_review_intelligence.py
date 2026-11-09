@@ -215,6 +215,14 @@ async def test_recommendation_service_surfaces_review_pros_and_cons(db_session: 
     assert winner.pros_ar == ["تبريد قوي", "سهولة الترقية"]
     assert winner.cons_en == ["Loud turbo fans"]
     assert winner.cons_ar == ["صوت مراوح مرتفع"]
+    assert winner.reviews_evidence_count == 27
+    assert winner.aspect_scores == {
+        "thermals_score": 78.9,
+        "acoustics_score": 74.2,
+        "build_and_hinges_score": 82.7,
+        "keyboard_and_trackpad_score": 80.4,
+        "real_battery_and_reliability_score": 79.6,
+    }
 
 
 def test_topsis_result_carries_review_pros_and_cons():
@@ -233,3 +241,6 @@ def test_topsis_result_carries_review_pros_and_cons():
     assert winner.pros_ar == ["تبريد قوي", "سهولة الترقية"]
     assert winner.cons_en == ["Loud turbo fans"]
     assert winner.cons_ar == ["صوت مراوح مرتفع"]
+    assert winner.reviews_evidence_count == 27
+    assert winner.aspect_scores["thermals_score"] == 78.9
+    assert winner.aspect_scores["real_battery_and_reliability_score"] == 79.6

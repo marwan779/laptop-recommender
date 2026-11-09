@@ -1,4 +1,7 @@
+from collections.abc import Sequence
 import uuid
+
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.scraping import ScrapingBatchLog
@@ -35,3 +38,13 @@ class BatchLogRepository(BaseRepository[ScrapingBatchLog]):
         )
         self.session.add(log)
         return log
+
+    async def list_recent_logs(self, limit: int = 20) -> Sequence[ScrapingBatchLog]:
+        """Fetch the most recent scraping audit logs, newest first."""
+        stmt = (
+            select(ScrapingBatchLog)
+            .order_by(desc(ScrapingBatchLog.started_at))
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
