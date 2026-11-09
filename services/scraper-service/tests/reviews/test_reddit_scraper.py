@@ -145,8 +145,18 @@ def test_relevance_gate_layer2_rejects_deal_posts():
     fallback = set()
 
     deal_posts = [
-        {"title": "[Deal] Lenovo LOQ 15IRX9 $799", "selftext": "Clearance discount on BestBuy with promo coupon.", "num_comments": 5, "score": 20},
-        {"title": "Black Friday sale for LOQ 15IRX9", "selftext": "Massive price drop for anyone buying now.", "num_comments": 5, "score": 20},
+        {
+            "title": "[Deal] Lenovo LOQ 15IRX9 $799",
+            "selftext": "Clearance discount on BestBuy with promo coupon.",
+            "num_comments": 5,
+            "score": 20,
+        },
+        {
+            "title": "Black Friday sale for LOQ 15IRX9",
+            "selftext": "Massive price drop for anyone buying now.",
+            "num_comments": 5,
+            "score": 20,
+        },
     ]
 
     for post in deal_posts:
@@ -243,7 +253,13 @@ async def test_fetch_comments_filters_deleted_and_short_replies():
     mock_comments = [
         {"id": "c1", "author": "[deleted]", "body": "This substantive comment was deleted by author.", "score": 5},
         {"id": "c2", "author": "user1", "body": "Nice", "score": 2},  # < 15 chars
-        {"id": "c3", "author": "user2", "body": "I have the exact same model and temps are great around 70C.", "score": 10, "created_utc": 1700000500},
+        {
+            "id": "c3",
+            "author": "user2",
+            "body": "I have the exact same model and temps are great around 70C.",
+            "score": 10,
+            "created_utc": 1700000500,
+        },
     ]
 
     client = MockHttpClient(search_posts=search_posts, comments=mock_comments)

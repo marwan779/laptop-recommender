@@ -8,11 +8,7 @@ from collections.abc import Iterable
 def _clean_list(values: Iterable[object] | None) -> list[str]:
     if not values:
         return []
-    return [
-        str(value).strip()
-        for value in values
-        if value is not None and str(value).strip()
-    ]
+    return [str(value).strip() for value in values if value is not None and str(value).strip()]
 
 
 def align_bilingual_lists(

@@ -38,9 +38,7 @@ from app.schemas.laptop import (
 
 logger = get_logger("catalog.services.catalog_query")
 
-FALLBACK_CATALOG_PATH = (
-    Path(__file__).resolve().parent.parent.parent / "scraping input" / "unified_catalog_latest.json"
-)
+FALLBACK_CATALOG_PATH = Path(__file__).resolve().parent.parent.parent / "scraping input" / "unified_catalog_latest.json"
 
 
 def _safe_int(val: Any, default: int | None = None) -> int | None:
@@ -202,18 +200,14 @@ class CatalogQueryService:
             storage_capacity_gb=laptop.storage_capacity_gb or 0,
             gpu_model=laptop.gpu_model or "Integrated Graphics",
             cpu_model=laptop.cpu_model or "CPU",
-            display_size_inches=(
-                float(laptop.display_size_inches) if laptop.display_size_inches else 15.6
-            ),
+            display_size_inches=(float(laptop.display_size_inches) if laptop.display_size_inches else 15.6),
             community_nlp_score=(
                 float(metrics.community_nlp_score)
                 if metrics is not None and metrics.community_nlp_score is not None
                 else 75.0
             ),
             value_score=(
-                float(metrics.value_score)
-                if metrics is not None and metrics.value_score is not None
-                else 50.0
+                float(metrics.value_score) if metrics is not None and metrics.value_score is not None else 50.0
             ),
             has_reviews=bool(laptop.has_reviews),
             reviews_evidence_count=laptop.reviews_evidence_count or 0,
@@ -322,7 +316,7 @@ class CatalogQueryService:
                 p_url = off.product_url or ""
                 in_stk = bool(off.in_stock)
                 is_valid = bool(off.is_valid_price) if off.is_valid_price is not None else True
-                is_chp = (store_k == cheapest_store_key)
+                is_chp = store_k == cheapest_store_key
 
                 if store_k not in available_stores:
                     available_stores.append(store_k)
@@ -393,7 +387,9 @@ class CatalogQueryService:
                     if m.effective_price_egp is not None
                     else float(laptop.min_price_egp or 0.0)
                 ),
-                estimated_battery_hours=float(m.estimated_battery_hours) if m.estimated_battery_hours is not None else None,
+                estimated_battery_hours=float(m.estimated_battery_hours)
+                if m.estimated_battery_hours is not None
+                else None,
                 silicon_tier=m.silicon_tier,
                 display_tier=m.display_tier,
                 portability_tier=m.portability_tier,
@@ -574,7 +570,7 @@ class CatalogQueryService:
             store_k = str(off.get("store_key") or "generic").lower().strip()
             price_val = float(off.get("price_egp") or 0.0)
             p_url = off.get("product_url") or ""
-            is_chp = (store_k == cheapest_store_key)
+            is_chp = store_k == cheapest_store_key
 
             if store_k not in available_stores:
                 available_stores.append(store_k)
@@ -600,7 +596,10 @@ class CatalogQueryService:
                     is_valid_price=bool(off.get("is_valid_price", True)),
                     is_cheapest=is_chp,
                     price_updated_at=off.get("price_updated_at") or off.get("scraped_at"),
-                    last_checked_at=off.get("last_checked_at") or off.get("last_checked") or off.get("price_updated_at") or off.get("scraped_at"),
+                    last_checked_at=off.get("last_checked_at")
+                    or off.get("last_checked")
+                    or off.get("price_updated_at")
+                    or off.get("scraped_at"),
                 )
             )
 
@@ -631,12 +630,12 @@ class CatalogQueryService:
                 acoustics_score=_safe_float(aspect_scores.get("acoustics_score")),
                 build_and_hinges_score=_safe_float(aspect_scores.get("build_and_hinges_score")),
                 keyboard_and_trackpad_score=_safe_float(aspect_scores.get("keyboard_and_trackpad_score")),
-                real_battery_and_reliability_score=_safe_float(
-                    aspect_scores.get("real_battery_and_reliability_score")
-                ),
+                real_battery_and_reliability_score=_safe_float(aspect_scores.get("real_battery_and_reliability_score")),
                 value_score=float(topsis.get("value_score", 50.0)),
                 effective_price_egp=float(topsis.get("effective_price_egp", min_price)),
-                estimated_battery_hours=float(mob_dm.get("battery_hours_estimate")) if mob_dm.get("battery_hours_estimate") else None,
+                estimated_battery_hours=float(mob_dm.get("battery_hours_estimate"))
+                if mob_dm.get("battery_hours_estimate")
+                else None,
                 silicon_tier=sil_dm.get("silicon_tier"),
                 display_tier=dsp_dm.get("display_tier"),
                 portability_tier=mob_dm.get("portability_tier"),
@@ -663,7 +662,9 @@ class CatalogQueryService:
             warranty_years=lap.get("warranty_years"),
             min_price_egp=min_price,
             max_price_egp=max_price,
-            previous_min_price_egp=float(lap.get("previous_min_price_egp")) if lap.get("previous_min_price_egp") else None,
+            previous_min_price_egp=float(lap.get("previous_min_price_egp"))
+            if lap.get("previous_min_price_egp")
+            else None,
             cheapest_store=cheapest_store_key,
             cheapest_offer_url=cheapest_offer_url,
             price_spread_egp=float(lap.get("price_spread_egp") or 0.0),

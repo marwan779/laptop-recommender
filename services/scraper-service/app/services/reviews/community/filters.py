@@ -161,11 +161,7 @@ def code_tokens(values: list[str] | tuple[str, ...]) -> set[str]:
             if "-" in token:
                 for part in token.split("-"):
                     part = part.strip()
-                    if (
-                        len(part) >= 4
-                        and any(char.isdigit() for char in part)
-                        and any(char.isalpha() for char in part)
-                    ):
+                    if len(part) >= 4 and any(char.isdigit() for char in part) and any(char.isalpha() for char in part):
                         tokens.add(part)
     return tokens
 

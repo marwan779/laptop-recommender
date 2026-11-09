@@ -72,9 +72,7 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
                     return []
 
                 topics = {
-                    str(topic.get("id")): topic
-                    for topic in payload.get("topics") or []
-                    if isinstance(topic, dict)
+                    str(topic.get("id")): topic for topic in payload.get("topics") or [] if isinstance(topic, dict)
                 }
                 tokens = self._hardware_tokens(laptop_target)
 

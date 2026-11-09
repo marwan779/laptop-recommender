@@ -57,20 +57,22 @@ def _normalize_catalog_dict(lap: dict[str, Any]) -> dict[str, Any]:
         if p_egp is not None and is_valid:
             prices_by_store[store_k] = float(p_egp)
 
-        is_cheapest = (store_k == cheapest_store)
+        is_cheapest = store_k == cheapest_store
         if is_cheapest and p_url and not cheapest_offer_url:
             cheapest_offer_url = p_url
 
-        clean_offers.append({
-            "store_key": store_k,
-            "store_name": off.get("store_name") or store_k,
-            "price_egp": float(p_egp) if p_egp is not None else 0.0,
-            "product_url": p_url or "",
-            "in_stock": in_stock,
-            "is_cheapest": is_cheapest,
-            "last_checked_at": off.get("last_checked_at") or off.get("last_checked") or off.get("scraped_at"),
-            "price_updated_at": off.get("price_updated_at") or off.get("scraped_at"),
-        })
+        clean_offers.append(
+            {
+                "store_key": store_k,
+                "store_name": off.get("store_name") or store_k,
+                "price_egp": float(p_egp) if p_egp is not None else 0.0,
+                "product_url": p_url or "",
+                "in_stock": in_stock,
+                "is_cheapest": is_cheapest,
+                "last_checked_at": off.get("last_checked_at") or off.get("last_checked") or off.get("scraped_at"),
+                "price_updated_at": off.get("price_updated_at") or off.get("scraped_at"),
+            }
+        )
 
     if not cheapest_offer_url and urls_by_store:
         cheapest_offer_url = urls_by_store.get(cheapest_store) or next(iter(urls_by_store.values()), None)
@@ -181,9 +183,7 @@ class RecommendationService:
         chroma_scores: dict[str, float] | None = None
         if request.user_text_prompt and request.user_text_prompt.strip():
             try:
-                chroma_scores = self._resolve_chroma_service().query_dual_similarity(
-                    request.user_text_prompt
-                )
+                chroma_scores = self._resolve_chroma_service().query_dual_similarity(request.user_text_prompt)
             except Exception:
                 logger.exception("Chroma review similarity failed; continuing with base NLP scores")
                 chroma_scores = {}

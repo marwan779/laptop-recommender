@@ -284,6 +284,7 @@ async def test_arabhardware_hydrates_full_article_body():
 
 # ─── Collector mapping ──────────────────────────────────────────────────────
 
+
 class FakeEditorialScraper(ICommunityPlatformScraper):
     platform_name = "editorial-fake"
 
@@ -306,9 +307,7 @@ class FakeDiscussionScraper(ICommunityPlatformScraper):
 
 @pytest.mark.anyio
 async def test_collector_maps_editorial_and_discussions():
-    collector = CommunitiesReviewsCollector(
-        scrapers=[FakeEditorialScraper(), FakeDiscussionScraper()]
-    )
+    collector = CommunitiesReviewsCollector(scrapers=[FakeEditorialScraper(), FakeDiscussionScraper()])
 
     results = await collector.collect_for_targets([_target()])
     data = next(iter(results.values()))

@@ -62,8 +62,7 @@ def target_from_mapping(data: Mapping[str, Any]) -> ReviewTargetInput:
         laptop_model=pick("laptop_model"),
         mpn=_as_string(data.get("mpn")) or _as_string(identity.get("mpn")),
         manufacturer_part_number=(
-            _as_string(identity.get("manufacturer_part_number"))
-            or _as_string(data.get("manufacturer_part_number"))
+            _as_string(identity.get("manufacturer_part_number")) or _as_string(data.get("manufacturer_part_number"))
         ),
         retailer_sku=pick("retailer_sku"),
         skus=_as_string_tuple(data.get("skus"), identity.get("skus")),
@@ -87,8 +86,4 @@ def targets_from_payload(payload: Mapping[str, Any]) -> tuple[ReviewTargetInput,
     raw_targets = payload.get("targets")
     if not isinstance(raw_targets, (list, tuple)):
         return ()
-    return tuple(
-        target_from_mapping(target)
-        for target in raw_targets
-        if isinstance(target, Mapping)
-    )
+    return tuple(target_from_mapping(target) for target in raw_targets if isinstance(target, Mapping))

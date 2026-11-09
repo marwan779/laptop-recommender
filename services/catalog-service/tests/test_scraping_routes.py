@@ -151,6 +151,7 @@ async def test_get_scraping_logs_route(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_trigger_reviews_scraping_queues_outbox_command(db_session: AsyncSession):
     """Stage 2 trigger resolves chassis targets and writes a reviews.scrape.command outbox event."""
+
     async def override_get_db():
         yield db_session
 
@@ -269,6 +270,7 @@ async def test_ingest_reviews_updates_chroma_and_postgres(
 @pytest.mark.asyncio
 async def test_ingest_reviews_missing_file_returns_404(db_session: AsyncSession, tmp_path):
     """A missing local reviews artifact returns 404 instead of a server error."""
+
     async def override_get_db():
         yield db_session
 

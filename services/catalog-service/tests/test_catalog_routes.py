@@ -12,6 +12,7 @@ from app.services.catalog_query_service import CatalogQueryService
 @pytest.mark.asyncio
 async def test_get_laptop_detail_by_canonical_id_success(db_session: AsyncSession):
     """Querying by canonical_id returns 200 OK with full 35+ hardware specs, offers, and metrics."""
+
     async def override_get_db():
         yield db_session
 
@@ -79,6 +80,7 @@ async def test_get_laptop_detail_by_canonical_id_success(db_session: AsyncSessio
 @pytest.mark.asyncio
 async def test_get_laptop_detail_by_uuid_success(db_session: AsyncSession):
     """Querying by database UUID resolves correctly."""
+
     async def override_get_db():
         yield db_session
 
@@ -104,6 +106,7 @@ async def test_get_laptop_detail_by_uuid_success(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_get_laptop_detail_by_mpn_success(db_session: AsyncSession):
     """Querying by manufacturer part number (MPN) resolves correctly."""
+
     async def override_get_db():
         yield db_session
 
@@ -129,6 +132,7 @@ async def test_get_laptop_detail_by_mpn_success(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_get_catalog_laptop_detail_alias(db_session: AsyncSession):
     """The alias route /api/v1/catalog/laptops/{laptop_id} also works."""
+
     async def override_get_db():
         yield db_session
 
@@ -146,6 +150,7 @@ async def test_get_catalog_laptop_detail_alias(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_get_laptop_detail_not_found(db_session: AsyncSession):
     """Querying a non-existent laptop returns 404 Not Found."""
+
     async def override_get_db():
         yield db_session
 
@@ -175,6 +180,7 @@ async def test_catalog_query_service_offline_fallback():
 @pytest.mark.asyncio
 async def test_list_laptops_paginated_with_review_fields(db_session: AsyncSession):
     """The catalog browse endpoint returns paginated cards with review intelligence."""
+
     async def override_get_db():
         yield db_session
 
@@ -235,6 +241,7 @@ async def test_list_laptops_paginated_with_review_fields(db_session: AsyncSessio
 @pytest.mark.asyncio
 async def test_list_laptops_price_and_brand_filters(db_session: AsyncSession):
     """Price and brand query parameters strictly constrain catalog results."""
+
     async def override_get_db():
         yield db_session
 

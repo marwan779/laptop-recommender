@@ -26,15 +26,15 @@ TOPSIS_CRITERIA_KEYS: list[str] = [
 ]
 
 IS_BENEFIT_CRITERION: list[bool] = [
-    True,   # cpu_score
-    True,   # gpu_score
-    True,   # power_therm_score
-    True,   # display_score
-    True,   # mobility_score
-    True,   # longevity_score
-    True,   # ergonomics_score
-    True,   # connectivity_score
-    True,   # community_nlp_score (Benefit: higher real-world review score is better)
+    True,  # cpu_score
+    True,  # gpu_score
+    True,  # power_therm_score
+    True,  # display_score
+    True,  # mobility_score
+    True,  # longevity_score
+    True,  # ergonomics_score
+    True,  # connectivity_score
+    True,  # community_nlp_score (Benefit: higher real-world review score is better)
     False,  # effective_price_egp (Cost criterion: cheaper within the budget window is better)
 ]
 
@@ -220,9 +220,24 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "خامات", "مفصلات", "عيوب", "مشاكل", "مضمون", "اعتمادية", "صوت المراوح",
-            "سخونة", "بيسخن", "مبيسخنش", "build", "hinge", "reliable", "reliability",
-            "issues", "quiet", "fan noise", "thermals",
+            "خامات",
+            "مفصلات",
+            "عيوب",
+            "مشاكل",
+            "مضمون",
+            "اعتمادية",
+            "صوت المراوح",
+            "سخونة",
+            "بيسخن",
+            "مبيسخنش",
+            "build",
+            "hinge",
+            "reliable",
+            "reliability",
+            "issues",
+            "quiet",
+            "fan noise",
+            "thermals",
         ]
     ):
         weight_boosts["community_nlp_score"] = weight_boosts.get("community_nlp_score", 0.0) + 0.06
@@ -251,9 +266,21 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "cyberpunk", "سايبر بانك", "سايبربانك", "الترا", "ألترا", "ultra",
-            "aaa", "rtx", "كارت خارجي", "dedicated gpu", "warzone", "red dead",
-            "بلندر", "blender", "unreal",
+            "cyberpunk",
+            "سايبر بانك",
+            "سايبربانك",
+            "الترا",
+            "ألترا",
+            "ultra",
+            "aaa",
+            "rtx",
+            "كارت خارجي",
+            "dedicated gpu",
+            "warzone",
+            "red dead",
+            "بلندر",
+            "blender",
+            "unreal",
         ]
     ):
         extracted_filters["require_dgpu"] = True
@@ -263,8 +290,18 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "بطاريه", "بطارية", "خفيف", "تنقل", "سفر", "مواصلات", "محاضرات",
-            "battery", "lightweight", "portable", "travel", "thin",
+            "بطاريه",
+            "بطارية",
+            "خفيف",
+            "تنقل",
+            "سفر",
+            "مواصلات",
+            "محاضرات",
+            "battery",
+            "lightweight",
+            "portable",
+            "travel",
+            "thin",
         ]
     ):
         weight_boosts["mobility_score"] = weight_boosts.get("mobility_score", 0.0) + 0.15
@@ -273,8 +310,20 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "شاشه", "شاشة", "الوان", "ألوان", "دقة", "سطوع", "مونتاج", "جرافيك",
-            "display", "screen", "color", "srgb", "oled", "hdr",
+            "شاشه",
+            "شاشة",
+            "الوان",
+            "ألوان",
+            "دقة",
+            "سطوع",
+            "مونتاج",
+            "جرافيك",
+            "display",
+            "screen",
+            "color",
+            "srgb",
+            "oled",
+            "hdr",
         ]
     ):
         weight_boosts["display_score"] = weight_boosts.get("display_score", 0.0) + 0.14
@@ -283,11 +332,45 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "كارت شاشه", "كارت شاشة", "العاب", "ألعاب", "فريمات", "رندر", "جيمز", "جيمنج",
-            "يشغل", "الترا", "ألترا", "سايبر بانك", "سايبربانك", "فيفا", "فورزا", "فالورانت",
-            "بيس", "ببجي", "جاتا", "بلندر", "gaming", "fps", "rtx", "gpu", "render", "3d",
-            "ultra", "cyberpunk", "gta", "fifa", "fc24", "fc25", "valorant", "cs2",
-            "warzone", "aaa", "unreal", "unity", "blender",
+            "كارت شاشه",
+            "كارت شاشة",
+            "العاب",
+            "ألعاب",
+            "فريمات",
+            "رندر",
+            "جيمز",
+            "جيمنج",
+            "يشغل",
+            "الترا",
+            "ألترا",
+            "سايبر بانك",
+            "سايبربانك",
+            "فيفا",
+            "فورزا",
+            "فالورانت",
+            "بيس",
+            "ببجي",
+            "جاتا",
+            "بلندر",
+            "gaming",
+            "fps",
+            "rtx",
+            "gpu",
+            "render",
+            "3d",
+            "ultra",
+            "cyberpunk",
+            "gta",
+            "fifa",
+            "fc24",
+            "fc25",
+            "valorant",
+            "cs2",
+            "warzone",
+            "aaa",
+            "unreal",
+            "unity",
+            "blender",
         ]
     ):
         weight_boosts["gpu_score"] = weight_boosts.get("gpu_score", 0.0) + 0.15
@@ -297,8 +380,19 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "معالج", "بروسيسور", "برمجه", "برمجة", "محاكاة", "داتا", "كود",
-            "cpu", "processor", "coding", "docker", "vm", "multitask",
+            "معالج",
+            "بروسيسور",
+            "برمجه",
+            "برمجة",
+            "محاكاة",
+            "داتا",
+            "كود",
+            "cpu",
+            "processor",
+            "coding",
+            "docker",
+            "vm",
+            "multitask",
         ]
     ):
         weight_boosts["cpu_score"] = weight_boosts.get("cpu_score", 0.0) + 0.14
@@ -307,8 +401,17 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "تبريد", "حراره", "حرارة", "مراوح", "سخونة", "باور",
-            "cooling", "thermal", "heat", "tgp", "watt",
+            "تبريد",
+            "حراره",
+            "حرارة",
+            "مراوح",
+            "سخونة",
+            "باور",
+            "cooling",
+            "thermal",
+            "heat",
+            "tgp",
+            "watt",
         ]
     ):
         weight_boosts["power_therm_score"] = weight_boosts.get("power_therm_score", 0.0) + 0.14
@@ -317,8 +420,17 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "تطوير", "ترقيه", "ترقية", "يعيش", "مستقبل", "رامات بتزيد",
-            "upgrade", "future", "slots", "longevity", "expand",
+            "تطوير",
+            "ترقيه",
+            "ترقية",
+            "يعيش",
+            "مستقبل",
+            "رامات بتزيد",
+            "upgrade",
+            "future",
+            "slots",
+            "longevity",
+            "expand",
         ]
     ):
         weight_boosts["longevity_score"] = weight_boosts.get("longevity_score", 0.0) + 0.14
@@ -327,8 +439,19 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "كيبورد", "كاميرا", "صوت", "اجتماعات", "زووم", "بصمه", "بصمة",
-            "keyboard", "webcam", "camera", "mic", "audio", "zoom",
+            "كيبورد",
+            "كاميرا",
+            "صوت",
+            "اجتماعات",
+            "زووم",
+            "بصمه",
+            "بصمة",
+            "keyboard",
+            "webcam",
+            "camera",
+            "mic",
+            "audio",
+            "zoom",
         ]
     ):
         weight_boosts["ergonomics_score"] = weight_boosts.get("ergonomics_score", 0.0) + 0.12
@@ -337,8 +460,17 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "منافذ", "تايب سي", "ثندربولت", "لان", "شاشات خارجية",
-            "ports", "thunderbolt", "usb-c", "hdmi", "ethernet", "lan",
+            "منافذ",
+            "تايب سي",
+            "ثندربولت",
+            "لان",
+            "شاشات خارجية",
+            "ports",
+            "thunderbolt",
+            "usb-c",
+            "hdmi",
+            "ethernet",
+            "lan",
         ]
     ):
         weight_boosts["connectivity_score"] = weight_boosts.get("connectivity_score", 0.0) + 0.12
@@ -347,8 +479,17 @@ def parse_user_text_prompt(prompt: str | None) -> dict[str, Any]:
     if any(
         k in txt
         for k in [
-            "ارخص", "أرخص", "توفير", "سعر", "اقتصادي", "على قد الايد",
-            "cheap", "budget", "value", "save", "affordable",
+            "ارخص",
+            "أرخص",
+            "توفير",
+            "سعر",
+            "اقتصادي",
+            "على قد الايد",
+            "cheap",
+            "budget",
+            "value",
+            "save",
+            "affordable",
         ]
     ):
         weight_boosts["effective_price_egp"] = weight_boosts.get("effective_price_egp", 0.0) + 0.14

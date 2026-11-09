@@ -23,13 +23,7 @@ def normalize_lookup(value: str | None) -> str:
         return ""
     text = value.translate(_ARABIC_NUMERALS)
     text = ARABIC_DIACRITICS_RE.sub("", text)
-    text = (
-        text.replace("أ", "ا")
-        .replace("إ", "ا")
-        .replace("آ", "ا")
-        .replace("ى", "ي")
-        .replace("ة", "ه")
-    )
+    text = text.replace("أ", "ا").replace("إ", "ا").replace("آ", "ا").replace("ى", "ي").replace("ة", "ه")
     text = re.sub(r"[\s\-_]+", " ", text)
     return text.strip().lower()
 
@@ -95,9 +89,7 @@ _BRAND_ALIAS_PAIRS: tuple[tuple[str, str], ...] = (
     ("هونر", "Honor"),
 )
 
-BRAND_ALIASES: dict[str, str] = {
-    normalize_lookup(alias): canonical for alias, canonical in _BRAND_ALIAS_PAIRS
-}
+BRAND_ALIASES: dict[str, str] = {normalize_lookup(alias): canonical for alias, canonical in _BRAND_ALIAS_PAIRS}
 
 ARABIC_BRAND_NAMES: dict[str, str] = {
     "ASUS": "أسوس",
@@ -211,9 +203,7 @@ _FAMILY_ALIAS_PAIRS: tuple[tuple[str, str], ...] = (
     ("سيرفس", "Surface"),
 )
 
-FAMILY_ALIASES: dict[str, str] = {
-    normalize_lookup(alias): canonical for alias, canonical in _FAMILY_ALIAS_PAIRS
-}
+FAMILY_ALIASES: dict[str, str] = {normalize_lookup(alias): canonical for alias, canonical in _FAMILY_ALIAS_PAIRS}
 
 ARABIC_FAMILY_NAMES: dict[str, str] = {
     "Vivobook": "فيفوبوك",
@@ -320,9 +310,7 @@ ASPECT_KEYWORDS: dict[str, tuple[str, ...]] = {
     "pros_cons": ("pros", "cons", "verdict", "مميزات", "عيوب", "الحكم"),
 }
 
-ASPECT_TERMS: tuple[str, ...] = tuple(
-    normalize_lookup(term) for terms in ASPECT_KEYWORDS.values() for term in terms
-)
+ASPECT_TERMS: tuple[str, ...] = tuple(normalize_lookup(term) for terms in ASPECT_KEYWORDS.values() for term in terms)
 
 VERDICT_TERMS: tuple[str, ...] = tuple(
     normalize_lookup(term)

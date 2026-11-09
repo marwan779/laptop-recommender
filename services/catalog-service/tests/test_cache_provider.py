@@ -149,6 +149,7 @@ async def test_redis_provider_fail_open_on_errors():
 @pytest.mark.asyncio
 async def test_middleware_caches_get_laptop_detail_and_sets_headers(db_session: AsyncSession):
     """GET /api/v1/laptops/{id} returns MISS on 1st call and HIT on 2nd identical call."""
+
     async def override_get_db():
         yield db_session
 
@@ -179,6 +180,7 @@ async def test_middleware_caches_get_laptop_detail_and_sets_headers(db_session: 
 @pytest.mark.asyncio
 async def test_middleware_strict_100_percent_matching_on_post_recommendations(db_session: AsyncSession):
     """Only 100% identical requests hit the same cache entry; any small change creates a new entry."""
+
     async def override_get_db():
         yield db_session
 
@@ -242,6 +244,7 @@ async def test_middleware_strict_100_percent_matching_on_post_recommendations(db
 @pytest.mark.asyncio
 async def test_middleware_does_not_cache_404_or_422_errors(db_session: AsyncSession):
     """Error responses (404, 422) must never be stored in cache."""
+
     async def override_get_db():
         yield db_session
 

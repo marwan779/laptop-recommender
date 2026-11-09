@@ -13,9 +13,7 @@ from typing import Any
 
 logger = logging.getLogger("scraper.services.reviews.community.http")
 
-DEFAULT_USER_AGENT = (
-    "laptop-recommender/1.0 (community review collector; contact: ops@laptop-recommender.local)"
-)
+DEFAULT_USER_AGENT = "laptop-recommender/1.0 (community review collector; contact: ops@laptop-recommender.local)"
 
 
 class HttpClientContext:

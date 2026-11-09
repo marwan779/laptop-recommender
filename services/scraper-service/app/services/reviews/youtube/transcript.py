@@ -94,7 +94,9 @@ class YouTubeTranscriptService:
             exc_str = str(exc)
             if "blocking requests from your IP" in exc_str or "IpBlocked" in type(exc).__name__:
                 if not self._ip_blocked:
-                    logger.warning("YouTube is blocking transcript requests from this IP. Tripping circuit breaker for session.")
+                    logger.warning(
+                        "YouTube is blocking transcript requests from this IP. Tripping circuit breaker for session."
+                    )
                 self._ip_blocked = True
             logger.debug("Transcript API failed for %s: %s", video_id, exc)
             return None

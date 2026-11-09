@@ -117,7 +117,9 @@ class RankedLaptopResponse(BaseModel):
     )
     available_stores: list[str] = Field(default_factory=list, description="Stores with active stock.")
     prices_by_store: dict[str, float] = Field(default_factory=dict, description="Price breakdown per retailer.")
-    urls_by_store: dict[str, str] = Field(default_factory=dict, description="Map of retailer store to direct product URL.")
+    urls_by_store: dict[str, str] = Field(
+        default_factory=dict, description="Map of retailer store to direct product URL."
+    )
     offers: list[StoreOfferResponse] = Field(
         default_factory=list,
         description="List of all retail offers with prices, stock status, and direct URLs.",
@@ -179,7 +181,6 @@ class RecommendationResponse(BaseModel):
     status: str = Field(
         default="OK",
         description=(
-            "Recommendation execution status: OK, GATES_RELAXED_FOR_LOW_BUDGET, "
-            "or BUDGET_TOO_LOW_FOR_CATEGORY."
+            "Recommendation execution status: OK, GATES_RELAXED_FOR_LOW_BUDGET, or BUDGET_TOO_LOW_FOR_CATEGORY."
         ),
     )

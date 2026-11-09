@@ -206,9 +206,7 @@ async def test_handle_check_prices_command(mock_broker, mock_price_monitor):
 @pytest.mark.anyio
 async def test_handle_reviews_scrape_command(mock_broker):
     collector = MagicMock()
-    collector.process_reviews_batch = AsyncMock(
-        return_value="reviews/raw_chassis_reviews_job-rec-001.json"
-    )
+    collector.process_reviews_batch = AsyncMock(return_value="reviews/raw_chassis_reviews_job-rec-001.json")
     consumer = ScraperMessageConsumer(broker=mock_broker, review_collector=collector)
 
     cmd = ScrapeReviewsCommand(

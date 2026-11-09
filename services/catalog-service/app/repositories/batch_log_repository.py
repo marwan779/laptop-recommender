@@ -41,10 +41,6 @@ class BatchLogRepository(BaseRepository[ScrapingBatchLog]):
 
     async def list_recent_logs(self, limit: int = 20) -> Sequence[ScrapingBatchLog]:
         """Fetch the most recent scraping audit logs, newest first."""
-        stmt = (
-            select(ScrapingBatchLog)
-            .order_by(desc(ScrapingBatchLog.started_at))
-            .limit(limit)
-        )
+        stmt = select(ScrapingBatchLog).order_by(desc(ScrapingBatchLog.started_at)).limit(limit)
         result = await self.session.execute(stmt)
         return result.scalars().all()

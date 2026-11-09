@@ -54,10 +54,7 @@ class ReviewsTriggerRequest(BaseModel):
 
     force_all: bool = Field(
         default=False,
-        description=(
-            "If True, resolves all catalog laptops into chassis targets even if "
-            "has_reviews is already True."
-        ),
+        description=("If True, resolves all catalog laptops into chassis targets even if has_reviews is already True."),
     )
 
 
@@ -77,8 +74,7 @@ class ReviewsIngestRequest(BaseModel):
     source_path: str | None = Field(
         default=None,
         description=(
-            "Optional local file path or S3 key; defaults to "
-            "data/cleaned_and_enriched_chassis_reviews_v6.json."
+            "Optional local file path or S3 key; defaults to data/cleaned_and_enriched_chassis_reviews_v6.json."
         ),
     )
     from_s3: bool = Field(

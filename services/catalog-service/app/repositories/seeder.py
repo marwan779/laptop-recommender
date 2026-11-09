@@ -186,11 +186,13 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 if laptop.canonical_id:
                     existing_by_canonical[laptop.canonical_id] = laptop
                 if laptop.mpn:
-                    existing_by_mpn_and_specs[(
-                        laptop.mpn.strip().upper(),
-                        laptop.ram_capacity_gb,
-                        laptop.storage_capacity_gb,
-                    )] = laptop
+                    existing_by_mpn_and_specs[
+                        (
+                            laptop.mpn.strip().upper(),
+                            laptop.ram_capacity_gb,
+                            laptop.storage_capacity_gb,
+                        )
+                    ] = laptop
 
         # Step 3: Iterate and upsert
         for item in raw_laptops:
@@ -229,11 +231,13 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 updated_laptops_count += 1
                 existing_by_canonical[target_laptop.canonical_id] = target_laptop
                 if target_laptop.mpn:
-                    existing_by_mpn_and_specs[(
-                        target_laptop.mpn.strip().upper(),
-                        target_laptop.ram_capacity_gb,
-                        target_laptop.storage_capacity_gb,
-                    )] = target_laptop
+                    existing_by_mpn_and_specs[
+                        (
+                            target_laptop.mpn.strip().upper(),
+                            target_laptop.ram_capacity_gb,
+                            target_laptop.storage_capacity_gb,
+                        )
+                    ] = target_laptop
             else:
                 target_laptop = LaptopConfiguration(id=uuid.uuid4(), canonical_id=cid_str)
                 self._populate_laptop_fields(target_laptop, item, now)
@@ -241,11 +245,13 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 self.session.add(target_laptop)
                 existing_by_canonical[cid_str] = target_laptop
                 if target_laptop.mpn:
-                    existing_by_mpn_and_specs[(
-                        target_laptop.mpn.strip().upper(),
-                        target_laptop.ram_capacity_gb,
-                        target_laptop.storage_capacity_gb,
-                    )] = target_laptop
+                    existing_by_mpn_and_specs[
+                        (
+                            target_laptop.mpn.strip().upper(),
+                            target_laptop.ram_capacity_gb,
+                            target_laptop.storage_capacity_gb,
+                        )
+                    ] = target_laptop
                 new_laptops_count += 1
 
             # Step 4: Upsert offers
@@ -487,8 +493,6 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
             laptop.cons_en, laptop.cons_ar = align_bilingual_lists(
                 community_reviews.get("cons_en"), community_reviews.get("cons_ar")
             )
-
-
 
             laptop.reviews_evidence_count = _safe_int(community_reviews.get("evidence_count"), default=0) or 0
             if (

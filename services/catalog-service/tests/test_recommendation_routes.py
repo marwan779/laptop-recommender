@@ -39,6 +39,7 @@ async def test_recommendations_endpoint_missing_persona_fails():
 @pytest.mark.asyncio
 async def test_recommendations_endpoint_success(db_session: AsyncSession):
     """Happy path with valid budget and persona returns 200 OK with ranked results and product URLs."""
+
     async def override_get_db():
         yield db_session
 
@@ -81,6 +82,7 @@ async def test_recommendations_endpoint_success(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_recommendations_endpoint_arabic_prompt(db_session: AsyncSession):
     """Free-text Arabic prompt extracts constraints (OLED) and applies dynamic boosts."""
+
     async def override_get_db():
         yield db_session
 
@@ -112,6 +114,7 @@ async def test_recommendations_endpoint_arabic_prompt(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_recommendations_endpoint_multiple_personas_blending(db_session: AsyncSession):
     """Passing a list of multiple personas blends criteria weights smoothly."""
+
     async def override_get_db():
         yield db_session
 
@@ -141,6 +144,7 @@ async def test_recommendations_endpoint_multiple_personas_blending(db_session: A
 @pytest.mark.asyncio
 async def test_recommendations_endpoint_brand_filter(db_session: AsyncSession):
     """Brand filter returns only candidate laptops from that brand."""
+
     async def override_get_db():
         yield db_session
 

@@ -131,10 +131,7 @@ class LaptopMagPlatformScraper(ICommunityPlatformScraper):
             if any(fragment in path for fragment in _NON_REVIEW_FRAGMENTS):
                 continue
             is_review_path = (
-                path.startswith("/reviews/")
-                or path.endswith("-review")
-                or "-review-" in path
-                or "/review/" in path
+                path.startswith("/reviews/") or path.endswith("-review") or "-review-" in path or "/review/" in path
             )
             if not is_review_path:
                 continue
@@ -153,8 +150,7 @@ class LaptopMagPlatformScraper(ICommunityPlatformScraper):
                 haystack = f"{path} {anchor.get_text(' ', strip=True).lower()}"
                 if family:
                     family_words = [
-                        w for w in family.split()
-                        if len(w) >= 3 and w not in {"laptop", "gaming", "series", "notebook"}
+                        w for w in family.split() if len(w) >= 3 and w not in {"laptop", "gaming", "series", "notebook"}
                     ]
                     if family_words and not any(w in haystack for w in family_words):
                         continue

@@ -9,7 +9,7 @@ SAMPLE_PAYLOAD = {
     "laptop_family": "Vivobook",
     "laptop_model": "Vivobook 16",
     "title": (
-        'ASUS Vivobook 16 X1605VA-OACH007W \u2013 Intel Core i7-13620H, 16GB DDR4, '
+        "ASUS Vivobook 16 X1605VA-OACH007W \u2013 Intel Core i7-13620H, 16GB DDR4, "
         '512GB SSD, 16" FHD OLED 60Hz, 95% DCI-P3, Windows 11, Includes Mouse & Bag'
     ),
     "thumbnail_url": "https://www.compumarts.com/cdn/shop/files/ASUS-Vivobook-16.jpg",

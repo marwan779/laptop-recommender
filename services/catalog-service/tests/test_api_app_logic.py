@@ -31,6 +31,7 @@ from app.main import app
 @pytest_asyncio.fixture
 async def api_client(db_session: AsyncSession):
     """Provide an AsyncClient wired to the test DB session and a fresh InMemoryCacheProvider."""
+
     async def override_get_db():
         yield db_session
 
@@ -409,6 +410,7 @@ async def test_cache_disabled_setting_bypasses_middleware(
 @pytest.mark.asyncio
 async def test_redis_failure_fails_open_and_serves_from_database(db_session: AsyncSession):
     """If Redis throws a connection error mid-request, the endpoint still returns 200 OK from DB."""
+
     async def override_get_db():
         yield db_session
 

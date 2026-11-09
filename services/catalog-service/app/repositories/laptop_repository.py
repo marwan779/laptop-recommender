@@ -71,16 +71,20 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
     topsis_inputs = {
         "cpu_score": float(metrics.cpu_score) if metrics and metrics.cpu_score is not None else 50.0,
         "gpu_score": float(metrics.gpu_score) if metrics and metrics.gpu_score is not None else 50.0,
-        "power_therm_score": float(metrics.power_therm_score) if metrics and metrics.power_therm_score is not None else 50.0,
+        "power_therm_score": float(metrics.power_therm_score)
+        if metrics and metrics.power_therm_score is not None
+        else 50.0,
         "display_score": float(metrics.display_score) if metrics and metrics.display_score is not None else 50.0,
         "mobility_score": float(metrics.mobility_score) if metrics and metrics.mobility_score is not None else 50.0,
         "longevity_score": float(metrics.longevity_score) if metrics and metrics.longevity_score is not None else 50.0,
-        "ergonomics_score": float(metrics.ergonomics_score) if metrics and metrics.ergonomics_score is not None else 50.0,
-        "connectivity_score": float(metrics.connectivity_score) if metrics and metrics.connectivity_score is not None else 50.0,
+        "ergonomics_score": float(metrics.ergonomics_score)
+        if metrics and metrics.ergonomics_score is not None
+        else 50.0,
+        "connectivity_score": float(metrics.connectivity_score)
+        if metrics and metrics.connectivity_score is not None
+        else 50.0,
         "community_nlp_score": (
-            float(metrics.community_nlp_score)
-            if metrics and metrics.community_nlp_score is not None
-            else 75.0
+            float(metrics.community_nlp_score) if metrics and metrics.community_nlp_score is not None else 75.0
         ),
         "effective_price_egp": (
             float(metrics.effective_price_egp)
@@ -88,7 +92,9 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
             else (float(laptop.min_price_egp) if laptop.min_price_egp else 0.0)
         ),
         "value_score": float(metrics.value_score) if metrics and metrics.value_score is not None else 50.0,
-        "in_stock_active": bool(metrics.in_stock_active) if metrics and metrics.in_stock_active is not None else bool(laptop.in_stock),
+        "in_stock_active": bool(metrics.in_stock_active)
+        if metrics and metrics.in_stock_active is not None
+        else bool(laptop.in_stock),
     }
 
     prices_by_store: dict[str, float] = {}
@@ -106,20 +112,22 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
                 if offer.product_url:
                     urls_by_store[store_k] = offer.product_url
 
-                is_cheapest = (store_k == cheapest_store)
+                is_cheapest = store_k == cheapest_store
                 if is_cheapest and offer.product_url and not cheapest_offer_url:
                     cheapest_offer_url = offer.product_url
 
-                formatted_offers.append({
-                    "store_key": store_k,
-                    "store_name": offer.store_name or store_k,
-                    "price_egp": float(offer.price_egp) if offer.price_egp else 0.0,
-                    "product_url": offer.product_url or "",
-                    "in_stock": bool(offer.in_stock),
-                    "is_cheapest": is_cheapest,
-                    "last_checked_at": offer.last_checked_at,
-                    "price_updated_at": offer.price_updated_at,
-                })
+                formatted_offers.append(
+                    {
+                        "store_key": store_k,
+                        "store_name": offer.store_name or store_k,
+                        "price_egp": float(offer.price_egp) if offer.price_egp else 0.0,
+                        "product_url": offer.product_url or "",
+                        "in_stock": bool(offer.in_stock),
+                        "is_cheapest": is_cheapest,
+                        "last_checked_at": offer.last_checked_at,
+                        "price_updated_at": offer.price_updated_at,
+                    }
+                )
 
     if not cheapest_offer_url and urls_by_store:
         cheapest_offer_url = urls_by_store.get(cheapest_store) or next(iter(urls_by_store.values()), None)
@@ -200,9 +208,7 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
             "mobility": {
                 "weight_kg": float(laptop.weight_kg) if laptop.weight_kg else 2.0,
                 "battery_hours_estimate": (
-                    float(metrics.estimated_battery_hours)
-                    if metrics and metrics.estimated_battery_hours
-                    else 5.0
+                    float(metrics.estimated_battery_hours) if metrics and metrics.estimated_battery_hours else 5.0
                 ),
             },
             "longevity": {
@@ -462,12 +468,8 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             if not isinstance(aspects, Mapping):
                 aspects = {}
 
-            laptop.pros_en, laptop.pros_ar = align_bilingual_lists(
-                payload.get("pros_en"), payload.get("pros_ar")
-            )
-            laptop.cons_en, laptop.cons_ar = align_bilingual_lists(
-                payload.get("cons_en"), payload.get("cons_ar")
-            )
+            laptop.pros_en, laptop.pros_ar = align_bilingual_lists(payload.get("pros_en"), payload.get("pros_ar"))
+            laptop.cons_en, laptop.cons_ar = align_bilingual_lists(payload.get("cons_en"), payload.get("cons_ar"))
             laptop.reviews_evidence_count = _coerce_optional_int(payload.get("evidence_count")) or 0
             laptop.has_reviews = True
             laptop.reviews_checked_at = reviewed_at

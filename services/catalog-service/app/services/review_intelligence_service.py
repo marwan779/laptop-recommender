@@ -87,11 +87,7 @@ class ReviewIntelligenceService:
     ) -> ReviewsTriggerResponse:
         """Resolve unreviewed (or all) laptops into chassis targets and enqueue scraping."""
         laptop_repo = LaptopRepository(session)
-        laptops = (
-            await laptop_repo.list_all_with_offers()
-            if force_all
-            else await laptop_repo.get_unreviewed_laptops()
-        )
+        laptops = await laptop_repo.list_all_with_offers() if force_all else await laptop_repo.get_unreviewed_laptops()
 
         job_id = f"reviews_{uuid.uuid4().hex[:12]}"
         if not laptops:
@@ -141,8 +137,7 @@ class ReviewIntelligenceService:
             chassis_targets_queued=len(targets),
             laptops_matched=len(laptops),
             message=(
-                f"Queued {len(targets)} chassis targets from {len(laptops)} laptops "
-                "for community review scraping."
+                f"Queued {len(targets)} chassis targets from {len(laptops)} laptops for community review scraping."
             ),
         )
 
@@ -178,11 +173,7 @@ class ReviewIntelligenceService:
     ) -> ReviewIngestionResult:
         """Embed chassis reviews into ChromaDB and persist NLP profiles to PostgreSQL."""
         start_time = time.perf_counter()
-        laptops = [
-            item
-            for item in (reviews_data.get("laptops") or [])
-            if isinstance(item, dict)
-        ]
+        laptops = [item for item in (reviews_data.get("laptops") or []) if isinstance(item, dict)]
         profiles = self._collect_review_profiles(laptops)
 
         if not profiles:
@@ -199,9 +190,7 @@ class ReviewIntelligenceService:
             laptops,
         )
 
-        sql_updated = await LaptopRepository(
-            session
-        ).update_review_intelligence_by_canonical_ids(profiles)
+        sql_updated = await LaptopRepository(session).update_review_intelligence_by_canonical_ids(profiles)
         await session.commit()
 
         elapsed = round(time.perf_counter() - start_time, 3)
@@ -263,16 +252,12 @@ class ReviewIntelligenceService:
         offers = list(laptop.offers or [])
         product_urls = tuple(
             dict.fromkeys(
-                offer.product_url.strip()
-                for offer in offers
-                if offer.product_url and offer.product_url.strip()
+                offer.product_url.strip() for offer in offers if offer.product_url and offer.product_url.strip()
             )
         )
         retailer_skus = tuple(
             dict.fromkeys(
-                offer.retailer_sku.strip()
-                for offer in offers
-                if offer.retailer_sku and offer.retailer_sku.strip()
+                offer.retailer_sku.strip() for offer in offers if offer.retailer_sku and offer.retailer_sku.strip()
             )
         )
         return LaptopInputDto(
@@ -284,11 +269,7 @@ class ReviewIntelligenceService:
             laptop_model=laptop.laptop_model,
             mpn=laptop.mpn,
             thumbnail_url=laptop.thumbnail_url,
-            screen_size=(
-                float(laptop.display_size_inches)
-                if laptop.display_size_inches is not None
-                else None
-            ),
+            screen_size=(float(laptop.display_size_inches) if laptop.display_size_inches is not None else None),
             retailer_skus=retailer_skus,
             product_urls=product_urls,
         )

@@ -4,7 +4,7 @@ from app.domain.reviews.identity import ReviewIdentityExtractor
 from app.domain.reviews.models import ReviewTargetInput
 
 SAMPLE_TITLE = (
-    'ASUS Vivobook 16 X1605VA-OACH007W \u2013 Intel Core i7-13620H, 16GB DDR4, '
+    "ASUS Vivobook 16 X1605VA-OACH007W \u2013 Intel Core i7-13620H, 16GB DDR4, "
     '512GB SSD, 16" FHD OLED 60Hz, 95% DCI-P3, Windows 11, Includes Mouse & Bag'
 )
 
@@ -69,9 +69,7 @@ def test_title_only_input_derives_brand_family_and_model():
 
 
 def test_arabic_title_is_recognized_and_language_hint_is_arabic():
-    identity = ReviewIdentityExtractor().extract(
-        ReviewTargetInput(title="مراجعة لابتوب أسوس فيفوبوك 16 X1605VA")
-    )
+    identity = ReviewIdentityExtractor().extract(ReviewTargetInput(title="مراجعة لابتوب أسوس فيفوبوك 16 X1605VA"))
 
     assert identity.brand == "ASUS"
     assert identity.family == "Vivobook"
@@ -81,9 +79,7 @@ def test_arabic_title_is_recognized_and_language_hint_is_arabic():
 
 
 def test_mixed_arabic_and_latin_title_is_arabic():
-    identity = ReviewIdentityExtractor().extract(
-        ReviewTargetInput(title="مراجعة ASUS Vivobook 16 X1605VA")
-    )
+    identity = ReviewIdentityExtractor().extract(ReviewTargetInput(title="مراجعة ASUS Vivobook 16 X1605VA"))
 
     assert identity.brand == "ASUS"
     assert identity.family == "Vivobook"
@@ -174,9 +170,7 @@ def test_brand_agnostic_sku_is_preserved():
 
 
 def test_amd_cpu_hint_is_extracted():
-    identity = ReviewIdentityExtractor().extract(
-        ReviewTargetInput(title="Lenovo Legion 5 Ryzen 7 7840HS review")
-    )
+    identity = ReviewIdentityExtractor().extract(ReviewTargetInput(title="Lenovo Legion 5 Ryzen 7 7840HS review"))
 
     assert identity.brand == "Lenovo"
     assert identity.family == "Legion"

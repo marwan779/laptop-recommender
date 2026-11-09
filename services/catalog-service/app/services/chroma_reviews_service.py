@@ -59,9 +59,7 @@ class ChromaReviewsService:
             return
 
         self.chroma_dir = Path(chroma_dir) if chroma_dir else DEFAULT_CHROMA_DIR
-        self.reviews_json_path = (
-            Path(reviews_json_path) if reviews_json_path else DEFAULT_REVIEWS_JSON
-        )
+        self.reviews_json_path = Path(reviews_json_path) if reviews_json_path else DEFAULT_REVIEWS_JSON
         self.embedding_model_name = embedding_model_name or DEFAULT_EMBEDDING_MODEL
         self.collection_name = COLLECTION_NAME
 
@@ -104,9 +102,7 @@ class ChromaReviewsService:
                 import chromadb
                 from chromadb.utils import embedding_functions
             except ImportError:
-                logger.exception(
-                    "ChromaDB / sentence-transformers are not installed; review similarity disabled"
-                )
+                logger.exception("ChromaDB / sentence-transformers are not installed; review similarity disabled")
                 return False
 
             try:
@@ -132,11 +128,7 @@ class ChromaReviewsService:
                 self._collection = None
                 return False
 
-            if (
-                auto_build_if_empty
-                and self._collection.count() == 0
-                and self.reviews_json_path.exists()
-            ):
+            if auto_build_if_empty and self._collection.count() == 0 and self.reviews_json_path.exists():
                 try:
                     indexed = self.build_from_json(self.reviews_json_path)
                     logger.info("Auto-built Chroma review index with %d documents", indexed)
@@ -185,12 +177,8 @@ class ChromaReviewsService:
             brand = (item.get("identity") or {}).get("brand", "")
             base_score = float(profile.get("community_nlp_score", 75.0))
 
-            pros_en, pros_ar = align_bilingual_lists(
-                profile.get("pros_en"), profile.get("pros_ar")
-            )
-            cons_en, cons_ar = align_bilingual_lists(
-                profile.get("cons_en"), profile.get("cons_ar")
-            )
+            pros_en, pros_ar = align_bilingual_lists(profile.get("pros_en"), profile.get("pros_ar"))
+            cons_en, cons_ar = align_bilingual_lists(profile.get("cons_en"), profile.get("cons_ar"))
 
             pros_text = " | ".join(pros_ar + pros_en)
             if pros_text:
@@ -284,27 +272,19 @@ class ChromaReviewsService:
         cids_by_chassis: dict[str, list[str]] = {}
 
         if pro_results and pro_results.get("metadatas") and pro_results.get("distances"):
-            for metadata, distance in zip(
-                pro_results["metadatas"][0], pro_results["distances"][0]
-            ):
+            for metadata, distance in zip(pro_results["metadatas"][0], pro_results["distances"][0]):
                 chassis_key = metadata.get("chassis_key")
                 if not chassis_key:
                     continue
                 pro_sim_by_chassis[chassis_key] = max(0.0, 1.0 - float(distance))
-                base_score_by_chassis[chassis_key] = float(
-                    metadata.get("community_nlp_score", 75.0)
-                )
+                base_score_by_chassis[chassis_key] = float(metadata.get("community_nlp_score", 75.0))
                 cids_by_chassis[chassis_key] = [
-                    cid
-                    for cid in str(metadata.get("matched_canonical_ids", "")).split(",")
-                    if cid
+                    cid for cid in str(metadata.get("matched_canonical_ids", "")).split(",") if cid
                 ]
 
         con_sim_by_chassis: dict[str, float] = {}
         if con_results and con_results.get("metadatas") and con_results.get("distances"):
-            for metadata, distance in zip(
-                con_results["metadatas"][0], con_results["distances"][0]
-            ):
+            for metadata, distance in zip(con_results["metadatas"][0], con_results["distances"][0]):
                 chassis_key = metadata.get("chassis_key")
                 if not chassis_key:
                     continue

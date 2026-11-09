@@ -37,11 +37,15 @@ class CommunitiesReviewsCollector(ICommunitiesReviewsCollector):
         scrapers: list[ICommunityPlatformScraper] | None = None,
     ) -> None:
         self.query_builder = query_builder or CommunityQueryBuilder()
-        self.scrapers = scrapers if scrapers is not None else [
-            LaptopMagPlatformScraper(),
-            Level1TechsPlatformScraper(),
-            ArabhardwarePlatformScraper(),
-        ]
+        self.scrapers = (
+            scrapers
+            if scrapers is not None
+            else [
+                LaptopMagPlatformScraper(),
+                Level1TechsPlatformScraper(),
+                ArabhardwarePlatformScraper(),
+            ]
+        )
 
     async def collect_for_targets(
         self,

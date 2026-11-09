@@ -112,9 +112,7 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
                 for bad in content.select("script, style, .ads, .ad, .social-share, .tags"):
                     bad.decompose()
                 paragraphs = [
-                    p.get_text(" ", strip=True)
-                    for p in content.select("p")
-                    if len(p.get_text(strip=True)) > 20
+                    p.get_text(" ", strip=True) for p in content.select("p") if len(p.get_text(strip=True)) > 20
                 ]
                 if paragraphs:
                     return "\n\n".join(paragraphs)
@@ -126,9 +124,7 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
             article = soup.select_one("article")
             if article:
                 paragraphs = [
-                    p.get_text(" ", strip=True)
-                    for p in article.select("p")
-                    if len(p.get_text(strip=True)) > 20
+                    p.get_text(" ", strip=True) for p in article.select("p") if len(p.get_text(strip=True)) > 20
                 ]
                 if paragraphs:
                     return "\n\n".join(paragraphs)
@@ -181,8 +177,7 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
                 family = (target.laptop_family or "").lower()
                 if family:
                     family_words = [
-                        w for w in family.split()
-                        if len(w) >= 3 and w not in {"laptop", "gaming", "series", "notebook"}
+                        w for w in family.split() if len(w) >= 3 and w not in {"laptop", "gaming", "series", "notebook"}
                     ]
                     if family_words and not any(w in combined for w in family_words):
                         continue

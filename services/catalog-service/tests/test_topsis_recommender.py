@@ -79,11 +79,13 @@ def test_run_topsis_vector_multi_candidates():
     # Laptop A: [90, 90, 50000] - high perf, high price
     # Laptop B: [50, 50, 20000] - low perf, cheap
     # Laptop C: [85, 85, 25000] - high perf, cheap (Clear Winner)
-    mat = np.array([
-        [90.0, 90.0, 50000.0],
-        [50.0, 50.0, 20000.0],
-        [85.0, 85.0, 25000.0],
-    ])
+    mat = np.array(
+        [
+            [90.0, 90.0, 50000.0],
+            [50.0, 50.0, 20000.0],
+            [85.0, 85.0, 25000.0],
+        ]
+    )
     weights = np.array([0.4, 0.4, 0.2])
     is_benefit = [True, True, False]
 
@@ -284,4 +286,3 @@ def test_align_bilingual_lists():
     assert len(aligned_en) == len(aligned_ar) == 3
     assert aligned_en == ["Pro 1", "Pro 2", "Pro 3"]
     assert aligned_ar == ["الميزة 1", "الميزة 2", "الميزة 3"]
-

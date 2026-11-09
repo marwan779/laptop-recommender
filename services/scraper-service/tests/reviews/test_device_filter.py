@@ -57,10 +57,13 @@ def test_rejects_devices_in_body_text(title: str):
 
 
 def test_accepts_internal_laptop_display_and_gpu_wording():
-    assert is_non_laptop_device(
-        "Lenovo Legion 5 review",
-        "The 15.6-inch screen is bright; the laptop RTX 4060 GPU handles games.",
-    ) is False
+    assert (
+        is_non_laptop_device(
+            "Lenovo Legion 5 review",
+            "The 15.6-inch screen is bright; the laptop RTX 4060 GPU handles games.",
+        )
+        is False
+    )
 
 
 def _target(model: str, canonical_id: str) -> LaptopReviewTarget:
@@ -91,9 +94,7 @@ async def test_youtube_collector_deduplicates_video_across_targets():
     search_service.search_reviews = AsyncMock(return_value=[shared_video])
 
     transcript_service = AsyncMock()
-    transcript_service.fetch_transcript = AsyncMock(
-        return_value=("Shared transcript text", [], "en", False)
-    )
+    transcript_service.fetch_transcript = AsyncMock(return_value=("Shared transcript text", [], "en", False))
 
     collector = YouTubeReviewsCollector(
         search_service=search_service,

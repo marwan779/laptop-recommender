@@ -380,7 +380,7 @@ async def test_seeder_hardware_guarded_resolution_for_same_mpn_variants(db_sessi
     }
     summary_b2 = await seeder.upsert_catalog(catalog_b2)
     assert summary_b2.new_laptops_created == 2  # The 16GB/512GB and 16GB/1024GB variants are new
-    assert summary_b2.laptops_updated == 1      # The 8GB/512GB variant was updated
+    assert summary_b2.laptops_updated == 1  # The 8GB/512GB variant was updated
 
     # Verify all 3 configurations exist distinctly in PostgreSQL
     stmt = (

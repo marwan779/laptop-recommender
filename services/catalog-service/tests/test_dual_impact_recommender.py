@@ -111,9 +111,7 @@ def test_prompt_applies_baseline_and_experiential_review_boost():
     generic = parse_user_text_prompt("I want a fast laptop for coding")
     assert generic["weight_boosts"]["community_nlp_score"] == pytest.approx(0.08)
 
-    experiential = parse_user_text_prompt(
-        "عايز لاب تبريده قوي ومفصلاته متينة ومبيسخنش"
-    )
+    experiential = parse_user_text_prompt("عايز لاب تبريده قوي ومفصلاته متينة ومبيسخنش")
     assert experiential["weight_boosts"]["community_nlp_score"] == pytest.approx(0.14)
 
 
@@ -145,9 +143,10 @@ def test_chroma_adjusted_scores_reorder_candidates_and_boost_review_weight():
 
     assert adjusted.results[0].canonical_id == "candidate-b"
     assert adjusted.results[0].topsis_inputs["community_nlp_score"] == 98.0
-    assert adjusted.effective_weights["community_nlp_score"] > PERSONA_CONFIGS["balanced"][
-        "weights"
-    ]["community_nlp_score"]
+    assert (
+        adjusted.effective_weights["community_nlp_score"]
+        > PERSONA_CONFIGS["balanced"]["weights"]["community_nlp_score"]
+    )
 
     # The domain engine must never mutate the caller's catalog dictionaries.
     assert laptops[0]["derived_metrics"]["topsis_inputs"]["community_nlp_score"] == 80.0

@@ -244,9 +244,7 @@ def rank_laptops_topsis(
     # 3. Base Hard Filters: active in-stock, budget boundary, explicit hardware constraints
     eff_min_ram = min_ram_gb or ext_filters.get("min_ram_gb")
     eff_min_sto = min_storage_gb or ext_filters.get("min_storage_gb")
-    eff_require_dgpu = (
-        require_dgpu if require_dgpu is not None else ext_filters.get("require_dgpu")
-    )
+    eff_require_dgpu = require_dgpu if require_dgpu is not None else ext_filters.get("require_dgpu")
     brands_norm = {b.lower().strip() for b in brand_filter} if brand_filter else None
 
     base_pool: list[dict[str, Any]] = []
@@ -301,7 +299,8 @@ def rank_laptops_topsis(
     if min_budget_egp is None and apply_smart_60pct_floor and len(persona_pool) > min_floor_candidates:
         floor_60 = round(max_budget_egp * 0.60, 0)
         pool_60 = [
-            l for l in persona_pool
+            l
+            for l in persona_pool
             if l.get("derived_metrics", {}).get("topsis_inputs", {}).get("effective_price_egp", 0.0) >= floor_60
         ]
         if len(pool_60) >= min_floor_candidates:
@@ -310,7 +309,8 @@ def rank_laptops_topsis(
         else:
             floor_45 = round(max_budget_egp * 0.45, 0)
             pool_45 = [
-                l for l in persona_pool
+                l
+                for l in persona_pool
                 if l.get("derived_metrics", {}).get("topsis_inputs", {}).get("effective_price_egp", 0.0) >= floor_45
             ]
             if len(pool_45) >= min_floor_candidates:
@@ -332,17 +332,15 @@ def rank_laptops_topsis(
             fallback_pool.append(lap)
 
         if brands_norm:
-            branded_fallback = [
-                l for l in fallback_pool
-                if str(l.get("brand") or "").lower().strip() in brands_norm
-            ]
+            branded_fallback = [l for l in fallback_pool if str(l.get("brand") or "").lower().strip() in brands_norm]
             if branded_fallback:
                 fallback_pool = branded_fallback
 
         persona_fallback = [lap for lap in fallback_pool if _passes_persona_gates(lap, gates)]
         if eff_require_dgpu is True:
             dgpu_fallback = [
-                lap for lap in (persona_fallback or fallback_pool)
+                lap
+                for lap in (persona_fallback or fallback_pool)
                 if not (lap.get("specs") or {}).get("gpu", {}).get("integrated", True)
             ]
             if dgpu_fallback:
@@ -379,9 +377,7 @@ def rank_laptops_topsis(
         )
 
     # 7. Build Decision Matrix (M x 10) with optional Chroma review-score overrides
-    decision_inputs = [
-        _effective_topsis_inputs(lap, chroma_adjusted_nlp_scores) for lap in scoped_pool
-    ]
+    decision_inputs = [_effective_topsis_inputs(lap, chroma_adjusted_nlp_scores) for lap in scoped_pool]
     mat = np.array(
         [[ti[k] for k in TOPSIS_CRITERIA_KEYS] for ti in decision_inputs],
         dtype=float,
@@ -430,9 +426,7 @@ def rank_laptops_topsis(
                 pros_ar=list(community_reviews.get("pros_ar") or []),
                 cons_en=list(community_reviews.get("cons_en") or []),
                 cons_ar=list(community_reviews.get("cons_ar") or []),
-                reviews_evidence_count=_normalize_evidence_count(
-                    community_reviews.get("evidence_count")
-                ),
+                reviews_evidence_count=_normalize_evidence_count(community_reviews.get("evidence_count")),
                 aspect_scores=aspect_scores,
                 topsis_inputs=ti,
             )

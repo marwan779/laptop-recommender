@@ -17,9 +17,7 @@ from app.domain.reviews.vocabulary import BRAND_ALIASES, FAMILY_ALIASES, normali
 
 _WHITESPACE_RE = re.compile(r"\s+")
 _TITLE_SEPARATOR_RE = re.compile(r"\s+[–—|]\s+|\s+-\s+")
-_MODEL_CODE_RE = re.compile(
-    r"^[A-Za-z]{1,4}\d{3,5}[A-Za-z0-9]{0,4}(?:-[A-Za-z0-9]{4,8})?$"
-)
+_MODEL_CODE_RE = re.compile(r"^[A-Za-z]{1,4}\d{3,5}[A-Za-z0-9]{0,4}(?:-[A-Za-z0-9]{4,8})?$")
 _MPN_COMPACT_RE = re.compile(r"^90[A-Z0-9]{6,8}[A-Z0-9]{4,8}$")
 _ARABIC_LETTER_RE = re.compile(r"[\u0600-\u06FF]")
 _LATIN_OR_ARABIC_LETTER_RE = re.compile(r"[A-Za-z\u0600-\u06FF]")
@@ -57,11 +55,7 @@ class ReviewIdentityExtractor:
             ]
         )
 
-        brand = (
-            self._canonical_brand(target.brand)
-            or self._brand_from_text(title)
-            or self._brand_from_text(title_core)
-        )
+        brand = self._canonical_brand(target.brand) or self._brand_from_text(title) or self._brand_from_text(title_core)
         family = self._canonical_family(target.laptop_family) or self._family_from_text(title)
         if family is None and target.laptop_model:
             family = self._family_from_text(target.laptop_model)
@@ -80,9 +74,7 @@ class ReviewIdentityExtractor:
 
         # The product title is the strongest language signal. Only fall back to
         # identity fields when the caller supplied no title.
-        language_source = title or " ".join(
-            part for part in (brand or "", family or "", model or "") if part
-        )
+        language_source = title or " ".join(part for part in (brand or "", family or "", model or "") if part)
         language_hint = self._language_hint(language_source)
 
         warnings = self._warnings(
@@ -325,9 +317,7 @@ class ReviewIdentityExtractor:
             *target.mpns,
             tokens.get("mpn"),
         ]
-        explicit_compacts = {
-            re.sub(r"[\s_-]+", "", value).upper() for value in explicit_values if value
-        }
+        explicit_compacts = {re.sub(r"[\s_-]+", "", value).upper() for value in explicit_values if value}
 
         values: list[str] = []
         for value in explicit_values:

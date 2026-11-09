@@ -91,9 +91,7 @@ class YouTubeReviewsCollector(IYouTubeReviewsCollector):
                 queries[1],
             )
 
-        video_models = list(
-            await asyncio.gather(*[self._to_video_model(video) for video in found_videos])
-        )
+        video_models = list(await asyncio.gather(*[self._to_video_model(video) for video in found_videos]))
 
         return YouTubeReviewData(
             query_used=primary_query,

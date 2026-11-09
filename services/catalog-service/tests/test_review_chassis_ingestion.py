@@ -82,9 +82,7 @@ async def test_ingestion_emits_single_outbox_command_with_collapsed_chassis(
 
     # Our two SKU variants collapsed into one chassis target. Other pre-existing
     # laptops in the test database may also be in the batch, so locate ours by MPN.
-    our_targets = [
-        t for t in command.payload.targets if f"MPN-A-{suffix}" in t.mpns or f"MPN-B-{suffix}" in t.mpns
-    ]
+    our_targets = [t for t in command.payload.targets if f"MPN-A-{suffix}" in t.mpns or f"MPN-B-{suffix}" in t.mpns]
     assert len(our_targets) == 1
     target = our_targets[0]
     assert target.brand == "Lenovo"
@@ -98,12 +96,16 @@ async def test_ingestion_emits_single_outbox_command_with_collapsed_chassis(
 
     # Both variants are flagged reviewed with a timestamp.
     laptops = (
-        await db_session.execute(
-            select(LaptopConfiguration).where(
-                LaptopConfiguration.canonical_id.in_([f"loq-16gb-{suffix}", f"loq-32gb-{suffix}"])
+        (
+            await db_session.execute(
+                select(LaptopConfiguration).where(
+                    LaptopConfiguration.canonical_id.in_([f"loq-16gb-{suffix}", f"loq-32gb-{suffix}"])
+                )
             )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     assert len(laptops) == 2
     for laptop in laptops:
         assert laptop.has_reviews is True

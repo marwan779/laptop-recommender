@@ -37,8 +37,7 @@ def test_resolve_cookiefile_from_env(tmp_path):
 def test_build_authenticated_session_creates_session_with_cookies(tmp_path):
     cookie_file = tmp_path / "test_cookies.txt"
     cookie_file.write_text(
-        "# Netscape HTTP Cookie File\n"
-        ".youtube.com\tTRUE\t/\tTRUE\t2147483647\tTEST_COOKIE\ttest_val\n"
+        "# Netscape HTTP Cookie File\n.youtube.com\tTRUE\t/\tTRUE\t2147483647\tTEST_COOKIE\ttest_val\n"
     )
     session = build_authenticated_session(str(cookie_file))
     assert session is not None
