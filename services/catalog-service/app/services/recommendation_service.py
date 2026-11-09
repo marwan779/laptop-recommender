@@ -15,7 +15,6 @@ from app.domain.recommender import (
     PERSONA_CONFIGS,
     TOPSIS_CRITERIA_KEYS,
     PersonaType,
-    RankedLaptopResult,
     TopsisExecutionResult,
     rank_laptops_topsis,
 )
@@ -89,7 +88,7 @@ class RecommendationService:
         if self._fallback_catalog is None:
             if FALLBACK_CATALOG_PATH.exists():
                 try:
-                    with open(FALLBACK_CATALOG_PATH, "r", encoding="utf-8") as f:
+                    with open(FALLBACK_CATALOG_PATH, encoding="utf-8") as f:
                         data = json.load(f)
                     raw_laptops = data.get("laptops", [])
                     self._fallback_catalog = [_normalize_catalog_dict(l) for l in raw_laptops]
@@ -190,6 +189,10 @@ class RecommendationService:
                 ],
                 why_recommended_ar=r.why_recommended_ar,
                 why_recommended_en=r.why_recommended_en,
+                pros_en=r.pros_en,
+                pros_ar=r.pros_ar,
+                cons_en=r.cons_en,
+                cons_ar=r.cons_ar,
                 topsis_inputs=r.topsis_inputs,
             )
             for r in domain_result.results

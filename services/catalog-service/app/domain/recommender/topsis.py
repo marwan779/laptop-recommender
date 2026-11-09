@@ -9,7 +9,6 @@ Implements dynamic budget-scoped TOPSIS ranking in < 1ms:
 """
 
 from dataclasses import dataclass, field
-import math
 from typing import Any
 
 import numpy as np
@@ -45,6 +44,10 @@ class RankedLaptopResult:
     offers: list[dict[str, Any]] = field(default_factory=list)
     why_recommended_ar: list[str] = field(default_factory=list)
     why_recommended_en: list[str] = field(default_factory=list)
+    pros_en: list[str] = field(default_factory=list)
+    pros_ar: list[str] = field(default_factory=list)
+    cons_en: list[str] = field(default_factory=list)
+    cons_ar: list[str] = field(default_factory=list)
     topsis_inputs: dict[str, Any] = field(default_factory=dict)
 
 
@@ -280,6 +283,9 @@ def rank_laptops_topsis(
         score_val = float(scores[int(idx)])
         ti = lap["derived_metrics"]["topsis_inputs"]
         why = build_why_recommended(lap, p_key)
+        community_reviews = (lap.get("derived_metrics") or {}).get("community_reviews") or {}
+        if not isinstance(community_reviews, dict):
+            community_reviews = {}
 
         cheapest_store = lap.get("cheapest_store") or "unknown"
         urls_by_store = lap.get("urls_by_store") or {}
@@ -305,6 +311,10 @@ def rank_laptops_topsis(
                 offers=raw_offers,
                 why_recommended_ar=why["ar"],
                 why_recommended_en=why["en"],
+                pros_en=list(community_reviews.get("pros_en") or []),
+                pros_ar=list(community_reviews.get("pros_ar") or []),
+                cons_en=list(community_reviews.get("cons_en") or []),
+                cons_ar=list(community_reviews.get("cons_ar") or []),
                 topsis_inputs=ti,
             )
         )

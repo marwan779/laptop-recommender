@@ -145,6 +145,11 @@ class LaptopConfiguration(Base):
     # Community Reviews Lifecycle
     has_reviews: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     reviews_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+    reviews_evidence_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    pros_en: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list, server_default="{}")
+    pros_ar: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list, server_default="{}")
+    cons_en: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list, server_default="{}")
+    cons_ar: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list, server_default="{}")
 
     # DB Metadata Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

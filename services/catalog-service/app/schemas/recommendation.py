@@ -124,6 +124,10 @@ class RankedLaptopResponse(BaseModel):
     )
     why_recommended_ar: list[str] = Field(default_factory=list, description="Arabic explanation badges.")
     why_recommended_en: list[str] = Field(default_factory=list, description="English explanation badges.")
+    pros_en: list[str] = Field(default_factory=list, description="English community review pros.")
+    pros_ar: list[str] = Field(default_factory=list, description="Arabic community review pros.")
+    cons_en: list[str] = Field(default_factory=list, description="English community review cons.")
+    cons_ar: list[str] = Field(default_factory=list, description="Arabic community review cons.")
     topsis_inputs: dict[str, Any] = Field(default_factory=dict, description="Raw normalized 9-criteria input scores.")
 
 

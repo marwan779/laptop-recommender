@@ -175,6 +175,11 @@ class HardwareMetricsDetail(BaseModel):
     ergonomics_score: float
     connectivity_score: float
     community_nlp_score: float | None = None
+    thermals_score: float | None = None
+    acoustics_score: float | None = None
+    build_and_hinges_score: float | None = None
+    keyboard_and_trackpad_score: float | None = None
+    real_battery_and_reliability_score: float | None = None
     value_score: float
     effective_price_egp: float
     estimated_battery_hours: float | None = None
@@ -252,6 +257,13 @@ class FullLaptopDetailResponse(BaseModel):
 
     # Normalized 1:1 TOPSIS Metrics
     metrics: HardwareMetricsDetail | None = None
+
+    # Community Review Intelligence
+    reviews_evidence_count: int = 0
+    pros_en: list[str] = Field(default_factory=list)
+    pros_ar: list[str] = Field(default_factory=list)
+    cons_en: list[str] = Field(default_factory=list)
+    cons_ar: list[str] = Field(default_factory=list)
 
     # Human-Grade Explainable Badges
     why_recommended_ar: list[str] = Field(default_factory=list)

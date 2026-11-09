@@ -77,7 +77,7 @@ class CatalogQueryService:
         if self._fallback_catalog is None:
             if FALLBACK_CATALOG_PATH.exists():
                 try:
-                    with open(FALLBACK_CATALOG_PATH, "r", encoding="utf-8") as f:
+                    with open(FALLBACK_CATALOG_PATH, encoding="utf-8") as f:
                         data = json.load(f)
                     self._fallback_catalog = data.get("laptops", [])
                     logger.info("Loaded %d laptops into query fallback cache.", len(self._fallback_catalog))
@@ -193,6 +193,19 @@ class CatalogQueryService:
                 ergonomics_score=float(m.ergonomics_score) if m.ergonomics_score is not None else 50.0,
                 connectivity_score=float(m.connectivity_score) if m.connectivity_score is not None else 50.0,
                 community_nlp_score=float(m.community_nlp_score) if m.community_nlp_score is not None else None,
+                thermals_score=float(m.thermals_score) if m.thermals_score is not None else None,
+                acoustics_score=float(m.acoustics_score) if m.acoustics_score is not None else None,
+                build_and_hinges_score=(
+                    float(m.build_and_hinges_score) if m.build_and_hinges_score is not None else None
+                ),
+                keyboard_and_trackpad_score=(
+                    float(m.keyboard_and_trackpad_score) if m.keyboard_and_trackpad_score is not None else None
+                ),
+                real_battery_and_reliability_score=(
+                    float(m.real_battery_and_reliability_score)
+                    if m.real_battery_and_reliability_score is not None
+                    else None
+                ),
                 value_score=float(m.value_score) if m.value_score is not None else 50.0,
                 effective_price_egp=(
                     float(m.effective_price_egp)
@@ -331,6 +344,11 @@ class CatalogQueryService:
                 ports=list(laptop.ports or []),
             ),
             metrics=metrics_detail,
+            reviews_evidence_count=laptop.reviews_evidence_count or 0,
+            pros_en=list(laptop.pros_en or []),
+            pros_ar=list(laptop.pros_ar or []),
+            cons_en=list(laptop.cons_en or []),
+            cons_ar=list(laptop.cons_ar or []),
             why_recommended_ar=reasons.get("ar", []),
             why_recommended_en=reasons.get("en", []),
         )
@@ -356,6 +374,12 @@ class CatalogQueryService:
         dsp_dm = dm.get("display") or {}
         mob_dm = dm.get("mobility") or {}
         lon_dm = dm.get("longevity") or {}
+
+        raw_community_reviews = dm.get("community_reviews") or lap.get("community_reviews") or {}
+        community_reviews = raw_community_reviews if isinstance(raw_community_reviews, dict) else {}
+        aspect_scores = community_reviews.get("aspect_scores") or {}
+        if not isinstance(aspect_scores, dict):
+            aspect_scores = {}
 
         cheapest_store_key = str(lap.get("cheapest_store") or "unknown").lower().strip()
         prices_by_store = dict(lap.get("prices_by_store") or {})
@@ -405,6 +429,10 @@ class CatalogQueryService:
         min_price = float(lap.get("min_price_egp") or 0.0)
         max_price = float(lap.get("max_price_egp") or min_price)
 
+        community_nlp_score = community_reviews.get("community_nlp_score")
+        if community_nlp_score is None:
+            community_nlp_score = topsis.get("community_nlp_score")
+
         metrics_detail: HardwareMetricsDetail | None = None
         if topsis:
             metrics_detail = HardwareMetricsDetail(
@@ -417,7 +445,14 @@ class CatalogQueryService:
                 longevity_score=float(topsis.get("longevity_score", 50.0)),
                 ergonomics_score=float(topsis.get("ergonomics_score", 50.0)),
                 connectivity_score=float(topsis.get("connectivity_score", 50.0)),
-                community_nlp_score=float(topsis.get("community_nlp_score", 50.0)) if topsis.get("community_nlp_score") else None,
+                community_nlp_score=float(community_nlp_score) if community_nlp_score is not None else None,
+                thermals_score=_safe_float(aspect_scores.get("thermals_score")),
+                acoustics_score=_safe_float(aspect_scores.get("acoustics_score")),
+                build_and_hinges_score=_safe_float(aspect_scores.get("build_and_hinges_score")),
+                keyboard_and_trackpad_score=_safe_float(aspect_scores.get("keyboard_and_trackpad_score")),
+                real_battery_and_reliability_score=_safe_float(
+                    aspect_scores.get("real_battery_and_reliability_score")
+                ),
                 value_score=float(topsis.get("value_score", 50.0)),
                 effective_price_egp=float(topsis.get("effective_price_egp", min_price)),
                 estimated_battery_hours=float(mob_dm.get("battery_hours_estimate")) if mob_dm.get("battery_hours_estimate") else None,
@@ -550,6 +585,11 @@ class CatalogQueryService:
                 ports=list(con.get("ports") or []),
             ),
             metrics=metrics_detail,
+            reviews_evidence_count=_safe_int(community_reviews.get("evidence_count"), 0) or 0,
+            pros_en=list(community_reviews.get("pros_en") or []),
+            pros_ar=list(community_reviews.get("pros_ar") or []),
+            cons_en=list(community_reviews.get("cons_en") or []),
+            cons_ar=list(community_reviews.get("cons_ar") or []),
             why_recommended_ar=reasons.get("ar", []),
             why_recommended_en=reasons.get("en", []),
         )

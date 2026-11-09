@@ -1,5 +1,5 @@
 import uuid
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
@@ -10,6 +10,58 @@ from sqlalchemy.orm import selectinload
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.repositories.base import BaseRepository
+
+_REVIEW_ASPECT_KEYS: tuple[str, ...] = (
+    "thermals_score",
+    "acoustics_score",
+    "build_and_hinges_score",
+    "keyboard_and_trackpad_score",
+    "real_battery_and_reliability_score",
+)
+
+
+def _coerce_str_list(value: Any) -> list[str]:
+    """Normalize a persisted or incoming review list into clean strings."""
+    if not value:
+        return []
+    if isinstance(value, str):
+        values = value.split(",")
+    elif isinstance(value, (list, tuple, set)):
+        values = value
+    else:
+        return []
+    return [str(item).strip() for item in values if item is not None and str(item).strip()]
+
+
+def _coerce_optional_float(value: Any) -> float | None:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _coerce_optional_int(value: Any) -> int | None:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _normalize_review_payload(payload: Any) -> dict[str, Any]:
+    """Accept a mapping or DTO, optionally wrapping a ``community_reviews`` block."""
+    if hasattr(payload, "model_dump"):
+        payload = payload.model_dump()
+    if not isinstance(payload, Mapping):
+        return {}
+
+    nested = payload.get("community_reviews")
+    if isinstance(nested, Mapping):
+        return dict(nested)
+    return dict(payload)
 
 
 def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
@@ -24,6 +76,11 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
         "longevity_score": float(metrics.longevity_score) if metrics and metrics.longevity_score is not None else 50.0,
         "ergonomics_score": float(metrics.ergonomics_score) if metrics and metrics.ergonomics_score is not None else 50.0,
         "connectivity_score": float(metrics.connectivity_score) if metrics and metrics.connectivity_score is not None else 50.0,
+        "community_nlp_score": (
+            float(metrics.community_nlp_score)
+            if metrics and metrics.community_nlp_score is not None
+            else 75.0
+        ),
         "effective_price_egp": (
             float(metrics.effective_price_egp)
             if metrics and metrics.effective_price_egp
@@ -149,6 +206,22 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
                 "max_ram_gb": laptop.ram_max_supported_gb or laptop.ram_capacity_gb,
             },
             "topsis_inputs": topsis_inputs,
+            "community_reviews": {
+                "community_nlp_score": topsis_inputs["community_nlp_score"],
+                "evidence_count": laptop.reviews_evidence_count or 0,
+                "pros_en": list(laptop.pros_en or []),
+                "pros_ar": list(laptop.pros_ar or []),
+                "cons_en": list(laptop.cons_en or []),
+                "cons_ar": list(laptop.cons_ar or []),
+                "aspect_scores": {
+                    key: (
+                        float(getattr(metrics, key))
+                        if metrics is not None and getattr(metrics, key, None) is not None
+                        else 75.0
+                    )
+                    for key in _REVIEW_ASPECT_KEYS
+                },
+            },
         },
     }
 
@@ -297,3 +370,64 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         result = await self.session.execute(stmt)
         await self.session.flush()
         return result.rowcount or 0
+
+    async def update_review_intelligence_by_canonical_ids(
+        self,
+        results: Mapping[str, Any],
+        timestamp: datetime | None = None,
+    ) -> int:
+        """Persist community review intelligence keyed by ``canonical_id``.
+
+        Each value may be a mapping/DTO containing ``pros_en``, ``pros_ar``,
+        ``cons_en``, ``cons_ar``, ``evidence_count``, ``community_nlp_score``
+        and an ``aspect_scores`` mapping. The bilingual lists and evidence count
+        live on ``LaptopConfiguration``; the NLP and aspect scores live on the
+        associated ``LaptopMetrics`` row.
+
+        Returns the number of catalog rows matched and updated.
+        """
+        if not results:
+            return 0
+
+        stmt = (
+            select(LaptopConfiguration)
+            .where(LaptopConfiguration.canonical_id.in_(list(results.keys())))
+            .options(selectinload(LaptopConfiguration.metrics))
+        )
+        laptops = (await self.session.execute(stmt)).scalars().unique().all()
+
+        reviewed_at = timestamp or utcnow()
+        updated_count = 0
+
+        for laptop in laptops:
+            payload = _normalize_review_payload(results.get(laptop.canonical_id))
+            if not payload:
+                continue
+
+            aspects = payload.get("aspect_scores")
+            if not isinstance(aspects, Mapping):
+                aspects = {}
+
+            laptop.pros_en = _coerce_str_list(payload.get("pros_en"))
+            laptop.pros_ar = _coerce_str_list(payload.get("pros_ar"))
+            laptop.cons_en = _coerce_str_list(payload.get("cons_en"))
+            laptop.cons_ar = _coerce_str_list(payload.get("cons_ar"))
+            laptop.reviews_evidence_count = _coerce_optional_int(payload.get("evidence_count")) or 0
+            laptop.has_reviews = True
+            laptop.reviews_checked_at = reviewed_at
+
+            metrics = laptop.metrics
+            if metrics is not None:
+                nlp_score = _coerce_optional_float(payload.get("community_nlp_score"))
+                if nlp_score is not None:
+                    metrics.community_nlp_score = nlp_score
+
+                for key in _REVIEW_ASPECT_KEYS:
+                    score = _coerce_optional_float(aspects.get(key, payload.get(key)))
+                    if score is not None:
+                        setattr(metrics, key, score)
+
+            updated_count += 1
+
+        await self.session.flush()
+        return updated_count

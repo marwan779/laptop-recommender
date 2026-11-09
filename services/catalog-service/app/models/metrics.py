@@ -39,6 +39,15 @@ class LaptopMetrics(Base):
     community_nlp_score: Mapped[float] = mapped_column(Numeric(5, 2))
     value_score: Mapped[float] = mapped_column(Numeric(5, 2))
 
+    # Community Review Sub-Aspect Scores (0.00 to 100.00)
+    thermals_score: Mapped[float] = mapped_column(Numeric(5, 2), default=75.0, server_default="75.00")
+    acoustics_score: Mapped[float] = mapped_column(Numeric(5, 2), default=75.0, server_default="75.00")
+    build_and_hinges_score: Mapped[float] = mapped_column(Numeric(5, 2), default=75.0, server_default="75.00")
+    keyboard_and_trackpad_score: Mapped[float] = mapped_column(Numeric(5, 2), default=75.0, server_default="75.00")
+    real_battery_and_reliability_score: Mapped[float] = mapped_column(
+        Numeric(5, 2), default=75.0, server_default="75.00"
+    )
+
     # Operational Meta for TOPSIS Recommender
     effective_price_egp: Mapped[float] = mapped_column(Numeric(12, 2))
     is_recommendable_price: Mapped[bool] = mapped_column(Boolean, default=True)
