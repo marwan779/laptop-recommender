@@ -5,7 +5,7 @@ import { StatusBanner } from './components/StatusBanner'
 import { LaptopCard } from './components/LaptopCard'
 import { LaptopDetailModal } from './components/LaptopDetailModal'
 import { CatalogBrowser } from './components/CatalogBrowser'
-import type { PersonaType, RankedLaptop, RecommendationResponse } from './types/api'
+import type { PersonaType, RankedLaptop, CatalogListItem, RecommendationResponse } from './types/api'
 import { fetchRecommendations } from './services/api'
 import { Sparkles, AlertCircle } from 'lucide-react'
 
@@ -13,14 +13,24 @@ export function App() {
   const [lang, setLang] = useState<'ar' | 'en'>('ar')
   const [tab, setTab] = useState<'recommend' | 'catalog'>('recommend')
   const [budget, setBudget] = useState<number>(45000)
-  const [persona, setPersona] = useState<PersonaType>('balanced')
+  const [selectedPersonas, setSelectedPersonas] = useState<PersonaType[]>(['balanced'])
   const [promptText, setPromptText] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null)
-  const [selectedLaptop, setSelectedLaptop] = useState<RankedLaptop | null>(null)
+  const [selectedLaptop, setSelectedLaptop] = useState<RankedLaptop | CatalogListItem | null>(null)
 
   const isAr = lang === 'ar'
+
+  const handleTogglePersona = (p: PersonaType) => {
+    if (selectedPersonas.includes(p)) {
+      if (selectedPersonas.length > 1) {
+        setSelectedPersonas(selectedPersonas.filter((item) => item !== p))
+      }
+    } else {
+      setSelectedPersonas([...selectedPersonas, p])
+    }
+  }
 
   const handleGetRecommendations = async () => {
     setLoading(true)
@@ -28,7 +38,8 @@ export function App() {
     try {
       const data = await fetchRecommendations({
         budget_egp: budget,
-        persona,
+        persona: selectedPersonas[0],
+        personas: selectedPersonas,
         user_text_prompt: promptText.trim() ? promptText.trim() : undefined,
         top_k: 8,
       })
@@ -41,10 +52,10 @@ export function App() {
     }
   }
 
-  // Load initial recommendation on first render
+  // Load initial recommendation on first render and whenever personas change
   useEffect(() => {
     handleGetRecommendations()
-  }, [])
+  }, [selectedPersonas])
 
   return (
     <div
@@ -67,8 +78,8 @@ export function App() {
             <BudgetPersonaBar
               budget={budget}
               onBudgetChange={setBudget}
-              selectedPersona={persona}
-              onPersonaChange={setPersona}
+              selectedPersonas={selectedPersonas}
+              onTogglePersona={handleTogglePersona}
               promptText={promptText}
               onPromptChange={setPromptText}
               onSubmit={handleGetRecommendations}
@@ -121,7 +132,10 @@ export function App() {
           </>
         ) : (
           /* Catalog Browser Tab */
-          <CatalogBrowser lang={lang} />
+          <CatalogBrowser
+            lang={lang}
+            onSelectLaptop={(lap) => setSelectedLaptop(lap)}
+          />
         )}
       </main>
 

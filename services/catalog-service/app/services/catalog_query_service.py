@@ -151,7 +151,7 @@ class CatalogQueryService:
                 continue
             if brand_key and str(lap.get("brand") or "").lower().strip() != brand_key:
                 continue
-            if in_stock_only and not self._dict_in_stock(lap):
+            if in_stock_only and (not self._dict_in_stock(lap) or price <= 0):
                 continue
             filtered.append(lap)
 

@@ -4,11 +4,11 @@
 
 export type PersonaType =
   | 'gaming'
-  | 'software_engineering'
+  | 'ai_and_game_dev'
+  | 'programming'
   | 'content_creation'
-  | 'data_science'
-  | 'business_mobility'
-  | 'student_budget'
+  | 'student_and_office'
+  | 'business_and_mobility'
   | 'balanced';
 
 export type RecommendationStatus =
@@ -54,7 +54,7 @@ export interface RecommendationRequest {
   min_budget_egp?: number;                    // Optional minimum budget floor
   persona?: PersonaType;                      // Default: 'balanced'
   personas?: PersonaType[];                   // Multi-persona blending
-  user_text_prompt?: string;                  // Arabic/English free-text: "عايز لاب يشغل Cyberpunk على Ultra"
+  user_text_prompt?: string;                  // Arabic/English free-text
   min_ram_gb?: number;                        // e.g. 16
   min_storage_gb?: number;                    // e.g. 512
   require_dgpu?: boolean;                     // true = forces discrete GPU
@@ -157,6 +157,131 @@ export interface CatalogListResponse {
   items: CatalogListItem[];
 }
 
+export interface CpuSpecDetail {
+  manufacturer: string;
+  line?: string;
+  model: string;
+  series?: string;
+  full_name?: string;
+  cores: number;
+  threads: number;
+  clock_base_ghz?: number;
+  clock_boost_ghz?: number;
+  cache_mb?: number;
+  base_power_w?: number;
+  npu_tops?: number;
+  microarchitecture?: string;
+}
+
+export interface GpuSpecDetail {
+  manufacturer: string;
+  model: string;
+  variant?: string;
+  vram_gb?: number;
+  vram_type?: string;
+  tdp_w?: number;
+  integrated: boolean;
+  ai_tops?: number;
+  igpu_model?: string;
+}
+
+export interface MemorySpecDetail {
+  capacity_gb: number;
+  memory_type: string;
+  speed_mhz?: number;
+  slot_count?: number;
+  max_supported_gb?: number;
+  is_soldered: boolean;
+  channels?: string;
+}
+
+export interface StorageSpecDetail {
+  capacity_gb: number;
+  storage_type: string;
+  interface?: string;
+  slot_count?: number;
+}
+
+export interface DisplaySpecDetail {
+  size_inches: number;
+  resolution: string;
+  width: number;
+  height: number;
+  panel_type?: string;
+  refresh_rate_hz: number;
+  aspect_ratio?: string;
+  brightness_nits?: number;
+  color_gamut?: string;
+  touchscreen: boolean;
+  hdr?: boolean;
+}
+
+export interface PowerBatterySpecDetail {
+  battery_capacity_wh?: number;
+  battery_cells?: number;
+  power_adapter_w?: number;
+  fast_charging?: boolean;
+  usb_c_pd_charging: boolean;
+}
+
+export interface PhysicalSpecDetail {
+  weight_kg?: number;
+  width_mm?: number;
+  depth_mm?: number;
+  height_mm?: number;
+}
+
+export interface BuildSecuritySpecDetail {
+  has_backlit_keyboard: boolean;
+  keyboard_backlight_type?: string;
+  has_fingerprint: boolean;
+  has_copilot_key: boolean;
+  security_features: string[];
+}
+
+export interface AudioWebcamSpecDetail {
+  speaker_count: number;
+  audio_system?: string;
+  webcam_resolution?: string;
+  has_ir_camera: boolean;
+  has_privacy_shutter: boolean;
+}
+
+export interface ConnectivityOsSpecDetail {
+  wifi?: string;
+  bluetooth?: string;
+  has_ethernet: boolean;
+  ethernet_speed?: string;
+  has_card_reader: boolean;
+  operating_system?: string;
+  ports: string[];
+}
+
+export interface HardwareMetricsDetail {
+  cpu_score: number;
+  gpu_score: number;
+  silicon_index?: number;
+  power_therm_score: number;
+  display_score: number;
+  mobility_score: number;
+  longevity_score: number;
+  ergonomics_score: number;
+  connectivity_score: number;
+  community_nlp_score?: number;
+  thermals_score?: number;
+  acoustics_score?: number;
+  build_and_hinges_score?: number;
+  keyboard_and_trackpad_score?: number;
+  real_battery_and_reliability_score?: number;
+  value_score: number;
+  effective_price_egp: number;
+  estimated_battery_hours?: number;
+  silicon_tier?: string;
+  display_tier?: string;
+  portability_tier?: string;
+  upgradeability_tier?: string;
+}
+
 export interface FullLaptopDetailResponse {
   id: string;
   canonical_id: string;
@@ -166,62 +291,42 @@ export interface FullLaptopDetailResponse {
   laptop_model: string;
   title: string;
   thumbnail_url: string;
+  base_color?: string;
+  color?: string;
   form_factor: string;
+  market_positioning?: string;
+  release_year?: number;
+  warranty?: string;
+  warranty_years?: number;
+
   min_price_egp: number;
-  max_price_egp: number;
+  max_price_egp?: number;
+  previous_min_price_egp?: number;
   cheapest_store: string;
   cheapest_offer_url?: string;
+  price_spread_egp?: number;
+  stores_count: number;
+  in_stock: boolean;
   available_stores: string[];
   prices_by_store: Record<string, number>;
   urls_by_store: Record<string, string>;
   offers: StoreOffer[];
 
-  cpu: {
-    manufacturer?: string;
-    line?: string;
-    model?: string;
-    series?: string;
-    full_name: string;
-    cores: number;
-    threads: number;
-    clock_base_ghz?: number;
-    clock_boost_ghz?: number;
-  };
-  gpu: {
-    manufacturer: string;
-    model: string;
-    vram_gb?: number;
-    tdp_w?: number;
-    integrated: boolean;
-  };
-  memory: {
-    capacity_gb: number;
-    memory_type: string;
-    speed_mhz?: number;
-    slot_count?: number;
-    is_soldered: boolean;
-  };
-  storage: {
-    capacity_gb: number;
-    storage_type: string;
-    slot_count?: number;
-  };
-  display: {
-    size_inches: number;
-    resolution: string;
-    panel_type?: string;
-    refresh_rate_hz: number;
-    touchscreen: boolean;
-  };
-  power_battery: {
-    battery_capacity_wh?: number;
-    power_adapter_w?: number;
-    usb_c_pd_charging: boolean;
-  };
-  physical: {
-    weight_kg?: number;
-  };
+  // 35+ Structured Hardware Dimensions
+  cpu: CpuSpecDetail;
+  gpu: GpuSpecDetail;
+  memory: MemorySpecDetail;
+  storage: StorageSpecDetail;
+  display: DisplaySpecDetail;
+  power_battery: PowerBatterySpecDetail;
+  physical: PhysicalSpecDetail;
+  build_security: BuildSecuritySpecDetail;
+  audio_webcam: AudioWebcamSpecDetail;
+  connectivity_os: ConnectivityOsSpecDetail;
 
+  metrics?: HardwareMetricsDetail;
+
+  // Community Review Intelligence & Explainability
   reviews_evidence_count: number;
   pros_en: string[];
   pros_ar: string[];

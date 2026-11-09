@@ -68,11 +68,13 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({ response, lang }) =>
     <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300">
       <div className="flex items-center gap-2">
         <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-        <span>
-          {isAr
-            ? `تم تحليل ${total_candidates_before_floor} لابتوب في السوق المصري وتطبيق نافذة الميزانية الذكية:`
-            : `Evaluated ${total_candidates_before_floor} catalog laptops. Smart Budget Window:`}
-          <strong className="text-white ml-1.5 font-mono">
+        <span className="flex items-center flex-wrap">
+          <span>
+            {isAr
+              ? `تم تحليل ${total_candidates_before_floor} لابتوب في السوق المصري وتطبيق نافذة الميزانية الذكية: `
+              : `Evaluated ${total_candidates_before_floor} catalog laptops. Smart Budget Window: `}
+          </span>
+          <strong className="text-white mx-1.5 font-mono inline-block">
             {minPrice.toLocaleString()} - {maxPrice.toLocaleString()} EGP
           </strong>
         </span>
@@ -82,8 +84,8 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({ response, lang }) =>
         <div className="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700">
           <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
           <span className="text-[11px] text-slate-300">
-            {isAr ? 'فلاتر ذكية مستخلصة:' : 'Applied Prompt Filters:'}{' '}
-            <span className="text-indigo-300 font-medium">
+            {isAr ? 'فلاتر ذكية مستخلصة: ' : 'Applied Prompt Filters: '}
+            <span className="text-indigo-300 font-medium mx-1">
               {Object.keys(parsed_text_prompt.extracted_filters).join(', ')}
             </span>
           </span>

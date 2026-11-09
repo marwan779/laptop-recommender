@@ -335,6 +335,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             filters.append(func.lower(LaptopConfiguration.brand) == brand.lower().strip())
         if in_stock_only:
             filters.append(LaptopConfiguration.in_stock.is_(True))
+            filters.append(LaptopConfiguration.min_price_egp > 0)
 
         count_stmt = select(func.count()).select_from(LaptopConfiguration).where(*filters)
         total = int((await self.session.execute(count_stmt)).scalar_one() or 0)
