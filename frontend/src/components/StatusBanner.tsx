@@ -20,6 +20,7 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({ response, lang }) =>
   const minPrice = applied_budget_window_egp?.[0] || 0
   const maxPrice = applied_budget_window_egp?.[1] || 0
   const lowestAlternativePrice = results[0]?.effective_price_egp
+  const hasAlternatives = results.length > 0
 
   if (status === 'BUDGET_TOO_LOW_FOR_CATEGORY') {
     return (
@@ -35,8 +36,8 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({ response, lang }) =>
           </h3>
           <p className="text-xs text-amber-200/80 leading-relaxed">
             {isAr
-              ? `لتشغيل متطلبات هذه الفئة (مثل كارت شاشة خارجي أو شاشة عالية التردد)، تبدأ أسعار أفضل الخيارات المتاحة في السوق المصري من ${lowestAlternativePrice?.toLocaleString()} ج.م. رشحنا لك أرخص 3 بدائل حقيقية تلبي متطلباتك:`
-              : `To satisfy category demands (such as a discrete GPU and high-refresh panel), real options in Egypt start at ${lowestAlternativePrice?.toLocaleString()} EGP. We surfaced the 3 most affordable dedicated alternatives below:`}
+              ? `لتشغيل متطلبات هذه الفئة (مثل كارت شاشة خارجي أو شاشة عالية التردد)، تبدأ أسعار أفضل الخيارات المتاحة في السوق المصري من ${lowestAlternativePrice ? `${lowestAlternativePrice.toLocaleString()} ج.م` : 'مستويات أعلى'}. ${hasAlternatives ? 'رشحنا لك أرخص 3 بدائل حقيقية تلبي متطلباتك:' : 'يرجى زيادة الميزانية أو تخفيف بعض الفلاتر لعرض الخيارات المتاحة.'}`
+              : `To satisfy category demands (such as a discrete GPU and high-refresh panel), real options in Egypt start at ${lowestAlternativePrice ? `${lowestAlternativePrice.toLocaleString()} EGP` : 'higher price points'}. ${hasAlternatives ? 'We surfaced the 3 most affordable dedicated alternatives below:' : 'Please increase your budget or relax filters to view available options.'}`}
           </p>
         </div>
       </div>

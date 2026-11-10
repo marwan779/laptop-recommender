@@ -53,7 +53,10 @@ _METRIC_FILTER_SOURCES: dict[str, tuple[str, str]] = {
 def _metric_score(lap: dict[str, Any], source: str, key: str) -> float | None:
     """Read one metric score from a recommender dict without raising on gaps."""
     derived = lap.get("derived_metrics") or {}
-    container = derived.get(source)
+    if source == "aspect_scores":
+        container = (derived.get("community_reviews") or {}).get("aspect_scores") or derived.get("aspect_scores")
+    else:
+        container = derived.get(source)
     if not isinstance(container, dict):
         return None
 

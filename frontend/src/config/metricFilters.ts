@@ -1,18 +1,18 @@
 import type { MetricFilterKey } from '../types/api'
 
-export interface MetricPreset {
-  value: number
-  labelAr: string
-  labelEn: string
-}
-
 export interface MetricFilterDef {
   key: MetricFilterKey
   scoreKey: string
   labelAr: string
   labelEn: string
   group: 'experience' | 'performance'
-  presets: MetricPreset[]
+}
+
+export type ScoreTier = {
+  label: string
+  colorClass: string
+  badgeClass: string
+  accentClass: string
 }
 
 /**
@@ -25,94 +25,64 @@ export const METRIC_FILTER_DEFS: MetricFilterDef[] = [
     key: 'min_acoustics_score',
     scoreKey: 'acoustics_score',
     labelAr: 'الهدوء والمراوح',
-    labelEn: 'Acoustics',
+    labelEn: 'Acoustics / Fan Noise',
     group: 'experience',
-    presets: [
-      { value: 70, labelAr: '70+ هادئ', labelEn: '70+ Quiet' },
-      { value: 80, labelAr: '80+ فائق الهدوء', labelEn: '80+ Silent' },
-    ],
   },
   {
     key: 'min_thermals_score',
     scoreKey: 'thermals_score',
     labelAr: 'التبريد تحت الحمل',
-    labelEn: 'Thermals',
+    labelEn: 'Cooling / Thermals',
     group: 'experience',
-    presets: [
-      { value: 70, labelAr: '70+ مستقر', labelEn: '70+ Stable' },
-      { value: 80, labelAr: '80+ ألعاب ثقيلة', labelEn: '80+ Heavy Gaming' },
-    ],
   },
   {
     key: 'min_battery_score',
     scoreKey: 'real_battery_and_reliability_score',
-    labelAr: 'البطارية والاعتمادية',
-    labelEn: 'Battery',
+    labelAr: 'عمر البطارية الحقيقي',
+    labelEn: 'Real Battery Life',
     group: 'experience',
-    presets: [
-      { value: 70, labelAr: '70+ يوم كامل', labelEn: '70+ All-day' },
-      { value: 80, labelAr: '80+ ماراثون', labelEn: '80+ Marathon' },
-    ],
   },
   {
     key: 'min_build_score',
     scoreKey: 'build_and_hinges_score',
     labelAr: 'الخامة والمفصلات',
-    labelEn: 'Build',
+    labelEn: 'Build & Hinges',
     group: 'experience',
-    presets: [{ value: 75, labelAr: '75+ معدن/عسكري', labelEn: '75+ Metal / MIL-STD' }],
   },
   {
     key: 'min_keyboard_score',
     scoreKey: 'keyboard_and_trackpad_score',
     labelAr: 'الكيبورد والتاتش باد',
-    labelEn: 'Keyboard',
+    labelEn: 'Keyboard & Trackpad',
     group: 'experience',
-    presets: [{ value: 75, labelAr: '75+ مريح', labelEn: '75+ Comfortable' }],
-  },
-  {
-    key: 'min_display_score',
-    scoreKey: 'display_score',
-    labelAr: 'جودة وألوان الشاشة',
-    labelEn: 'Display',
-    group: 'performance',
-    presets: [
-      { value: 70, labelAr: '70+ ألوان ممتازة', labelEn: '70+ Great Colors' },
-      { value: 80, labelAr: '80+ صانعي محتوى', labelEn: '80+ Creator' },
-    ],
   },
   {
     key: 'min_cpu_score',
     scoreKey: 'cpu_score',
     labelAr: 'قوة المعالج',
-    labelEn: 'CPU',
+    labelEn: 'CPU Benchmark',
     group: 'performance',
-    presets: [
-      { value: 70, labelAr: '70+ سريع', labelEn: '70+ Fast' },
-      { value: 85, labelAr: '85+ أداء عالي', labelEn: '85+ High-end' },
-    ],
   },
   {
     key: 'min_gpu_score',
     scoreKey: 'gpu_score',
     labelAr: 'قوة كارت الشاشة',
-    labelEn: 'GPU',
+    labelEn: 'GPU 3D Power',
     group: 'performance',
-    presets: [
-      { value: 65, labelAr: '65+ جيمنج متوسط', labelEn: '65+ Mid Gaming' },
-      { value: 80, labelAr: '80+ ألعاب قوية', labelEn: '80+ AAA Gaming' },
-    ],
+  },
+  {
+    key: 'min_display_score',
+    scoreKey: 'display_score',
+    labelAr: 'جودة وألوان الشاشة',
+    labelEn: 'Display Quality',
+    group: 'performance',
   },
   {
     key: 'min_value_score',
     scoreKey: 'value_score',
     labelAr: 'القيمة مقابل السعر',
-    labelEn: 'Value',
+    labelEn: 'Value for Money',
     group: 'performance',
-    presets: [
-      { value: 80, labelAr: '80+ قيمة ممتازة', labelEn: '80+ Great Value' },
-      { value: 90, labelAr: '90+ أفضل شراء', labelEn: '90+ Best Buy' },
-    ],
   },
 ]
 
@@ -137,4 +107,46 @@ export function toMetricQuery(
     if (value != null) query[def.key] = value
   }
   return query
+}
+
+/**
+ * Map a 0-100 score to its bilingual label and color tier.
+ * 0 = inactive/any, >=80 exceptional, >=60 great, otherwise acceptable.
+ */
+export function getScoreTier(score: number, lang: 'ar' | 'en'): ScoreTier {
+  const isAr = lang === 'ar'
+
+  if (!score || score <= 0) {
+    return {
+      label: isAr ? 'الكل' : 'Any',
+      colorClass: 'text-slate-400',
+      badgeClass: 'bg-slate-800/80 text-slate-400 border-slate-700',
+      accentClass: 'accent-slate-500',
+    }
+  }
+
+  if (score >= 80) {
+    return {
+      label: isAr ? 'فائق (+80)' : 'Exceptional (+80)',
+      colorClass: 'text-emerald-300',
+      badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
+      accentClass: 'accent-emerald-500',
+    }
+  }
+
+  if (score >= 60) {
+    return {
+      label: isAr ? 'جيد جداً (+60)' : 'Great (+60)',
+      colorClass: 'text-indigo-300',
+      badgeClass: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40',
+      accentClass: 'accent-indigo-500',
+    }
+  }
+
+  return {
+    label: isAr ? 'مقبول' : 'Acceptable',
+    colorClass: 'text-amber-300',
+    badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
+    accentClass: 'accent-amber-500',
+  }
 }

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import type { MetricFilterKey, PersonaType } from '../types/api'
 import { METRIC_FILTER_DEFS } from '../config/metricFilters'
+import { MetricSlider } from './MetricSlider'
 
 interface BudgetPersonaBarProps {
   budget: number
@@ -510,49 +511,46 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
                   </span>
                 )}
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {METRIC_FILTER_DEFS.map((def) => {
-                  const current = metricFilters[def.key]
-                  return (
-                    <div key={def.key} className="space-y-1.5">
-                      <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                        <span>{isAr ? def.labelAr : def.labelEn}</span>
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            def.group === 'experience' ? 'bg-emerald-400' : 'bg-sky-400'
-                          }`}
-                        />
-                      </label>
-                      <div className="flex gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => onMetricChange(def.key, null)}
-                          className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-medium border transition-all ${
-                            current == null
-                              ? 'bg-indigo-600 text-white border-indigo-500 font-bold'
-                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          {isAr ? 'الكل' : 'Any'}
-                        </button>
-                        {def.presets.map((preset) => (
-                          <button
-                            key={preset.value}
-                            type="button"
-                            onClick={() => onMetricChange(def.key, preset.value)}
-                            className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-medium border transition-all ${
-                              current === preset.value
-                                ? 'bg-indigo-600 text-white border-indigo-500 font-bold'
-                                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                            }`}
-                          >
-                            {isAr ? preset.labelAr : preset.labelEn}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-4 rounded-full bg-emerald-400" />
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+                      {isAr
+                        ? 'تجربة الاستخدام الميدانية (Review Intelligence)'
+                        : 'Real-World Usage (Review Intelligence)'}
+                    </h4>
+                  </div>
+                  {METRIC_FILTER_DEFS.filter((def) => def.group === 'experience').map((def) => (
+                    <MetricSlider
+                      key={def.key}
+                      def={def}
+                      value={metricFilters[def.key]}
+                      onChange={(val) => onMetricChange(def.key, val)}
+                      lang={lang}
+                    />
+                  ))}
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-4 rounded-full bg-sky-400" />
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-sky-300">
+                      {isAr
+                        ? 'قوة العتاد والأداء (Hardware Benchmarks)'
+                        : 'Hardware Power & Performance (Benchmarks)'}
+                    </h4>
+                  </div>
+                  {METRIC_FILTER_DEFS.filter((def) => def.group === 'performance').map((def) => (
+                    <MetricSlider
+                      key={def.key}
+                      def={def}
+                      value={metricFilters[def.key]}
+                      onChange={(val) => onMetricChange(def.key, val)}
+                      lang={lang}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
