@@ -33,6 +33,6 @@ USER nginx
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD nc -z localhost 3000 || exit 1
+    CMD nc -z 127.0.0.1 3000 || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
