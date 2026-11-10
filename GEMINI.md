@@ -198,3 +198,20 @@ Before finalizing any implementation, verify:
 * **Liskov Substitution (LSP)**: Subclasses or interface implementations honor the base contract without unexpected side effects.
 * **Interface Segregation (ISP)**: Clients depend only on the methods they use. Repositories expose focused, granular operations.
 * **Dependency Inversion (DIP)**: High-level business logic never depends on low-level database details. High-level policies depend on abstractions, and dependencies are injected.
+
+
+---
+
+# Frontend UI Design System ("The Verified Instrument")
+
+All frontend UI work in `frontend/` MUST strictly follow the full specification in `.agent/rules/design-system.md`:
+
+* **Surface & Border Tokens**: Dark-first hardware workbench hierarchy (`--bg-app: #0A0E13`, `--bg-surface: #10161D`, `--bg-raised: #151D27`, `--bg-overlay: #1A2431`, `--bg-input: #0D131A`) with `1px solid` structural hairlines (`--border-subtle: #1E2836`, `--border-strong: #2B394C`).
+* **Studio Lightbox Well (`--studio-well: #EDEBE6`)**: The only light surface in the app—a `4:3` rounded (`8px`) padded container (`object-fit: contain`) that grounds white-background store product photos cleanly inside dark cards.
+* **Strict 4-Rule Color Discipline (1 Job Per Color)**:
+  1. **Cairo Gold (`#E9B949` / `#F5C95C`)**: Money & decisions ONLY (Primary CTA buttons, EGP prices, TOPSIS Match `%`, Rank `#1`, active persona border, active view segment, budget slider). Maximum one solid gold focal element per card.
+  2. **Telemetry Cyan (`#22D3EE`)**: Hardware benchmarks & data ONLY (`1–100` score bar fills with `50%`/`80%` ticks, metric sliders, spec bullet dots, persona icon wells). Never use on buttons or prices.
+  3. **Signal Indigo (`#818CF8`)**: Machine intelligence provenance tags ONLY (`TOPSIS`, `AI Review Synthesis`, `NLP` badges).
+  4. **Emerald (`#34D399`) & Rose (`#F87171`)**: Verification & judgement ONLY (Live dot, `BEST PRICE` outline chip, Pros `+` vs. Cons `-`, score numerals `< 50`).
+* **Typography & Tabular Numerals**: `Space Grotesk` (`--font-display`) for headings, prices, and scores; `Inter` (`--font-ui`) for UI/specs; `IBM Plex Mono` (`--font-mono`) for MPNs, `#rank`, and timestamps; `IBM Plex Sans Arabic` (`--font-arabic`) for Arabic text (`dir="auto"`, Western digits `0–9`). Always enforce `font-variant-numeric: tabular-nums` on prices, scores, and counters.
+* **UI-Only Boundary**: Never alter UX flows, component props, state hooks, or API contracts during visual styling updates unless explicitly requested.

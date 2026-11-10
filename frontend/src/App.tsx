@@ -14,7 +14,7 @@ import type {
 } from './types/api'
 import { EMPTY_METRIC_FILTERS, toMetricQuery } from './config/metricFilters'
 import { fetchRecommendations } from './services/api'
-import { Sparkles, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 
 export function App() {
   const [lang, setLang] = useState<'ar' | 'en'>('ar')
@@ -96,10 +96,7 @@ export function App() {
   }, [selectedPersonas])
 
   return (
-    <div
-      dir={isAr ? 'rtl' : 'ltr'}
-      className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans"
-    >
+    <div dir={isAr ? 'rtl' : 'ltr'} className="min-h-screen flex flex-col">
       {/* 1. Top Navigation Bar */}
       <Navbar
         currentTab={tab}
@@ -109,7 +106,7 @@ export function App() {
       />
 
       {/* 2. Main Body Content */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+      <main className="page-wrap flex-1 w-full space-y-6">
         {tab === 'recommend' ? (
           <>
             {/* Budget & Persona Selector */}
@@ -140,35 +137,33 @@ export function App() {
 
             {/* Error Message if API fails */}
             {error && (
-              <div className="bg-rose-950/40 border border-rose-500/40 rounded-2xl p-4 flex items-center gap-3 text-rose-300 text-xs">
-                <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+              <div className="flex items-start gap-3 rounded-[10px] border border-[rgba(248,113,113,0.4)] bg-[var(--danger-dim)] px-4 py-3 text-[13px] text-[var(--danger)]">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             {/* Status & Results Section */}
             {recommendations && (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {/* Status Notice Banner */}
                 <StatusBanner response={recommendations} lang={lang} />
 
                 {/* Section Title */}
-                <div className="flex items-center justify-between">
-                  <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-indigo-400" />
-                    <span>
-                      {isAr
-                        ? `أفضل ترشيحات لابتوب تناسبك (${recommendations.results.length} خيارات)`
-                        : `Top Recommended Laptops (${recommendations.results.length} matches)`}
-                    </span>
-                  </h3>
-                  <span className="text-xs text-slate-400 font-mono">
+                <div className="section-head">
+                  <span className="no">{isAr ? 'النتائج' : 'RESULTS'}</span>
+                  <h2>
+                    {isAr
+                      ? `أفضل ترشيحات لابتوب تناسبك (${recommendations.results.length} خيارات)`
+                      : `Top Recommended Laptops (${recommendations.results.length} matches)`}
+                  </h2>
+                  <span className="hint">
                     {isAr ? 'مرتبة بواسطة Vector TOPSIS' : 'Ranked via Vector TOPSIS'}
                   </span>
                 </div>
 
                 {/* Laptop Cards List */}
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-5">
                   {recommendations.results.map((laptop) => (
                     <LaptopCard
                       key={laptop.canonical_id}
@@ -198,16 +193,16 @@ export function App() {
       />
 
       {/* 4. Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div>
+      <footer className="site-footer">
+        <div className="inner">
+          <span>
             {isAr
               ? 'مرشح اللابتوبات الذكي • أسعار ومواصفات حية من المتاجر المصرية'
               : 'Smart Laptop Recommender • Live Retailer Scrapes & Vector Intelligence'}
-          </div>
-          <div className="font-mono text-slate-400 text-[11px]">
+          </span>
+          <span className="font-mono text-[11px] text-[var(--text-muted)]">
             Powered by FastAPI • ChromaDB • Vector TOPSIS
-          </div>
+          </span>
         </div>
       </footer>
     </div>

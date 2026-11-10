@@ -5,7 +5,6 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
-  Eye,
   Search,
   X,
   RotateCcw,
@@ -128,10 +127,10 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
   }
 
   return (
-    <div className="space-y-6">
-      {/* 1. Universal Search Bar & Fast Filters */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-        {/* Search Input Box */}
+    <div className="space-y-5">
+      {/* 1. Search & filters panel */}
+      <div className="panel space-y-4">
+        {/* Search input */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1">
             <input
@@ -143,23 +142,24 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
                   ? 'ابحث بالموديل، الاسم، كود MPN، كارت الشاشة أو المعالج (مثال: LOQ 15, RTX 4060, FX607)...'
                   : 'Search by model, title, MPN, SKU, GPU, or CPU (e.g. LOQ 15, RTX 4060, FX607)...'
               }
-              className="w-full px-4 py-3 pl-11 pr-10 bg-slate-950/80 border border-slate-700/80 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
+              aria-label={isAr ? 'بحث في الكتالوج' : 'Search catalog'}
+              className="field field-with-icon pe-10"
             />
-            <Search className="w-4 h-4 text-indigo-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 field-icon" strokeWidth={1.8} />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                aria-label={isAr ? 'مسح البحث' : 'Clear search'}
+                className="absolute end-3 top-1/2 -translate-y-1/2 p-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" strokeWidth={2} />
               </button>
             )}
           </div>
 
-          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-            {/* In-Stock Toggle */}
-            <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300 bg-slate-800/60 px-3.5 py-3 rounded-2xl border border-slate-700/60 hover:bg-slate-800 transition-colors">
+          <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
+            <label className="flex items-center gap-2 cursor-pointer text-[12.5px] text-[var(--text-secondary)] bg-[var(--bg-input)] px-3.5 h-11 rounded-[10px] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-colors">
               <input
                 type="checkbox"
                 checked={inStockOnly}
@@ -167,37 +167,41 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
                   setInStockOnly(e.target.checked)
                   resetPagination()
                 }}
-                className="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                className="checkbox"
               />
-              <span className="whitespace-nowrap">{isAr ? 'المتاح للشراء فقط' : 'In-Stock Only'}</span>
+              <span className="whitespace-nowrap">
+                {isAr ? 'المتاح للشراء فقط' : 'In-Stock Only'}
+              </span>
             </label>
 
-            {/* Total Results Count */}
-            <div className="text-xs text-slate-400 bg-slate-800/40 px-3.5 py-3 rounded-2xl border border-slate-800 whitespace-nowrap font-medium">
-              <span>{isAr ? 'النتائج:' : 'Matches:'} </span>
-              <strong className="text-white font-mono">{data?.total ?? 0}</strong>
+            <div className="text-[12.5px] text-[var(--text-muted)] bg-[var(--bg-input)] px-3.5 h-11 rounded-[10px] border border-[var(--border-subtle)] flex items-center gap-1.5 whitespace-nowrap">
+              <span>{isAr ? 'النتائج:' : 'Matches:'}</span>
+              <strong className="text-[var(--text-primary)] font-mono num">
+                {data?.total ?? 0}
+              </strong>
             </div>
           </div>
         </div>
 
-        {/* Brand Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-800/80">
-          <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1.5 mr-2">
-            <Filter className="w-3.5 h-3.5 text-indigo-400" />
-            <span>{isAr ? 'الماركة:' : 'Brand:'}</span>
+        {/* Brand pills */}
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[var(--border-subtle)]">
+          <span className="micro flex items-center gap-1.5 me-1">
+            <Filter className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
+            <span>{isAr ? 'الماركة' : 'Brand'}</span>
           </span>
           {BRANDS.map((b) => (
             <button
               key={b}
               type="button"
+              aria-pressed={brand === b}
               onClick={() => {
                 setBrand(b)
                 resetPagination()
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+              className={`brand-chip transition-colors ${
                 brand === b
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                  : 'bg-slate-800/70 text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? '!text-[var(--gold-bright)] !border-[rgba(233,185,73,0.45)] !bg-[var(--gold-dim)]'
+                  : 'hover:!border-[var(--border-strong)] hover:!text-[var(--text-primary)]'
               }`}
             >
               {b}
@@ -205,61 +209,64 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
           ))}
         </div>
 
-        {/* Optional Real-World Experience & Performance Metric Drawer */}
-        <div className="border-t border-slate-800/80 pt-3">
+        {/* Metric filters drawer */}
+        <div className="pt-3 border-t border-[var(--border-subtle)]">
           <button
             type="button"
             onClick={() => setShowMetrics((prev) => !prev)}
-            className="w-full flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 hover:bg-slate-950/80 border border-slate-800 transition-colors text-left"
+            className="collapse-toggle"
+            aria-expanded={showMetrics}
           >
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-indigo-400" />
-              <span className="text-xs font-bold text-white">
+            <span className="ct-left">
+              <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={1.8} />
+              <span>
                 {isAr
                   ? 'معايير التجربة الميدانية والأداء (اختياري)'
-                  : 'Real-World Experience & Performance (Optional)'}
+                  : 'Real-World Experience & Performance (optional)'}
               </span>
               {activeMetricDefs.length > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white font-mono">
-                  {isAr
-                    ? `${activeMetricDefs.length} فلاتر نشطة`
-                    : `${activeMetricDefs.length} active`}
-                </span>
+                <span className="count-chip">{activeMetricDefs.length}</span>
               )}
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-indigo-400 font-semibold">
-              <span>{showMetrics ? (isAr ? 'إخفاء' : 'Collapse') : isAr ? 'تخصيص' : 'Customize'}</span>
-              {showMetrics ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </div>
+            </span>
+            <span className="ct-state">
+              <span>
+                {showMetrics ? (isAr ? 'إخفاء' : 'Collapse') : isAr ? 'تخصيص' : 'Customize'}
+              </span>
+              {showMetrics ? (
+                <ChevronUp className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5" />
+              )}
+            </span>
           </button>
 
           {showMetrics && (
-            <div className="mt-2.5 p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] text-slate-400">
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <span className="text-[12px] text-[var(--text-muted)]">
                   {isAr
                     ? 'كل المعايير من 100 وتُطبق فقط عند اختيارها.'
-                    : 'All scores are 0-100 and apply only when selected.'}
+                    : 'All scores are 0–100 and apply only when selected.'}
                 </span>
                 {activeMetricDefs.length > 0 && (
                   <button
                     type="button"
                     onClick={handleResetMetrics}
-                    className="text-[11px] text-slate-400 hover:text-rose-400 transition-colors inline-flex items-center gap-1"
+                    className="btn-ghost inline-flex items-center gap-1 !h-auto !py-1"
                   >
-                    <RotateCcw className="w-3 h-3" />
+                    <RotateCcw className="w-3 h-3" strokeWidth={1.8} />
                     <span>{isAr ? 'إعادة ضبط الكل' : 'Reset All Metrics'}</span>
                   </button>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-4 rounded-full bg-emerald-400" />
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+                    <span className="w-1 h-3.5 rounded-full bg-[var(--cyan)]" />
+                    <h4 className="micro !text-[var(--text-secondary)]">
                       {isAr
-                        ? 'تجربة الاستخدام الميدانية (Review Intelligence)'
+                        ? 'تجربة الاستخدام الميدانية'
                         : 'Real-World Usage (Review Intelligence)'}
                     </h4>
                   </div>
@@ -274,12 +281,12 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
                   ))}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-4 rounded-full bg-sky-400" />
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-sky-300">
+                    <span className="w-1 h-3.5 rounded-full bg-[var(--cyan)]" />
+                    <h4 className="micro !text-[var(--text-secondary)]">
                       {isAr
-                        ? 'قوة العتاد والأداء (Hardware Benchmarks)'
+                        ? 'قوة العتاد والأداء'
                         : 'Hardware Power & Performance (Benchmarks)'}
                     </h4>
                   </div>
@@ -299,11 +306,11 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
         </div>
       </div>
 
-      {/* 2. Grid of Laptops */}
+      {/* 2. Grid of laptops */}
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center gap-3">
-          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-slate-400 font-medium">
+          <div className="spinner" />
+          <p className="text-[12px] text-[var(--text-muted)]">
             {isAr ? 'جاري البحث والتحميل...' : 'Searching and loading catalog...'}
           </p>
         </div>
@@ -316,34 +323,35 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
               <div
                 key={item.id}
                 onClick={() => onSelectLaptop && onSelectLaptop(item)}
-                className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-slate-700 transition-all flex flex-col justify-between group cursor-pointer"
+                className="catalog-card"
               >
                 <div className="space-y-3">
-                  {/* Clean white retail thumbnail container */}
-                  <div className="bg-white rounded-xl p-3 flex items-center justify-center h-44 border border-slate-700/40 relative overflow-hidden shadow-inner group-hover:shadow-indigo-500/10 transition-all">
+                  <div className="studio-well">
                     <img
                       src={item.thumbnail_url}
                       alt={item.title}
-                      className="w-full h-full max-h-36 object-contain group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         ;(e.target as HTMLElement).style.display = 'none'
                       }}
                     />
                   </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
-                      {item.brand}
-                    </span>
-                    <h4 className="font-bold text-xs text-white line-clamp-2 leading-tight group-hover:text-indigo-300 transition-colors">
-                      {item.title}
-                    </h4>
+
+                  <div className="space-y-1.5">
+                    <span className="brand-chip !text-[10px] !py-0.5">{item.brand}</span>
+                    <h4 className="cc-title">{item.title}</h4>
                   </div>
 
-                  <div className="text-[11px] text-slate-400 space-y-0.5">
-                    <div className="line-clamp-1">CPU: {item.cpu_model}</div>
-                    <div className="line-clamp-1">GPU: {item.gpu_model}</div>
-                    <div>
-                      RAM: {item.ram_capacity_gb}GB • SSD: {item.storage_capacity_gb}GB
+                  <div className="cc-specs space-y-0.5">
+                    <div className="line-clamp-1">
+                      <span className="k">CPU</span> {item.cpu_model}
+                    </div>
+                    <div className="line-clamp-1">
+                      <span className="k">GPU</span> {item.gpu_model}
+                    </div>
+                    <div className="num">
+                      <span className="k">RAM</span> {item.ram_capacity_gb}GB
+                      <span className="mx-1.5 text-[var(--border-strong)]">•</span>
+                      <span className="k">SSD</span> {item.storage_capacity_gb}GB
                     </div>
                   </div>
 
@@ -353,11 +361,8 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
                         const score = item.metric_scores?.[def.scoreKey]
                         if (score == null) return null
                         return (
-                          <span
-                            key={def.key}
-                            className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-mono"
-                          >
-                            🟢 {Math.round(score)}/100 {isAr ? def.labelAr : def.labelEn}
+                          <span key={def.key} className="ai-chip !text-[10px] !py-0.5">
+                            {Math.round(score)}/100 {isAr ? def.labelAr : def.labelEn}
                           </span>
                         )
                       })}
@@ -365,27 +370,28 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-slate-800/80 mt-3 flex items-baseline justify-between">
+                <div className="cc-foot">
                   <div>
-                    <span className="text-[10px] text-slate-400 block">
-                      {isAr ? 'يبدأ من:' : 'From:'}
+                    <span className="micro block">
+                      {isAr ? 'يبدأ من' : 'From'}
                     </span>
                     {hasValidPrice ? (
-                      <span className="font-extrabold text-sm text-white font-mono">
-                        {item.min_price_egp.toLocaleString()} EGP
+                      <span className="cc-price num">
+                        {item.min_price_egp.toLocaleString()}{' '}
+                        <span className="text-[11px] font-semibold text-[var(--text-muted)]">
+                          {isAr ? 'ج.م' : 'EGP'}
+                        </span>
                       </span>
                     ) : (
-                      <span className="text-amber-400 font-semibold text-xs">
+                      <span className="text-[12.5px] font-semibold text-[var(--warning)]">
                         {isAr ? 'السعر عند الطلب' : 'Price on request'}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono">
-                      {item.cheapest_store}
-                    </span>
-                    <span className="p-1 rounded bg-slate-800 text-slate-400 group-hover:text-white transition-colors">
-                      <Eye className="w-3 h-3" />
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="mpn-chip !text-[10px] !py-0.5">{item.cheapest_store}</span>
+                    <span className="text-[var(--text-muted)]">
+                      <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} />
                     </span>
                   </div>
                 </div>
@@ -394,16 +400,16 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
           })}
         </div>
       ) : (
-        /* Empty State */
-        <div className="py-16 px-4 text-center bg-slate-900/60 border border-slate-800 rounded-3xl space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-slate-800/80 text-slate-400 flex items-center justify-center mx-auto border border-slate-700">
-            <Search className="w-6 h-6" />
+        /* Empty state */
+        <div className="py-16 px-4 text-center panel space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-[var(--bg-raised)] text-[var(--text-muted)] flex items-center justify-center mx-auto border border-[var(--border-subtle)]">
+            <Search className="w-5 h-5" strokeWidth={1.8} />
           </div>
           <div className="space-y-1">
-            <h3 className="font-bold text-white text-base">
+            <h3 className="text-[15px] font-semibold text-[var(--text-primary)]">
               {isAr ? 'لم نعثر على لابتوبات مطابقة لبحثك' : 'No matching laptops found'}
             </h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
+            <p className="text-[12.5px] text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
               {isAr
                 ? 'جرب البحث بكلمات أبسط، أو إزالة بعض الفلاتر، أو كتابة اسم الموديل الأساسي مثل LOQ أو TUF أو Pavilion.'
                 : 'Try searching with broader keywords, clearing active filters, or typing the core model name like LOQ, TUF, or Pavilion.'}
@@ -412,27 +418,27 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
           <button
             type="button"
             onClick={handleClearSearch}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors inline-flex items-center gap-2"
+            className="btn btn-secondary btn-sm inline-flex"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.8} />
             <span>{isAr ? 'إعادة ضبط البحث والفلاتر' : 'Reset Search & Filters'}</span>
           </button>
         </div>
       )}
 
-      {/* 3. Cursor (Keyset) Pagination Controls */}
+      {/* 3. Cursor pagination */}
       {(data?.page_info?.has_previous_page || data?.page_info?.has_next_page) && (
-        <div className="flex items-center justify-center gap-3 pt-4">
+        <div className="flex items-center justify-center gap-3 pt-2">
           <button
             type="button"
             onClick={handlePreviousPage}
             disabled={!data?.page_info?.has_previous_page}
             aria-label={isAr ? 'الصفحة السابقة' : 'Previous page'}
-            className="p-2 rounded-xl bg-slate-800 text-slate-300 disabled:opacity-40 hover:bg-slate-700 transition-colors"
+            className="btn btn-secondary btn-sm !px-2.5"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" strokeWidth={2} />
           </button>
-          <span className="text-xs text-slate-400 font-mono">
+          <span className="text-[12px] text-[var(--text-muted)] font-mono num">
             {isAr ? 'عرض' : 'Showing'} {data?.items.length ?? 0} / {data?.total ?? 0}
           </span>
           <button
@@ -440,9 +446,9 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
             onClick={handleNextPage}
             disabled={!data?.page_info?.has_next_page}
             aria-label={isAr ? 'الصفحة التالية' : 'Next page'}
-            className="p-2 rounded-xl bg-slate-800 text-slate-300 disabled:opacity-40 hover:bg-slate-700 transition-colors"
+            className="btn btn-secondary btn-sm !px-2.5"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" strokeWidth={2} />
           </button>
         </div>
       )}

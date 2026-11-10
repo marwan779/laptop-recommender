@@ -44,7 +44,6 @@ export const MetricSlider: React.FC<MetricSliderProps> = ({
   const current = value ?? 0
   const tier = getScoreTier(current, lang)
   const Icon = METRIC_ICONS[def.key] ?? Cpu
-  const isExperience = def.group === 'experience'
   const label = isAr ? def.labelAr : def.labelEn
   const inputId = `metric-slider-${def.key}`
 
@@ -53,50 +52,50 @@ export const MetricSlider: React.FC<MetricSliderProps> = ({
     onChange(next > 0 ? next : null)
   }
 
+  const scoreTone =
+    current >= 85
+      ? 'text-[var(--gold-bright)]'
+      : current > 0 && current < 50
+      ? 'text-[var(--danger)]'
+      : 'text-[var(--text-primary)]'
+
   return (
-    <div className="space-y-2 rounded-2xl bg-slate-900/60 border border-slate-800/80 p-3">
-      {/* Row 1: icon + label + live value badge + individual reset */}
+    <div className="space-y-1.5">
+      {/* Row 1: icon + label + live value badge + reset */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span
-            className={`p-1.5 rounded-lg shrink-0 ${
-              isExperience
-                ? 'bg-emerald-500/10 text-emerald-300'
-                : 'bg-sky-500/10 text-sky-300'
-            }`}
-          >
-            <Icon className="w-3.5 h-3.5" />
-          </span>
+          <Icon className="w-3.5 h-3.5 text-[var(--cyan)] shrink-0" strokeWidth={1.8} />
           <label
             htmlFor={inputId}
-            className="text-[11px] font-semibold text-slate-300 truncate cursor-pointer"
+            className="text-[12.5px] font-medium text-[var(--text-primary)] truncate cursor-pointer"
           >
             {label}
           </label>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <span
-            className={`text-[10px] px-2 py-0.5 rounded-md border font-mono font-bold ${tier.badgeClass}`}
-            title={tier.label}
-          >
-            {current > 0 ? `${current}+` : isAr ? 'الكل' : 'Any'}
-          </span>
+          {current > 0 ? (
+            <span className={`font-mono text-[12px] font-semibold num ${scoreTone}`}>
+              {current}+
+            </span>
+          ) : (
+            <span className="any-chip">{isAr ? 'الكل' : 'Any'}</span>
+          )}
           {current > 0 && (
             <button
               type="button"
               onClick={() => onChange(null)}
               aria-label={isAr ? `إعادة ضبط ${label}` : `Reset ${label}`}
               title={isAr ? 'إعادة ضبط' : 'Reset'}
-              className="p-1 rounded-md bg-slate-800 text-slate-400 hover:text-rose-300 hover:bg-rose-500/10 border border-slate-700 transition-colors"
+              className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors"
             >
-              <X className="w-3 h-3" />
+              <X className="w-3 h-3" strokeWidth={2} />
             </button>
           )}
         </div>
       </div>
 
-      {/* Row 2: interactive 0-100 range slider */}
+      {/* Row 2: range slider */}
       <input
         id={inputId}
         type="range"
@@ -107,17 +106,16 @@ export const MetricSlider: React.FC<MetricSliderProps> = ({
         onChange={handleChange}
         aria-label={label}
         aria-valuetext={current > 0 ? `${current}+ ${tier.label}` : tier.label}
-        className={`w-full h-1.5 rounded-full bg-slate-700 cursor-pointer appearance-none ${tier.accentClass} ${tier.colorClass} [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-current [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-current`}
+        className="tile-range"
+        style={{ ['--fill' as string]: `${current}%` }}
       />
 
-      {/* Row 3: scale markers + tier label */}
-      <div className="flex items-center justify-between text-[9px] text-slate-500 font-mono">
-        <span>0 ({isAr ? 'الكل' : 'Any'})</span>
+      {/* Row 3: scale markers */}
+      <div className="flex items-center justify-between text-[10px] text-[var(--text-muted)] font-mono">
+        <span>{isAr ? 'الكل' : 'Any'}</span>
         <span>50</span>
-        <span>80</span>
         <span>100</span>
       </div>
-      <div className={`text-[10px] font-medium ${tier.colorClass}`}>{tier.label}</div>
     </div>
   )
 }

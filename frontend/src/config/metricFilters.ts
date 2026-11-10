@@ -119,34 +119,34 @@ export function getScoreTier(score: number, lang: 'ar' | 'en'): ScoreTier {
   if (!score || score <= 0) {
     return {
       label: isAr ? 'الكل' : 'Any',
-      colorClass: 'text-slate-400',
-      badgeClass: 'bg-slate-800/80 text-slate-400 border-slate-700',
-      accentClass: 'accent-slate-500',
+      colorClass: 'text-[var(--text-muted)]',
+      badgeClass: 'bg-[var(--bg-raised)] text-[var(--text-muted)] border-[var(--border-subtle)]',
+      accentClass: 'accent-[var(--text-muted)]',
     }
   }
 
   if (score >= 80) {
     return {
       label: isAr ? 'فائق (+80)' : 'Exceptional (+80)',
-      colorClass: 'text-emerald-300',
-      badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
-      accentClass: 'accent-emerald-500',
+      colorClass: 'text-[var(--gold-bright)]',
+      badgeClass: 'bg-[var(--gold-dim)] text-[var(--gold-bright)] border-[rgba(233,185,73,0.4)]',
+      accentClass: 'accent-[var(--gold)]',
     }
   }
 
   if (score >= 60) {
     return {
       label: isAr ? 'جيد جداً (+60)' : 'Great (+60)',
-      colorClass: 'text-indigo-300',
-      badgeClass: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40',
-      accentClass: 'accent-indigo-500',
+      colorClass: 'text-[var(--text-primary)]',
+      badgeClass: 'bg-[var(--bg-raised)] text-[var(--text-primary)] border-[var(--border-strong)]',
+      accentClass: 'accent-[var(--cyan)]',
     }
   }
 
   return {
     label: isAr ? 'مقبول' : 'Acceptable',
-    colorClass: 'text-amber-300',
-    badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
-    accentClass: 'accent-amber-500',
+    colorClass: 'text-[var(--danger)]',
+    badgeClass: 'bg-[var(--danger-dim)] text-[var(--danger)] border-[rgba(248,113,113,0.4)]',
+    accentClass: 'accent-[var(--danger)]',
   }
 }

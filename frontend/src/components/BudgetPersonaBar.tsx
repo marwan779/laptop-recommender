@@ -8,7 +8,6 @@ import {
   GraduationCap,
   Scale,
   Sparkles,
-  Search,
   Filter,
   Check,
   Layers,
@@ -64,7 +63,7 @@ interface PersonaOption {
 const PERSONAS: PersonaOption[] = [
   {
     id: 'gaming',
-    icon: <Gamepad2 className="w-4 h-4" />,
+    icon: <Gamepad2 className="w-5 h-5" strokeWidth={1.8} />,
     labelAr: 'ألعاب ثقيلة',
     labelEn: 'Heavy Gaming',
     descAr: 'كارت شاشة منفصل قوي وشاشة سريعة 144Hz+',
@@ -72,7 +71,7 @@ const PERSONAS: PersonaOption[] = [
   },
   {
     id: 'programming',
-    icon: <Code2 className="w-4 h-4" />,
+    icon: <Code2 className="w-5 h-5" strokeWidth={1.8} />,
     labelAr: 'برمجة وتطوير',
     labelEn: 'Software Engineering',
     descAr: 'معالج قوي، رامات 16GB+ وكيبورد مريح',
@@ -80,7 +79,7 @@ const PERSONAS: PersonaOption[] = [
   },
   {
     id: 'content_creation',
-    icon: <Palette className="w-4 h-4" />,
+    icon: <Palette className="w-5 h-5" strokeWidth={1.8} />,
     labelAr: 'صناعة محتوى',
     labelEn: 'Content Creation',
     descAr: 'شاشة دقيقة الألوان (100% sRGB/DCI-P3) وأداء متوازن',
@@ -88,7 +87,7 @@ const PERSONAS: PersonaOption[] = [
   },
   {
     id: 'ai_and_game_dev',
-    icon: <BarChart3 className="w-4 h-4" />,
+    icon: <BarChart3 className="w-5 h-5" strokeWidth={1.8} />,
     labelAr: 'ذكاء اصطناعي وتطوير ألعاب',
     labelEn: 'AI & Game Dev',
     descAr: 'أنوية معالج عالية، كارت CUDA، ورامات قابلة للزيادة',
@@ -96,7 +95,7 @@ const PERSONAS: PersonaOption[] = [
   },
   {
     id: 'business_and_mobility',
-    icon: <Briefcase className="w-4 h-4" />,
+    icon: <Briefcase className="w-5 h-5" strokeWidth={1.8} />,
     labelAr: 'بيزنس وتنقل',
     labelEn: 'Business & Ultra-thin',
     descAr: 'بطارية تدوم طويلاً، وزن خفيف < 1.7kg، وشاسيه متين',
@@ -104,7 +103,7 @@ const PERSONAS: PersonaOption[] = [
   },
   {
     id: 'student_and_office',
-    icon: <GraduationCap className="w-4 h-4" />,
+    icon: <GraduationCap className="w-5 h-5" strokeWidth={1.8} />,
     labelAr: 'دراسة وأوفيس',
     labelEn: 'Student & Office',
     descAr: 'أفضل قيمة مقابل السعر للدراسة والأوفيس والمحاضرات',
@@ -112,7 +111,7 @@ const PERSONAS: PersonaOption[] = [
   },
   {
     id: 'balanced',
-    icon: <Scale className="w-4 h-4" />,
+    icon: <Scale className="w-5 h-5" strokeWidth={1.8} />,
     labelAr: 'استخدام متوازن',
     labelEn: 'Balanced All-Rounder',
     descAr: 'توازن ذكي بين الأداء والسعر والاعتمادية',
@@ -123,6 +122,23 @@ const PERSONAS: PersonaOption[] = [
 const BUDGET_PRESETS = [25000, 35000, 45000, 60000, 85000, 120000]
 const AVAILABLE_BRANDS = ['ASUS', 'Lenovo', 'HP', 'Dell', 'Apple', 'Acer', 'MSI', 'Gigabyte']
 const TOP_K_OPTIONS = [3, 5, 8, 12, 15]
+
+const RAM_OPTIONS = [
+  { val: null as number | null, labelAr: 'الكل', labelEn: 'Any' },
+  { val: 8, labelAr: '8GB+', labelEn: '8GB+' },
+  { val: 16, labelAr: '16GB+', labelEn: '16GB+' },
+  { val: 32, labelAr: '32GB+', labelEn: '32GB+' },
+]
+const STORAGE_OPTIONS = [
+  { val: null as number | null, labelAr: 'الكل', labelEn: 'Any' },
+  { val: 512, labelAr: '512GB+', labelEn: '512GB+' },
+  { val: 1024, labelAr: '1TB+', labelEn: '1TB+' },
+]
+const GPU_OPTIONS = [
+  { val: null as boolean | null, labelAr: 'الكل', labelEn: 'Any' },
+  { val: true, labelAr: 'خارجي (dGPU)', labelEn: 'dGPU Only' },
+  { val: false, labelAr: 'مدمج (iGPU)', labelEn: 'iGPU Only' },
+]
 
 export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
   budget,
@@ -176,31 +192,31 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
     }
   }
 
-  return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-      {/* Decorative gradient glow */}
-      <div className="absolute -top-24 -right-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
+  const budgetFill = `${Math.min(
+    100,
+    Math.max(0, ((budget - 12000) / (150000 - 12000)) * 100)
+  )}%`
 
+  return (
+    <div className="panel space-y-6">
       {/* 1. Header & Budget Section */}
-      <div className="space-y-4 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-indigo-400" />
-              <span>{isAr ? 'حدد ميزانيتك واستخدامك' : 'Set Your Budget & Usage'}</span>
+            <h2 className="font-display text-[20px] font-semibold text-[var(--text-primary)]">
+              {isAr ? 'حدد ميزانيتك واستخدامك' : 'Set Your Budget & Usage'}
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-[13px] text-[var(--text-muted)] mt-0.5">
               {isAr
                 ? 'خوارزمية TOPSIS تختار اللابتوب صاحب أعلى قيمة فعلية داخل نطاق ميزانيتك'
                 : 'Vector TOPSIS ranks candidates to find the highest value within your budget'}
             </p>
           </div>
 
-          {/* Interactive Editable Budget Input Field */}
-          <div className="flex items-center gap-2 bg-slate-950/80 px-4 py-2 rounded-2xl border border-slate-700/80 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all shadow-inner">
-            <span className="text-xs text-slate-400 font-semibold whitespace-nowrap">
-              {isAr ? 'الميزانية:' : 'Budget:'}
+          {/* Editable budget readout */}
+          <div className="budget-input">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)] whitespace-nowrap">
+              {isAr ? 'الميزانية' : 'Budget'}
             </span>
             <input
               type="number"
@@ -210,14 +226,14 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
               value={budget || ''}
               onChange={handleBudgetInput}
               aria-label={isAr ? 'الميزانية القصوى بالجنيه' : 'Max budget in EGP'}
-              className="w-28 sm:w-32 bg-transparent text-xl font-extrabold text-indigo-300 font-mono text-center focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="amt [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <span className="text-xs font-bold text-slate-400">{isAr ? 'ج.م' : 'EGP'}</span>
+            <span className="cur">{isAr ? 'ج.م' : 'EGP'}</span>
           </div>
         </div>
 
-        {/* Budget Slider & Quick Presets */}
-        <div className="space-y-2">
+        {/* Budget slider & presets */}
+        <div>
           <input
             type="range"
             min={12000}
@@ -225,91 +241,74 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
             step={1000}
             value={budget}
             onChange={(e) => onBudgetChange(Number(e.target.value))}
-            className="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+            aria-label={isAr ? 'الميزانية بالجنيه' : 'Budget in EGP'}
+            className="tile-range budget"
+            style={{ ['--fill' as string]: budgetFill }}
           />
-          <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-            <span>12,000 EGP</span>
-            <div className="hidden sm:flex gap-2">
+          <div className="ticks">
+            <span>{isAr ? '12,000' : '12,000'}</span>
+            <div className="hidden sm:flex gap-1.5">
               {BUDGET_PRESETS.map((preset) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => onBudgetChange(preset)}
-                  className={`px-2.5 py-1 rounded-lg text-xs transition-all ${
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-mono transition-colors ${
                     budget === preset
-                      ? 'bg-indigo-600 text-white font-bold'
-                      : 'bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-700/60'
+                      ? 'on'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {(preset / 1000).toFixed(0)}k
                 </button>
               ))}
             </div>
-            <span>150,000+ EGP</span>
+            <span>{isAr ? '150,000+ ج.م' : '150,000+ EGP'}</span>
           </div>
         </div>
       </div>
 
       {/* 2. Persona Selector (Multi-Select Enabled) */}
-      <div className="space-y-2.5 mb-5">
+      <div className="space-y-2.5 pt-5 border-t border-[var(--border-subtle)]">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="label flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
             <span>
               {isAr
-                ? 'فئات الاستخدام (يمكنك اختيار أكثر من فئة لدمجها):'
-                : 'Usage Personas (Select one or multiple to blend):'}
+                ? 'فئات الاستخدام (اختر واحدة أو أكثر للدمج)'
+                : 'Usage Personas (select one or multiple to blend)'}
             </span>
-          </label>
+          </span>
 
           {selectedPersonas.length > 1 && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[11px] font-medium">
-              <Layers className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="ai-chip">
+              <Layers className="w-3 h-3" strokeWidth={1.8} />
               <span>
                 {isAr
-                  ? `دمج ذكي مفعل (${selectedPersonas.length} فئات)`
-                  : `Smart Blending Active (${selectedPersonas.length} personas)`}
+                  ? `دمج ذكي (${selectedPersonas.length} فئات)`
+                  : `Blending ${selectedPersonas.length} personas`}
               </span>
-            </div>
+            </span>
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5">
+        <div className="persona-grid">
           {PERSONAS.map((p) => {
             const isSelected = selectedPersonas.includes(p.id)
             return (
               <button
                 key={p.id}
                 type="button"
+                aria-pressed={isSelected}
                 onClick={() => onTogglePersona(p.id)}
-                className={`p-3 rounded-2xl border text-left flex flex-col justify-between transition-all relative overflow-hidden group ${
-                  isSelected
-                    ? 'bg-indigo-600/20 border-indigo-500 shadow-lg shadow-indigo-500/20 text-white ring-1 ring-indigo-500/50'
-                    : 'bg-slate-800/50 border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white'
-                }`}
+                className="persona"
               >
-                {isSelected && (
-                  <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center text-white shadow-sm">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </div>
-                )}
-                <div
-                  className={`p-2 rounded-xl w-fit mb-2 ${
-                    isSelected
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-slate-800 text-slate-400 group-hover:text-white'
-                  }`}
-                >
-                  {p.icon}
-                </div>
-                <div>
-                  <div className="font-semibold text-xs leading-tight">
-                    {isAr ? p.labelAr : p.labelEn}
-                  </div>
-                  <div className="text-[10px] text-slate-400 mt-1 line-clamp-1">
-                    {isAr ? p.descAr : p.descEn}
-                  </div>
-                </div>
+                <span className="check">
+                  <Check className="w-3 h-3 stroke-[3]" />
+                </span>
+                <span className="picon">{p.icon}</span>
+                <span className="ptitle block">{isAr ? p.labelAr : p.labelEn}</span>
+                <span className="pdesc block">{isAr ? p.descAr : p.descEn}</span>
               </button>
             )
           })}
@@ -317,134 +316,104 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
       </div>
 
       {/* 3. Collapsible Advanced Hardware Filters & Top K Accordion */}
-      <div className="mb-5">
+      <div className="pt-5 border-t border-[var(--border-subtle)]">
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="w-full flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 hover:bg-slate-950/80 border border-slate-800 transition-colors text-left"
+          className="w-full flex items-center justify-between gap-3 text-start group"
         >
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-indigo-400" />
-            <span className="text-xs font-bold text-white">
-              {isAr ? 'شروط العتاد المتقدمة (الرام، التخزين، كارت الشاشة، الماركات)' : 'Advanced Hardware Gates (RAM, Storage, GPU, Brands)'}
+          <span className="flex items-center gap-2 min-w-0">
+            <SlidersHorizontal className="w-4 h-4 text-[var(--cyan)] shrink-0" strokeWidth={1.8} />
+            <span className="text-[13px] font-semibold text-[var(--text-primary)]">
+              {isAr
+                ? 'شروط العتاد المتقدمة (الرام، التخزين، كارت الشاشة، الماركات)'
+                : 'Advanced Hardware Gates (RAM, Storage, GPU, Brands)'}
             </span>
-            {activeFiltersCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white font-mono">
-                {activeFiltersCount}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-indigo-400 font-semibold">
-            <span>{showAdvanced ? (isAr ? 'إخفاء' : 'Collapse') : (isAr ? 'تخصيص' : 'Customize')}</span>
+            {activeFiltersCount > 0 && <span className="count-chip">{activeFiltersCount}</span>}
+          </span>
+          <span className="ct-state shrink-0">
+            <span>{showAdvanced ? (isAr ? 'إخفاء' : 'Collapse') : isAr ? 'تخصيص' : 'Customize'}</span>
             {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </div>
+          </span>
         </button>
 
         {showAdvanced && (
-          <div className="mt-2.5 p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-4 animate-in fade-in duration-200">
+          <div className="mt-4 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* RAM Minimum Gate */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                  <Cpu className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{isAr ? 'الحد الأدنى للرام:' : 'Min RAM Capacity:'}</span>
-                </label>
-                <div className="flex gap-1.5">
-                  {[
-                    { val: null, label: isAr ? 'الكل' : 'Any' },
-                    { val: 8, label: '8GB+' },
-                    { val: 16, label: '16GB+' },
-                    { val: 32, label: '32GB+' },
-                  ].map((opt) => (
+              {/* RAM */}
+              <div className="space-y-2">
+                <span className="micro flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
+                  <span>{isAr ? 'الحد الأدنى للرام' : 'Min RAM Capacity'}</span>
+                </span>
+                <div className="seg seg-fluid">
+                  {RAM_OPTIONS.map((opt) => (
                     <button
                       key={String(opt.val)}
                       type="button"
+                      aria-pressed={minRam === opt.val}
                       onClick={() => onMinRamChange(opt.val)}
-                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-medium border transition-all ${
-                        minRam === opt.val
-                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20 font-bold'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                      }`}
                     >
-                      {opt.label}
+                      {isAr ? opt.labelAr : opt.labelEn}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Storage SSD Minimum Gate */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                  <HardDrive className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{isAr ? 'الحد الأدنى للتخزين:' : 'Min SSD Storage:'}</span>
-                </label>
-                <div className="flex gap-1.5">
-                  {[
-                    { val: null, label: isAr ? 'الكل' : 'Any' },
-                    { val: 512, label: '512GB+' },
-                    { val: 1024, label: '1TB+' },
-                  ].map((opt) => (
+              {/* Storage */}
+              <div className="space-y-2">
+                <span className="micro flex items-center gap-1.5">
+                  <HardDrive className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
+                  <span>{isAr ? 'الحد الأدنى للتخزين' : 'Min SSD Storage'}</span>
+                </span>
+                <div className="seg seg-fluid">
+                  {STORAGE_OPTIONS.map((opt) => (
                     <button
                       key={String(opt.val)}
                       type="button"
+                      aria-pressed={minStorage === opt.val}
                       onClick={() => onMinStorageChange(opt.val)}
-                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-medium border transition-all ${
-                        minStorage === opt.val
-                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20 font-bold'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                      }`}
                     >
-                      {opt.label}
+                      {isAr ? opt.labelAr : opt.labelEn}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* GPU Requirement Gate */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                  <Monitor className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{isAr ? 'نوع كارت الشاشة:' : 'GPU Requirement:'}</span>
-                </label>
-                <div className="flex gap-1.5">
-                  {[
-                    { val: null, label: isAr ? 'الكل' : 'Any' },
-                    { val: true, label: isAr ? 'خارجي (dGPU)' : 'dGPU Only' },
-                    { val: false, label: isAr ? 'مدمج (iGPU)' : 'iGPU Only' },
-                  ].map((opt) => (
+              {/* GPU */}
+              <div className="space-y-2">
+                <span className="micro flex items-center gap-1.5">
+                  <Monitor className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
+                  <span>{isAr ? 'نوع كارت الشاشة' : 'GPU Requirement'}</span>
+                </span>
+                <div className="seg seg-fluid">
+                  {GPU_OPTIONS.map((opt) => (
                     <button
                       key={String(opt.val)}
                       type="button"
+                      aria-pressed={requireDgpu === opt.val}
                       onClick={() => onRequireDgpuChange(opt.val)}
-                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-medium border transition-all ${
-                        requireDgpu === opt.val
-                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20 font-bold'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                      }`}
                     >
-                      {opt.label}
+                      {isAr ? opt.labelAr : opt.labelEn}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Top K Selector */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{isAr ? 'عدد الترشيحات المطلوبة:' : 'Max Returned Results (Top K):'}</span>
-                </label>
-                <div className="flex gap-1.5">
+              {/* Top K */}
+              <div className="space-y-2">
+                <span className="micro flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
+                  <span>{isAr ? 'عدد الترشيحات (Top K)' : 'Max Results (Top K)'}</span>
+                </span>
+                <div className="seg seg-fluid">
                   {TOP_K_OPTIONS.map((k) => (
                     <button
                       key={k}
                       type="button"
+                      aria-pressed={topK === k}
                       onClick={() => onTopKChange(k)}
-                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-mono font-medium border transition-all ${
-                        topK === k
-                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20 font-bold'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                      }`}
+                      className="font-mono"
                     >
                       {k}
                     </button>
@@ -453,36 +422,37 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
               </div>
             </div>
 
-            {/* Brand Filter Multi-Select */}
-            <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                  <Filter className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{isAr ? 'تفضيل ماركات معينة (اختياري):' : 'Preferred Brands (Optional):'}</span>
-                </label>
+            {/* Brand filter multi-select */}
+            <div className="space-y-2 pt-4 border-t border-[var(--border-subtle)]">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="micro flex items-center gap-1.5">
+                  <Filter className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
+                  <span>{isAr ? 'تفضيل ماركات معينة (اختياري)' : 'Preferred Brands (optional)'}</span>
+                </span>
                 {activeFiltersCount > 0 && (
                   <button
                     type="button"
                     onClick={onResetAdvancedFilters}
-                    className="text-[11px] text-slate-400 hover:text-rose-400 transition-colors inline-flex items-center gap-1"
+                    className="btn-ghost inline-flex items-center gap-1 !h-auto !py-1"
                   >
-                    <RotateCcw className="w-3 h-3" />
+                    <RotateCcw className="w-3 h-3" strokeWidth={1.8} />
                     <span>{isAr ? 'إعادة ضبط الشروط' : 'Reset filters'}</span>
                   </button>
                 )}
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {AVAILABLE_BRANDS.map((b) => {
                   const isChecked = selectedBrands.includes(b)
                   return (
                     <button
                       key={b}
                       type="button"
+                      aria-pressed={isChecked}
                       onClick={() => onToggleBrand(b)}
-                      className={`px-3 py-1 rounded-xl text-xs font-medium border transition-all ${
+                      className={`brand-chip transition-colors ${
                         isChecked
-                          ? 'bg-indigo-600/30 border-indigo-500 text-white font-semibold ring-1 ring-indigo-500/40'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? '!text-[var(--gold-bright)] !border-[rgba(233,185,73,0.45)] !bg-[var(--gold-dim)]'
+                          : 'hover:!border-[var(--border-strong)] hover:!text-[var(--text-primary)]'
                       }`}
                     >
                       {b}
@@ -492,19 +462,16 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
               </div>
             </div>
 
-            {/* Optional Real-World Experience & Performance Metric Gates */}
-            <div className="space-y-2 pt-2 border-t border-slate-800/80">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>
-                    {isAr
-                      ? 'معايير التجربة الميدانية والأداء (اختياري):'
-                      : 'Real-World Experience & Performance (Optional):'}
-                  </span>
-                </label>
+            {/* Optional real-world experience & performance gates */}
+            <div className="space-y-3 pt-4 border-t border-[var(--border-subtle)]">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="micro">
+                  {isAr
+                    ? 'معايير التجربة الميدانية والأداء (اختياري)'
+                    : 'Real-World Experience & Performance (optional)'}
+                </span>
                 {activeMetricDefs.length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white font-mono">
+                  <span className="ai-chip">
                     {isAr
                       ? `${activeMetricDefs.length} نشطة`
                       : `${activeMetricDefs.length} active`}
@@ -512,12 +479,12 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
                 )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-4 rounded-full bg-emerald-400" />
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+                    <span className="w-1 h-3.5 rounded-full bg-[var(--cyan)]" />
+                    <h4 className="micro !text-[var(--text-secondary)]">
                       {isAr
-                        ? 'تجربة الاستخدام الميدانية (Review Intelligence)'
+                        ? 'تجربة الاستخدام الميدانية'
                         : 'Real-World Usage (Review Intelligence)'}
                     </h4>
                   </div>
@@ -532,12 +499,12 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
                   ))}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-4 rounded-full bg-sky-400" />
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-sky-300">
+                    <span className="w-1 h-3.5 rounded-full bg-[var(--cyan)]" />
+                    <h4 className="micro !text-[var(--text-secondary)]">
                       {isAr
-                        ? 'قوة العتاد والأداء (Hardware Benchmarks)'
+                        ? 'قوة العتاد والأداء'
                         : 'Hardware Power & Performance (Benchmarks)'}
                     </h4>
                   </div>
@@ -557,10 +524,13 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
         )}
       </div>
 
-      {/* 4. Bilingual Free-Text Prompt & Search Action */}
-      <div className="space-y-2">
-        <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-          <Search className="w-3.5 h-3.5 text-indigo-400" />
+      {/* 4. Bilingual free-text prompt & primary action */}
+      <div className="space-y-2 pt-5 border-t border-[var(--border-subtle)]">
+        <label
+          htmlFor="prompt-input"
+          className="label flex items-center gap-1.5"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
           <span>
             {isAr
               ? 'مواصفات أو ألعاب أو طلبات خاصة (عربي أو إنجليزي)'
@@ -570,6 +540,7 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
         <div className="flex flex-col sm:flex-row gap-2.5">
           <div className="relative flex-1">
             <input
+              id="prompt-input"
               type="text"
               value={promptText}
               onChange={(e) => onPromptChange(e.target.value)}
@@ -579,24 +550,25 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
                   ? 'مثال: عايز لاب يشغل Cyberpunk على Ultra وتبريده مبيسخنش...'
                   : 'e.g. Need good battery, quiet fans, 16GB RAM for heavy coding and Docker...'
               }
-              className="w-full px-4 py-3.5 pl-11 bg-slate-950/70 border border-slate-700/80 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
+              className="field field-with-icon"
             />
-            <Sparkles className="w-4 h-4 text-indigo-400 absolute left-4 top-1/2 -translate-y-1/2" />
+            <Sparkles className="w-4 h-4 field-icon" strokeWidth={1.8} />
           </div>
 
           <button
+            type="button"
             onClick={onSubmit}
             disabled={isLoading}
-            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-xl shadow-indigo-600/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            className="btn btn-primary shrink-0"
           >
             {isLoading ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="spinner spinner-sm spinner-inverse" />
                 <span>{isAr ? 'جاري التحليل...' : 'Evaluating...'}</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4" strokeWidth={2} />
                 <span>{isAr ? 'رشح لي الأفضل' : 'Get Top Matches'}</span>
               </>
             )}
