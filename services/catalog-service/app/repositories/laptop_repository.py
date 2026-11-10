@@ -1,5 +1,6 @@
 import uuid
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
@@ -7,11 +8,25 @@ from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.common.cursor import InvalidCursorError, decode_cursor, encode_cursor
 from app.common.review_text import align_bilingual_lists
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
 from app.repositories.base import BaseRepository
+
+
+@dataclass(frozen=True, slots=True)
+class CatalogPage:
+    """One cursor-paginated slice of catalog configurations."""
+
+    items: Sequence[LaptopConfiguration]
+    total: int
+    has_next_page: bool
+    has_previous_page: bool
+    start_cursor: str | None
+    end_cursor: str | None
+
 
 _REVIEW_ASPECT_KEYS: tuple[str, ...] = (
     "thermals_score",
@@ -324,7 +339,8 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         max_price: float | None = None,
         brand: str | None = None,
         in_stock_only: bool = True,
-        offset: int = 0,
+        cursor: str | None = None,
+        direction: str = "next",
         limit: int = 20,
         min_acoustics_score: float | None = None,
         min_thermals_score: float | None = None,
@@ -335,13 +351,24 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         min_gpu_score: float | None = None,
         min_display_score: float | None = None,
         min_value_score: float | None = None,
-    ) -> tuple[Sequence[LaptopConfiguration], int]:
-        """Return one catalog page plus the total number of matching configurations.
+    ) -> CatalogPage:
+        """Return one keyset-paginated catalog slice plus the total match count.
+
+        Ordering is the deterministic composite ``(min_price_egp, id)``. Fetching
+        ``limit + 1`` rows reveals whether another page exists without a second
+        page-specific count query.
 
         All ``min_*_score`` metric gates are optional. When at least one is
         supplied, the query inner-joins ``laptop_metrics`` so laptops without a
         metrics row are excluded (they cannot satisfy a numeric threshold).
+
+        Raises:
+            InvalidCursorError: If the supplied cursor token is malformed.
+            ValueError: If ``direction`` is not ``"next"`` or ``"prev"``.
         """
+        if direction not in ("next", "prev"):
+            raise ValueError("direction must be 'next' or 'prev'.")
+
         filters: list[Any] = []
         if search and search.strip():
             term = f"%{search.lower().strip()}%"
@@ -394,23 +421,92 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         count_stmt = count_stmt.where(*filters)
         total = int((await self.session.execute(count_stmt)).scalar_one() or 0)
 
+        cursor_predicate = None
+        if cursor is not None:
+            boundary = decode_cursor(cursor)
+            try:
+                cursor_id = uuid.UUID(boundary.item_id)
+            except (ValueError, AttributeError) as exc:
+                raise InvalidCursorError(
+                    "Pagination cursor identifier is not a valid UUID."
+                ) from exc
+
+            if direction == "next":
+                cursor_predicate = or_(
+                    LaptopConfiguration.min_price_egp > boundary.price,
+                    (
+                        (LaptopConfiguration.min_price_egp == boundary.price)
+                        & (LaptopConfiguration.id > cursor_id)
+                    ),
+                )
+            else:
+                cursor_predicate = or_(
+                    LaptopConfiguration.min_price_egp < boundary.price,
+                    (
+                        (LaptopConfiguration.min_price_egp == boundary.price)
+                        & (LaptopConfiguration.id < cursor_id)
+                    ),
+                )
+
         stmt = select(LaptopConfiguration).options(
             selectinload(LaptopConfiguration.offers),
             selectinload(LaptopConfiguration.metrics),
         )
         if metrics_join is not None:
             stmt = stmt.join(*metrics_join)
-        stmt = (
-            stmt.where(*filters)
-            .order_by(
+
+        stmt = stmt.where(*filters)
+        if cursor_predicate is not None:
+            stmt = stmt.where(cursor_predicate)
+
+        if direction == "next":
+            stmt = stmt.order_by(
                 LaptopConfiguration.min_price_egp.asc(),
-                LaptopConfiguration.title.asc(),
+                LaptopConfiguration.id.asc(),
             )
-            .offset(offset)
-            .limit(limit)
-        )
+        else:
+            stmt = stmt.order_by(
+                LaptopConfiguration.min_price_egp.desc(),
+                LaptopConfiguration.id.desc(),
+            )
+
+        stmt = stmt.limit(limit + 1)
         result = await self.session.execute(stmt)
-        return result.scalars().unique().all(), total
+        rows = list(result.scalars().unique().all())
+
+        has_extra = len(rows) > limit
+        page_rows = rows[:limit]
+        if direction == "prev":
+            # Backward queries fetch nearest preceding rows in DESC order;
+            # restore ascending (cheapest-first) display order.
+            page_rows.reverse()
+
+        items: Sequence[LaptopConfiguration] = page_rows
+        if not items:
+            return CatalogPage(
+                items=[],
+                total=total,
+                has_next_page=False,
+                has_previous_page=False,
+                start_cursor=None,
+                end_cursor=None,
+            )
+
+        if direction == "next":
+            has_next_page = has_extra
+            has_previous_page = cursor is not None
+        else:
+            has_previous_page = has_extra
+            has_next_page = cursor is not None
+
+        return CatalogPage(
+            items=items,
+            total=total,
+            has_next_page=has_next_page,
+            has_previous_page=has_previous_page,
+            start_cursor=encode_cursor(float(items[0].min_price_egp), str(items[0].id)),
+            end_cursor=encode_cursor(float(items[-1].min_price_egp), str(items[-1].id)),
+        )
 
     async def list_all_with_offers(self) -> Sequence[LaptopConfiguration]:
         """Fetch every configuration with eager-loaded offers for review dispatching."""

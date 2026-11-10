@@ -36,7 +36,8 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [inStockOnly, setInStockOnly] = useState(true)
-  const [offset, setOffset] = useState(0)
+  const [currentCursor, setCurrentCursor] = useState<string | null>(null)
+  const [direction, setDirection] = useState<'next' | 'prev'>('next')
   const [showMetrics, setShowMetrics] = useState(false)
   const [metricFilters, setMetricFilters] =
     useState<Record<MetricFilterKey, number | null>>(EMPTY_METRIC_FILTERS)
@@ -48,22 +49,27 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
     (def) => metricFilters[def.key] != null
   )
 
+  const resetPagination = () => {
+    setCurrentCursor(null)
+    setDirection('next')
+  }
+
   const handleMetricChange = (key: MetricFilterKey, value: number | null) => {
     setMetricFilters((prev) => ({ ...prev, [key]: value }))
-    setOffset(0)
+    resetPagination()
   }
 
   const handleResetMetrics = () => {
     setMetricFilters(EMPTY_METRIC_FILTERS)
     setDebouncedMetricFilters(EMPTY_METRIC_FILTERS)
-    setOffset(0)
+    resetPagination()
   }
 
   // Debounce search input by 300ms
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm.trim())
-      setOffset(0)
+      resetPagination()
     }, 300)
     return () => clearTimeout(handler)
   }, [searchTerm])
@@ -84,7 +90,8 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
       search: debouncedSearch || undefined,
       brand: brand === 'All' ? undefined : brand,
       in_stock_only: inStockOnly,
-      offset,
+      cursor: currentCursor ?? undefined,
+      direction,
       limit,
       ...metricQuery,
     })
@@ -95,10 +102,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
 
   useEffect(() => {
     loadLaptops()
-  }, [brand, debouncedSearch, inStockOnly, offset, debouncedMetricFilters])
-
-  const totalPages = data ? Math.ceil(data.total / limit) : 0
-  const currentPage = Math.floor(offset / limit) + 1
+  }, [brand, debouncedSearch, inStockOnly, currentCursor, direction, debouncedMetricFilters])
 
   const handleClearSearch = () => {
     setSearchTerm('')
@@ -106,7 +110,21 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
     setBrand('All')
     setMetricFilters(EMPTY_METRIC_FILTERS)
     setDebouncedMetricFilters(EMPTY_METRIC_FILTERS)
-    setOffset(0)
+    resetPagination()
+  }
+
+  const handlePreviousPage = () => {
+    const startCursor = data?.page_info?.start_cursor
+    if (!startCursor) return
+    setCurrentCursor(startCursor)
+    setDirection('prev')
+  }
+
+  const handleNextPage = () => {
+    const endCursor = data?.page_info?.end_cursor
+    if (!endCursor) return
+    setCurrentCursor(endCursor)
+    setDirection('next')
   }
 
   return (
@@ -147,7 +165,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
                 checked={inStockOnly}
                 onChange={(e) => {
                   setInStockOnly(e.target.checked)
-                  setOffset(0)
+                  resetPagination()
                 }}
                 className="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
               />
@@ -174,7 +192,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
               type="button"
               onClick={() => {
                 setBrand(b)
-                setOffset(0)
+                resetPagination()
               }}
               className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                 brand === b
@@ -402,22 +420,26 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
         </div>
       )}
 
-      {/* 3. Pagination Controls */}
-      {totalPages > 1 && (
+      {/* 3. Cursor (Keyset) Pagination Controls */}
+      {(data?.page_info?.has_previous_page || data?.page_info?.has_next_page) && (
         <div className="flex items-center justify-center gap-3 pt-4">
           <button
-            onClick={() => setOffset(Math.max(0, offset - limit))}
-            disabled={offset === 0}
+            type="button"
+            onClick={handlePreviousPage}
+            disabled={!data?.page_info?.has_previous_page}
+            aria-label={isAr ? 'الصفحة السابقة' : 'Previous page'}
             className="p-2 rounded-xl bg-slate-800 text-slate-300 disabled:opacity-40 hover:bg-slate-700 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <span className="text-xs text-slate-400 font-mono">
-            {currentPage} / {totalPages}
+            {isAr ? 'عرض' : 'Showing'} {data?.items.length ?? 0} / {data?.total ?? 0}
           </span>
           <button
-            onClick={() => setOffset(offset + limit)}
-            disabled={currentPage >= totalPages}
+            type="button"
+            onClick={handleNextPage}
+            disabled={!data?.page_info?.has_next_page}
+            aria-label={isAr ? 'الصفحة التالية' : 'Next page'}
             className="p-2 rounded-xl bg-slate-800 text-slate-300 disabled:opacity-40 hover:bg-slate-700 transition-colors"
           >
             <ChevronRight className="w-4 h-4" />

@@ -91,12 +91,27 @@ class CatalogListItemResponse(BaseModel):
     )
 
 
+class PageInfo(BaseModel):
+    """Cursor (keyset) pagination metadata for one catalog slice."""
+
+    has_next_page: bool = False
+    has_previous_page: bool = False
+    start_cursor: str | None = Field(
+        default=None,
+        description="Opaque cursor pointing at the first item of this slice.",
+    )
+    end_cursor: str | None = Field(
+        default=None,
+        description="Opaque cursor pointing at the last item of this slice.",
+    )
+
+
 class CatalogListResponse(BaseModel):
-    """Paginated catalog browse response."""
+    """Cursor-paginated catalog browse response."""
 
     total: int
-    offset: int
     limit: int
+    page_info: PageInfo
     items: list[CatalogListItemResponse] = Field(default_factory=list)
 
 

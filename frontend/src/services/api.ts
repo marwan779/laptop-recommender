@@ -37,7 +37,8 @@ export async function fetchCatalog(
   if (params.max_price != null) query.set('max_price', String(params.max_price))
   if (params.brand) query.set('brand', params.brand)
   if (params.in_stock_only != null) query.set('in_stock_only', String(params.in_stock_only))
-  if (params.offset != null) query.set('offset', String(params.offset))
+  if (params.cursor) query.set('cursor', params.cursor)
+  if (params.direction) query.set('direction', params.direction)
   if (params.limit != null) query.set('limit', String(params.limit))
 
   const metricParamKeys = [

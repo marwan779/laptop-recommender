@@ -13,6 +13,7 @@ from typing import Any
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.common.cursor import InvalidCursorError, decode_cursor, encode_cursor
 from app.common.logger import get_logger
 from app.common.review_text import align_bilingual_lists
 from app.domain.recommender.explainer import build_why_recommended
@@ -31,6 +32,7 @@ from app.schemas.laptop import (
     GpuSpecDetail,
     HardwareMetricsDetail,
     MemorySpecDetail,
+    PageInfo,
     PhysicalSpecDetail,
     PowerBatterySpecDetail,
     StorageSpecDetail,
@@ -121,7 +123,8 @@ class CatalogQueryService:
         max_price: float | None = None,
         brand: str | None = None,
         in_stock_only: bool = True,
-        offset: int = 0,
+        cursor: str | None = None,
+        direction: str = "next",
         limit: int = 20,
         min_acoustics_score: float | None = None,
         min_thermals_score: float | None = None,
@@ -148,22 +151,32 @@ class CatalogQueryService:
 
         if self.laptop_repo is not None:
             try:
-                laptops, total = await self.laptop_repo.list_and_count_configurations(
+                page = await self.laptop_repo.list_and_count_configurations(
                     search=search,
                     min_price=min_price,
                     max_price=max_price,
                     brand=brand,
                     in_stock_only=in_stock_only,
-                    offset=offset,
+                    cursor=cursor,
+                    direction=direction,
                     limit=limit,
                     **metric_filters,
                 )
                 return CatalogListResponse(
-                    total=total,
-                    offset=offset,
+                    total=page.total,
                     limit=limit,
-                    items=[self._orm_to_list_item(laptop) for laptop in laptops],
+                    page_info=PageInfo(
+                        has_next_page=page.has_next_page,
+                        has_previous_page=page.has_previous_page,
+                        start_cursor=page.start_cursor,
+                        end_cursor=page.end_cursor,
+                    ),
+                    items=[self._orm_to_list_item(laptop) for laptop in page.items],
                 )
+            except InvalidCursorError:
+                # A malformed cursor must surface as HTTP 400, never silently
+                # fall back to a different dataset.
+                raise
             except Exception as exc:
                 logger.warning(
                     "Database catalog listing failed (%s); serving fallback catalog JSON.",
@@ -176,7 +189,8 @@ class CatalogQueryService:
             max_price=max_price,
             brand=brand,
             in_stock_only=in_stock_only,
-            offset=offset,
+            cursor=cursor,
+            direction=direction,
             limit=limit,
             metric_filters=metric_filters,
         )
@@ -188,11 +202,12 @@ class CatalogQueryService:
         max_price: float | None,
         brand: str | None,
         in_stock_only: bool,
-        offset: int,
+        cursor: str | None,
+        direction: str,
         limit: int,
         metric_filters: dict[str, float | None] | None = None,
     ) -> CatalogListResponse:
-        """Filter and paginate the offline JSON catalog."""
+        """Filter and keyset-paginate the offline JSON catalog."""
         brand_key = brand.lower().strip() if brand else None
         search_key = search.lower().strip() if search and search.strip() else None
         active_metric_filters = {
@@ -227,19 +242,60 @@ class CatalogQueryService:
                 continue
             filtered.append(lap)
 
-        filtered.sort(
-            key=lambda lap: (
-                float(lap.get("min_price_egp") or 0.0),
-                str(lap.get("title") or ""),
-            )
-        )
-        page = filtered[offset : offset + limit]
+        if direction not in ("next", "prev"):
+            raise ValueError("direction must be 'next' or 'prev'.")
+
+        filtered.sort(key=self._fallback_sort_key)
+
+        if cursor is None:
+            page = filtered[:limit]
+            has_next_page = len(filtered) > limit
+            has_previous_page = False
+        else:
+            boundary = decode_cursor(cursor)
+            boundary_key = (boundary.price, boundary.item_id)
+
+            if direction == "next":
+                candidates = [
+                    lap for lap in filtered if self._fallback_sort_key(lap) > boundary_key
+                ]
+                page = candidates[:limit]
+                has_next_page = len(candidates) > limit
+                has_previous_page = bool(page)
+            else:
+                candidates = [
+                    lap for lap in filtered if self._fallback_sort_key(lap) < boundary_key
+                ]
+                has_previous_page = len(candidates) > limit
+                # Keep the nearest preceding window, preserving ascending order.
+                page = candidates[-limit:] if len(candidates) > limit else candidates
+                has_next_page = bool(page)
+
         return CatalogListResponse(
             total=len(filtered),
-            offset=offset,
             limit=limit,
+            page_info=PageInfo(
+                has_next_page=has_next_page,
+                has_previous_page=has_previous_page,
+                start_cursor=(
+                    encode_cursor(*self._fallback_sort_key(page[0])) if page else None
+                ),
+                end_cursor=(
+                    encode_cursor(*self._fallback_sort_key(page[-1])) if page else None
+                ),
+            ),
             items=[self._dict_to_list_item(lap) for lap in page],
         )
+
+    @staticmethod
+    def _fallback_item_id(lap: dict[str, Any]) -> str:
+        """Return the deterministic fallback row identifier (UUID or canonical)."""
+        return str(lap.get("id") or lap.get("canonical_id") or "")
+
+    @classmethod
+    def _fallback_sort_key(cls, lap: dict[str, Any]) -> tuple[float, str]:
+        """Composite ``(price, id)`` key matching the database keyset order."""
+        return (float(lap.get("min_price_egp") or 0.0), cls._fallback_item_id(lap))
 
     @staticmethod
     def _dict_metric_scores(lap: dict[str, Any]) -> dict[str, float]:

@@ -6,9 +6,10 @@ hardware scores, 5 community aspect scores, and bilingual review intelligence.
 All database access is delegated to application services and repositories.
 """
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.common.cursor import InvalidCursorError
 from app.core.database import get_db
 from app.schemas.laptop import (
     CatalogListResponse,
@@ -27,7 +28,10 @@ router = APIRouter(tags=["Catalog & Laptop Details"])
     description=(
         "Returns compact catalog cards with pricing, key hardware specs, and community review "
         "intelligence (community NLP score, evidence count, and bilingual pros/cons). "
-        "Supports price range, brand, stock, and pagination filters."
+        "Supports price range, brand, stock, and 0-100 metric gate filters. "
+        "Uses deterministic composite keyset (cursor) pagination ordered by "
+        "(min_price_egp, id); pass page_info.end_cursor with direction=next, or "
+        "page_info.start_cursor with direction=prev. Includes 0-100 metric gates."
     ),
 )
 @router.get(
@@ -42,8 +46,16 @@ async def list_laptops(
     max_price: float | None = Query(default=None, ge=0, description="Maximum price in EGP."),
     brand: str | None = Query(default=None, description="Case-insensitive brand filter."),
     in_stock_only: bool = Query(default=True, description="Only return in-stock laptops."),
-    offset: int = Query(default=0, ge=0, description="Number of items to skip."),
-    limit: int = Query(default=20, ge=1, le=100, description="Page size (1-100)."),
+    cursor: str | None = Query(
+        default=None,
+        description="Opaque keyset pagination cursor from page_info.start_cursor/end_cursor.",
+    ),
+    direction: str = Query(
+        default="next",
+        pattern="^(next|prev)$",
+        description="Pagination direction: 'next' or 'prev'.",
+    ),
+    limit: int = Query(default=12, ge=1, le=100, description="Page size (1-100)."),
     min_acoustics_score: float | None = Query(
         default=None, ge=0, le=100, description="Minimum real-world acoustics/fan-noise score."
     ),
@@ -73,26 +85,33 @@ async def list_laptops(
     ),
     db: AsyncSession = Depends(get_db),
 ) -> CatalogListResponse:
-    """Browse the catalog with filtering, universal search, and pagination."""
+    """Browse the catalog with filtering, universal search, and cursor pagination."""
     service = CatalogQueryService(session=db)
-    return await service.list_laptops(
-        search=search,
-        min_price=min_price,
-        max_price=max_price,
-        brand=brand,
-        in_stock_only=in_stock_only,
-        offset=offset,
-        limit=limit,
-        min_acoustics_score=min_acoustics_score,
-        min_thermals_score=min_thermals_score,
-        min_battery_score=min_battery_score,
-        min_build_score=min_build_score,
-        min_keyboard_score=min_keyboard_score,
-        min_cpu_score=min_cpu_score,
-        min_gpu_score=min_gpu_score,
-        min_display_score=min_display_score,
-        min_value_score=min_value_score,
-    )
+    try:
+        return await service.list_laptops(
+            search=search,
+            min_price=min_price,
+            max_price=max_price,
+            brand=brand,
+            in_stock_only=in_stock_only,
+            cursor=cursor,
+            direction=direction,
+            limit=limit,
+            min_acoustics_score=min_acoustics_score,
+            min_thermals_score=min_thermals_score,
+            min_battery_score=min_battery_score,
+            min_build_score=min_build_score,
+            min_keyboard_score=min_keyboard_score,
+            min_cpu_score=min_cpu_score,
+            min_gpu_score=min_gpu_score,
+            min_display_score=min_display_score,
+            min_value_score=min_value_score,
+        )
+    except InvalidCursorError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
 
 
 @router.get(

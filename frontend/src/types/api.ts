@@ -137,7 +137,8 @@ export interface CatalogQueryParams extends MetricFilterParams {
   max_price?: number;
   brand?: string;
   in_stock_only?: boolean;
-  offset?: number;
+  cursor?: string;
+  direction?: 'next' | 'prev';
   limit?: number;
 }
 
@@ -170,10 +171,17 @@ export interface CatalogListItem {
   metric_scores?: Record<string, number>;
 }
 
+export interface PageInfo {
+  has_next_page: boolean;
+  has_previous_page: boolean;
+  start_cursor: string | null;
+  end_cursor: string | null;
+}
+
 export interface CatalogListResponse {
   total: number;
-  offset: number;
   limit: number;
+  page_info: PageInfo;
   items: CatalogListItem[];
 }
 
