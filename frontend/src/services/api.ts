@@ -40,6 +40,22 @@ export async function fetchCatalog(
   if (params.offset != null) query.set('offset', String(params.offset))
   if (params.limit != null) query.set('limit', String(params.limit))
 
+  const metricParamKeys = [
+    'min_acoustics_score',
+    'min_thermals_score',
+    'min_battery_score',
+    'min_build_score',
+    'min_keyboard_score',
+    'min_cpu_score',
+    'min_gpu_score',
+    'min_display_score',
+    'min_value_score',
+  ] as const
+  for (const key of metricParamKeys) {
+    const value = params[key]
+    if (value != null) query.set(key, String(value))
+  }
+
   const url = `${API_BASE}/laptops?${query.toString()}`
   const response = await fetch(url, {
     headers: { Accept: 'application/json' },

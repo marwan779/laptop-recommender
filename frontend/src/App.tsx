@@ -5,7 +5,14 @@ import { StatusBanner } from './components/StatusBanner'
 import { LaptopCard } from './components/LaptopCard'
 import { LaptopDetailModal } from './components/LaptopDetailModal'
 import { CatalogBrowser } from './components/CatalogBrowser'
-import type { PersonaType, RankedLaptop, CatalogListItem, RecommendationResponse } from './types/api'
+import type {
+  PersonaType,
+  RankedLaptop,
+  CatalogListItem,
+  MetricFilterKey,
+  RecommendationResponse,
+} from './types/api'
+import { EMPTY_METRIC_FILTERS, toMetricQuery } from './config/metricFilters'
 import { fetchRecommendations } from './services/api'
 import { Sparkles, AlertCircle } from 'lucide-react'
 
@@ -19,6 +26,8 @@ export function App() {
   const [minStorage, setMinStorage] = useState<number | null>(null)
   const [requireDgpu, setRequireDgpu] = useState<boolean | null>(null)
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
+  const [metricFilters, setMetricFilters] =
+    useState<Record<MetricFilterKey, number | null>>(EMPTY_METRIC_FILTERS)
   const [topK, setTopK] = useState<number>(8)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,11 +52,16 @@ export function App() {
     )
   }
 
+  const handleMetricChange = (key: MetricFilterKey, value: number | null) => {
+    setMetricFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
   const handleResetAdvancedFilters = () => {
     setMinRam(null)
     setMinStorage(null)
     setRequireDgpu(null)
     setSelectedBrands([])
+    setMetricFilters(EMPTY_METRIC_FILTERS)
     setTopK(8)
   }
 
@@ -65,6 +79,7 @@ export function App() {
         require_dgpu: requireDgpu !== null ? requireDgpu : undefined,
         brand_filter: selectedBrands.length > 0 ? selectedBrands : undefined,
         top_k: topK,
+        ...toMetricQuery(metricFilters),
       })
       setRecommendations(data)
     } catch (err: any) {
@@ -113,6 +128,8 @@ export function App() {
               onRequireDgpuChange={setRequireDgpu}
               selectedBrands={selectedBrands}
               onToggleBrand={handleToggleBrand}
+              metricFilters={metricFilters}
+              onMetricChange={handleMetricChange}
               topK={topK}
               onTopKChange={setTopK}
               onResetAdvancedFilters={handleResetAdvancedFilters}

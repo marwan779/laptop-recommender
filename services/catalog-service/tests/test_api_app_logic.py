@@ -271,6 +271,48 @@ async def test_recommendation_response_includes_review_intelligence(api_client: 
 
 
 @pytest.mark.asyncio
+async def test_recommendation_metric_gates_filter_candidates(api_client: AsyncClient):
+    """Optional metric minimums remove candidates before TOPSIS ranking."""
+    baseline = await api_client.post(
+        "/api/v1/recommendations",
+        json={"budget": 150000.0, "persona": "balanced", "top_k": 20},
+    )
+    assert baseline.status_code == 200
+    base_results = baseline.json()["results"]
+    assert base_results
+
+    threshold = 60.0
+    filtered = await api_client.post(
+        "/api/v1/recommendations",
+        json={
+            "budget": 150000.0,
+            "persona": "balanced",
+            "top_k": 20,
+            "min_gpu_score": threshold,
+            "min_acoustics_score": threshold,
+        },
+    )
+    assert filtered.status_code == 200
+    data = filtered.json()
+
+    for result in data["results"]:
+        assert result["topsis_inputs"]["gpu_score"] >= threshold
+        assert result["aspect_scores"]["acoustics_score"] >= threshold
+
+    assert len(data["results"]) <= len(base_results)
+
+    invalid = await api_client.post(
+        "/api/v1/recommendations",
+        json={
+            "budget": 150000.0,
+            "persona": "balanced",
+            "min_value_score": 101,
+        },
+    )
+    assert invalid.status_code == 422
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "invalid_payload",
     [

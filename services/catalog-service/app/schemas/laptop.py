@@ -82,6 +82,14 @@ class CatalogListItemResponse(BaseModel):
     cons_ar: list[str] = Field(default_factory=list)
     cons_en: list[str] = Field(default_factory=list)
 
+    metric_scores: dict[str, float] = Field(
+        default_factory=dict,
+        description=(
+            "Optional 0-100 metric scores used by real-world/performance filters "
+            "(acoustics, thermals, battery, build, keyboard, cpu, gpu, display)."
+        ),
+    )
+
 
 class CatalogListResponse(BaseModel):
     """Paginated catalog browse response."""

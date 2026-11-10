@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 from app.common.review_text import align_bilingual_lists
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
+from app.models.metrics import LaptopMetrics
 from app.repositories.base import BaseRepository
 
 _REVIEW_ASPECT_KEYS: tuple[str, ...] = (
@@ -325,8 +326,22 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         in_stock_only: bool = True,
         offset: int = 0,
         limit: int = 20,
+        min_acoustics_score: float | None = None,
+        min_thermals_score: float | None = None,
+        min_battery_score: float | None = None,
+        min_build_score: float | None = None,
+        min_keyboard_score: float | None = None,
+        min_cpu_score: float | None = None,
+        min_gpu_score: float | None = None,
+        min_display_score: float | None = None,
+        min_value_score: float | None = None,
     ) -> tuple[Sequence[LaptopConfiguration], int]:
-        """Return one catalog page plus the total number of matching configurations."""
+        """Return one catalog page plus the total number of matching configurations.
+
+        All ``min_*_score`` metric gates are optional. When at least one is
+        supplied, the query inner-joins ``laptop_metrics`` so laptops without a
+        metrics row are excluded (they cannot satisfy a numeric threshold).
+        """
         filters: list[Any] = []
         if search and search.strip():
             term = f"%{search.lower().strip()}%"
@@ -350,16 +365,43 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             filters.append(LaptopConfiguration.in_stock.is_(True))
             filters.append(LaptopConfiguration.min_price_egp > 0)
 
-        count_stmt = select(func.count()).select_from(LaptopConfiguration).where(*filters)
+        metric_gates: tuple[tuple[Any, float | None], ...] = (
+            (LaptopMetrics.acoustics_score, min_acoustics_score),
+            (LaptopMetrics.thermals_score, min_thermals_score),
+            (LaptopMetrics.real_battery_and_reliability_score, min_battery_score),
+            (LaptopMetrics.build_and_hinges_score, min_build_score),
+            (LaptopMetrics.keyboard_and_trackpad_score, min_keyboard_score),
+            (LaptopMetrics.cpu_score, min_cpu_score),
+            (LaptopMetrics.gpu_score, min_gpu_score),
+            (LaptopMetrics.display_score, min_display_score),
+            (LaptopMetrics.value_score, min_value_score),
+        )
+        has_metric_gate = False
+        for column, threshold in metric_gates:
+            if threshold is not None:
+                has_metric_gate = True
+                filters.append(column >= threshold)
+
+        metrics_join = (
+            (LaptopMetrics, LaptopMetrics.laptop_id == LaptopConfiguration.id)
+            if has_metric_gate
+            else None
+        )
+
+        count_stmt = select(func.count()).select_from(LaptopConfiguration)
+        if metrics_join is not None:
+            count_stmt = count_stmt.join(*metrics_join)
+        count_stmt = count_stmt.where(*filters)
         total = int((await self.session.execute(count_stmt)).scalar_one() or 0)
 
+        stmt = select(LaptopConfiguration).options(
+            selectinload(LaptopConfiguration.offers),
+            selectinload(LaptopConfiguration.metrics),
+        )
+        if metrics_join is not None:
+            stmt = stmt.join(*metrics_join)
         stmt = (
-            select(LaptopConfiguration)
-            .options(
-                selectinload(LaptopConfiguration.offers),
-                selectinload(LaptopConfiguration.metrics),
-            )
-            .where(*filters)
+            stmt.where(*filters)
             .order_by(
                 LaptopConfiguration.min_price_egp.asc(),
                 LaptopConfiguration.title.asc(),

@@ -49,7 +49,25 @@ export interface StoreOffer {
   last_checked_at?: string;      // ISO datetime
 }
 
-export interface RecommendationRequest {
+/**
+ * Optional 0-100 metric gates shared by catalog browsing and recommendations.
+ * Aspect scores come from real-world review NLP; hardware scores from benchmarks.
+ */
+export interface MetricFilterParams {
+  min_acoustics_score?: number;               // Real-world fan noise & quietness
+  min_thermals_score?: number;                // Real-world cooling under stress
+  min_battery_score?: number;                 // Real-world battery life & reliability
+  min_build_score?: number;                   // Chassis & hinge durability
+  min_keyboard_score?: number;                // Keyboard & typing comfort
+  min_cpu_score?: number;                     // Hardware CPU compute
+  min_gpu_score?: number;                     // Hardware GPU 3D graphics
+  min_display_score?: number;                 // Display quality & colors
+  min_value_score?: number;                   // Value for money
+}
+
+export type MetricFilterKey = keyof MetricFilterParams
+
+export interface RecommendationRequest extends MetricFilterParams {
   budget_egp: number;                         // Maximum budget in EGP (Required)
   min_budget_egp?: number;                    // Optional minimum budget floor
   persona?: PersonaType;                      // Default: 'balanced'
@@ -113,7 +131,7 @@ export interface RecommendationResponse {
   results: RankedLaptop[];
 }
 
-export interface CatalogQueryParams {
+export interface CatalogQueryParams extends MetricFilterParams {
   search?: string;
   min_price?: number;
   max_price?: number;
@@ -149,6 +167,7 @@ export interface CatalogListItem {
   pros_en: string[];
   cons_ar: string[];
   cons_en: string[];
+  metric_scores?: Record<string, number>;
 }
 
 export interface CatalogListResponse {

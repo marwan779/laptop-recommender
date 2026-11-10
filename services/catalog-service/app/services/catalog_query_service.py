@@ -40,6 +40,31 @@ logger = get_logger("catalog.services.catalog_query")
 
 FALLBACK_CATALOG_PATH = Path(__file__).resolve().parent.parent.parent / "scraping input" / "unified_catalog_latest.json"
 
+# Maps a public ``min_*_score`` query gate to its underlying score key. Aspect
+# scores live in ``community_reviews.aspect_scores``; hardware scores live in
+# ``derived_metrics.topsis_inputs`` (or the ``laptop_metrics`` table).
+_METRIC_SCORE_KEYS: dict[str, str] = {
+    "min_acoustics_score": "acoustics_score",
+    "min_thermals_score": "thermals_score",
+    "min_battery_score": "real_battery_and_reliability_score",
+    "min_build_score": "build_and_hinges_score",
+    "min_keyboard_score": "keyboard_and_trackpad_score",
+    "min_cpu_score": "cpu_score",
+    "min_gpu_score": "gpu_score",
+    "min_display_score": "display_score",
+    "min_value_score": "value_score",
+}
+
+_ASPECT_SCORE_KEYS: frozenset[str] = frozenset(
+    {
+        "acoustics_score",
+        "thermals_score",
+        "real_battery_and_reliability_score",
+        "build_and_hinges_score",
+        "keyboard_and_trackpad_score",
+    }
+)
+
 
 def _safe_int(val: Any, default: int | None = None) -> int | None:
     if val is None:
@@ -98,8 +123,29 @@ class CatalogQueryService:
         in_stock_only: bool = True,
         offset: int = 0,
         limit: int = 20,
+        min_acoustics_score: float | None = None,
+        min_thermals_score: float | None = None,
+        min_battery_score: float | None = None,
+        min_build_score: float | None = None,
+        min_keyboard_score: float | None = None,
+        min_cpu_score: float | None = None,
+        min_gpu_score: float | None = None,
+        min_display_score: float | None = None,
+        min_value_score: float | None = None,
     ) -> CatalogListResponse:
         """Return a paginated catalog browse page with review intelligence."""
+        metric_filters = {
+            "min_acoustics_score": min_acoustics_score,
+            "min_thermals_score": min_thermals_score,
+            "min_battery_score": min_battery_score,
+            "min_build_score": min_build_score,
+            "min_keyboard_score": min_keyboard_score,
+            "min_cpu_score": min_cpu_score,
+            "min_gpu_score": min_gpu_score,
+            "min_display_score": min_display_score,
+            "min_value_score": min_value_score,
+        }
+
         if self.laptop_repo is not None:
             try:
                 laptops, total = await self.laptop_repo.list_and_count_configurations(
@@ -110,6 +156,7 @@ class CatalogQueryService:
                     in_stock_only=in_stock_only,
                     offset=offset,
                     limit=limit,
+                    **metric_filters,
                 )
                 return CatalogListResponse(
                     total=total,
@@ -131,6 +178,7 @@ class CatalogQueryService:
             in_stock_only=in_stock_only,
             offset=offset,
             limit=limit,
+            metric_filters=metric_filters,
         )
 
     def _list_from_fallback(
@@ -142,10 +190,16 @@ class CatalogQueryService:
         in_stock_only: bool,
         offset: int,
         limit: int,
+        metric_filters: dict[str, float | None] | None = None,
     ) -> CatalogListResponse:
         """Filter and paginate the offline JSON catalog."""
         brand_key = brand.lower().strip() if brand else None
         search_key = search.lower().strip() if search and search.strip() else None
+        active_metric_filters = {
+            key: threshold
+            for key, threshold in (metric_filters or {}).items()
+            if threshold is not None
+        }
         filtered: list[dict[str, Any]] = []
 
         for lap in self._load_fallback_catalog():
@@ -167,6 +221,10 @@ class CatalogQueryService:
                 continue
             if in_stock_only and (not self._dict_in_stock(lap) or price <= 0):
                 continue
+            if active_metric_filters and not self._dict_passes_metric_filters(
+                lap, active_metric_filters
+            ):
+                continue
             filtered.append(lap)
 
         filtered.sort(
@@ -182,6 +240,42 @@ class CatalogQueryService:
             limit=limit,
             items=[self._dict_to_list_item(lap) for lap in page],
         )
+
+    @staticmethod
+    def _dict_metric_scores(lap: dict[str, Any]) -> dict[str, float]:
+        """Extract the 9 filterable metric scores from a raw catalog dict."""
+        derived = lap.get("derived_metrics") or {}
+        topsis = derived.get("topsis_inputs") or {}
+        reviews = derived.get("community_reviews") or lap.get("community_reviews") or {}
+        aspects = (reviews.get("aspect_scores") or {}) if isinstance(reviews, dict) else {}
+        if not isinstance(aspects, dict):
+            aspects = {}
+
+        scores: dict[str, float] = {}
+        for key in _METRIC_SCORE_KEYS.values():
+            raw = aspects.get(key) if key in _ASPECT_SCORE_KEYS else topsis.get(key)
+            if isinstance(raw, (int, float)) and not isinstance(raw, bool):
+                scores[key] = float(raw)
+        return scores
+
+    @classmethod
+    def _dict_passes_metric_filters(
+        cls,
+        lap: dict[str, Any],
+        metric_filters: dict[str, float | None],
+    ) -> bool:
+        """Return True when a raw catalog dict satisfies every active metric gate."""
+        scores = cls._dict_metric_scores(lap)
+        for filter_key, threshold in metric_filters.items():
+            if threshold is None:
+                continue
+            score_key = _METRIC_SCORE_KEYS.get(filter_key)
+            if score_key is None:
+                continue
+            score = scores.get(score_key)
+            if score is None or score < threshold:
+                return False
+        return True
 
     @staticmethod
     def _dict_in_stock(lap: dict[str, Any]) -> bool:
@@ -229,7 +323,22 @@ class CatalogQueryService:
             pros_en=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[0],
             cons_ar=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[1],
             cons_en=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[0],
+            metric_scores=CatalogQueryService._orm_metric_scores(laptop),
         )
+
+    @staticmethod
+    def _orm_metric_scores(laptop: LaptopConfiguration) -> dict[str, float]:
+        """Extract the 9 filterable metric scores from a persisted laptop row."""
+        metrics = laptop.metrics
+        if metrics is None:
+            return {}
+
+        scores: dict[str, float] = {}
+        for key in _METRIC_SCORE_KEYS.values():
+            raw = getattr(metrics, key, None)
+            if raw is not None:
+                scores[key] = float(raw)
+        return scores
 
     @staticmethod
     def _dict_to_list_item(lap: dict[str, Any]) -> CatalogListItemResponse:
@@ -275,6 +384,7 @@ class CatalogQueryService:
             pros_en=align_bilingual_lists(reviews.get("pros_en"), reviews.get("pros_ar"))[0],
             cons_ar=align_bilingual_lists(reviews.get("cons_en"), reviews.get("cons_ar"))[1],
             cons_en=align_bilingual_lists(reviews.get("cons_en"), reviews.get("cons_ar"))[0],
+            metric_scores=CatalogQueryService._dict_metric_scores(lap),
         )
 
     async def get_laptop_detail(self, identifier: str) -> FullLaptopDetailResponse:

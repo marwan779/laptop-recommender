@@ -44,6 +44,33 @@ async def list_laptops(
     in_stock_only: bool = Query(default=True, description="Only return in-stock laptops."),
     offset: int = Query(default=0, ge=0, description="Number of items to skip."),
     limit: int = Query(default=20, ge=1, le=100, description="Page size (1-100)."),
+    min_acoustics_score: float | None = Query(
+        default=None, ge=0, le=100, description="Minimum real-world acoustics/fan-noise score."
+    ),
+    min_thermals_score: float | None = Query(
+        default=None, ge=0, le=100, description="Minimum real-world thermals/cooling score."
+    ),
+    min_battery_score: float | None = Query(
+        default=None, ge=0, le=100, description="Minimum real-world battery/reliability score."
+    ),
+    min_build_score: float | None = Query(
+        default=None, ge=0, le=100, description="Minimum chassis build/hinge durability score."
+    ),
+    min_keyboard_score: float | None = Query(
+        default=None, ge=0, le=100, description="Minimum keyboard/trackpad score."
+    ),
+    min_cpu_score: float | None = Query(
+        default=None, ge=0, le=100, description="Minimum hardware CPU benchmark score."
+    ),
+    min_gpu_score: float | None = Query(
+        default=None, ge=0, le=100, description="Minimum hardware GPU benchmark score."
+    ),
+    min_display_score: float | None = Query(
+        default=None, ge=0, le=100, description="Minimum display quality/color score."
+    ),
+    min_value_score: float | None = Query(
+        default=None, ge=0, le=100, description="Minimum value-for-money score."
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> CatalogListResponse:
     """Browse the catalog with filtering, universal search, and pagination."""
@@ -56,6 +83,15 @@ async def list_laptops(
         in_stock_only=in_stock_only,
         offset=offset,
         limit=limit,
+        min_acoustics_score=min_acoustics_score,
+        min_thermals_score=min_thermals_score,
+        min_battery_score=min_battery_score,
+        min_build_score=min_build_score,
+        min_keyboard_score=min_keyboard_score,
+        min_cpu_score=min_cpu_score,
+        min_gpu_score=min_gpu_score,
+        min_display_score=min_display_score,
+        min_value_score=min_value_score,
     )
 
 

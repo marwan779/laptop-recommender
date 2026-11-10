@@ -20,7 +20,8 @@ import {
   Monitor,
   RotateCcw,
 } from 'lucide-react'
-import type { PersonaType } from '../types/api'
+import type { MetricFilterKey, PersonaType } from '../types/api'
+import { METRIC_FILTER_DEFS } from '../config/metricFilters'
 
 interface BudgetPersonaBarProps {
   budget: number
@@ -38,6 +39,9 @@ interface BudgetPersonaBarProps {
   onRequireDgpuChange: (dgpu: boolean | null) => void
   selectedBrands: string[]
   onToggleBrand: (brand: string) => void
+  // Optional real-world experience & performance metric gates
+  metricFilters: Record<MetricFilterKey, number | null>
+  onMetricChange: (key: MetricFilterKey, value: number | null) => void
   // Top K selector
   topK: number
   onTopKChange: (k: number) => void
@@ -134,6 +138,8 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
   onRequireDgpuChange,
   selectedBrands,
   onToggleBrand,
+  metricFilters,
+  onMetricChange,
   topK,
   onTopKChange,
   onResetAdvancedFilters,
@@ -144,11 +150,16 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
   const isAr = lang === 'ar'
   const [showAdvanced, setShowAdvanced] = useState(false)
 
+  const activeMetricDefs = METRIC_FILTER_DEFS.filter(
+    (def) => metricFilters[def.key] != null
+  )
+
   const activeFiltersCount =
     (minRam ? 1 : 0) +
     (minStorage ? 1 : 0) +
     (requireDgpu !== null ? 1 : 0) +
     selectedBrands.length +
+    activeMetricDefs.length +
     (topK !== 8 ? 1 : 0)
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -475,6 +486,71 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
                     >
                       {b}
                     </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Optional Real-World Experience & Performance Metric Gates */}
+            <div className="space-y-2 pt-2 border-t border-slate-800/80">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>
+                    {isAr
+                      ? 'معايير التجربة الميدانية والأداء (اختياري):'
+                      : 'Real-World Experience & Performance (Optional):'}
+                  </span>
+                </label>
+                {activeMetricDefs.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white font-mono">
+                    {isAr
+                      ? `${activeMetricDefs.length} نشطة`
+                      : `${activeMetricDefs.length} active`}
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {METRIC_FILTER_DEFS.map((def) => {
+                  const current = metricFilters[def.key]
+                  return (
+                    <div key={def.key} className="space-y-1.5">
+                      <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                        <span>{isAr ? def.labelAr : def.labelEn}</span>
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            def.group === 'experience' ? 'bg-emerald-400' : 'bg-sky-400'
+                          }`}
+                        />
+                      </label>
+                      <div className="flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => onMetricChange(def.key, null)}
+                          className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-medium border transition-all ${
+                            current == null
+                              ? 'bg-indigo-600 text-white border-indigo-500 font-bold'
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {isAr ? 'الكل' : 'Any'}
+                        </button>
+                        {def.presets.map((preset) => (
+                          <button
+                            key={preset.value}
+                            type="button"
+                            onClick={() => onMetricChange(def.key, preset.value)}
+                            className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-medium border transition-all ${
+                              current === preset.value
+                                ? 'bg-indigo-600 text-white border-indigo-500 font-bold'
+                                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            {isAr ? preset.labelAr : preset.labelEn}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )
                 })}
               </div>

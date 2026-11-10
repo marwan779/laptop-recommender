@@ -63,6 +63,60 @@ class RecommendationRequest(BaseModel):
         description="Filter by specific manufacturer brands (e.g. ['ASUS', 'Lenovo', 'Dell']).",
         examples=[["ASUS", "Lenovo"]],
     )
+    min_acoustics_score: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Optional minimum real-world acoustics/fan-noise score (0-100).",
+    )
+    min_thermals_score: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Optional minimum real-world thermals/cooling score (0-100).",
+    )
+    min_battery_score: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Optional minimum real-world battery/reliability score (0-100).",
+    )
+    min_build_score: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Optional minimum chassis build/hinge durability score (0-100).",
+    )
+    min_keyboard_score: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Optional minimum keyboard/trackpad score (0-100).",
+    )
+    min_cpu_score: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Optional minimum hardware CPU benchmark score (0-100).",
+    )
+    min_gpu_score: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Optional minimum hardware GPU benchmark score (0-100).",
+    )
+    min_display_score: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Optional minimum display quality/color score (0-100).",
+    )
+    min_value_score: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Optional minimum value-for-money score (0-100).",
+    )
     custom_weights: dict[str, float] | None = Field(
         default=None,
         description="Manual criteria weight overrides from UI sliders.",

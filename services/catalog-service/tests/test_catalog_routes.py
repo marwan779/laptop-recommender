@@ -276,3 +276,68 @@ async def test_catalog_query_service_list_laptops_offline_fallback():
     assert len(result.items) == 10
     assert result.items[0].canonical_id
     assert result.items[0].min_price_egp > 0
+
+
+@pytest.mark.asyncio
+async def test_list_laptops_metric_filter_narrows_results(db_session: AsyncSession):
+    """Metric gates only return laptops meeting every requested minimum score."""
+
+    async def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        baseline = await client.get("/api/v1/laptops?limit=100&in_stock_only=false")
+        assert baseline.status_code == 200
+        base_items = baseline.json()["items"]
+        gpu_scores = [
+            item["metric_scores"]["gpu_score"]
+            for item in base_items
+            if "gpu_score" in item.get("metric_scores", {})
+        ]
+        assert gpu_scores, "Expected at least one laptop with a GPU score"
+
+        threshold = sorted(gpu_scores)[len(gpu_scores) // 2]
+        filtered = await client.get(
+            f"/api/v1/laptops?limit=100&in_stock_only=false&min_gpu_score={threshold}"
+        )
+        assert filtered.status_code == 200
+        data = filtered.json()
+        assert data["total"] >= 1
+        assert data["total"] <= baseline.json()["total"]
+        for item in data["items"]:
+            assert item["metric_scores"]["gpu_score"] >= threshold
+
+        out_of_range = await client.get("/api/v1/laptops?min_gpu_score=150")
+        assert out_of_range.status_code == 422
+
+    app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_catalog_query_service_metric_fallback_filter():
+    """Offline fallback applies the same metric gates without a database session."""
+    service = CatalogQueryService(session=None)
+    baseline = await service.list_laptops(limit=100, in_stock_only=False)
+    assert baseline.items
+
+    thermals = [
+        item.metric_scores["thermals_score"]
+        for item in baseline.items
+        if "thermals_score" in item.metric_scores
+    ]
+    assert thermals, "Expected fallback laptops to expose aspect scores"
+
+    threshold = sorted(thermals)[len(thermals) // 2]
+    filtered = await service.list_laptops(
+        limit=100,
+        in_stock_only=False,
+        min_thermals_score=threshold,
+    )
+
+    assert filtered.total >= 1
+    assert filtered.total <= baseline.total
+    for item in filtered.items:
+        assert item.metric_scores["thermals_score"] >= threshold
