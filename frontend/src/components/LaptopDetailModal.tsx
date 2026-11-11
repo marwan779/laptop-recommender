@@ -627,13 +627,13 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                   <div>
                     <span className="fl">{isAr ? 'النسبة والسطوع:' : 'Aspect Ratio & Nits:'}</span>
                     <span className="fv num">
-                      {detail?.display?.aspect_ratio || '16:10'} • {detail?.display?.brightness_nits ? `${detail.display.brightness_nits} nits` : '300 nits'}
+                      {detail?.display?.aspect_ratio || '16:9'} • {detail?.display?.brightness_nits ? `${detail.display.brightness_nits} nits` : (isAr ? 'سطوع قياسي' : 'Standard')}
                     </span>
                   </div>
                   <div>
                     <span className="fl">{isAr ? 'دقة الألوان واللمس:' : 'Color Gamut & Touch:'}</span>
                     <span className="fv num">
-                      {detail?.display?.color_gamut || '100% sRGB'} • {detail?.display?.touchscreen ? (isAr ? 'تدعم اللمس' : 'Touchscreen') : (isAr ? 'غير لمسية' : 'Non-touch')}
+                      {detail?.display?.color_gamut ? detail.display.color_gamut : (isAr ? 'ألوان قياسية (Standard)' : 'Standard Gamut')} • {detail?.display?.touchscreen ? (isAr ? 'تدعم اللمس' : 'Touchscreen') : (isAr ? 'غير لمسية' : 'Non-touch')}
                     </span>
                   </div>
                   {detail?.display?.hdr && (

@@ -125,10 +125,11 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ laptopId, 
     const rawMin = Math.min(...prices)
     const rawMax = Math.max(...prices)
     // 8% top/bottom padding keeps curves off the plot edges.
-    const span = Math.max(1, rawMax - rawMin)
+    const rawSpan = rawMax - rawMin
+    const span = rawSpan === 0 ? (rawMin > 0 ? rawMin * 0.1 : 1000) : rawSpan
     const minPrice = Math.max(0, rawMin - span * 0.08)
     const maxPrice = rawMax + span * 0.08
-    const timeSpan = Math.max(1, maxTime - minTime)
+    const timeSpan = Math.max(86400000, maxTime - minTime)
 
     return { minTime, maxTime, minPrice, maxPrice, timeSpan }
   }, [data])
@@ -169,8 +170,11 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ laptopId, 
     if (!geometry) return []
     const steps = 4
     return Array.from({ length: steps + 1 }, (_, i) => {
-      const value = geometry.minPrice + ((geometry.maxPrice - geometry.minPrice) * i) / steps
-      return { value, ratio: i / steps }
+      // ratio 0 is top of SVG canvas, ratio 1 is bottom.
+      // Top shows highest price (maxPrice); Bottom shows lowest price (minPrice).
+      const ratio = i / steps
+      const value = geometry.maxPrice - ((geometry.maxPrice - geometry.minPrice) * i) / steps
+      return { value, ratio }
     })
   }, [geometry])
 
