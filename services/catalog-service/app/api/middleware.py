@@ -77,6 +77,8 @@ class ResponseCacheMiddleware(BaseHTTPMiddleware):
     Behavior:
     1. Intercepts whitelisted read endpoints:
        - GET /api/v1/laptops/{laptop_id} (and /api/v1/catalog/laptops/{laptop_id})
+       - GET /api/v1/laptops/{laptop_id}/price-history (and /api/v1/catalog/laptops/{laptop_id}/price-history)
+       - GET /api/v1/laptops (and /api/v1/catalog/laptops)
        - POST /api/v1/recommendations
     2. Computes a strict SHA-256 fingerprint from the exact request (method, path, query, raw body).
        Only 100% matching requests map to the same cache entry; any small difference produces a new entry.
@@ -103,6 +105,8 @@ class ResponseCacheMiddleware(BaseHTTPMiddleware):
         if method == "GET":
             if norm_path == f"{prefix}/laptops" or norm_path == f"{prefix}/catalog/laptops":
                 return "catalog:browse"
+            if norm_path.endswith("/price-history"):
+                return "catalog:price_history"
             if path.startswith(f"{prefix}/laptops/") or path.startswith(f"{prefix}/catalog/laptops/"):
                 return "catalog:laptop"
         if method == "POST" and norm_path == f"{prefix}/recommendations":

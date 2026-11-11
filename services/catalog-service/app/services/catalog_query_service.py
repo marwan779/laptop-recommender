@@ -10,15 +10,24 @@ from pathlib import Path
 import re
 from typing import Any
 
+from datetime import UTC, datetime
+
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.common.cache.provider import ICacheProvider
 from app.common.cursor import InvalidCursorError, decode_cursor, encode_cursor
 from app.common.logger import get_logger
 from app.common.review_text import align_bilingual_lists
+from app.domain.pricing import (
+    OfferCurrentState,
+    PriceHistoryDomainService,
+    RawPriceEvent,
+)
 from app.domain.recommender.explainer import build_why_recommended
 from app.models.laptop import LaptopConfiguration
 from app.repositories.laptop_repository import LaptopRepository, to_recommender_dict
+from app.repositories.price_history_repository import PriceHistoryRepository
 from app.schemas.laptop import (
     AudioWebcamSpecDetail,
     BuildSecuritySpecDetail,
@@ -31,11 +40,14 @@ from app.schemas.laptop import (
     FullLaptopDetailResponse,
     GpuSpecDetail,
     HardwareMetricsDetail,
+    LaptopPriceHistoryResponse,
     MemorySpecDetail,
     PageInfo,
     PhysicalSpecDetail,
     PowerBatterySpecDetail,
+    PriceHistoryPointSchema,
     StorageSpecDetail,
+    StorePriceSeriesSchema,
 )
 
 logger = get_logger("catalog.services.catalog_query")
@@ -95,9 +107,17 @@ class CatalogQueryService:
         self,
         session: AsyncSession | None = None,
         laptop_repo: LaptopRepository | None = None,
+        cache: ICacheProvider | None = None,
+        price_history_repo: PriceHistoryRepository | None = None,
+        domain_service: type[PriceHistoryDomainService] = PriceHistoryDomainService,
     ):
         self.session = session
         self.laptop_repo = laptop_repo or (LaptopRepository(session) if session is not None else None)
+        self.cache = cache
+        self.price_history_repo = price_history_repo or (
+            PriceHistoryRepository(session) if session is not None else None
+        )
+        self.domain = domain_service
         self._fallback_catalog: list[dict[str, Any]] | None = None
 
     def _load_fallback_catalog(self) -> list[dict[str, Any]]:
@@ -479,6 +499,231 @@ class CatalogQueryService:
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Laptop '{clean_id}' was not found in the catalog.",
         )
+
+    async def get_laptop_price_history(
+        self,
+        laptop_id: str,
+        days: int | None = None,
+    ) -> LaptopPriceHistoryResponse:
+        """Return multi-store price step series and extrema for one canonical laptop.
+
+        Resolution accepts a database UUID, canonical_id, or MPN (matching
+        ``get_laptop_detail``). Caching is handled transparently by
+        ResponseCacheMiddleware at the API boundary.
+        """
+        clean_id = (laptop_id or "").strip()
+        if not clean_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Laptop identifier cannot be empty.",
+            )
+
+        # 1. Resolve from database via repository.
+        if self.laptop_repo is not None:
+            try:
+                laptop = await self.laptop_repo.get_by_identifier(clean_id)
+                if laptop is not None:
+                    return await self._orm_to_price_history(laptop, days)
+            except Exception as exc:
+                logger.warning(
+                    "Database price-history lookup for '%s' failed (%s); checking fallback catalog.",
+                    clean_id,
+                    exc,
+                )
+
+        # 2. Fallback: offline JSON catalog.
+        lower_id = clean_id.lower()
+        for lap in self._load_fallback_catalog():
+            identifiers = {
+                str(lap.get("canonical_id") or "").lower(),
+                str(lap.get("mpn") or "").lower(),
+                str(lap.get("id") or "").lower(),
+            }
+            if lower_id in identifiers:
+                return self._dict_to_price_history(lap, days)
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Laptop '{clean_id}' was not found in the catalog.",
+        )
+
+    async def _orm_to_price_history(
+        self,
+        laptop: LaptopConfiguration,
+        days: int | None,
+    ) -> LaptopPriceHistoryResponse:
+        """Build the response from persisted offers plus recorded history rows."""
+        cheapest_store_key = str(laptop.cheapest_store or "").lower().strip()
+
+        events: list[RawPriceEvent] = []
+        if self.price_history_repo is not None:
+            history_rows = await self.price_history_repo.get_by_laptop_id(laptop.id)
+            events = [
+                RawPriceEvent(
+                    offer_id=str(row.offer_id),
+                    store_key=row.store_key,
+                    price_egp=float(row.price_egp),
+                    in_stock=bool(row.in_stock),
+                    recorded_at=row.recorded_at,
+                )
+                for row in history_rows
+            ]
+
+        offer_states: list[OfferCurrentState] = []
+        for offer in laptop.offers or []:
+            store_key = (offer.store_key or "generic").lower().strip()
+            price = float(offer.price_egp) if offer.price_egp is not None else 0.0
+            # Skip scrape artifacts and unpriced offers so the chart stays trustworthy.
+            if price < self.domain.MIN_TRUSTWORTHY_PRICE_EGP:
+                continue
+            offer_states.append(
+                OfferCurrentState(
+                    offer_id=str(offer.id),
+                    store_key=store_key,
+                    store_name=offer.store_name or store_key.capitalize(),
+                    product_url=offer.product_url or "",
+                    price_egp=price,
+                    previous_price_egp=(
+                        float(offer.previous_price_egp) if offer.previous_price_egp else None
+                    ),
+                    in_stock=bool(offer.in_stock),
+                    is_cheapest=store_key == cheapest_store_key,
+                    created_at=offer.created_at,
+                    price_updated_at=offer.price_updated_at or offer.created_at,
+                    last_checked_at=offer.last_checked_at or offer.price_updated_at or offer.created_at,
+                )
+            )
+
+        return self._serialize_price_history(
+            laptop_id=str(laptop.id),
+            canonical_id=laptop.canonical_id,
+            events=events,
+            offers=offer_states,
+            days=days,
+        )
+
+    def _dict_to_price_history(
+        self,
+        lap: dict[str, Any],
+        days: int | None,
+    ) -> LaptopPriceHistoryResponse:
+        """Synthesize a price history response from the offline catalog JSON."""
+        cheapest_store_key = str(lap.get("cheapest_store") or "").lower().strip()
+        offer_states: list[OfferCurrentState] = []
+        now = self._domain_reference_now()
+
+        for idx, off in enumerate(lap.get("offers") or []):
+            store_key = str(off.get("store_key") or "generic").lower().strip()
+            price = float(off.get("price_egp") or 0.0)
+            if price <= 0:
+                continue
+            created_at = self._parse_optional_datetime(off.get("created_at")) or now
+            updated_at = (
+                self._parse_optional_datetime(off.get("price_updated_at"))
+                or self._parse_optional_datetime(off.get("scraped_at"))
+                or created_at
+            )
+            offer_states.append(
+                OfferCurrentState(
+                    offer_id=str(off.get("id") or f"{store_key}-{idx}"),
+                    store_key=store_key,
+                    store_name=str(off.get("store_name") or store_key.capitalize()),
+                    product_url=str(off.get("product_url") or ""),
+                    price_egp=price,
+                    previous_price_egp=(
+                        float(off["previous_price_egp"]) if off.get("previous_price_egp") else None
+                    ),
+                    in_stock=bool(off.get("in_stock", True)),
+                    is_cheapest=store_key == cheapest_store_key,
+                    created_at=created_at,
+                    price_updated_at=updated_at,
+                    last_checked_at=(
+                        self._parse_optional_datetime(off.get("last_checked_at"))
+                        or updated_at
+                    ),
+                )
+            )
+
+        canonical_id = str(lap.get("canonical_id") or "unknown")
+        return self._serialize_price_history(
+            laptop_id=str(lap.get("id") or canonical_id),
+            canonical_id=canonical_id,
+            events=[],
+            offers=offer_states,
+            days=days,
+        )
+
+    def _serialize_price_history(
+        self,
+        laptop_id: str,
+        canonical_id: str,
+        events: list[RawPriceEvent],
+        offers: list[OfferCurrentState],
+        days: int | None,
+    ) -> LaptopPriceHistoryResponse:
+        """Run the pure domain calculation and map it onto the API schema."""
+        calculation = self.domain.build_laptop_price_history(
+            laptop_id=laptop_id,
+            canonical_id=canonical_id,
+            events=events,
+            offers=offers,
+            days=days,
+            now=self._domain_reference_now(),
+        )
+
+        return LaptopPriceHistoryResponse(
+            laptop_id=calculation.laptop_id,
+            canonical_id=calculation.canonical_id,
+            currency="EGP",
+            days_window=days,
+            lowest_ever_price_egp=calculation.lowest_ever_price_egp,
+            lowest_ever_store=calculation.lowest_ever_store,
+            highest_ever_price_egp=calculation.highest_ever_price_egp,
+            current_best_price_egp=calculation.current_best_price_egp,
+            series=[
+                StorePriceSeriesSchema(
+                    offer_id=series.offer_id,
+                    store_key=series.store_key,
+                    store_name=series.store_name,
+                    product_url=series.product_url,
+                    current_price_egp=series.current_price_egp,
+                    in_stock=series.in_stock,
+                    is_cheapest=series.is_cheapest,
+                    min_price_egp=series.min_price_egp,
+                    max_price_egp=series.max_price_egp,
+                    price_change_egp=series.price_change_egp,
+                    price_change_pct=series.price_change_pct,
+                    points=[
+                        PriceHistoryPointSchema(
+                            recorded_at=point.recorded_at,
+                            price_egp=point.price_egp,
+                            in_stock=point.in_stock,
+                            is_live_edge=point.is_live_edge,
+                        )
+                        for point in series.points
+                    ],
+                )
+                for series in calculation.series
+            ],
+        )
+
+    @staticmethod
+    def _domain_reference_now() -> datetime:
+        """Return a timezone-aware reference timestamp for chart windowing."""
+        return datetime.now(UTC)
+
+    @staticmethod
+    def _parse_optional_datetime(raw: Any) -> datetime | None:
+        """Parse an ISO datetime string from the fallback JSON catalog."""
+        if not raw:
+            return None
+        if isinstance(raw, datetime):
+            return raw
+        try:
+            return datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            return None
+
 
     def _orm_to_full_detail(self, laptop: LaptopConfiguration) -> FullLaptopDetailResponse:
         """Convert a LaptopConfiguration ORM instance to FullLaptopDetailResponse."""

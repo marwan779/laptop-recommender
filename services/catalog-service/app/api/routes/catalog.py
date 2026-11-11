@@ -14,6 +14,7 @@ from app.core.database import get_db
 from app.schemas.laptop import (
     CatalogListResponse,
     FullLaptopDetailResponse,
+    LaptopPriceHistoryResponse,
 )
 from app.services.catalog_query_service import CatalogQueryService
 
@@ -148,3 +149,45 @@ async def get_catalog_laptop_detail(
 ) -> FullLaptopDetailResponse:
     """Alias for /laptops/{laptop_id}."""
     return await get_laptop_detail(laptop_id, db)
+
+
+@router.get(
+    "/laptops/{laptop_id}/price-history",
+    response_model=LaptopPriceHistoryResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get multi-store price history telemetry over time",
+    description=(
+        "Returns one piecewise-constant price step series per active store offer, each extended "
+        "to its latest verification timestamp, plus per-store and cross-store extrema and price "
+        "deltas. History rows are appended only on real price or stock changes. Accepts a database "
+        "UUID, canonical_id, or MPN. Use days to clip the window (e.g. 30, 90); omit for all-time."
+    ),
+)
+async def get_laptop_price_history(
+    laptop_id: str,
+    days: int | None = Query(
+        default=None,
+        ge=1,
+        le=3650,
+        description="History window in days. Omit for all-time history.",
+    ),
+    db: AsyncSession = Depends(get_db),
+) -> LaptopPriceHistoryResponse:
+    """Return multi-store price curves for one canonical laptop."""
+    service = CatalogQueryService(session=db)
+    return await service.get_laptop_price_history(laptop_id, days=days)
+
+
+@router.get(
+    "/catalog/laptops/{laptop_id}/price-history",
+    response_model=LaptopPriceHistoryResponse,
+    status_code=status.HTTP_200_OK,
+    include_in_schema=False,
+)
+async def get_catalog_laptop_price_history(
+    laptop_id: str,
+    days: int | None = Query(default=None, ge=1, le=3650),
+    db: AsyncSession = Depends(get_db),
+) -> LaptopPriceHistoryResponse:
+    """Alias for /laptops/{laptop_id}/price-history."""
+    return await get_laptop_price_history(laptop_id, days, db)

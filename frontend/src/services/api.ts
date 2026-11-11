@@ -2,6 +2,7 @@ import type {
   CatalogListResponse,
   CatalogQueryParams,
   FullLaptopDetailResponse,
+  LaptopPriceHistoryResponse,
   RecommendationRequest,
   RecommendationResponse,
 } from '../types/api'
@@ -78,6 +79,26 @@ export async function fetchLaptopDetail(
 
   if (!response.ok) {
     throw new Error(`Failed to load laptop detail (${response.status})`)
+  }
+
+  return response.json()
+}
+
+export async function fetchLaptopPriceHistory(
+  laptopId: string,
+  days?: number
+): Promise<LaptopPriceHistoryResponse> {
+  const query = new URLSearchParams()
+  if (days != null) query.set('days', String(days))
+  const suffix = query.toString() ? `?${query.toString()}` : ''
+
+  const response = await fetch(
+    `${API_BASE}/laptops/${encodeURIComponent(laptopId)}/price-history${suffix}`,
+    { headers: { Accept: 'application/json' } }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Failed to load price history (${response.status})`)
   }
 
   return response.json()

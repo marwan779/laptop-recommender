@@ -78,7 +78,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             exc,
         )
 
-    # 3. Start background workers
+    # 3. Wire the shared cache into the price-sync use case so recorded price
+    #    changes can evict stale telemetry responses for affected laptops.
+    price_sync_cron.service.cache = app.state.cache
+
+    # 4. Start background workers
     outbox_relay.start()
     scraping_cron.start()
     price_sync_cron.start()

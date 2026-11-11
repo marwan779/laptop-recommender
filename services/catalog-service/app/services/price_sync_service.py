@@ -1,7 +1,9 @@
 import logging
 import uuid
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.common.cache.provider import ICacheProvider
 from app.domain.pricing import (
     OfferSnapshot,
     PriceChangeType,
@@ -13,6 +15,7 @@ from app.models.offer import LaptopOffer
 from app.repositories.batch_log_repository import BatchLogRepository
 from app.repositories.laptop_repository import LaptopRepository
 from app.repositories.offer_repository import OfferRepository
+from app.repositories.price_history_repository import PriceHistoryRepository
 from app.schemas.price_sync import (
     PriceCheckBatchRequest,
     PriceCheckBatchResponse,
@@ -29,11 +32,16 @@ class PriceSyncService:
     Orchestrates between repository persistence and pure domain pricing rules:
     1. Generates store-partitioned batch requests via OfferRepository.
     2. Applies live scraper diffs, delegating business rules and math to PricingDomainService.
-    3. Persists rollups, metrics recalibrations, and audit logs.
+    3. Appends price-history observations and persists rollups, metrics, and audit logs.
     """
 
-    def __init__(self, domain_service: type[PricingDomainService] = PricingDomainService):
+    def __init__(
+        self,
+        domain_service: type[PricingDomainService] = PricingDomainService,
+        cache: ICacheProvider | None = None,
+    ):
         self.domain = domain_service
+        self.cache = cache
 
     async def build_price_check_batches(
         self,
@@ -89,6 +97,7 @@ class PriceSyncService:
         offer_repo = OfferRepository(session)
         laptop_repo = LaptopRepository(session)
         log_repo = BatchLogRepository(session)
+        history_repo = PriceHistoryRepository(session)
 
         affected_laptop_ids: set[uuid.UUID] = set()
         unchanged_offer_ids: list[uuid.UUID] = []
@@ -132,6 +141,17 @@ class PriceSyncService:
 
                     offer.in_stock = transition.new_in_stock
                     offer.last_checked_at = utcnow()
+
+                    # Append the event-log observation inside the same transaction.
+                    if transition.new_price is not None and float(transition.new_price) > 0:
+                        await history_repo.record_point(
+                            offer_id=offer.id,
+                            laptop_configuration_id=offer.laptop_configuration_id,
+                            store_key=(offer.store_key or "generic").lower().strip(),
+                            price_egp=float(transition.new_price),
+                            in_stock=transition.new_in_stock,
+                            recorded_at=offer.last_checked_at,
+                        )
 
                     summary.offers_updated += 1
                     if transition.change_type == PriceChangeType.PRICE_DROP:
@@ -228,4 +248,40 @@ class PriceSyncService:
         )
 
         await session.commit()
+
+        # Evict cached price-history payloads for every affected canonical laptop.
+        await self._invalidate_price_history_cache(session, affected_laptop_ids)
+
         return summary
+
+    async def _invalidate_price_history_cache(
+        self,
+        session: AsyncSession,
+        laptop_ids: set[uuid.UUID],
+    ) -> None:
+        """Clear cached price-history curves and catalog responses for laptops touched by this batch."""
+        if not self.cache or not laptop_ids:
+            return
+
+        prefixes = [
+            "catalog:price_history",
+            "catalog:laptop",
+            "catalog:browse",
+            "catalog:recommendation",
+        ]
+        laptop_repo = LaptopRepository(session)
+        for laptop_id in laptop_ids:
+            prefixes.append(f"catalog:price_history:{laptop_id}")
+            laptop = await laptop_repo.get_by_id(laptop_id)
+            if laptop and laptop.canonical_id:
+                prefixes.append(f"catalog:price_history:{laptop.canonical_id}")
+
+        for prefix in prefixes:
+            try:
+                await self.cache.clear_prefix(prefix)
+            except Exception as exc:
+                logger.warning(
+                    "Failed to invalidate cache for '%s': %s",
+                    prefix,
+                    exc,
+                )

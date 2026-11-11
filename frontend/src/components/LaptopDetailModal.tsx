@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import type { FullLaptopDetailResponse, RankedLaptop, CatalogListItem } from '../types/api'
 import { fetchLaptopDetail } from '../services/api'
+import { PriceHistoryChart } from './PriceHistoryChart'
 
 interface LaptopDetailModalProps {
   laptop: RankedLaptop | CatalogListItem | null
@@ -385,6 +386,11 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Multi-store price history telemetry */}
+          <div className="tile-block">
+            <PriceHistoryChart laptopId={laptop.canonical_id} lang={lang} />
           </div>
 
           {/* Operational tiers */}

@@ -363,3 +363,41 @@ export interface FullLaptopDetailResponse {
   why_recommended_ar: string[];
   why_recommended_en: string[];
 }
+
+// =============================================================================
+// Multi-Store Price History Telemetry
+// =============================================================================
+
+export interface PriceHistoryPoint {
+  recorded_at: string;
+  price_egp: number;
+  in_stock: boolean;
+  is_live_edge: boolean;
+}
+
+export interface StorePriceSeries {
+  offer_id: string;
+  store_key: string;
+  store_name: string;
+  product_url: string;
+  current_price_egp: number;
+  in_stock: boolean;
+  is_cheapest: boolean;
+  min_price_egp: number;
+  max_price_egp: number;
+  price_change_egp: number;
+  price_change_pct: number;
+  points: PriceHistoryPoint[];
+}
+
+export interface LaptopPriceHistoryResponse {
+  laptop_id: string;
+  canonical_id: string;
+  currency: string;
+  days_window: number | null;
+  lowest_ever_price_egp: number;
+  highest_ever_price_egp: number;
+  lowest_ever_store: string;
+  current_best_price_egp: number;
+  series: StorePriceSeries[];
+}
