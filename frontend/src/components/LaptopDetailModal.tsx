@@ -44,10 +44,10 @@ interface TierInfo {
 }
 
 function formatVerificationTime(isoStr: string | null | undefined, isAr: boolean): string {
-  if (!isoStr) return isAr ? 'اليوم' : 'Today'
+  if (!isoStr) return isAr ? 'غير محدد' : 'Unverified'
   try {
     const d = new Date(isoStr)
-    if (isNaN(d.getTime())) return isAr ? 'اليوم' : 'Today'
+    if (isNaN(d.getTime())) return isAr ? 'غير محدد' : 'Unverified'
     return d.toLocaleString(isAr ? 'ar-EG' : 'en-US', {
       month: 'short',
       day: 'numeric',
@@ -55,12 +55,13 @@ function formatVerificationTime(isoStr: string | null | undefined, isAr: boolean
       minute: '2-digit',
     })
   } catch {
-    return isAr ? 'اليوم' : 'Today'
+    return isAr ? 'غير محدد' : 'Unverified'
   }
 }
 
-function getSiliconTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo {
+function getSiliconTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
   const key = (raw || '').toUpperCase().trim()
+  if (!key) return null
   if (key.includes('EXPLICIT') || key.includes('HIGH') || key.includes('CAPPED')) {
     return {
       category: isAr ? 'فئة المعالجة والتبريد' : 'Thermal & Compute Tier',
@@ -79,17 +80,12 @@ function getSiliconTierInfo(raw: string | undefined | null, isAr: boolean): Tier
       icon: <Cpu className="w-4 h-4" strokeWidth={1.8} />,
     }
   }
-  return {
-    category: isAr ? 'فئة المعالجة والتبريد' : 'Thermal & Compute Tier',
-    title: isAr ? 'أداء متوازن ومستقر' : 'Balanced Performance',
-    subtitle: isAr ? 'مزيج قياسي بين الإنتاجية وكفاءة الاستهلاك' : 'Standard balance of compute power & efficiency',
-    key: 'var(--tier-thermal)',
-    icon: <Cpu className="w-4 h-4" strokeWidth={1.8} />,
-  }
+  return null
 }
 
-function getDisplayTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo {
+function getDisplayTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
   const key = (raw || '').toLowerCase()
+  if (!key) return null
   if (key.includes('100% srgb') || key.includes('creator') || key.includes('dci-p3') || key.includes('oled')) {
     return {
       category: isAr ? 'فئة الشاشة والألوان' : 'Display Quality Tier',
@@ -108,17 +104,12 @@ function getDisplayTierInfo(raw: string | undefined | null, isAr: boolean): Tier
       icon: <Monitor className="w-4 h-4" strokeWidth={1.8} />,
     }
   }
-  return {
-    category: isAr ? 'فئة الشاشة والألوان' : 'Display Quality Tier',
-    title: isAr ? 'شاشة سريعة عالية التردد (144Hz+)' : 'High-Refresh Esports Display',
-    subtitle: isAr ? 'استجابة فائقة وسلاسة في الحركة للألعاب والتصفح السريع' : 'Smooth high refresh rate with low response latency',
-    key: 'var(--tier-display)',
-    icon: <Monitor className="w-4 h-4" strokeWidth={1.8} />,
-  }
+  return null
 }
 
-function getPortabilityTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo {
+function getPortabilityTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
   const key = (raw || '').toUpperCase()
+  if (!key) return null
   if (key.includes('ULTRA') || key.includes('LIGHT')) {
     return {
       category: isAr ? 'التنقل والوزن' : 'Mobility & Weight Tier',
@@ -137,17 +128,12 @@ function getPortabilityTierInfo(raw: string | undefined | null, isAr: boolean): 
       icon: <Feather className="w-4 h-4" strokeWidth={1.8} />,
     }
   }
-  return {
-    category: isAr ? 'التنقل والوزن' : 'Mobility & Weight Tier',
-    title: isAr ? 'وزن متوازن للدراسة والتنقل (~2 كجم)' : 'Balanced Mobility (~2kg)',
-    subtitle: isAr ? 'توازن عملي ومريح بين حجم الشاشة وسهولة الحمل اليومي' : 'Practical balance of screen size & everyday portability',
-    key: 'var(--tier-mobility)',
-    icon: <Feather className="w-4 h-4" strokeWidth={1.8} />,
-  }
+  return null
 }
 
-function getUpgradeabilityTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo {
+function getUpgradeabilityTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
   const key = (raw || '').toUpperCase()
+  if (!key) return null
   if (key.includes('MAXIMUM') || key.includes('HIGH') || key.includes('DUAL')) {
     return {
       category: isAr ? 'قابلية الترقية المستقبلية' : 'Future Expansion Tier',
@@ -166,13 +152,7 @@ function getUpgradeabilityTierInfo(raw: string | undefined | null, isAr: boolean
       icon: <Wrench className="w-4 h-4" strokeWidth={1.8} />,
     }
   }
-  return {
-    category: isAr ? 'قابلية الترقية المستقبلية' : 'Future Expansion Tier',
-    title: isAr ? 'ترقية جزئية متوفرة' : 'Moderate Upgradeability',
-    subtitle: isAr ? 'منفذ واحد متاح لزيادة الرامات أو فتحة تخزين إضافية' : 'Single open slot or secondary M.2 storage slot',
-    key: 'var(--tier-expansion)',
-    icon: <Wrench className="w-4 h-4" strokeWidth={1.8} />,
-  }
+  return null
 }
 
 export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
@@ -201,8 +181,17 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
   const family = detail?.laptop_family || (laptop as any).laptop_family || ''
   const mpn = detail?.mpn || (laptop as any).mpn || ''
   const effectivePrice = detail?.min_price_egp || (laptop as any).effective_price_egp || (laptop as any).min_price_egp || 0
-  const cheapestStore = detail?.cheapest_store || (laptop as any).cheapest_store || 'Compumarts'
-  const cheapestOfferUrl = detail?.cheapest_offer_url || (laptop as any).cheapest_offer_url || (laptop as any).urls_by_store?.[cheapestStore] || '#'
+  const cheapestStore =
+    detail?.cheapest_store ||
+    (laptop as any).cheapest_store ||
+    (isAr ? 'متجر معتمد' : 'Authorized Store')
+  const rawCheapestOfferUrl =
+    detail?.cheapest_offer_url ||
+    (laptop as any).cheapest_offer_url ||
+    (laptop as any).urls_by_store?.[cheapestStore] ||
+    null
+  const cheapestOfferUrl =
+    rawCheapestOfferUrl && rawCheapestOfferUrl !== '#' ? rawCheapestOfferUrl : null
   const priceSpread = detail?.price_spread_egp || (laptop as any).price_spread_egp || 0
 
   // Freshness & Verification Timestamp
@@ -214,33 +203,35 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
 
   // Operational Tiers with Human Mappings
   const siliconTier = getSiliconTierInfo(detail?.metrics?.silicon_tier, isAr)
-  const displayTier = getDisplayTierInfo(detail?.metrics?.display_tier || detail?.display?.color_gamut, isAr)
+  const displayTier = getDisplayTierInfo(detail?.metrics?.display_tier, isAr)
   const portabilityTier = getPortabilityTierInfo(detail?.metrics?.portability_tier, isAr)
   const upgradeTier = getUpgradeabilityTierInfo(detail?.metrics?.upgradeability_tier, isAr)
 
-  const allTiers = [siliconTier, displayTier, portabilityTier, upgradeTier]
+  const activeTiers = [siliconTier, displayTier, portabilityTier, upgradeTier].filter(
+    (tier): tier is TierInfo => tier !== null
+  )
 
   // All 15 Normalized Scores
   const m = detail?.metrics
   const topsis10Scores = [
-    { labelAr: 'قوة المعالج (CPU)', labelEn: 'CPU Benchmark', score: m?.cpu_score ?? 70, icon: <Cpu className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'أداء الجرافيكس (GPU)', labelEn: 'GPU 3D Gaming', score: m?.gpu_score ?? 65, icon: <Monitor className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'جودة وسرعة الشاشة', labelEn: 'Display Quality', score: m?.display_score ?? 72, icon: <Maximize2 className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'القيمة مقابل السعر', labelEn: 'Value for Money', score: m?.value_score ?? 85, icon: <Sparkles className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'استقرار الطاقة والتبريد', labelEn: 'Sustained Power & Thermals', score: m?.power_therm_score ?? 80, icon: <Zap className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'سهولة التنقل والوزن', labelEn: 'Mobility & Battery Wh', score: m?.mobility_score ?? 60, icon: <Feather className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'المنافذ والاتصال', labelEn: 'I/O & Connectivity', score: m?.connectivity_score ?? 75, icon: <Layers className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'عمر الشاسيه وقابلية الترقية', labelEn: 'Chassis Longevity', score: m?.longevity_score ?? 78, icon: <ShieldCheck className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'الراحة والكيبورد (Ergonomics)', labelEn: 'Ergonomics & Typing', score: m?.ergonomics_score ?? 74, icon: <Gauge className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'تجارب المستخدمين الفعلية', labelEn: 'Community NLP Sentiment', score: m?.community_nlp_score ?? 79, icon: <Award className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'قوة المعالج (CPU)', labelEn: 'CPU Benchmark', score: m?.cpu_score != null ? Number(m.cpu_score) : null, icon: <Cpu className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'أداء الجرافيكس (GPU)', labelEn: 'GPU 3D Gaming', score: m?.gpu_score != null ? Number(m.gpu_score) : null, icon: <Monitor className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'جودة وسرعة الشاشة', labelEn: 'Display Quality', score: m?.display_score != null ? Number(m.display_score) : null, icon: <Maximize2 className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'القيمة مقابل السعر', labelEn: 'Value for Money', score: m?.value_score != null ? Number(m.value_score) : null, icon: <Sparkles className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'استقرار الطاقة والتبريد', labelEn: 'Sustained Power & Thermals', score: m?.power_therm_score != null ? Number(m.power_therm_score) : null, icon: <Zap className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'سهولة التنقل والوزن', labelEn: 'Mobility & Battery Wh', score: m?.mobility_score != null ? Number(m.mobility_score) : null, icon: <Feather className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'المنافذ والاتصال', labelEn: 'I/O & Connectivity', score: m?.connectivity_score != null ? Number(m.connectivity_score) : null, icon: <Layers className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'عمر الشاسيه وقابلية الترقية', labelEn: 'Chassis Longevity', score: m?.longevity_score != null ? Number(m.longevity_score) : null, icon: <ShieldCheck className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'الراحة والكيبورد (Ergonomics)', labelEn: 'Ergonomics & Typing', score: m?.ergonomics_score != null ? Number(m.ergonomics_score) : null, icon: <Gauge className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'تجارب المستخدمين الفعلية', labelEn: 'Community NLP Sentiment', score: m?.community_nlp_score != null ? Number(m.community_nlp_score) : null, icon: <Award className="w-3.5 h-3.5" strokeWidth={1.8} /> },
   ]
 
   const review5Aspects = [
-    { labelAr: 'التبريد تحت الضغط الصيفي', labelEn: 'Cooling under Stress', score: m?.thermals_score ?? 78 },
-    { labelAr: 'هدوء المراوح والصوت', labelEn: 'Fan Acoustics & Quietness', score: m?.acoustics_score ?? 75 },
-    { labelAr: 'متانة الشاسيه والمفصلات', labelEn: 'Chassis & Hinge Durability', score: m?.build_and_hinges_score ?? 82 },
-    { labelAr: 'استجابة الكيبورد والتراك باد', labelEn: 'Keyboard & Trackpad Precision', score: m?.keyboard_and_trackpad_score ?? 80 },
-    { labelAr: 'عمر البطارية الحقيقي', labelEn: 'Real Battery Run-Time', score: m?.real_battery_and_reliability_score ?? 79 },
+    { labelAr: 'التبريد تحت الضغط الصيفي', labelEn: 'Cooling under Stress', score: m?.thermals_score != null ? Number(m.thermals_score) : null },
+    { labelAr: 'هدوء المراوح والصوت', labelEn: 'Fan Acoustics & Quietness', score: m?.acoustics_score != null ? Number(m.acoustics_score) : null },
+    { labelAr: 'متانة الشاسيه والمفصلات', labelEn: 'Chassis & Hinge Durability', score: m?.build_and_hinges_score != null ? Number(m.build_and_hinges_score) : null },
+    { labelAr: 'استجابة الكيبورد والتراك باد', labelEn: 'Keyboard & Trackpad Precision', score: m?.keyboard_and_trackpad_score != null ? Number(m.keyboard_and_trackpad_score) : null },
+    { labelAr: 'عمر البطارية الحقيقي', labelEn: 'Real Battery Run-Time', score: m?.real_battery_and_reliability_score != null ? Number(m.real_battery_and_reliability_score) : null },
   ]
 
   const scoreTone = (score: number) =>
@@ -393,27 +384,29 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
             <PriceHistoryChart laptopId={laptop.canonical_id} lang={lang} />
           </div>
 
-          {/* Operational tiers */}
-          <div className="tile-block space-y-3">
-            <h4 className="label flex items-center gap-1.5">
-              <Award className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
-              <span>
-                {isAr ? 'تصنيف الفئات والقدرات التشغيلية للموديل' : 'Hardware Operational Tiers'}
-              </span>
-            </h4>
-            <div className="tier-grid">
-              {allTiers.map((tier, idx) => (
-                <div key={idx} className="tier" style={{ ['--key' as string]: tier.key }}>
-                  <span className="ticon">{tier.icon}</span>
-                  <div className="min-w-0">
-                    <div className="tlabel">{tier.category}</div>
-                    <div className="tname">{tier.title}</div>
-                    <div className="tdesc">{tier.subtitle}</div>
+          {/* Operational tiers — omitted entirely when no tier is classified */}
+          {activeTiers.length > 0 && (
+            <div className="tile-block space-y-3">
+              <h4 className="label flex items-center gap-1.5">
+                <Award className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
+                <span>
+                  {isAr ? 'تصنيف الفئات والقدرات التشغيلية للموديل' : 'Hardware Operational Tiers'}
+                </span>
+              </h4>
+              <div className="tier-grid">
+                {activeTiers.map((tier, idx) => (
+                  <div key={idx} className="tier" style={{ ['--key' as string]: tier.key }}>
+                    <span className="ticon">{tier.icon}</span>
+                    <div className="min-w-0">
+                      <div className="tlabel">{tier.category}</div>
+                      <div className="tname">{tier.title}</div>
+                      <div className="tdesc">{tier.subtitle}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
 
           {/* 35+ Structured Hardware Dimensions Grid */}
@@ -446,7 +439,7 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                   )}
                 </div>
                 <div className="big">
-                  {detail?.cpu?.full_name || detail?.cpu?.model || 'High Performance Processor'}
+                  {detail?.cpu?.full_name || detail?.cpu?.model || '-'}
                 </div>
                 <div className="spec-fields">
                   <div>
@@ -465,13 +458,13 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                   <div>
                     <span className="fl">{isAr ? 'الذاكرة المخبأة (Cache):' : 'Cache:'}</span>
                     <span className="fv num">
-                      {detail?.cpu?.cache_mb ? `${detail.cpu.cache_mb} MB` : 'Smart Cache'}
+                      {detail?.cpu?.cache_mb ? `${detail.cpu.cache_mb} MB` : '-'}
                     </span>
                   </div>
                   <div>
                     <span className="fl">{isAr ? 'القدرة الأساسية (TDP):' : 'Base Power (TDP):'}</span>
                     <span className="fv num">
-                      {detail?.cpu?.base_power_w ? `${detail.cpu.base_power_w}W` : 'Standard'}
+                      {detail?.cpu?.base_power_w ? `${detail.cpu.base_power_w}W` : '-'}
                     </span>
                   </div>
                   {detail?.cpu?.microarchitecture && (
@@ -497,25 +490,39 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                     <span>{isAr ? 'كارت الشاشة (Graphics / GPU)' : 'Graphics (GPU)'}</span>
                   </span>
                   <span className={`cbadge ${
-                    detail?.gpu?.integrated ? '' : 'green'
+                    detail?.gpu?.integrated === false
+                      ? 'green'
+                      : detail?.gpu?.integrated === true
+                      ? ''
+                      : '!text-[var(--text-muted)]'
                   }`}>
-                    {detail?.gpu?.integrated ? (isAr ? 'مدمج (iGPU)' : 'Integrated') : (isAr ? 'منفصل (Dedicated dGPU)' : 'Dedicated dGPU')}
+                    {detail?.gpu?.integrated === true
+                      ? (isAr ? 'مدمج (iGPU)' : 'Integrated iGPU')
+                      : detail?.gpu?.integrated === false
+                      ? (isAr ? 'منفصل (Dedicated dGPU)' : 'Dedicated dGPU')
+                      : '-'}
                   </span>
                 </div>
                 <div className="big">
-                  {detail?.gpu?.model || 'Graphics Engine'}
+                  {detail?.gpu?.model || '-'}
                 </div>
                 <div className="spec-fields">
                   <div>
                     <span className="fl">{isAr ? 'سعة ونوع ذاكرة الفيديو:' : 'VRAM Capacity:'}</span>
                     <span className="fv num">
-                      {detail?.gpu?.vram_gb ? `${detail.gpu.vram_gb}GB ${detail.gpu.vram_type || 'GDDR6'}` : isAr ? 'مشتركة من الرامات' : 'System Shared'}
+                      {detail?.gpu?.vram_gb
+                        ? `${detail.gpu.vram_gb}GB ${detail.gpu.vram_type || ''}`.trim()
+                        : detail?.gpu?.integrated === true
+                        ? isAr
+                          ? 'مشتركة'
+                          : 'Shared'
+                        : '-'}
                     </span>
                   </div>
                   <div>
                     <span className="fl">{isAr ? 'قدرة الطاقة (TGP / TDP):' : 'Max Power (TGP):'}</span>
                     <span className="fv num">
-                      {detail?.gpu?.tdp_w ? `${detail.gpu.tdp_w}W` : isAr ? 'استهلاك قياسي' : 'Standard'}
+                      {detail?.gpu?.tdp_w ? `${detail.gpu.tdp_w}W` : '-'}
                     </span>
                   </div>
                   {detail?.gpu?.variant && (
@@ -547,23 +554,25 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                     <span>{isAr ? 'الذاكرة العشوائية (RAM)' : 'Memory (RAM)'}</span>
                   </span>
                   <span className="cbadge">
-                    {detail?.memory?.memory_type || 'DDR5'}
+                    {detail?.memory?.memory_type || '-'}
                   </span>
                 </div>
                 <div className="big">
-                  {detail?.memory?.capacity_gb || 16}GB {detail?.memory?.memory_type || 'DDR5'}
+                  {detail?.memory?.capacity_gb
+                    ? `${detail.memory.capacity_gb}GB ${detail.memory.memory_type || ''}`.trim()
+                    : '-'}
                 </div>
                 <div className="spec-fields">
                   <div>
                     <span className="fl">{isAr ? 'تردد وسرعة الذاكرة:' : 'Memory Speed:'}</span>
-                    <span className="fv num">{detail?.memory?.speed_mhz ? `${detail.memory.speed_mhz} MHz` : 'High Speed'}</span>
+                    <span className="fv num">{detail?.memory?.speed_mhz ? `${detail.memory.speed_mhz} MHz` : '-'}</span>
                   </div>
                   <div>
                     <span className="fl">{isAr ? 'المنافذ والترقية:' : 'Slots / Expansion:'}</span>
                     <span className="fv num">
                       {detail?.memory?.is_soldered
                         ? isAr ? 'ملحومة باللوحة (Soldered)' : 'Soldered On-board'
-                        : detail?.memory?.slot_count ? `${detail.memory.slot_count}x SO-DIMM (Upgradeable)` : isAr ? 'قابلة للترقية' : 'Upgradeable'}
+                        : detail?.memory?.slot_count ? `${detail.memory.slot_count}x Slots` : '-'}
                     </span>
                   </div>
                   {detail?.memory?.max_supported_gb && (
@@ -589,21 +598,23 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                     <span>{isAr ? 'وحدة التخزين (Storage / SSD)' : 'Storage (SSD)'}</span>
                   </span>
                   <span className="cbadge">
-                    {detail?.storage?.storage_type || 'NVMe SSD'}
+                    {detail?.storage?.storage_type || '-'}
                   </span>
                 </div>
                 <div className="big">
-                  {detail?.storage?.capacity_gb ? `${detail.storage.capacity_gb}GB` : '512GB'} PCIe NVMe SSD
+                  {detail?.storage?.capacity_gb
+                    ? `${detail.storage.capacity_gb}GB ${detail.storage.storage_type || 'SSD'}`
+                    : '-'}
                 </div>
                 <div className="spec-fields">
                   <div>
                     <span className="fl">{isAr ? 'واجهة التوصيل:' : 'Interface:'}</span>
-                    <span className="fv num">{detail?.storage?.interface || 'PCIe Gen 4.0 x4'}</span>
+                    <span className="fv num">{detail?.storage?.interface || '-'}</span>
                   </div>
                   <div>
                     <span className="fl">{isAr ? 'منافذ M.2 الإضافية:' : 'M.2 Expansion Slots:'}</span>
                     <span className="fv indigo num">
-                      {detail?.storage?.slot_count ? `${detail.storage.slot_count}x M.2 Slots` : isAr ? 'منفذ إضافي متاح' : 'Secondary slot available'}
+                      {detail?.storage?.slot_count ? `${detail.storage.slot_count}x M.2 Slots` : '-'}
                     </span>
                   </div>
                 </div>
@@ -617,23 +628,33 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                     <span>{isAr ? 'الشاشة والعرض (Display)' : 'Display'}</span>
                   </span>
                   <span className="cbadge">
-                    {detail?.display?.refresh_rate_hz || 60}Hz
+                    {detail?.display?.refresh_rate_hz ? `${detail.display.refresh_rate_hz}Hz` : '-'}
                   </span>
                 </div>
                 <div className="big">
-                  {detail?.display?.size_inches}" {detail?.display?.resolution} ({detail?.display?.panel_type || 'IPS'})
+                  {`${detail?.display?.size_inches ? `${detail.display.size_inches}"` : ''} ${
+                    detail?.display?.resolution || ''
+                  } (${detail?.display?.panel_type || '-'})`.trim()}
                 </div>
                 <div className="spec-fields">
                   <div>
                     <span className="fl">{isAr ? 'النسبة والسطوع:' : 'Aspect Ratio & Nits:'}</span>
                     <span className="fv num">
-                      {detail?.display?.aspect_ratio || '16:9'} • {detail?.display?.brightness_nits ? `${detail.display.brightness_nits} nits` : (isAr ? 'سطوع قياسي' : 'Standard')}
+                      {detail?.display?.aspect_ratio || '-'} •{' '}
+                      {detail?.display?.brightness_nits
+                        ? `${detail.display.brightness_nits} nits`
+                        : '-'}
                     </span>
                   </div>
                   <div>
                     <span className="fl">{isAr ? 'دقة الألوان واللمس:' : 'Color Gamut & Touch:'}</span>
                     <span className="fv num">
-                      {detail?.display?.color_gamut ? detail.display.color_gamut : (isAr ? 'ألوان قياسية (Standard)' : 'Standard Gamut')} • {detail?.display?.touchscreen ? (isAr ? 'تدعم اللمس' : 'Touchscreen') : (isAr ? 'غير لمسية' : 'Non-touch')}
+                      {detail?.display?.color_gamut || '-'} •{' '}
+                      {detail?.display?.touchscreen === true
+                        ? isAr ? 'تدعم اللمس' : 'Touchscreen'
+                        : detail?.display?.touchscreen === false
+                        ? isAr ? 'غير لمسية' : 'Non-touch'
+                        : '-'}
                     </span>
                   </div>
                   {detail?.display?.hdr && (
@@ -665,17 +686,23 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                   )}
                 </div>
                 <div className="big">
-                  {detail?.power_battery?.battery_capacity_wh ? `${detail.power_battery.battery_capacity_wh}Wh` : 'Long-life'} Battery
+                  {detail?.power_battery?.battery_capacity_wh
+                    ? `${detail.power_battery.battery_capacity_wh} Wh`
+                    : '-'}
                 </div>
                 <div className="spec-fields">
                   <div>
                     <span className="fl">{isAr ? 'قدرة الشاحن الأصلي:' : 'Adapter Wattage:'}</span>
-                    <span className="fv num">{detail?.power_battery?.power_adapter_w ? `${detail.power_battery.power_adapter_w}W` : 'Fast Adapter'}</span>
+                    <span className="fv num">{detail?.power_battery?.power_adapter_w ? `${detail.power_battery.power_adapter_w}W` : '-'}</span>
                   </div>
                   <div>
                     <span className="fl">{isAr ? 'شحن تايب سي والشحن السريع:' : 'USB-C PD & Fast Charge:'}</span>
                     <span className="fv num">
-                      {detail?.power_battery?.usb_c_pd_charging ? (isAr ? 'يدعم USB-C PD' : 'USB-C PD Supported') : (isAr ? 'شاحن مخصص' : 'Dedicated Port')}
+                      {detail?.power_battery?.usb_c_pd_charging === true
+                        ? isAr ? 'يدعم USB-C PD' : 'USB-C PD Supported'
+                        : detail?.power_battery?.usb_c_pd_charging === false
+                        ? isAr ? 'منفذ مخصص' : 'Dedicated Port'
+                        : '-'}
                     </span>
                   </div>
                   {detail?.power_battery?.battery_cells && (
@@ -708,22 +735,28 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                 </div>
                 <div className="text-[var(--text-primary)] font-medium text-[13px] leading-relaxed">
                   {detail?.build_security?.has_backlit_keyboard
-                    ? isAr ? `كيبورد مضيء (${detail.build_security.keyboard_backlight_type || 'RGB'})` : `Backlit Keyboard (${detail.build_security.keyboard_backlight_type || 'RGB'})`
-                    : isAr ? 'كيبورد قياسي' : 'Standard Keyboard'}
+                    ? isAr
+                      ? `كيبورد مضيء${detail.build_security.keyboard_backlight_type ? ` (${detail.build_security.keyboard_backlight_type})` : ''}`
+                      : `Backlit Keyboard${detail.build_security.keyboard_backlight_type ? ` (${detail.build_security.keyboard_backlight_type})` : ''}`
+                    : detail?.build_security?.has_backlit_keyboard === false
+                    ? isAr ? 'كيبورد قياسي' : 'Standard Keyboard'
+                    : '-'}
                   {detail?.build_security?.has_fingerprint ? (isAr ? ' • بصمة إصبع' : ' • Fingerprint Reader') : ''}
                   {detail?.build_security?.has_copilot_key ? (isAr ? ' • زر Copilot للذكاء الاصطناعي' : ' • Copilot AI Key') : ''}
                 </div>
                 <div className="spec-fields">
                   <div>
                     <span className="fl">{isAr ? 'الوزن الصافي:' : 'Chassis Weight:'}</span>
-                    <span className="fv num">{detail?.physical?.weight_kg ? `${detail.physical.weight_kg} kg` : isAr ? 'خفيف وسهل التنقل' : 'Portable'}</span>
+                    <span className="fv num">{detail?.physical?.weight_kg ? `${detail.physical.weight_kg} kg` : '-'}</span>
                   </div>
                   <div>
                     <span className="fl">{isAr ? 'الأبعاد بالملم (عرض×عمق×سمك):' : 'Dimensions (W x D x H):'}</span>
                     <span className="fv num">
                       {detail?.physical?.width_mm && detail?.physical?.depth_mm
-                        ? `${detail.physical.width_mm} × ${detail.physical.depth_mm} × ${detail?.physical?.height_mm || 20} mm`
-                        : isAr ? 'هيكل قياسي' : 'Standard'}
+                        ? `${detail.physical.width_mm} × ${detail.physical.depth_mm}${
+                            detail.physical.height_mm ? ` × ${detail.physical.height_mm}` : ''
+                          } mm`
+                        : '-'}
                     </span>
                   </div>
                 </div>
@@ -737,11 +770,13 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                     <span>{isAr ? 'الصوت، الكاميرا والشبكات' : 'Audio, Webcam & Network'}</span>
                   </span>
                   <span className="cbadge">
-                    {detail?.connectivity_os?.wifi || 'Wi-Fi 6'}
+                    {detail?.connectivity_os?.wifi || '-'}
                   </span>
                 </div>
                 <div className="text-[var(--text-primary)] font-medium text-[13px] leading-relaxed">
-                  {detail?.audio_webcam?.webcam_resolution || '1080p FHD'} Webcam
+                  {detail?.audio_webcam?.webcam_resolution
+                    ? `${detail.audio_webcam.webcam_resolution} Webcam`
+                    : '-'}
                   {detail?.audio_webcam?.has_privacy_shutter ? (isAr ? ' • غالق خصوصية' : ' • Privacy Shutter') : ''}
                   {detail?.audio_webcam?.has_ir_camera ? (isAr ? ' • كاميرا IR Windows Hello' : ' • IR Windows Hello') : ''}
                 </div>
@@ -749,15 +784,23 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                   <div>
                     <span className="fl">{isAr ? 'نظام الصوت:' : 'Audio Speakers:'}</span>
                     <span className="fv num">
-                      {detail?.audio_webcam?.speaker_count || 2}x Stereo
+                      {detail?.audio_webcam?.speaker_count
+                        ? `${detail.audio_webcam.speaker_count}x Stereo`
+                        : '-'}
                       {detail?.audio_webcam?.audio_system ? ` (${detail.audio_webcam.audio_system})` : ''}
                     </span>
                   </div>
                   <div>
                     <span className="fl">{isAr ? 'بلوتوث ومنفذ إيثرنت:' : 'Bluetooth & Ethernet:'}</span>
                     <span className="fv num">
-                      {detail?.connectivity_os?.bluetooth || 'Bluetooth 5.3'}
-                      {detail?.connectivity_os?.has_ethernet ? ` • RJ-45 (${detail.connectivity_os.ethernet_speed || 'Gigabit'})` : ''}
+                      {detail?.connectivity_os?.bluetooth || '-'}
+                      {detail?.connectivity_os?.has_ethernet === true
+                        ? ` • RJ-45${
+                            detail.connectivity_os.ethernet_speed
+                              ? ` (${detail.connectivity_os.ethernet_speed})`
+                              : ''
+                          }`
+                        : ''}
                     </span>
                   </div>
                   {detail?.connectivity_os?.operating_system && (
@@ -835,15 +878,29 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                           {sc.icon}
                           <span>{isAr ? sc.labelAr : sc.labelEn}</span>
                         </div>
-                        <div className={`cnum num ${scoreTone(sc.score)}`}>
-                          {sc.score.toFixed(1)}
-                        </div>
-                        <div className="mini-track">
-                          <div
-                            className="mini-fill"
-                            style={{ width: `${Math.min(100, Math.max(0, sc.score))}%` }}
-                          />
-                        </div>
+                        {sc.score != null ? (
+                          <>
+                            <div className={`cnum num ${scoreTone(sc.score)}`}>
+                              {sc.score.toFixed(1)}
+                            </div>
+                            <div className="mini-track">
+                              <div
+                                className="mini-fill"
+                                style={{ width: `${Math.min(100, Math.max(0, sc.score))}%` }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="cnum num text-[var(--text-muted)]">-</div>
+                            <div className="mini-track">
+                              <div className="mini-fill" style={{ width: '0%' }} />
+                            </div>
+                            <span className="text-[10.5px] text-[var(--text-muted)]">
+                              {isAr ? 'غير مقيّم' : 'Unrated'}
+                            </span>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -865,17 +922,28 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                               {isAr ? asp.labelAr : asp.labelEn}
                             </span>
                           </span>
-                          <span className={`bval num ${scoreTone(asp.score)}`}>
-                            {asp.score.toFixed(1)}
-                            <small>/100</small>
-                          </span>
+                          {asp.score != null ? (
+                            <span className={`bval num ${scoreTone(asp.score)}`}>
+                              {asp.score.toFixed(1)}
+                              <small>/100</small>
+                            </span>
+                          ) : (
+                            <span className="bval num text-[var(--text-muted)]">
+                              -
+                            </span>
+                          )}
                         </div>
                         <div className="bar-track">
                           <span className="tick" style={{ left: '50%' }} />
                           <span className="tick" style={{ left: '80%' }} />
                           <div
                             className="bar-fill"
-                            style={{ width: `${Math.min(100, Math.max(0, asp.score))}%` }}
+                            style={{
+                              width:
+                                asp.score != null
+                                  ? `${Math.min(100, Math.max(0, asp.score))}%`
+                                  : '0%',
+                            }}
                           />
                         </div>
                       </div>
@@ -937,17 +1005,23 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               ? 'الأسعار والمواصفات محدثة وموثقة مباشرة من المتاجر'
               : 'Real-time verified pricing and specs'}
           </div>
-          <a
-            href={cheapestOfferUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-primary btn-sm"
-          >
-            <span>
-              {isAr ? `شراء من ${cheapestStore}` : `Buy from ${cheapestStore}`}
-            </span>
-            <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
-          </a>
+          {cheapestOfferUrl ? (
+            <a
+              href={cheapestOfferUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary btn-sm"
+            >
+              <span>
+                {isAr ? `شراء من ${cheapestStore}` : `Buy from ${cheapestStore}`}
+              </span>
+              <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
+            </a>
+          ) : (
+            <button type="button" disabled className="btn btn-primary btn-sm">
+              <span>{isAr ? 'رابط المتجر غير متاح' : 'Store link unavailable'}</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

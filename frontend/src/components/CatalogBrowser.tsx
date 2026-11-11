@@ -343,15 +343,17 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
 
                   <div className="cc-specs space-y-0.5">
                     <div className="line-clamp-1">
-                      <span className="k">CPU</span> {item.cpu_model}
+                      <span className="k">CPU</span> {item.cpu_model || '-'}
                     </div>
                     <div className="line-clamp-1">
-                      <span className="k">GPU</span> {item.gpu_model}
+                      <span className="k">GPU</span> {item.gpu_model || '-'}
                     </div>
                     <div className="num">
-                      <span className="k">RAM</span> {item.ram_capacity_gb}GB
+                      <span className="k">RAM</span>{' '}
+                      {item.ram_capacity_gb ? `${item.ram_capacity_gb}GB` : '-'}
                       <span className="mx-1.5 text-[var(--border-strong)]">•</span>
-                      <span className="k">SSD</span> {item.storage_capacity_gb}GB
+                      <span className="k">SSD</span>{' '}
+                      {item.storage_capacity_gb ? `${item.storage_capacity_gb}GB` : '-'}
                     </div>
                   </div>
 

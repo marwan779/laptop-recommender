@@ -17,8 +17,9 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({ response, lang }) =>
     parsed_text_prompt,
   } = response
 
-  const minPrice = applied_budget_window_egp?.[0] || 0
-  const maxPrice = applied_budget_window_egp?.[1] || 0
+  const hasWindow = !!applied_budget_window_egp && applied_budget_window_egp.length >= 2
+  const minPrice = hasWindow ? applied_budget_window_egp[0] : 0
+  const maxPrice = hasWindow ? applied_budget_window_egp[1] : 0
   const lowestAlternativePrice = results[0]?.effective_price_egp
   const hasAlternatives = results.length > 0
 
@@ -29,8 +30,12 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({ response, lang }) =>
         <div className="flex-1 min-w-0 space-y-1">
           <h3 className="sb-title">
             {isAr
-              ? `الميزانية (${maxPrice.toLocaleString()} ج.م) أقل من الحد الأدنى لفئة ${response.persona_label_ar}`
-              : `Budget (${maxPrice.toLocaleString()} EGP) is below entry level for ${response.persona_label_en}`}
+              ? hasWindow
+                ? `الميزانية (${maxPrice.toLocaleString()} ج.م) أقل من الحد الأدنى لفئة ${response.persona_label_ar}`
+                : `الميزانية أقل من الحد الأدنى لفئة ${response.persona_label_ar}`
+              : hasWindow
+              ? `Budget (${maxPrice.toLocaleString()} EGP) is below entry level for ${response.persona_label_en}`
+              : `Budget is below entry level for ${response.persona_label_en}`}
           </h3>
           <p className="sb-copy">
             {isAr
@@ -71,7 +76,11 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({ response, lang }) =>
             : `Evaluated ${total_candidates_before_floor} catalog laptops. Smart Budget Window:`}
         </span>
         <strong className="win num">
-          {minPrice.toLocaleString()} – {maxPrice.toLocaleString()} EGP
+          {hasWindow
+            ? `${minPrice.toLocaleString()} – ${maxPrice.toLocaleString()} EGP`
+            : isAr
+            ? 'نطاق الميزانية التكيفي'
+            : 'Adaptive Budget Window'}
         </strong>
       </span>
 

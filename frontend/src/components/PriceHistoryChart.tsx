@@ -212,7 +212,7 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ laptopId, 
         for (const point of series.points) {
           if (new Date(point.recorded_at).getTime() <= hoverTime) active = point
         }
-        return { series, price: active?.price_egp ?? series.current_price_egp }
+        return { series, price: active?.price_egp ?? null }
       })
     const iso = new Date(hoverTime).toISOString()
     return { iso, rows }
@@ -261,23 +261,29 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ laptopId, 
         <div className="kpi">
           <span className="micro">{isAr ? 'أفضل سعر حالي' : 'Current Best Price'}</span>
           <span className="kpi-value gold num">
-            {formatPrice(data?.current_best_price_egp ?? 0)}
-            <small> EGP</small>
+            {data?.current_best_price_egp != null
+              ? formatPrice(data.current_best_price_egp)
+              : '-'}
+            {data?.current_best_price_egp != null && <small> EGP</small>}
           </span>
         </div>
         <div className="kpi">
           <span className="micro">{isAr ? 'أقل سعر مسجل' : 'Lowest Recorded'}</span>
           <span className="kpi-value success num">
-            {formatPrice(data?.lowest_ever_price_egp ?? 0)}
-            <small> EGP</small>
+            {data?.lowest_ever_price_egp != null
+              ? formatPrice(data.lowest_ever_price_egp)
+              : '-'}
+            {data?.lowest_ever_price_egp != null && <small> EGP</small>}
           </span>
-          <span className="kpi-note mono">{data?.lowest_ever_store || '—'}</span>
+          <span className="kpi-note mono">{data?.lowest_ever_store || '-'}</span>
         </div>
         <div className="kpi">
           <span className="micro">{isAr ? 'أعلى سعر مسجل' : 'Highest Recorded'}</span>
           <span className="kpi-value secondary num">
-            {formatPrice(data?.highest_ever_price_egp ?? 0)}
-            <small> EGP</small>
+            {data?.highest_ever_price_egp != null
+              ? formatPrice(data.highest_ever_price_egp)
+              : '-'}
+            {data?.highest_ever_price_egp != null && <small> EGP</small>}
           </span>
         </div>
       </div>
@@ -429,7 +435,9 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ laptopId, 
                     style={{ background: colorFor(series.store_key) }}
                   />
                   <span className="readout-store">{series.store_name}</span>
-                  <span className="readout-price num">{formatPrice(price)} EGP</span>
+                  <span className="readout-price num">
+                    {price != null ? `${formatPrice(price)} EGP` : '-'}
+                  </span>
                 </span>
               ))}
             </div>

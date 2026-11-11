@@ -45,16 +45,16 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
   // 10 TOPSIS Hardware Benchmark Scores
   const topsis = laptop.topsis_inputs
   const topsis10Scores = [
-    { key: 'cpu', labelAr: 'قوة المعالج (CPU)', labelEn: 'CPU Benchmark', score: topsis?.cpu_score ?? 70, icon: <Cpu className="w-3 h-3" strokeWidth={1.8} /> },
-    { key: 'gpu', labelAr: 'أداء الجرافيكس (GPU)', labelEn: 'GPU 3D Power', score: topsis?.gpu_score ?? 65, icon: <Monitor className="w-3 h-3" strokeWidth={1.8} /> },
-    { key: 'display', labelAr: 'الشاشة والسرعة', labelEn: 'Display Quality', score: topsis?.display_score ?? 72, icon: <Maximize2 className="w-3 h-3" strokeWidth={1.8} /> },
-    { key: 'value', labelAr: 'القيمة مقابل السعر', labelEn: 'Value for Money', score: topsis?.value_score ?? 85, icon: <Sparkles className="w-3 h-3" strokeWidth={1.8} /> },
-    { key: 'power_therm', labelAr: 'استقرار الطاقة والتبريد', labelEn: 'Sustained Power & Thermal', score: topsis?.power_therm_score ?? 80, icon: <Zap className="w-3 h-3" strokeWidth={1.8} /> },
-    { key: 'mobility', labelAr: 'سهولة التنقل والوزن', labelEn: 'Mobility & Battery', score: topsis?.mobility_score ?? 60, icon: <Feather className="w-3 h-3" strokeWidth={1.8} /> },
-    { key: 'connectivity', labelAr: 'المنافذ والاتصال', labelEn: 'I/O & Connectivity', score: topsis?.connectivity_score ?? 75, icon: <Layers className="w-3 h-3" strokeWidth={1.8} /> },
-    { key: 'longevity', labelAr: 'عمر الشاسيه والترقية', labelEn: 'Chassis & Expansion', score: topsis?.longevity_score ?? 78, icon: <ShieldCheck className="w-3 h-3" strokeWidth={1.8} /> },
-    { key: 'ergonomics', labelAr: 'الراحة والكيبورد', labelEn: 'Ergonomics & Typing', score: topsis?.ergonomics_score ?? 74, icon: <Keyboard className="w-3 h-3" strokeWidth={1.8} /> },
-    { key: 'community_nlp', labelAr: 'رضا المستخدمين', labelEn: 'Community Sentiment', score: topsis?.community_nlp_score ?? 79, icon: <Award className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'cpu', labelAr: 'قوة المعالج (CPU)', labelEn: 'CPU Benchmark', score: topsis?.cpu_score != null ? Number(topsis.cpu_score) : null, icon: <Cpu className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'gpu', labelAr: 'أداء الجرافيكس (GPU)', labelEn: 'GPU 3D Power', score: topsis?.gpu_score != null ? Number(topsis.gpu_score) : null, icon: <Monitor className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'display', labelAr: 'الشاشة والسرعة', labelEn: 'Display Quality', score: topsis?.display_score != null ? Number(topsis.display_score) : null, icon: <Maximize2 className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'value', labelAr: 'القيمة مقابل السعر', labelEn: 'Value for Money', score: topsis?.value_score != null ? Number(topsis.value_score) : null, icon: <Sparkles className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'power_therm', labelAr: 'استقرار الطاقة والتبريد', labelEn: 'Sustained Power & Thermal', score: topsis?.power_therm_score != null ? Number(topsis.power_therm_score) : null, icon: <Zap className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'mobility', labelAr: 'سهولة التنقل والوزن', labelEn: 'Mobility & Battery', score: topsis?.mobility_score != null ? Number(topsis.mobility_score) : null, icon: <Feather className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'connectivity', labelAr: 'المنافذ والاتصال', labelEn: 'I/O & Connectivity', score: topsis?.connectivity_score != null ? Number(topsis.connectivity_score) : null, icon: <Layers className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'longevity', labelAr: 'عمر الشاسيه والترقية', labelEn: 'Chassis & Expansion', score: topsis?.longevity_score != null ? Number(topsis.longevity_score) : null, icon: <ShieldCheck className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'ergonomics', labelAr: 'الراحة والكيبورد', labelEn: 'Ergonomics & Typing', score: topsis?.ergonomics_score != null ? Number(topsis.ergonomics_score) : null, icon: <Keyboard className="w-3 h-3" strokeWidth={1.8} /> },
+    { key: 'community_nlp', labelAr: 'رضا المستخدمين', labelEn: 'Community Sentiment', score: topsis?.community_nlp_score != null ? Number(topsis.community_nlp_score) : null, icon: <Award className="w-3 h-3" strokeWidth={1.8} /> },
   ]
 
   // 5 Review Intelligence Aspects
@@ -63,35 +63,35 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
       key: 'thermals',
       labelAr: 'التبريد تحت الضغط',
       labelEn: 'Thermals Under Stress',
-      score: laptop.aspect_scores?.thermals_score || 75,
+      score: laptop.aspect_scores?.thermals_score != null ? Number(laptop.aspect_scores.thermals_score) : null,
       icon: <Thermometer className="w-3 h-3" strokeWidth={1.8} />,
     },
     {
       key: 'acoustics',
       labelAr: 'الهدوء وصوت المراوح',
       labelEn: 'Fan Acoustics',
-      score: laptop.aspect_scores?.acoustics_score || 75,
+      score: laptop.aspect_scores?.acoustics_score != null ? Number(laptop.aspect_scores.acoustics_score) : null,
       icon: <Volume2 className="w-3 h-3" strokeWidth={1.8} />,
     },
     {
       key: 'build',
       labelAr: 'متانة الشاسيه والمفصلات',
       labelEn: 'Chassis & Hinges',
-      score: laptop.aspect_scores?.build_and_hinges_score || 75,
+      score: laptop.aspect_scores?.build_and_hinges_score != null ? Number(laptop.aspect_scores.build_and_hinges_score) : null,
       icon: <ShieldCheck className="w-3 h-3" strokeWidth={1.8} />,
     },
     {
       key: 'keyboard',
       labelAr: 'استجابة الكيبورد',
       labelEn: 'Keyboard & Trackpad',
-      score: laptop.aspect_scores?.keyboard_and_trackpad_score || 75,
+      score: laptop.aspect_scores?.keyboard_and_trackpad_score != null ? Number(laptop.aspect_scores.keyboard_and_trackpad_score) : null,
       icon: <Keyboard className="w-3 h-3" strokeWidth={1.8} />,
     },
     {
       key: 'battery',
       labelAr: 'عمر البطارية الحقيقي',
       labelEn: 'Real Battery Life',
-      score: laptop.aspect_scores?.real_battery_and_reliability_score || 75,
+      score: laptop.aspect_scores?.real_battery_and_reliability_score != null ? Number(laptop.aspect_scores.real_battery_and_reliability_score) : null,
       icon: <BatteryCharging className="w-3 h-3" strokeWidth={1.8} />,
     },
   ]
@@ -212,8 +212,8 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
                 ? `${laptop.reviews_evidence_count} مراجعة موثقة`
                 : `${laptop.reviews_evidence_count} verified reviews`
               : isAr
-              ? 'تقديرات الخبراء'
-              : 'Benchmark estimate'}
+              ? 'بانتظار توفر مراجعات موثقة'
+              : 'No verified community reviews yet'}
           </span>
         </div>
 
@@ -225,12 +225,21 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
                   {asp.icon}
                   <span className="truncate">{isAr ? asp.labelAr : asp.labelEn}</span>
                 </span>
-                <span className={`bval num ${scoreTone(asp.score)}`}>{asp.score.toFixed(0)}</span>
+                {asp.score != null ? (
+                  <span className={`bval num ${scoreTone(asp.score)}`}>{asp.score.toFixed(0)}</span>
+                ) : (
+                  <span className="bval num text-[var(--text-muted)]">-</span>
+                )}
               </div>
               <div className="bar-track">
                 <div
                   className="bar-fill"
-                  style={{ width: `${Math.min(100, Math.max(0, asp.score))}%` }}
+                  style={{
+                    width:
+                      asp.score != null
+                        ? `${Math.min(100, Math.max(0, asp.score))}%`
+                        : '0%',
+                  }}
                 />
               </div>
             </div>
@@ -281,15 +290,25 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
                     {sc.icon}
                     <span>{isAr ? sc.labelAr : sc.labelEn}</span>
                   </div>
-                  <div className={`cnum num ${scoreTone(sc.score)}`}>
-                    {sc.score.toFixed(0)}
+                  <div className={`cnum num ${sc.score != null ? scoreTone(sc.score) : 'text-[var(--text-muted)]'}`}>
+                    {sc.score != null ? sc.score.toFixed(0) : '-'}
                   </div>
                   <div className="mini-track">
                     <div
                       className="mini-fill"
-                      style={{ width: `${Math.min(100, Math.max(0, sc.score))}%` }}
+                      style={{
+                        width:
+                          sc.score != null
+                            ? `${Math.min(100, Math.max(0, sc.score))}%`
+                            : '0%',
+                      }}
                     />
                   </div>
+                  {sc.score == null && (
+                    <span className="text-[10px] text-[var(--text-muted)]">
+                      {isAr ? 'غير مقيّم' : 'Unrated'}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

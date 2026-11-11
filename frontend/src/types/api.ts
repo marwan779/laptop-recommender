@@ -17,25 +17,25 @@ export type RecommendationStatus =
   | 'BUDGET_TOO_LOW_FOR_CATEGORY';     // Budget is below category entry price; returning closest alternatives
 
 export interface ReviewAspectScores {
-  thermals_score: number;                     // 0.0 - 100.0 (Cooling under stress)
-  acoustics_score: number;                    // 0.0 - 100.0 (Fan noise)
-  build_and_hinges_score: number;             // 0.0 - 100.0 (Chassis flex & hinge durability)
-  keyboard_and_trackpad_score: number;        // 0.0 - 100.0 (Key travel & trackpad precision)
-  real_battery_and_reliability_score: number; // 0.0 - 100.0 (Real battery life & longevity)
+  thermals_score: number | null;                     // 0.0 - 100.0 (Cooling under stress)
+  acoustics_score: number | null;                    // 0.0 - 100.0 (Fan noise)
+  build_and_hinges_score: number | null;             // 0.0 - 100.0 (Chassis flex & hinge durability)
+  keyboard_and_trackpad_score: number | null;        // 0.0 - 100.0 (Key travel & trackpad precision)
+  real_battery_and_reliability_score: number | null; // 0.0 - 100.0 (Real battery life & longevity)
 }
 
 export interface TopsisInputs {
-  cpu_score: number;
-  gpu_score: number;
-  power_therm_score: number;
-  display_score: number;
-  mobility_score: number;
-  longevity_score: number;
-  ergonomics_score: number;
-  connectivity_score: number;
-  community_nlp_score: number;
+  cpu_score: number | null;
+  gpu_score: number | null;
+  power_therm_score: number | null;
+  display_score: number | null;
+  mobility_score: number | null;
+  longevity_score: number | null;
+  ergonomics_score: number | null;
+  connectivity_score: number | null;
+  community_nlp_score: number | null;
   effective_price_egp: number;
-  value_score: number;
+  value_score: number | null;
   in_stock_active: boolean;
 }
 
