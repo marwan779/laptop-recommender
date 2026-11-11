@@ -1,6 +1,57 @@
-version: "3.8"
-
 services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: laptop-recommender-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - catalog-service
+      - frontend
+    networks:
+      - laptop-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: laptop-recommender-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - catalog-service
+    networks:
+      - laptop-network
+
+  catalog-service:
+    build:
+      context: ./services/catalog-service
+      dockerfile: Dockerfile
+    container_name: laptop-recommender-catalog
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVICE_NAME=catalog-service
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql+asyncpg://postgres:123321123%40Pp@host.docker.internal:5432/laptop_recommender_catalog
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_PROVIDER=s3
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - laptop-network
+
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: laptop-recommender-rabbitmq

@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     enable_price_sync_cron: bool = False
     price_sync_cron_interval_hours: int = 24
     price_sync_batch_limit: int = 50
+    price_sync_cron_mode: str = "rabbitmq"
+    price_sync_run_on_startup: bool = False
 
     # RabbitMQ Messaging Broker
     rabbitmq_url: str = "amqp://guest:guest@localhost:5672/"

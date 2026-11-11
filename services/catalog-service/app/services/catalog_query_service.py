@@ -10,14 +10,24 @@ from pathlib import Path
 import re
 from typing import Any
 
+from datetime import UTC, datetime
+
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.common.cache.provider import ICacheProvider
+from app.common.cursor import InvalidCursorError, decode_cursor, encode_cursor
 from app.common.logger import get_logger
 from app.common.review_text import align_bilingual_lists
+from app.domain.pricing import (
+    OfferCurrentState,
+    PriceHistoryDomainService,
+    RawPriceEvent,
+)
 from app.domain.recommender.explainer import build_why_recommended
 from app.models.laptop import LaptopConfiguration
 from app.repositories.laptop_repository import LaptopRepository, to_recommender_dict
+from app.repositories.price_history_repository import PriceHistoryRepository
 from app.schemas.laptop import (
     AudioWebcamSpecDetail,
     BuildSecuritySpecDetail,
@@ -30,15 +40,44 @@ from app.schemas.laptop import (
     FullLaptopDetailResponse,
     GpuSpecDetail,
     HardwareMetricsDetail,
+    LaptopPriceHistoryResponse,
     MemorySpecDetail,
+    PageInfo,
     PhysicalSpecDetail,
     PowerBatterySpecDetail,
+    PriceHistoryPointSchema,
     StorageSpecDetail,
+    StorePriceSeriesSchema,
 )
 
 logger = get_logger("catalog.services.catalog_query")
 
 FALLBACK_CATALOG_PATH = Path(__file__).resolve().parent.parent.parent / "scraping input" / "unified_catalog_latest.json"
+
+# Maps a public ``min_*_score`` query gate to its underlying score key. Aspect
+# scores live in ``community_reviews.aspect_scores``; hardware scores live in
+# ``derived_metrics.topsis_inputs`` (or the ``laptop_metrics`` table).
+_METRIC_SCORE_KEYS: dict[str, str] = {
+    "min_acoustics_score": "acoustics_score",
+    "min_thermals_score": "thermals_score",
+    "min_battery_score": "real_battery_and_reliability_score",
+    "min_build_score": "build_and_hinges_score",
+    "min_keyboard_score": "keyboard_and_trackpad_score",
+    "min_cpu_score": "cpu_score",
+    "min_gpu_score": "gpu_score",
+    "min_display_score": "display_score",
+    "min_value_score": "value_score",
+}
+
+_ASPECT_SCORE_KEYS: frozenset[str] = frozenset(
+    {
+        "acoustics_score",
+        "thermals_score",
+        "real_battery_and_reliability_score",
+        "build_and_hinges_score",
+        "keyboard_and_trackpad_score",
+    }
+)
 
 
 def _safe_int(val: Any, default: int | None = None) -> int | None:
@@ -68,9 +107,17 @@ class CatalogQueryService:
         self,
         session: AsyncSession | None = None,
         laptop_repo: LaptopRepository | None = None,
+        cache: ICacheProvider | None = None,
+        price_history_repo: PriceHistoryRepository | None = None,
+        domain_service: type[PriceHistoryDomainService] = PriceHistoryDomainService,
     ):
         self.session = session
         self.laptop_repo = laptop_repo or (LaptopRepository(session) if session is not None else None)
+        self.cache = cache
+        self.price_history_repo = price_history_repo or (
+            PriceHistoryRepository(session) if session is not None else None
+        )
+        self.domain = domain_service
         self._fallback_catalog: list[dict[str, Any]] | None = None
 
     def _load_fallback_catalog(self) -> list[dict[str, Any]]:
@@ -91,30 +138,65 @@ class CatalogQueryService:
 
     async def list_laptops(
         self,
+        search: str | None = None,
         min_price: float | None = None,
         max_price: float | None = None,
         brand: str | None = None,
         in_stock_only: bool = True,
-        offset: int = 0,
+        cursor: str | None = None,
+        direction: str = "next",
         limit: int = 20,
+        min_acoustics_score: float | None = None,
+        min_thermals_score: float | None = None,
+        min_battery_score: float | None = None,
+        min_build_score: float | None = None,
+        min_keyboard_score: float | None = None,
+        min_cpu_score: float | None = None,
+        min_gpu_score: float | None = None,
+        min_display_score: float | None = None,
+        min_value_score: float | None = None,
     ) -> CatalogListResponse:
         """Return a paginated catalog browse page with review intelligence."""
+        metric_filters = {
+            "min_acoustics_score": min_acoustics_score,
+            "min_thermals_score": min_thermals_score,
+            "min_battery_score": min_battery_score,
+            "min_build_score": min_build_score,
+            "min_keyboard_score": min_keyboard_score,
+            "min_cpu_score": min_cpu_score,
+            "min_gpu_score": min_gpu_score,
+            "min_display_score": min_display_score,
+            "min_value_score": min_value_score,
+        }
+
         if self.laptop_repo is not None:
             try:
-                laptops, total = await self.laptop_repo.list_and_count_configurations(
+                page = await self.laptop_repo.list_and_count_configurations(
+                    search=search,
                     min_price=min_price,
                     max_price=max_price,
                     brand=brand,
                     in_stock_only=in_stock_only,
-                    offset=offset,
+                    cursor=cursor,
+                    direction=direction,
                     limit=limit,
+                    **metric_filters,
                 )
                 return CatalogListResponse(
-                    total=total,
-                    offset=offset,
+                    total=page.total,
                     limit=limit,
-                    items=[self._orm_to_list_item(laptop) for laptop in laptops],
+                    page_info=PageInfo(
+                        has_next_page=page.has_next_page,
+                        has_previous_page=page.has_previous_page,
+                        start_cursor=page.start_cursor,
+                        end_cursor=page.end_cursor,
+                    ),
+                    items=[self._orm_to_list_item(laptop) for laptop in page.items],
                 )
+            except InvalidCursorError:
+                # A malformed cursor must surface as HTTP 400, never silently
+                # fall back to a different dataset.
+                raise
             except Exception as exc:
                 logger.warning(
                     "Database catalog listing failed (%s); serving fallback catalog JSON.",
@@ -122,28 +204,49 @@ class CatalogQueryService:
                 )
 
         return self._list_from_fallback(
+            search=search,
             min_price=min_price,
             max_price=max_price,
             brand=brand,
             in_stock_only=in_stock_only,
-            offset=offset,
+            cursor=cursor,
+            direction=direction,
             limit=limit,
+            metric_filters=metric_filters,
         )
 
     def _list_from_fallback(
         self,
+        search: str | None,
         min_price: float | None,
         max_price: float | None,
         brand: str | None,
         in_stock_only: bool,
-        offset: int,
+        cursor: str | None,
+        direction: str,
         limit: int,
+        metric_filters: dict[str, float | None] | None = None,
     ) -> CatalogListResponse:
-        """Filter and paginate the offline JSON catalog."""
+        """Filter and keyset-paginate the offline JSON catalog."""
         brand_key = brand.lower().strip() if brand else None
+        search_key = search.lower().strip() if search and search.strip() else None
+        active_metric_filters = {
+            key: threshold
+            for key, threshold in (metric_filters or {}).items()
+            if threshold is not None
+        }
         filtered: list[dict[str, Any]] = []
 
         for lap in self._load_fallback_catalog():
+            if search_key and not (
+                search_key in str(lap.get("title") or "").lower()
+                or search_key in str(lap.get("laptop_model") or "").lower()
+                or search_key in str(lap.get("laptop_family") or "").lower()
+                or search_key in str(lap.get("mpn") or "").lower()
+                or search_key in str(lap.get("canonical_id") or "").lower()
+                or search_key in str(lap.get("brand") or "").lower()
+            ):
+                continue
             price = float(lap.get("min_price_egp") or 0.0)
             if min_price is not None and price < min_price:
                 continue
@@ -151,23 +254,104 @@ class CatalogQueryService:
                 continue
             if brand_key and str(lap.get("brand") or "").lower().strip() != brand_key:
                 continue
-            if in_stock_only and not self._dict_in_stock(lap):
+            if in_stock_only and (not self._dict_in_stock(lap) or price <= 0):
+                continue
+            if active_metric_filters and not self._dict_passes_metric_filters(
+                lap, active_metric_filters
+            ):
                 continue
             filtered.append(lap)
 
-        filtered.sort(
-            key=lambda lap: (
-                float(lap.get("min_price_egp") or 0.0),
-                str(lap.get("title") or ""),
-            )
-        )
-        page = filtered[offset : offset + limit]
+        if direction not in ("next", "prev"):
+            raise ValueError("direction must be 'next' or 'prev'.")
+
+        filtered.sort(key=self._fallback_sort_key)
+
+        if cursor is None:
+            page = filtered[:limit]
+            has_next_page = len(filtered) > limit
+            has_previous_page = False
+        else:
+            boundary = decode_cursor(cursor)
+            boundary_key = (boundary.price, boundary.item_id)
+
+            if direction == "next":
+                candidates = [
+                    lap for lap in filtered if self._fallback_sort_key(lap) > boundary_key
+                ]
+                page = candidates[:limit]
+                has_next_page = len(candidates) > limit
+                has_previous_page = bool(page)
+            else:
+                candidates = [
+                    lap for lap in filtered if self._fallback_sort_key(lap) < boundary_key
+                ]
+                has_previous_page = len(candidates) > limit
+                # Keep the nearest preceding window, preserving ascending order.
+                page = candidates[-limit:] if len(candidates) > limit else candidates
+                has_next_page = bool(page)
+
         return CatalogListResponse(
             total=len(filtered),
-            offset=offset,
             limit=limit,
+            page_info=PageInfo(
+                has_next_page=has_next_page,
+                has_previous_page=has_previous_page,
+                start_cursor=(
+                    encode_cursor(*self._fallback_sort_key(page[0])) if page else None
+                ),
+                end_cursor=(
+                    encode_cursor(*self._fallback_sort_key(page[-1])) if page else None
+                ),
+            ),
             items=[self._dict_to_list_item(lap) for lap in page],
         )
+
+    @staticmethod
+    def _fallback_item_id(lap: dict[str, Any]) -> str:
+        """Return the deterministic fallback row identifier (UUID or canonical)."""
+        return str(lap.get("id") or lap.get("canonical_id") or "")
+
+    @classmethod
+    def _fallback_sort_key(cls, lap: dict[str, Any]) -> tuple[float, str]:
+        """Composite ``(price, id)`` key matching the database keyset order."""
+        return (float(lap.get("min_price_egp") or 0.0), cls._fallback_item_id(lap))
+
+    @staticmethod
+    def _dict_metric_scores(lap: dict[str, Any]) -> dict[str, float]:
+        """Extract the 9 filterable metric scores from a raw catalog dict."""
+        derived = lap.get("derived_metrics") or {}
+        topsis = derived.get("topsis_inputs") or {}
+        reviews = derived.get("community_reviews") or lap.get("community_reviews") or {}
+        aspects = (reviews.get("aspect_scores") or {}) if isinstance(reviews, dict) else {}
+        if not isinstance(aspects, dict):
+            aspects = {}
+
+        scores: dict[str, float] = {}
+        for key in _METRIC_SCORE_KEYS.values():
+            raw = aspects.get(key) if key in _ASPECT_SCORE_KEYS else topsis.get(key)
+            if isinstance(raw, (int, float)) and not isinstance(raw, bool):
+                scores[key] = float(raw)
+        return scores
+
+    @classmethod
+    def _dict_passes_metric_filters(
+        cls,
+        lap: dict[str, Any],
+        metric_filters: dict[str, float | None],
+    ) -> bool:
+        """Return True when a raw catalog dict satisfies every active metric gate."""
+        scores = cls._dict_metric_scores(lap)
+        for filter_key, threshold in metric_filters.items():
+            if threshold is None:
+                continue
+            score_key = _METRIC_SCORE_KEYS.get(filter_key)
+            if score_key is None:
+                continue
+            score = scores.get(score_key)
+            if score is None or score < threshold:
+                return False
+        return True
 
     @staticmethod
     def _dict_in_stock(lap: dict[str, Any]) -> bool:
@@ -215,7 +399,22 @@ class CatalogQueryService:
             pros_en=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[0],
             cons_ar=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[1],
             cons_en=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[0],
+            metric_scores=CatalogQueryService._orm_metric_scores(laptop),
         )
+
+    @staticmethod
+    def _orm_metric_scores(laptop: LaptopConfiguration) -> dict[str, float]:
+        """Extract the 9 filterable metric scores from a persisted laptop row."""
+        metrics = laptop.metrics
+        if metrics is None:
+            return {}
+
+        scores: dict[str, float] = {}
+        for key in _METRIC_SCORE_KEYS.values():
+            raw = getattr(metrics, key, None)
+            if raw is not None:
+                scores[key] = float(raw)
+        return scores
 
     @staticmethod
     def _dict_to_list_item(lap: dict[str, Any]) -> CatalogListItemResponse:
@@ -261,6 +460,7 @@ class CatalogQueryService:
             pros_en=align_bilingual_lists(reviews.get("pros_en"), reviews.get("pros_ar"))[0],
             cons_ar=align_bilingual_lists(reviews.get("cons_en"), reviews.get("cons_ar"))[1],
             cons_en=align_bilingual_lists(reviews.get("cons_en"), reviews.get("cons_ar"))[0],
+            metric_scores=CatalogQueryService._dict_metric_scores(lap),
         )
 
     async def get_laptop_detail(self, identifier: str) -> FullLaptopDetailResponse:
@@ -299,6 +499,231 @@ class CatalogQueryService:
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Laptop '{clean_id}' was not found in the catalog.",
         )
+
+    async def get_laptop_price_history(
+        self,
+        laptop_id: str,
+        days: int | None = None,
+    ) -> LaptopPriceHistoryResponse:
+        """Return multi-store price step series and extrema for one canonical laptop.
+
+        Resolution accepts a database UUID, canonical_id, or MPN (matching
+        ``get_laptop_detail``). Caching is handled transparently by
+        ResponseCacheMiddleware at the API boundary.
+        """
+        clean_id = (laptop_id or "").strip()
+        if not clean_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Laptop identifier cannot be empty.",
+            )
+
+        # 1. Resolve from database via repository.
+        if self.laptop_repo is not None:
+            try:
+                laptop = await self.laptop_repo.get_by_identifier(clean_id)
+                if laptop is not None:
+                    return await self._orm_to_price_history(laptop, days)
+            except Exception as exc:
+                logger.warning(
+                    "Database price-history lookup for '%s' failed (%s); checking fallback catalog.",
+                    clean_id,
+                    exc,
+                )
+
+        # 2. Fallback: offline JSON catalog.
+        lower_id = clean_id.lower()
+        for lap in self._load_fallback_catalog():
+            identifiers = {
+                str(lap.get("canonical_id") or "").lower(),
+                str(lap.get("mpn") or "").lower(),
+                str(lap.get("id") or "").lower(),
+            }
+            if lower_id in identifiers:
+                return self._dict_to_price_history(lap, days)
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Laptop '{clean_id}' was not found in the catalog.",
+        )
+
+    async def _orm_to_price_history(
+        self,
+        laptop: LaptopConfiguration,
+        days: int | None,
+    ) -> LaptopPriceHistoryResponse:
+        """Build the response from persisted offers plus recorded history rows."""
+        cheapest_store_key = str(laptop.cheapest_store or "").lower().strip()
+
+        events: list[RawPriceEvent] = []
+        if self.price_history_repo is not None:
+            history_rows = await self.price_history_repo.get_by_laptop_id(laptop.id)
+            events = [
+                RawPriceEvent(
+                    offer_id=str(row.offer_id),
+                    store_key=row.store_key,
+                    price_egp=float(row.price_egp),
+                    in_stock=bool(row.in_stock),
+                    recorded_at=row.recorded_at,
+                )
+                for row in history_rows
+            ]
+
+        offer_states: list[OfferCurrentState] = []
+        for offer in laptop.offers or []:
+            store_key = (offer.store_key or "generic").lower().strip()
+            price = float(offer.price_egp) if offer.price_egp is not None else 0.0
+            # Skip scrape artifacts and unpriced offers so the chart stays trustworthy.
+            if price < self.domain.MIN_TRUSTWORTHY_PRICE_EGP:
+                continue
+            offer_states.append(
+                OfferCurrentState(
+                    offer_id=str(offer.id),
+                    store_key=store_key,
+                    store_name=offer.store_name or store_key.capitalize(),
+                    product_url=offer.product_url or "",
+                    price_egp=price,
+                    previous_price_egp=(
+                        float(offer.previous_price_egp) if offer.previous_price_egp else None
+                    ),
+                    in_stock=bool(offer.in_stock),
+                    is_cheapest=store_key == cheapest_store_key,
+                    created_at=offer.created_at,
+                    price_updated_at=offer.price_updated_at or offer.created_at,
+                    last_checked_at=offer.last_checked_at or offer.price_updated_at or offer.created_at,
+                )
+            )
+
+        return self._serialize_price_history(
+            laptop_id=str(laptop.id),
+            canonical_id=laptop.canonical_id,
+            events=events,
+            offers=offer_states,
+            days=days,
+        )
+
+    def _dict_to_price_history(
+        self,
+        lap: dict[str, Any],
+        days: int | None,
+    ) -> LaptopPriceHistoryResponse:
+        """Synthesize a price history response from the offline catalog JSON."""
+        cheapest_store_key = str(lap.get("cheapest_store") or "").lower().strip()
+        offer_states: list[OfferCurrentState] = []
+        now = self._domain_reference_now()
+
+        for idx, off in enumerate(lap.get("offers") or []):
+            store_key = str(off.get("store_key") or "generic").lower().strip()
+            price = float(off.get("price_egp") or 0.0)
+            if price <= 0:
+                continue
+            created_at = self._parse_optional_datetime(off.get("created_at")) or now
+            updated_at = (
+                self._parse_optional_datetime(off.get("price_updated_at"))
+                or self._parse_optional_datetime(off.get("scraped_at"))
+                or created_at
+            )
+            offer_states.append(
+                OfferCurrentState(
+                    offer_id=str(off.get("id") or f"{store_key}-{idx}"),
+                    store_key=store_key,
+                    store_name=str(off.get("store_name") or store_key.capitalize()),
+                    product_url=str(off.get("product_url") or ""),
+                    price_egp=price,
+                    previous_price_egp=(
+                        float(off["previous_price_egp"]) if off.get("previous_price_egp") else None
+                    ),
+                    in_stock=bool(off.get("in_stock", True)),
+                    is_cheapest=store_key == cheapest_store_key,
+                    created_at=created_at,
+                    price_updated_at=updated_at,
+                    last_checked_at=(
+                        self._parse_optional_datetime(off.get("last_checked_at"))
+                        or updated_at
+                    ),
+                )
+            )
+
+        canonical_id = str(lap.get("canonical_id") or "unknown")
+        return self._serialize_price_history(
+            laptop_id=str(lap.get("id") or canonical_id),
+            canonical_id=canonical_id,
+            events=[],
+            offers=offer_states,
+            days=days,
+        )
+
+    def _serialize_price_history(
+        self,
+        laptop_id: str,
+        canonical_id: str,
+        events: list[RawPriceEvent],
+        offers: list[OfferCurrentState],
+        days: int | None,
+    ) -> LaptopPriceHistoryResponse:
+        """Run the pure domain calculation and map it onto the API schema."""
+        calculation = self.domain.build_laptop_price_history(
+            laptop_id=laptop_id,
+            canonical_id=canonical_id,
+            events=events,
+            offers=offers,
+            days=days,
+            now=self._domain_reference_now(),
+        )
+
+        return LaptopPriceHistoryResponse(
+            laptop_id=calculation.laptop_id,
+            canonical_id=calculation.canonical_id,
+            currency="EGP",
+            days_window=days,
+            lowest_ever_price_egp=calculation.lowest_ever_price_egp,
+            lowest_ever_store=calculation.lowest_ever_store,
+            highest_ever_price_egp=calculation.highest_ever_price_egp,
+            current_best_price_egp=calculation.current_best_price_egp,
+            series=[
+                StorePriceSeriesSchema(
+                    offer_id=series.offer_id,
+                    store_key=series.store_key,
+                    store_name=series.store_name,
+                    product_url=series.product_url,
+                    current_price_egp=series.current_price_egp,
+                    in_stock=series.in_stock,
+                    is_cheapest=series.is_cheapest,
+                    min_price_egp=series.min_price_egp,
+                    max_price_egp=series.max_price_egp,
+                    price_change_egp=series.price_change_egp,
+                    price_change_pct=series.price_change_pct,
+                    points=[
+                        PriceHistoryPointSchema(
+                            recorded_at=point.recorded_at,
+                            price_egp=point.price_egp,
+                            in_stock=point.in_stock,
+                            is_live_edge=point.is_live_edge,
+                        )
+                        for point in series.points
+                    ],
+                )
+                for series in calculation.series
+            ],
+        )
+
+    @staticmethod
+    def _domain_reference_now() -> datetime:
+        """Return a timezone-aware reference timestamp for chart windowing."""
+        return datetime.now(UTC)
+
+    @staticmethod
+    def _parse_optional_datetime(raw: Any) -> datetime | None:
+        """Parse an ISO datetime string from the fallback JSON catalog."""
+        if not raw:
+            return None
+        if isinstance(raw, datetime):
+            return raw
+        try:
+            return datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            return None
+
 
     def _orm_to_full_detail(self, laptop: LaptopConfiguration) -> FullLaptopDetailResponse:
         """Convert a LaptopConfiguration ORM instance to FullLaptopDetailResponse."""

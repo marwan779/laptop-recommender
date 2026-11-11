@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
-from app.models.offer import LaptopOffer
+from app.models.offer import LaptopOffer, OfferPriceHistory
 from app.repositories.seeder import CatalogSeederRepository, SeederSummary
 
 
@@ -287,6 +287,19 @@ async def test_seeder_upsert_existing_laptop_and_price_history(db_session: Async
     comp_offer = next(o for o in laptop.offers if o.store_key == "compumarts")
     assert float(comp_offer.previous_price_egp) == 70000.0
     assert float(comp_offer.price_egp) == 64000.0
+
+    # Verify the price change was appended to the history event log.
+    history_stmt = (
+        select(OfferPriceHistory)
+        .where(OfferPriceHistory.laptop_configuration_id == laptop.id)
+        .order_by(OfferPriceHistory.recorded_at.asc())
+    )
+    history_rows = (await db_session.execute(history_stmt)).scalars().all()
+    prices = [float(row.price_egp) for row in history_rows]
+    # Initial seed writes one point per offer (2), then the 2 changed offers append.
+    assert len(history_rows) == 4
+    assert 64000.0 in prices
+    assert all(row.laptop_configuration_id == laptop.id for row in history_rows)
 
 
 @pytest.mark.asyncio

@@ -82,13 +82,36 @@ class CatalogListItemResponse(BaseModel):
     cons_ar: list[str] = Field(default_factory=list)
     cons_en: list[str] = Field(default_factory=list)
 
+    metric_scores: dict[str, float] = Field(
+        default_factory=dict,
+        description=(
+            "Optional 0-100 metric scores used by real-world/performance filters "
+            "(acoustics, thermals, battery, build, keyboard, cpu, gpu, display)."
+        ),
+    )
+
+
+class PageInfo(BaseModel):
+    """Cursor (keyset) pagination metadata for one catalog slice."""
+
+    has_next_page: bool = False
+    has_previous_page: bool = False
+    start_cursor: str | None = Field(
+        default=None,
+        description="Opaque cursor pointing at the first item of this slice.",
+    )
+    end_cursor: str | None = Field(
+        default=None,
+        description="Opaque cursor pointing at the last item of this slice.",
+    )
+
 
 class CatalogListResponse(BaseModel):
-    """Paginated catalog browse response."""
+    """Cursor-paginated catalog browse response."""
 
     total: int
-    offset: int
     limit: int
+    page_info: PageInfo
     items: list[CatalogListItemResponse] = Field(default_factory=list)
 
 
@@ -325,3 +348,48 @@ class FullLaptopDetailResponse(BaseModel):
     # Human-Grade Explainable Badges
     why_recommended_ar: list[str] = Field(default_factory=list)
     why_recommended_en: list[str] = Field(default_factory=list)
+
+
+# =============================================================================
+# Multi-Store Price History (Time-Series Telemetry)
+# =============================================================================
+
+
+class PriceHistoryPointSchema(BaseModel):
+    """One vertex of a store's piecewise-constant price step function."""
+
+    recorded_at: datetime
+    price_egp: float
+    in_stock: bool
+    is_live_edge: bool = False
+
+
+class StorePriceSeriesSchema(BaseModel):
+    """Plotted price curve plus statistics for a single store offer."""
+
+    offer_id: str
+    store_key: str
+    store_name: str
+    product_url: str
+    current_price_egp: float
+    in_stock: bool
+    is_cheapest: bool
+    min_price_egp: float
+    max_price_egp: float
+    price_change_egp: float
+    price_change_pct: float
+    points: list[PriceHistoryPointSchema] = Field(default_factory=list)
+
+
+class LaptopPriceHistoryResponse(BaseModel):
+    """All store price curves and cross-store extrema for one canonical laptop."""
+
+    laptop_id: str
+    canonical_id: str
+    currency: str = "EGP"
+    days_window: int | None = None
+    lowest_ever_price_egp: float
+    lowest_ever_store: str
+    highest_ever_price_egp: float
+    current_best_price_egp: float
+    series: list[StorePriceSeriesSchema] = Field(default_factory=list)

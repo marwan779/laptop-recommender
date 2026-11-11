@@ -21,7 +21,7 @@ from app.common.review_text import align_bilingual_lists
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
-from app.models.offer import LaptopOffer
+from app.models.offer import LaptopOffer, OfferPriceHistory
 from app.repositories.base import BaseRepository
 
 logger = logging.getLogger("catalog.repositories.seeder")
@@ -135,6 +135,10 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         updated_metrics_count = 0
 
         now = utcnow()
+
+        # Deferred history writes: offers must be flushed (IDs assigned and FK
+        # rows persisted) before their observations can be inserted.
+        pending_history: list[tuple[LaptopOffer, datetime]] = []
 
         # Step 1: Collect canonical IDs and MPNs for batch lookup
         canonical_ids: list[str] = []
@@ -274,8 +278,14 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 )
 
                 if matched_offer is not None:
+                    old_price = float(matched_offer.price_egp) if matched_offer.price_egp is not None else None
+                    old_stock = bool(matched_offer.in_stock)
                     self._populate_offer_fields(matched_offer, off_dict, target_laptop.id, now)
                     updated_offers_count += 1
+
+                    new_price = float(matched_offer.price_egp) if matched_offer.price_egp is not None else 0.0
+                    if self._is_meaningful_offer_change(old_price, new_price, old_stock, bool(matched_offer.in_stock)):
+                        pending_history.append((matched_offer, now))
                 else:
                     new_offer = LaptopOffer(
                         id=uuid.uuid4(),
@@ -292,6 +302,9 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                         existing_offers_by_url[prod_u] = new_offer
                     created_offers_count += 1
 
+                    # Seed the initial history point for this newly discovered offer.
+                    pending_history.append((new_offer, new_offer.scraped_at or now))
+
             # Step 5: Upsert metrics
             metrics_data = item.get("derived_metrics") or item.get("hardware_metrics")
             if metrics_data and isinstance(metrics_data, dict):
@@ -306,6 +319,13 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                     created_metrics_count += 1
 
         await self.session.flush()
+
+        # Step 6: Persist deferred price-history observations now that every
+        # offer row exists in the database.
+        for offer, recorded_at in pending_history:
+            self._stage_offer_history(offer, recorded_at)
+        if pending_history:
+            await self.session.flush()
 
         summary = SeederSummary(
             total_laptops_processed=total_processed,
@@ -329,6 +349,36 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         )
 
         return summary
+
+    @staticmethod
+    def _is_meaningful_offer_change(
+        old_price: float | None,
+        new_price: float,
+        old_in_stock: bool,
+        new_in_stock: bool,
+    ) -> bool:
+        """Return True when a price/stock change is worth persisting to history."""
+        if old_price is None:
+            return new_price > 0
+        price_changed = abs(float(old_price) - float(new_price)) >= 1.0
+        stock_changed = old_in_stock != new_in_stock
+        return price_changed or stock_changed
+
+    def _stage_offer_history(self, offer: LaptopOffer, recorded_at: datetime) -> None:
+        """Stage one price observation for an offer in the current transaction."""
+        if offer.price_egp is None or float(offer.price_egp) <= 0:
+            return
+
+        entry = OfferPriceHistory(
+            id=uuid.uuid4(),
+            offer_id=offer.id,
+            laptop_configuration_id=offer.laptop_configuration_id,
+            store_key=(offer.store_key or "generic").lower().strip(),
+            price_egp=float(offer.price_egp),
+            in_stock=bool(offer.in_stock),
+            recorded_at=recorded_at,
+        )
+        self.session.add(entry)
 
     def _populate_laptop_fields(
         self,

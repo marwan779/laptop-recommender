@@ -35,6 +35,48 @@ logger = get_logger("catalog.services.recommendation")
 
 FALLBACK_CATALOG_PATH = Path(__file__).resolve().parent.parent.parent / "scraping input" / "unified_catalog_latest.json"
 
+# Maps optional recommendation request metric gates to their score location:
+# ``(source_container, score_key)``.
+_METRIC_FILTER_SOURCES: dict[str, tuple[str, str]] = {
+    "min_acoustics_score": ("aspect_scores", "acoustics_score"),
+    "min_thermals_score": ("aspect_scores", "thermals_score"),
+    "min_battery_score": ("aspect_scores", "real_battery_and_reliability_score"),
+    "min_build_score": ("aspect_scores", "build_and_hinges_score"),
+    "min_keyboard_score": ("aspect_scores", "keyboard_and_trackpad_score"),
+    "min_cpu_score": ("topsis_inputs", "cpu_score"),
+    "min_gpu_score": ("topsis_inputs", "gpu_score"),
+    "min_display_score": ("topsis_inputs", "display_score"),
+    "min_value_score": ("topsis_inputs", "value_score"),
+}
+
+
+def _metric_score(lap: dict[str, Any], source: str, key: str) -> float | None:
+    """Read one metric score from a recommender dict without raising on gaps."""
+    derived = lap.get("derived_metrics") or {}
+    if source == "aspect_scores":
+        container = (derived.get("community_reviews") or {}).get("aspect_scores") or derived.get("aspect_scores")
+    else:
+        container = derived.get(source)
+    if not isinstance(container, dict):
+        return None
+
+    raw = container.get(key)
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        return None
+    return float(raw)
+
+
+def _passes_request_metric_filters(lap: dict[str, Any], request: RecommendationRequest) -> bool:
+    """Return True when a candidate satisfies every optional metric gate."""
+    for filter_name, (source, key) in _METRIC_FILTER_SOURCES.items():
+        threshold = getattr(request, filter_name, None)
+        if threshold is None:
+            continue
+        score = _metric_score(lap, source, key)
+        if score is None or score < threshold:
+            return False
+    return True
+
 
 def _normalize_catalog_dict(lap: dict[str, Any]) -> dict[str, Any]:
     """Ensure raw catalog dictionary has complete urls_by_store, cheapest_offer_url, and offers."""
@@ -154,6 +196,13 @@ class RecommendationService:
         # Graceful fallback to file if database has no rows (e.g. testing)
         if not candidate_dicts:
             candidate_dicts = self._load_fallback_catalog()
+
+        # Optional real-world experience / hardware metric gates are applied
+        # before TOPSIS normalization so the decision matrix only contains
+        # candidates that satisfy every requested minimum.
+        candidate_dicts = [
+            lap for lap in candidate_dicts if _passes_request_metric_filters(lap, request)
+        ]
 
         # Resolve primary persona
         primary_persona = request.persona or (request.personas[0] if request.personas else PersonaType.BALANCED)

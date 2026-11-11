@@ -1,10 +1,11 @@
 import uuid
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
-from app.models.offer import LaptopOffer
+from app.models.offer import LaptopOffer, OfferPriceHistory
 from app.models.scraping import ScrapingBatchLog
 from app.schemas.price_sync import (
     PriceChangeType,
@@ -193,6 +194,18 @@ async def test_apply_batch_results_price_drop_and_metrics_recalibration(db_sessi
     assert log is not None
     assert log.trigger_type == "PRICE_MONITOR"
     assert log.status == "SUCCESS"
+
+    # Verify the price change was appended to the offer price history log.
+    history_stmt = (
+        select(OfferPriceHistory)
+        .where(OfferPriceHistory.offer_id == offer_id)
+        .order_by(OfferPriceHistory.recorded_at.asc())
+    )
+    history_rows = (await db_session.execute(history_stmt)).scalars().all()
+    assert len(history_rows) == 1
+    assert float(history_rows[0].price_egp) == 72000.0
+    assert history_rows[0].store_key == "compumarts"
+    assert history_rows[0].laptop_configuration_id == laptop_id
 
 
 @pytest.mark.asyncio

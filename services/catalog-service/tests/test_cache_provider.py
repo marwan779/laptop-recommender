@@ -266,3 +266,40 @@ async def test_middleware_does_not_cache_404_or_422_errors(db_session: AsyncSess
 
     app.dependency_overrides.clear()
     app.state.cache = None
+
+
+@pytest.mark.asyncio
+async def test_middleware_caches_get_laptop_price_history(db_session: AsyncSession):
+    """GET /api/v1/laptops/{id}/price-history returns MISS on 1st call and HIT on 2nd identical call."""
+
+    async def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    app.state.cache = InMemoryCacheProvider(default_ttl_seconds=300)
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1st request -> MISS
+        r1 = await client.get("/api/v1/laptops/laptop_msi_prestige_9s713q222261/price-history?days=90")
+        assert r1.status_code == 200
+        assert r1.headers.get("X-Cache") == "MISS"
+        assert "X-Cache-Key" in r1.headers
+        assert r1.headers["X-Cache-Key"].startswith("catalog:price_history:")
+        key_1 = r1.headers["X-Cache-Key"]
+
+        # 2nd identical request -> HIT
+        r2 = await client.get("/api/v1/laptops/laptop_msi_prestige_9s713q222261/price-history?days=90")
+        assert r2.status_code == 200
+        assert r2.headers.get("X-Cache") == "HIT"
+        assert r2.headers.get("X-Cache-Key") == key_1
+        assert r2.json() == r1.json()
+
+        # Query with different days -> MISS (distinct cache key)
+        r3 = await client.get("/api/v1/laptops/laptop_msi_prestige_9s713q222261/price-history?days=30")
+        assert r3.status_code == 200
+        assert r3.headers.get("X-Cache") == "MISS"
+        assert r3.headers["X-Cache-Key"] != key_1
+
+    app.dependency_overrides.clear()
+    app.state.cache = None

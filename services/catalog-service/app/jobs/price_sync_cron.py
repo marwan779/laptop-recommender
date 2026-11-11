@@ -72,6 +72,39 @@ class PriceSyncCronJob:
         )
         return message_ids
 
+    async def dispatch_once(
+        self,
+        store_key: str | None = None,
+        limit: int | None = None,
+        session: AsyncSession | None = None,
+    ) -> list[str]:
+        """Generate batches and dispatch them asynchronously via the Transactional Outbox."""
+        if limit is not None and limit <= 0:
+            batch_limit = None
+        elif limit is not None:
+            batch_limit = limit
+        else:
+            batch_limit = settings.price_sync_batch_limit
+
+        async def _dispatch(sess: AsyncSession) -> list[str]:
+            batches = await self.service.build_price_check_batches(
+                session=sess,
+                store_key=store_key,
+                limit=batch_limit,
+            )
+            if not batches:
+                logger.info("No stale offers requiring price synchronization at this time.")
+                return []
+            msg_ids = await self.dispatch_batches_via_outbox(session=sess, batches=batches)
+            await sess.commit()
+            return msg_ids
+
+        if session is not None:
+            return await _dispatch(session)
+        else:
+            async with AsyncSessionLocal() as sess:
+                return await _dispatch(sess)
+
     async def run_once(
         self,
         store_key: str | None = None,
@@ -80,11 +113,17 @@ class PriceSyncCronJob:
         http_client: Any | None = None,
     ) -> list[PriceSyncSummary]:
         """Execute a single price monitoring cycle across stale store offers."""
-        batch_limit = limit or settings.price_sync_batch_limit
+        if limit is not None and limit <= 0:
+            batch_limit = None
+        elif limit is not None:
+            batch_limit = limit
+        else:
+            batch_limit = settings.price_sync_batch_limit
+
         logger.info(
-            "Executing price sync cron cycle: store_key=%s, batch_limit=%d",
+            "Executing price sync cron cycle: store_key=%s, batch_limit=%s",
             store_key,
-            batch_limit,
+            batch_limit if batch_limit is not None else "UNLIMITED",
         )
 
         async def _execute_with_session(sess: AsyncSession) -> list[PriceSyncSummary]:
@@ -104,10 +143,11 @@ class PriceSyncCronJob:
             for batch in batches:
                 try:
                     payload = batch.model_dump(mode="json")
+                    timeout_val = max(180.0, len(batch.items) * 3.0)
                     if http_client:
-                        resp = await http_client.post(endpoint, json=payload, timeout=30.0)
+                        resp = await http_client.post(endpoint, json=payload)
                     else:
-                        async with httpx.AsyncClient(timeout=30.0) as client:
+                        async with httpx.AsyncClient(timeout=timeout_val) as client:
                             resp = await client.post(endpoint, json=payload)
 
                     if resp.status_code == 200:
@@ -148,23 +188,40 @@ class PriceSyncCronJob:
             async with AsyncSessionLocal() as sess:
                 return await _execute_with_session(sess)
 
+    async def _trigger_cycle(self, mode: str) -> None:
+        """Execute a single scheduler loop cycle using configured transport mode."""
+        try:
+            if mode in ("rabbitmq", "outbox"):
+                await self.dispatch_once()
+            else:
+                await self.run_once()
+        except Exception as exc:
+            logger.error("Error occurred in price sync cron cycle: %s", exc, exc_info=True)
+
     async def _scheduler_loop(self) -> None:
         """Periodic background execution loop."""
         interval_seconds = max(60, settings.price_sync_cron_interval_hours * 3600)
+        mode = getattr(settings, "price_sync_cron_mode", "rabbitmq").lower()
+        run_on_startup = getattr(settings, "price_sync_run_on_startup", False)
+
         logger.info(
-            "Starting price sync cron scheduler loop (interval: %d hours / %d seconds)",
+            "Starting price sync cron scheduler loop (mode: %s, interval: %d hours / %d seconds)",
+            mode,
             settings.price_sync_cron_interval_hours,
             interval_seconds,
         )
 
         self._is_running = True
         try:
+            if run_on_startup:
+                # Grace period allowing messaging broker and pools to settle
+                await asyncio.sleep(5)
+                logger.info("Executing startup price sync cron pass...")
+                await self._trigger_cycle(mode)
+
             while self._is_running:
                 await asyncio.sleep(interval_seconds)
-                try:
-                    await self.run_once()
-                except Exception as exc:
-                    logger.error("Error occurred in price sync cron loop: %s", exc, exc_info=True)
+                await self._trigger_cycle(mode)
         except asyncio.CancelledError:
             logger.info("Price sync cron scheduler loop received cancellation signal. Stopping.")
         finally:
