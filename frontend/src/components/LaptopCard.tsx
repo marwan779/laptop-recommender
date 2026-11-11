@@ -30,6 +30,40 @@ interface LaptopCardProps {
   onSelect: (laptop: RankedLaptop) => void
 }
 
+export function formatCardTitle(
+  brand?: string | null,
+  family?: string | null,
+  model?: string | null,
+): string {
+  const b = (brand || '').trim()
+  let f = (family || '').trim()
+  let m = (model || '').trim()
+
+  // If model starts with brand (case-insensitive), strip it to avoid stuttering with the brand chip
+  if (b && m.toLowerCase().startsWith(b.toLowerCase())) {
+    m = m.slice(b.length).replace(/^[\s\-_:/]+/, '')
+  }
+
+  if (!m) {
+    if (b && f.toLowerCase().startsWith(b.toLowerCase())) {
+      f = f.slice(b.length).replace(/^[\s\-_:/]+/, '')
+    }
+    return f || b
+  }
+
+  if (!f) return m
+
+  // Check if model already includes family (or family includes model), ignoring punctuation/spaces
+  const fClean = f.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+  const mClean = m.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+
+  if (fClean && mClean && (mClean.includes(fClean) || fClean.includes(mClean))) {
+    return m
+  }
+
+  return `${f} ${m}`
+}
+
 export const LaptopCard: React.FC<LaptopCardProps> = ({
   laptop,
   lang,
@@ -111,7 +145,7 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
           <span className="rank-chip">#{laptop.rank}</span>
           <span className="brand-chip">{laptop.brand}</span>
           <h3 className="model">
-            {laptop.laptop_family} {laptop.laptop_model}
+            {formatCardTitle(laptop.brand, laptop.laptop_family, laptop.laptop_model)}
           </h3>
         </div>
         <span className="topsis-badge">
