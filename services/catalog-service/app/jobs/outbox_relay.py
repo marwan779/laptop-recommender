@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.messaging.contract import IMessageBroker
 from app.common.messaging.rabbitmq import RabbitMQBroker
+from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 from app.models.outbox import OutboxMessage
 from app.repositories.outbox_repository import OutboxRepository
@@ -31,12 +32,18 @@ class OutboxRelayWorker:
         broker: IMessageBroker | None = None,
         session_factory: Callable[[], AsyncSession] | None = None,
         poll_interval_seconds: float = 2.0,
-        batch_size: int = 50,
+        batch_size: int | None = None,
+        lease_duration_minutes: int | None = None,
     ) -> None:
         self.broker = broker or RabbitMQBroker()
         self._session_factory = session_factory or AsyncSessionLocal
         self.poll_interval_seconds = poll_interval_seconds
-        self.batch_size = batch_size
+        self.batch_size = batch_size if batch_size is not None else settings.outbox_batch_size
+        self.lease_duration_minutes = (
+            lease_duration_minutes
+            if lease_duration_minutes is not None
+            else settings.outbox_lease_duration_minutes
+        )
         self._task: asyncio.Task | None = None
         self._is_running: bool = False
 
@@ -73,7 +80,10 @@ class OutboxRelayWorker:
     async def _process_batch_with_session(self, session: AsyncSession) -> int:
         """Internal worker executing query and publish with session."""
         repo = OutboxRepository(session)
-        claimed_messages = await repo.claim_batch(batch_size=self.batch_size)
+        claimed_messages = await repo.claim_batch(
+            batch_size=self.batch_size,
+            lease_duration_minutes=self.lease_duration_minutes,
+        )
 
         if not claimed_messages:
             return 0

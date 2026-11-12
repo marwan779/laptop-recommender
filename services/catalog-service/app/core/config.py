@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     enable_cache: bool = True
     cache_default_ttl_seconds: int = 3600
 
+    # Transactional Outbox Relay
+    outbox_lease_duration_minutes: int = 5
+    outbox_batch_size: int = 50
+
     model_config = SettingsConfigDict(
         env_file=(SERVICE_ROOT / ".env", ".env"),
         env_file_encoding="utf-8",

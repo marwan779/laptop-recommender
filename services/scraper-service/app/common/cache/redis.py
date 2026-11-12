@@ -11,7 +11,7 @@ from redis.exceptions import RedisError
 
 from app.common.cache.provider import ICacheProvider
 from app.common.logger import get_logger
-from app.core.cache_config import get_cache_settings
+from app.core.cache_config import CacheSettings, get_cache_settings
 
 logger = get_logger("scraper.common.cache.redis")
 
@@ -24,11 +24,15 @@ class RedisCacheProvider(ICacheProvider):
         redis_url: str | None = None,
         default_ttl_seconds: int | None = None,
         client: Redis | None = None,
+        cache_settings: CacheSettings | None = None,
     ) -> None:
-        settings = get_cache_settings()
-        self.redis_url = redis_url or settings.redis_url
+        resolved_settings = cache_settings or get_cache_settings()
+        self._settings = resolved_settings
+        self.redis_url = redis_url or resolved_settings.redis_url
         self.default_ttl_seconds = (
-            default_ttl_seconds if default_ttl_seconds is not None else settings.cache_default_ttl_seconds
+            default_ttl_seconds
+            if default_ttl_seconds is not None
+            else resolved_settings.cache_default_ttl_seconds
         )
         self._client: Redis | None = client
 
@@ -38,9 +42,9 @@ class RedisCacheProvider(ICacheProvider):
             self._client = Redis.from_url(
                 self.redis_url,
                 decode_responses=False,
-                socket_connect_timeout=2.0,
-                socket_timeout=2.0,
-                health_check_interval=30,
+                socket_connect_timeout=self._settings.redis_socket_connect_timeout_seconds,
+                socket_timeout=self._settings.redis_socket_timeout_seconds,
+                health_check_interval=self._settings.redis_health_check_interval_seconds,
             )
         try:
             await self._client.ping()
@@ -120,7 +124,10 @@ class RedisCacheProvider(ICacheProvider):
             return 0
         try:
             keys_to_delete: list[bytes | str] = []
-            async for key in self._client.scan_iter(match=f"{prefix}*", count=100):
+            async for key in self._client.scan_iter(
+                match=f"{prefix}*",
+                count=self._settings.redis_scan_count,
+            ):
                 keys_to_delete.append(key)
             if keys_to_delete:
                 return int(await self._client.delete(*keys_to_delete))

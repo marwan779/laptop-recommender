@@ -167,3 +167,15 @@ async def test_outbox_relay_lifecycle_start_and_stop():
     await relay.stop()
     assert task.done()
     assert relay._task is None
+
+
+def test_outbox_relay_reads_lease_and_batch_size_from_settings(monkeypatch):
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "outbox_batch_size", 17)
+    monkeypatch.setattr(settings, "outbox_lease_duration_minutes", 9)
+
+    relay = OutboxRelayWorker(broker=AsyncMock())
+
+    assert relay.batch_size == 17
+    assert relay.lease_duration_minutes == 9

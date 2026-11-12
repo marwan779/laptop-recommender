@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy import and_, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models.outbox import OutboxMessage, OutboxStatus
 from app.repositories.base import BaseRepository
 
@@ -87,8 +88,8 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
 
     async def claim_batch(
         self,
-        batch_size: int = 50,
-        lease_duration_minutes: int = 5,
+        batch_size: int | None = None,
+        lease_duration_minutes: int | None = None,
     ) -> Sequence[OutboxMessage]:
         """Claim a batch of deliverable messages using SKIP LOCKED.
 
@@ -97,8 +98,15 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
         a crashed relay), incrementing their retry count so poison messages
         still exhaust ``max_retries`` instead of looping forever.
         """
+        resolved_batch_size = batch_size if batch_size is not None else settings.outbox_batch_size
+        resolved_lease_minutes = (
+            lease_duration_minutes
+            if lease_duration_minutes is not None
+            else settings.outbox_lease_duration_minutes
+        )
+
         now = datetime.now(UTC)
-        stale_threshold = now - timedelta(minutes=lease_duration_minutes)
+        stale_threshold = now - timedelta(minutes=resolved_lease_minutes)
 
         stmt = (
             select(OutboxMessage)
@@ -116,7 +124,7 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
                 ),
             )
             .order_by(OutboxMessage.created_at.asc())
-            .limit(batch_size)
+            .limit(resolved_batch_size)
             .with_for_update(skip_locked=True)
         )
         result = await self.session.execute(stmt)
@@ -128,7 +136,7 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
             ):
                 msg.retry_count += 1
                 msg.last_error = (
-                    f"Reclaimed zombie message after lease expired ({lease_duration_minutes}m)"
+                    f"Reclaimed zombie message after lease expired ({resolved_lease_minutes}m)"
                 )
             msg.status = OutboxStatus.PUBLISHING
             msg.leased_at = now

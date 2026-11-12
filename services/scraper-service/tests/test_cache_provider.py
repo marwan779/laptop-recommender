@@ -65,3 +65,45 @@ async def test_redis_set_nx_fails_open_when_redis_unavailable():
 
     # Fail-open: processing is allowed rather than silently dropping work.
     assert await provider.set_nx("inbox:msg-4", b"PROCESSING", ttl_seconds=90) is True
+
+
+@pytest.mark.anyio
+async def test_redis_provider_uses_configured_timeouts_and_scan_count(monkeypatch):
+    from app.core.cache_config import CacheSettings
+
+    settings = CacheSettings(
+        redis_socket_connect_timeout_seconds=4.5,
+        redis_socket_timeout_seconds=6.5,
+        redis_health_check_interval_seconds=45,
+        redis_scan_count=7,
+    )
+
+    mock_client = AsyncMock()
+    mock_client.ping.return_value = True
+
+    captured: dict[str, object] = {}
+
+    def fake_from_url(url: str, **kwargs):
+        captured["url"] = url
+        captured.update(kwargs)
+        return mock_client
+
+    monkeypatch.setattr("app.common.cache.redis.Redis.from_url", fake_from_url)
+
+    provider = RedisCacheProvider(cache_settings=settings)
+    await provider.connect()
+
+    assert captured["socket_connect_timeout"] == 4.5
+    assert captured["socket_timeout"] == 6.5
+    assert captured["health_check_interval"] == 45
+
+    scanned_counts: list[int] = []
+
+    async def fake_scan_iter(match: str, count: int = 100):
+        scanned_counts.append(count)
+        yield b"inbox:1"
+
+    mock_client.scan_iter = fake_scan_iter
+    await provider.clear_prefix("inbox:")
+
+    assert scanned_counts == [7]
