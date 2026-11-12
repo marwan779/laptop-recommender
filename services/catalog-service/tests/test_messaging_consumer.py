@@ -27,6 +27,11 @@ def mock_session():
     session.add = MagicMock()
     session.begin = MagicMock()
 
+    # Default inbox claim result: the message is new and can be processed.
+    claim_result = MagicMock()
+    claim_result.scalar_one_or_none.return_value = "claimed-event-id"
+    session.execute.return_value = claim_result
+
     class FakeBeginCM:
         async def __aenter__(self):
             return session

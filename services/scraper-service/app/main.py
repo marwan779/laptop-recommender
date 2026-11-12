@@ -8,7 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.price_monitor import router as price_monitor_router
 from app.api.routes.scrape import router as scrape_router
+from app.common.cache import InMemoryCacheProvider, RedisCacheProvider
 from app.common.logger import configure_logging, get_logger
+from app.common.messaging.inbox import RedisInboxDeduplicator
 from app.common.messaging.rabbitmq import RabbitMQBroker
 from app.services.messaging_consumer import ScraperMessageConsumer
 
@@ -19,9 +21,25 @@ logger = get_logger("scraper.main")
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage application startup and shutdown lifecycles."""
+    # 1. Initialize the distributed cache used for inbox deduplication.
+    redis_cache = RedisCacheProvider()
+    await redis_cache.connect()
+    if await redis_cache.health_check():
+        cache = redis_cache
+    else:
+        await redis_cache.close()
+        cache = InMemoryCacheProvider()
+        await cache.connect()
+        logger.warning(
+            "Redis cache is unavailable; falling back to process-local inbox deduplication. "
+            "Duplicate protection is not shared across replicas."
+        )
+    app.state.cache = cache
+    app.state.inbox = RedisInboxDeduplicator(cache)
+
     logger.info("Initializing RabbitMQ event broker and command consumers...")
     broker = RabbitMQBroker()
-    consumer = ScraperMessageConsumer(broker=broker)
+    consumer = ScraperMessageConsumer(broker=broker, inbox=app.state.inbox)
     app.state.broker = broker
     app.state.consumer = consumer
 
@@ -38,6 +56,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
     # Graceful shutdown
+    if getattr(app.state, "cache", None):
+        try:
+            await app.state.cache.close()
+        except Exception as exc:
+            logger.warning("Error during cache provider shutdown: %s", exc)
+
     if getattr(app.state, "broker", None) and app.state.broker.is_connected:
         logger.info("Shutting down RabbitMQ connection...")
         try:

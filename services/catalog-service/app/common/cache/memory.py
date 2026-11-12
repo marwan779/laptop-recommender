@@ -9,14 +9,17 @@ from __future__ import annotations
 
 import time
 
+from app.common.cache.config import get_cache_settings
 from app.common.cache.provider import ICacheProvider
 
 
 class InMemoryCacheProvider(ICacheProvider):
     """Thread-safe asyncio in-memory key-value store with TTL expiration."""
 
-    def __init__(self, default_ttl_seconds: int = 3600) -> None:
-        self.default_ttl_seconds = default_ttl_seconds
+    def __init__(self, default_ttl_seconds: int | None = None) -> None:
+        self.default_ttl_seconds = (
+            default_ttl_seconds if default_ttl_seconds is not None else get_cache_settings().cache_default_ttl_seconds
+        )
         self._store: dict[str, tuple[bytes, float | None]] = {}
         self._healthy: bool = True
 
