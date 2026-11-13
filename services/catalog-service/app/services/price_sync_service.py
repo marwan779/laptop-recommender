@@ -84,10 +84,14 @@ class PriceSyncService:
         self,
         session: AsyncSession,
         batch_response: PriceCheckBatchResponse | dict,
+        commit: bool = True,
     ) -> PriceSyncSummary:
         """Process price monitor response, update offers, roll up parent laptops,
 
         and recalibrate price-dependent hardware value metrics using pure domain rules.
+
+        ``commit=False`` leaves the transaction open so a caller (e.g. a CLI
+        runner performing a dry run) can decide whether to commit or roll back.
         """
         if isinstance(batch_response, dict):
             resp = PriceCheckBatchResponse(**batch_response)
@@ -247,10 +251,11 @@ class PriceSyncService:
             offers_updated=summary.offers_updated,
         )
 
-        await session.commit()
+        if commit:
+            await session.commit()
 
-        # Evict cached price-history payloads for every affected canonical laptop.
-        await self._invalidate_price_history_cache(session, affected_laptop_ids)
+            # Evict cached price-history payloads for every affected canonical laptop.
+            await self._invalidate_price_history_cache(session, affected_laptop_ids)
 
         return summary
 

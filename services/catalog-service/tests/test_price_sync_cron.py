@@ -3,7 +3,6 @@ import httpx
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.jobs.price_sync_cron import PriceSyncCronJob
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
@@ -128,28 +127,3 @@ async def test_price_sync_cron_run_once_success(db_session: AsyncSession):
     assert float(updated_offer.price_egp) == 51000.0
     assert float(updated_offer.previous_price_egp) == 55000.0
 
-
-@pytest.mark.asyncio
-async def test_price_sync_cron_disabled_by_default():
-    job = PriceSyncCronJob()
-    assert settings.enable_price_sync_cron is False
-    task = job.start()
-    assert task is None
-
-
-@pytest.mark.asyncio
-async def test_price_sync_cron_lifecycle_start_and_stop():
-    job = PriceSyncCronJob()
-
-    original = settings.enable_price_sync_cron
-    settings.enable_price_sync_cron = True
-    try:
-        task = job.start()
-        assert task is not None
-        assert not task.done()
-
-        await job.stop()
-        assert task.done()
-        assert job._task is None
-    finally:
-        settings.enable_price_sync_cron = original

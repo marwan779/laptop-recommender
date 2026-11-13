@@ -16,7 +16,7 @@ from app.common.logger import configure_logging, get_logger
 from app.common.messaging.rabbitmq import RabbitMQBroker
 from app.core.config import settings
 from app.core.database import engine
-from app.jobs import outbox_relay, price_sync_cron, scraping_cron
+from app.jobs import outbox_relay
 from app.services.chroma_reviews_service import get_chroma_reviews_service
 from app.services.messaging_consumer import CatalogMessageConsumer
 
@@ -78,20 +78,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             exc,
         )
 
-    # 3. Wire the shared cache into the price-sync use case so recorded price
-    #    changes can evict stale telemetry responses for affected laptops.
-    price_sync_cron.service.cache = app.state.cache
-
-    # 4. Start background workers
+    # 3. Start the outbox relay. Scheduled discovery and price-sync jobs run as
+    #    standalone Kubernetes CronJob CLI scripts, not as in-process loops.
     outbox_relay.start()
-    scraping_cron.start()
-    price_sync_cron.start()
 
     yield
 
     logger.info("Shutting down %s: closing background jobs, cache, broker, and database pool", settings.service_name)
-    await price_sync_cron.stop()
-    await scraping_cron.stop()
     await outbox_relay.stop()
 
     if getattr(app.state, "cache", None):

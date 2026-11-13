@@ -35,8 +35,20 @@ class ScraperClientService:
         session: AsyncSession,
         request: ScrapeTriggerRequest,
         client: httpx.AsyncClient | None = None,
+        dispatch_mode: str = "http",
+        dry_run: bool = False,
     ) -> ScrapeTriggerResponse:
-        """Coordinate and trigger a scraping ingestion job on scraper-service."""
+        """Coordinate and trigger a scraping ingestion job on scraper-service.
+
+        ``dispatch_mode="http"`` preserves the legacy synchronous HTTP trigger
+        (and is used whenever a custom ``httpx`` client is supplied).  Modes
+        ``"outbox"``/``"rabbitmq"`` stage the command in the transactional
+        outbox and return immediately without any outbound HTTP request.
+        ``dry_run=True`` always uses the outbox path so no HTTP call is fired.
+        """
+        if dry_run:
+            dispatch_mode = "outbox"
+
         pointers = await self.get_active_store_pointers(session, request.store_key)
 
         targets: list[str] = []
@@ -90,6 +102,23 @@ class ScraperClientService:
             message_id=uuid.UUID(job_id),
         )
         await session.flush()
+
+        # Outbox-only path: stage the command and let the relay/consumer chain
+        # invoke scraper-service. No outbound HTTP request is fired here.
+        if dispatch_mode in ("outbox", "rabbitmq"):
+            logger.info(
+                "Staged scrape job [%s] in transactional outbox for stores=%s (force_full=%s)",
+                job_id,
+                targets,
+                request.force_full_crawl,
+            )
+            return ScrapeTriggerResponse(
+                job_id=job_id,
+                status=batch_log.status,
+                message=f"Scrape job staged in outbox for {targets}; relay will dispatch it.",
+                stores_targeted=targets,
+                pointers_used=pointers_map,
+            )
 
         # Build payload adhering to scraper-service ScrapeRequest DTO
         scrape_payload = {

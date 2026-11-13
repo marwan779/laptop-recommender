@@ -1,10 +1,8 @@
-import asyncio
 import uuid
 import httpx
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.jobs.scraping_cron import ScrapingCronJob
 from app.models.scraping import ScrapingBatchLog, StoreScrapingPointer
 from app.services.scraper_client import ScraperClientService
@@ -48,35 +46,6 @@ async def test_scraping_cron_run_once_success(db_session: AsyncSession):
     assert log is not None
     assert log.status == "DISPATCHED"
     assert log.store_key == "compumarts"
-
-
-@pytest.mark.asyncio
-async def test_scraping_cron_disabled_by_default():
-    job = ScrapingCronJob()
-    # By default in settings, enable_scraping_cron is False
-    assert settings.enable_scraping_cron is False
-    task = job.start()
-    assert task is None
-
-
-@pytest.mark.asyncio
-async def test_scraping_cron_lifecycle_start_and_stop():
-    job = ScrapingCronJob()
-
-    # Temporarily enable cron
-    original_setting = settings.enable_scraping_cron
-    settings.enable_scraping_cron = True
-    try:
-        task = job.start()
-        assert task is not None
-        assert not task.done()
-
-        # Stop should cleanly cancel and await
-        await job.stop()
-        assert task.done()
-        assert job._task is None
-    finally:
-        settings.enable_scraping_cron = original_setting
 
 
 @pytest.mark.asyncio
