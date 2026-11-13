@@ -39,7 +39,6 @@ class ScrapingCliOptions(BaseCliJobOptions):
 
     store: str = "all"
     force_full: bool = False
-    scraper_url: str | None = None
     level: int | None = None
     send_email: bool | None = None
 
@@ -60,12 +59,6 @@ class ScrapingCronCliRunner(BaseCliJobRunner[ScrapingCliOptions, ScrapeTriggerRe
             "--force-full",
             action="store_true",
             help="Ignore watermark pointers and perform a full catalog crawl",
-        )
-        parser.add_argument(
-            "--scraper-url",
-            type=str,
-            default=None,
-            help="Custom scraper-service URL override",
         )
         parser.add_argument(
             "--level",
@@ -95,23 +88,18 @@ class ScrapingCronCliRunner(BaseCliJobRunner[ScrapingCliOptions, ScrapeTriggerRe
             dry_run=parsed_args.dry_run,
             store=parsed_args.store,
             force_full=parsed_args.force_full,
-            scraper_url=parsed_args.scraper_url,
             level=parsed_args.level,
             send_email=parsed_args.send_email,
         )
 
     async def execute_job(self, session, options: ScrapingCliOptions) -> ScrapeTriggerResponse:
-        job = ScrapingCronJob(
-            scraper_client=ScraperClientService(scraper_url=options.scraper_url),
-            dispatch_mode="outbox",
-        )
+        job = ScrapingCronJob(scraper_client=ScraperClientService())
         return await job.run_once(
             store_key=options.store,
             force_full_crawl=options.force_full,
             session=session,
             level=options.level,
             send_email=options.send_email,
-            dispatch_mode="outbox",
         )
 
     def render_summary(self, result: ScrapeTriggerResponse, options: ScrapingCliOptions) -> None:

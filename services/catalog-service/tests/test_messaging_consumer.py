@@ -237,6 +237,79 @@ async def test_handle_prices_checked_event(mock_session_factory):
     await consumer.handle_prices_checked_event(event.model_dump())
 
     mock_price_sync.apply_batch_results.assert_called_once()
+    assert mock_price_sync.apply_batch_results.call_args.kwargs["commit"] is False
+    mock_price_sync.invalidate_caches.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_handle_prices_checked_event_invalidates_cache_after_commit(
+    mock_session, mock_session_factory
+):
+    execution_order: list[str] = []
+    affected_id = uuid.uuid4()
+
+    class TrackingBeginCM:
+        async def __aenter__(self):
+            return mock_session
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            execution_order.append("tx_exit")
+            return None
+
+    mock_session.begin.return_value = TrackingBeginCM()
+
+    mock_broker = AsyncMock()
+    mock_price_sync = AsyncMock()
+    mock_price_sync.apply_batch_results.return_value = PriceSyncSummary(
+        batch_id="batch-p2",
+        store_key="compumarts",
+        total_processed=1,
+        offers_updated=1,
+        price_drops_detected=1,
+        affected_laptop_ids=[affected_id],
+    )
+
+    async def record_invalidate(session, laptop_ids):
+        execution_order.append("cache_invalidate")
+
+    mock_price_sync.invalidate_caches.side_effect = record_invalidate
+
+    consumer = CatalogMessageConsumer(
+        broker=mock_broker,
+        session_factory=mock_session_factory,
+        price_sync_service=mock_price_sync,
+    )
+
+    event = PricesCheckedEvent(
+        payload=PricesCheckedPayload(
+            batch_id="batch-p2",
+            store_key="compumarts",
+            total_items=1,
+            changed_items_count=1,
+            price_drops_count=1,
+            results=[
+                PriceCheckItemResult(
+                    offer_id=str(uuid.uuid4()),
+                    laptop_id=str(affected_id),
+                    product_url="https://compumarts.com/p",
+                    old_price_egp=50000.0,
+                    new_price_egp=48000.0,
+                    old_in_stock=True,
+                    new_in_stock=True,
+                    has_changed=True,
+                    change_type=PriceChangeType.PRICE_DROP,
+                    price_delta_egp=-2000.0,
+                )
+            ],
+        )
+    )
+
+    await consumer.handle_prices_checked_event(event.model_dump())
+
+    mock_price_sync.apply_batch_results.assert_called_once()
+    assert mock_price_sync.apply_batch_results.call_args.kwargs["commit"] is False
+    mock_price_sync.invalidate_caches.assert_awaited_once_with(mock_session, [affected_id])
+    assert execution_order == ["tx_exit", "cache_invalidate"]
 
 
 @pytest.mark.asyncio

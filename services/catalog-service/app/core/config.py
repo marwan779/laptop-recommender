@@ -28,7 +28,6 @@ class Settings(BaseSettings):
 
     # Price Sync Cron Job Configuration (one-shot CLI execution)
     price_sync_batch_limit: int = 50
-    price_sync_cron_mode: str = "rabbitmq"
 
     # RabbitMQ Messaging Broker
     rabbitmq_url: str = "amqp://guest:guest@localhost:5672/"

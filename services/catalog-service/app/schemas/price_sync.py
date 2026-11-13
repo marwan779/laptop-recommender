@@ -82,3 +82,4 @@ class PriceSyncSummary(BaseModel):
     price_drops_detected: int = 0
     price_hikes_detected: int = 0
     out_of_stock_detected: int = 0
+    affected_laptop_ids: list[uuid.UUID] = Field(default_factory=list, exclude=True)

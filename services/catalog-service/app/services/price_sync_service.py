@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 import logging
 import uuid
 
@@ -251,18 +252,20 @@ class PriceSyncService:
             offers_updated=summary.offers_updated,
         )
 
+        summary.affected_laptop_ids = sorted(affected_laptop_ids, key=str)
+
         if commit:
             await session.commit()
 
             # Evict cached price-history payloads for every affected canonical laptop.
-            await self._invalidate_price_history_cache(session, affected_laptop_ids)
+            await self.invalidate_caches(session, affected_laptop_ids)
 
         return summary
 
-    async def _invalidate_price_history_cache(
+    async def invalidate_caches(
         self,
         session: AsyncSession,
-        laptop_ids: set[uuid.UUID],
+        laptop_ids: Sequence[uuid.UUID] | set[uuid.UUID],
     ) -> None:
         """Clear cached price-history curves and catalog responses for laptops touched by this batch."""
         if not self.cache or not laptop_ids:
@@ -290,3 +293,11 @@ class PriceSyncService:
                     prefix,
                     exc,
                 )
+
+    async def _invalidate_price_history_cache(
+        self,
+        session: AsyncSession,
+        laptop_ids: set[uuid.UUID],
+    ) -> None:
+        """Backward-compatible wrapper for invalidate_caches."""
+        await self.invalidate_caches(session, laptop_ids)

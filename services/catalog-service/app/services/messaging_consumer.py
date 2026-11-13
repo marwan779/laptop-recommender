@@ -205,6 +205,7 @@ class CatalogMessageConsumer:
             payload.changed_items_count,
         )
 
+        summary = None
         async with self._session_factory() as session:
             async with session.begin():
                 if not await self._claim_inbox(session, event, "handle_prices_checked_event"):
@@ -213,6 +214,7 @@ class CatalogMessageConsumer:
                 summary = await self.price_sync_service.apply_batch_results(
                     session=session,
                     batch_response=payload.model_dump(),
+                    commit=False,
                 )
 
                 logger.info(
@@ -222,6 +224,12 @@ class CatalogMessageConsumer:
                     summary.price_drops_detected,
                     summary.price_hikes_detected,
                     summary.out_of_stock_detected,
+                )
+
+            if summary and summary.affected_laptop_ids:
+                await self.price_sync_service.invalidate_caches(
+                    session,
+                    summary.affected_laptop_ids,
                 )
 
     async def handle_reviews_ready_event(self, raw_data: dict[str, Any]) -> None:

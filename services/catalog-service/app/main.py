@@ -19,6 +19,7 @@ from app.core.database import engine
 from app.jobs import outbox_relay
 from app.services.chroma_reviews_service import get_chroma_reviews_service
 from app.services.messaging_consumer import CatalogMessageConsumer
+from app.services.price_sync_service import PriceSyncService
 
 # Initialize unified logging subsystem
 configure_logging()
@@ -61,7 +62,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # 2. Initialize RabbitMQ broker & consumer
     broker = RabbitMQBroker()
-    consumer = CatalogMessageConsumer(broker=broker)
+    consumer = CatalogMessageConsumer(
+        broker=broker,
+        price_sync_service=PriceSyncService(cache=app.state.cache),
+    )
     app.state.broker = broker
     app.state.consumer = consumer
 

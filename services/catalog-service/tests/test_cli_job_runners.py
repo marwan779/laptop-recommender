@@ -223,7 +223,7 @@ async def test_price_sync_cli_outbox_dry_run_rolls_back(db_session: AsyncSession
     )
 
     exit_code = await runner.run(
-        ["--dry-run", "--store", store_key, "--limit", "5", "--mode", "outbox"]
+        ["--dry-run", "--store", store_key, "--limit", "5"]
     )
 
     assert exit_code == 0
@@ -246,7 +246,7 @@ async def test_price_sync_cli_outbox_commit_persists_check_prices_commands(
     )
 
     exit_code = await runner.run(
-        ["--commit", "--store", store_key, "--limit", "5", "--mode", "outbox"]
+        ["--commit", "--store", store_key, "--limit", "5"]
     )
 
     assert exit_code == 0
