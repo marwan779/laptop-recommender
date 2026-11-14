@@ -1,0 +1,16 @@
+# Virtual environments & caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.log
+
+# Raw/temporary audit and benchmark artifacts (keep production service files only)
+raw_chassis*
+cleaned_and_enriched_chassis_reviews_v6.json
+audit_*.py
+benchmark_*.py
+benchmark_*.json
+resume_youtube_scraper_safe.py
+test_pipeline_e2e.py
+youtube_gap_tasks.md
