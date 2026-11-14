@@ -17,6 +17,7 @@ from typing import Any
 from urllib.parse import quote_plus, urljoin, urlparse
 
 from app.domain.reviews.community_queries import CommunityQueryBuilder
+from app.domain.reviews.relevance import matches_target_text
 from app.schemas.events import LaptopReviewTarget
 from app.schemas.reviews_s3 import EditorialReview
 from app.services.reviews.community.contracts import ICommunityPlatformScraper
@@ -96,7 +97,9 @@ class LaptopMagPlatformScraper(ICommunityPlatformScraper):
                     review_html = await get_text(client, review_url)
                     if not review_html:
                         continue
-                    parsed = self._parse_review(review_html, review_url)
+                    parsed = self._parse_review(review_html, review_url, laptop_target=laptop_target)
+                    if parsed is None:
+                        continue
                     # Never emit empty dummy shells
                     if parsed.rating is not None or parsed.pros or parsed.cons or parsed.verdict:
                         reviews.append(parsed)
@@ -115,7 +118,20 @@ class LaptopMagPlatformScraper(ICommunityPlatformScraper):
         urls: list[str] = []
         seen: set[str] = set()
 
-        for anchor in soup.select("a[href]"):
+        # Prefer anchors inside dedicated search-result cards; fall back to body anchors
+        # when minimal fixture HTML omits card containers (always excluding chrome chrome nav/footer).
+        scoped_anchors = [
+            a
+            for a in soup.select(
+                ".listingResult a[href], .search-results a[href], article a[href], h3 a[href], h2 a[href]"
+            )
+            if a.find_parent(["header", "nav", "footer"]) is None
+        ]
+        candidate_anchors = scoped_anchors or [
+            a for a in soup.select("a[href]") if a.find_parent(["header", "nav", "footer"]) is None
+        ]
+
+        for anchor in candidate_anchors:
             href = str(anchor.get("href") or "").strip()
             if not href:
                 continue
@@ -136,26 +152,23 @@ class LaptopMagPlatformScraper(ICommunityPlatformScraper):
             if not is_review_path:
                 continue
 
-            # Reject non-laptop devices (motherboards, monitors, consoles, ...)
-            # before spending a request on the review page.
+            # Reject non-laptop devices & accessories before fetching the review page.
             title = anchor.get_text(" ", strip=True)
             summary = self._card_summary(anchor, title)
             if is_non_laptop_device(title, f"{path} {summary}".strip()):
                 continue
 
-            # Target relevance check: require family match when family is known
-            if target is not None:
-                family = (target.laptop_family or "").lower()
-                brand = (target.brand or "").lower()
-                haystack = f"{path} {anchor.get_text(' ', strip=True).lower()}"
-                if family:
-                    family_words = [
-                        w for w in family.split() if len(w) >= 3 and w not in {"laptop", "gaming", "series", "notebook"}
-                    ]
-                    if family_words and not any(w in haystack for w in family_words):
-                        continue
-                elif brand and brand not in haystack:
-                    continue
+            # Strict word-boundary target + brand + headline + roundup verification
+            if target is not None and not matches_target_text(
+                target,
+                title,
+                summary,
+                path,
+                require_brand=True,
+                reject_roundups=True,
+                require_headline_match=True,
+            ):
+                continue
 
             if absolute in seen:
                 continue
@@ -177,17 +190,37 @@ class LaptopMagPlatformScraper(ICommunityPlatformScraper):
 
     # ── Review page parsing ─────────────────────────────────────────────────
 
-    def _parse_review(self, html: str, review_url: str) -> EditorialReview:
+    def _parse_review(
+        self,
+        html: str,
+        review_url: str,
+        laptop_target: LaptopReviewTarget | None = None,
+    ) -> EditorialReview | None:
         from bs4 import BeautifulSoup  # noqa: PLC0415 - optional at import time
 
         soup = BeautifulSoup(html, "html.parser")
+        verdict = self._extract_verdict(soup)
+        h1_node = soup.select_one("h1")
+        if h1_node is not None and laptop_target is not None:
+            page_title = h1_node.get_text(" ", strip=True)
+            if page_title and not matches_target_text(
+                laptop_target,
+                page_title,
+                verdict,
+                review_url,
+                require_brand=True,
+                reject_roundups=True,
+                require_headline_match=True,
+            ):
+                return None
+
         return EditorialReview(
             source=self.platform_name,
             review_url=review_url,
             rating=self._extract_rating(soup),
             pros=self._extract_list(soup, (".pretty-verdict__pros", ".reasons-to-buy", ".pretty-bullets")),
             cons=self._extract_list(soup, (".pretty-verdict__cons", ".reasons-to-avoid")),
-            verdict=self._extract_verdict(soup),
+            verdict=verdict,
         )
 
     @staticmethod

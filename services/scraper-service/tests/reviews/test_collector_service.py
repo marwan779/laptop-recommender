@@ -183,3 +183,60 @@ async def test_upload_to_s3_disabled_returns_local_path_and_skips_upload(tmp_pat
     broker_mock.publish.assert_awaited_once()
     published_event = broker_mock.publish.call_args.kwargs["message"]
     assert published_event.payload.s3_key == s3_key
+
+
+@pytest.mark.anyio
+async def test_process_reviews_batch_consolidates_colliding_chassis_keys(tmp_path):
+    t1 = LaptopReviewTarget(
+        laptop_id="lap-1",
+        canonical_id="hp-victus-15-a",
+        chassis_key="hp:victus:15-FA",
+        brand="HP",
+        laptop_family="Victus",
+        laptop_model="15-fa2317tx",
+        mpn="MPN-A",
+        skus=["SKU-A"],
+        mpns=["MPN-A"],
+    )
+    t2 = LaptopReviewTarget(
+        laptop_id="lap-2",
+        canonical_id="hp-victus-15-b",
+        chassis_key="hp:victus:15-FA",
+        brand="HP",
+        laptop_family="Victus",
+        laptop_model="15-fa2082wm",
+        mpn="MPN-B",
+        skus=["SKU-B"],
+        mpns=["MPN-B"],
+    )
+    cmd = ScrapeReviewsCommand(payload=ScrapeReviewsPayload(job_id="job-dedupe", targets=[t1, t2]))
+
+    yt_mock = MagicMock()
+    yt_mock.collect_for_targets = AsyncMock(return_value={})
+    comm_mock = MagicMock()
+    comm_mock.collect_for_targets = AsyncMock(return_value={})
+
+    service = ReviewCollectorService(
+        storage_service=MagicMock(),
+        broker=AsyncMock(),
+        youtube_collector=yt_mock,
+        communities_collector=comm_mock,
+        upload_to_s3=False,
+        local_output_dir=tmp_path,
+    )
+
+    await service.process_reviews_batch(cmd)
+
+    dispatched_targets = yt_mock.collect_for_targets.call_args.args[0]
+    assert len(dispatched_targets) == 1
+    assert dispatched_targets[0].matched_laptop_ids == ["lap-1", "lap-2"]
+    assert dispatched_targets[0].matched_canonical_ids == ["hp-victus-15-a", "hp-victus-15-b"]
+
+    import json
+
+    saved = json.loads((tmp_path / "raw_chassis_reviews_job-dedupe.json").read_text(encoding="utf-8"))
+    parsed = RawChassisReviewsFile.model_validate(saved)
+    assert parsed.batch_metadata.total_targets_processed == 1
+    assert len(parsed.laptops) == 1
+    assert parsed.laptops[0].chassis_key == "hp:victus:15-FA"
+    assert parsed.laptops[0].matched_laptop_ids == ["lap-1", "lap-2"]

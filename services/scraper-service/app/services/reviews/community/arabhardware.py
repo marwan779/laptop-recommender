@@ -16,6 +16,7 @@ from typing import Any
 from urllib.parse import quote_plus, urljoin, urlparse
 
 from app.domain.reviews.community_queries import CommunityQueryBuilder
+from app.domain.reviews.relevance import matches_target_text
 from app.schemas.events import LaptopReviewTarget
 from app.schemas.reviews_s3 import CommunityPost
 from app.services.reviews.community.contracts import ICommunityPlatformScraper
@@ -80,6 +81,17 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
                 for p in posts:
                     full_body = await self._fetch_full_article(client, p.post_url)
                     if full_body:
+                        if is_non_laptop_device(p.post_title, full_body):
+                            continue
+                        if not matches_target_text(
+                            laptop_target,
+                            p.post_title,
+                            full_body,
+                            p.post_url,
+                            require_brand=True,
+                            require_headline_match=True,
+                        ):
+                            continue
                         p = CommunityPost(
                             platform=p.platform,
                             post_id=p.post_id,
@@ -153,6 +165,8 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
             parsed = urlparse(absolute)
             if parsed.netloc and "arabhardware.net" not in parsed.netloc:
                 continue
+            if "/news/" in parsed.path.lower():
+                continue
             if absolute in seen_urls:
                 continue
 
@@ -166,23 +180,19 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
             if not title and not snippet:
                 continue
 
-            # Reject non-laptop devices (motherboards, monitors, consoles, ...).
+            # Reject non-laptop devices & accessories, and verify word-boundary target relevance.
             if is_non_laptop_device(title, f"{parsed.path} {snippet}".strip()):
                 continue
 
-            # Target relevance filter: require family match when family is known
-            if target is not None:
-                combined = f"{title} {snippet} {parsed.path}".lower()
-                brand = (target.brand or "").lower()
-                family = (target.laptop_family or "").lower()
-                if family:
-                    family_words = [
-                        w for w in family.split() if len(w) >= 3 and w not in {"laptop", "gaming", "series", "notebook"}
-                    ]
-                    if family_words and not any(w in combined for w in family_words):
-                        continue
-                elif brand and brand not in combined:
-                    continue
+            if target is not None and not matches_target_text(
+                target,
+                title,
+                snippet,
+                parsed.path,
+                require_brand=True,
+                require_headline_match=True,
+            ):
+                continue
 
             score = None
             rate_node = container.select_one("text.percentage, .post-item-rate")
