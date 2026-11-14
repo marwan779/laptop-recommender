@@ -30,9 +30,7 @@ class RedisCacheProvider(ICacheProvider):
         self._settings = resolved_settings
         self.redis_url = redis_url or resolved_settings.redis_url
         self.default_ttl_seconds = (
-            default_ttl_seconds
-            if default_ttl_seconds is not None
-            else resolved_settings.cache_default_ttl_seconds
+            default_ttl_seconds if default_ttl_seconds is not None else resolved_settings.cache_default_ttl_seconds
         )
         self._client: Redis | None = client
 

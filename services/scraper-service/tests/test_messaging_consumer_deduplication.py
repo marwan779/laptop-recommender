@@ -39,9 +39,7 @@ async def test_duplicate_catalog_command_does_not_run_scraper(mock_broker, inbox
         inbox=inbox,
     )
 
-    command = ScrapeCatalogCommand(
-        payload=ScrapeCatalogPayload(batch_id="batch-1", targets=["compumarts"])
-    )
+    command = ScrapeCatalogCommand(payload=ScrapeCatalogPayload(batch_id="batch-1", targets=["compumarts"]))
     raw = command.model_dump()
 
     # First delivery is claimed and executed.
@@ -59,9 +57,7 @@ async def test_duplicate_price_command_does_not_run_monitor(mock_broker, inbox):
     monitor.check_batch_async = AsyncMock()
     consumer = ScraperMessageConsumer(broker=mock_broker, price_monitor=monitor, inbox=inbox)
 
-    command = CheckPricesCommand(
-        payload=CheckPricesPayload(batch_id="batch-p", store_key="compumarts", items=[])
-    )
+    command = CheckPricesCommand(payload=CheckPricesPayload(batch_id="batch-p", store_key="compumarts", items=[]))
     assert await inbox.claim_message(command.event_id, command.event_type) is True
 
     await consumer.handle_check_prices_command(command.model_dump())
@@ -76,9 +72,7 @@ async def test_duplicate_reviews_command_does_not_run_collector(mock_broker, inb
     collector.process_reviews_batch = AsyncMock()
     consumer = ScraperMessageConsumer(broker=mock_broker, review_collector=collector, inbox=inbox)
 
-    command = ScrapeReviewsCommand(
-        payload=ScrapeReviewsPayload(job_id="job-1", targets=[])
-    )
+    command = ScrapeReviewsCommand(payload=ScrapeReviewsPayload(job_id="job-1", targets=[]))
     assert await inbox.claim_message(command.event_id, command.event_type) is True
 
     await consumer.handle_reviews_scrape_command(command.model_dump())
@@ -92,9 +86,7 @@ async def test_failed_command_releases_claim_for_retry(mock_broker, inbox):
     monitor.check_batch_async = AsyncMock(side_effect=ConnectionError("store offline"))
     consumer = ScraperMessageConsumer(broker=mock_broker, price_monitor=monitor, inbox=inbox)
 
-    command = CheckPricesCommand(
-        payload=CheckPricesPayload(batch_id="batch-fail", store_key="sigma", items=[])
-    )
+    command = CheckPricesCommand(payload=CheckPricesPayload(batch_id="batch-fail", store_key="sigma", items=[]))
 
     with pytest.raises(ConnectionError):
         await consumer.handle_check_prices_command(command.model_dump())
