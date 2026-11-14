@@ -246,8 +246,12 @@ class CatalogIngestionService:
     ) -> int:
         """Resolve unreviewed chassis and enqueue one review scrape command.
 
-        Runs inside the caller's transaction: the seeding writes, the outbox
-        message, and the reviewed flags commit or roll back together.
+        Stage 1 catalog ingestion only stages the ``reviews.scrape.command``
+        outbox event inside the caller's seeding transaction. Newly discovered
+        laptops intentionally remain ``has_reviews=False`` until Stage 2 review
+        ingestion actually persists their NLP profile, at which point
+        ``LaptopRepository.update_review_intelligence_by_canonical_ids`` stamps
+        ``has_reviews=True`` and ``reviews_checked_at``.
 
         Returns:
             The number of chassis targets queued (0 when nothing to review).
@@ -278,8 +282,6 @@ class CatalogIngestionService:
             payload=command,
             correlation_id=str(batch_id),
         )
-
-        await laptop_repo.mark_laptops_as_reviewed([laptop.id for laptop in unreviewed])
 
         logger.info(
             "[%s] Queued review scrape command: %d laptops collapsed into %d chassis targets.",

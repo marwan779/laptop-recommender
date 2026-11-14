@@ -21,6 +21,7 @@ from app.common.messaging.contract import IMessageBroker
 from app.core.database import AsyncSessionLocal
 from app.models.base import utcnow
 from app.repositories.batch_log_repository import BatchLogRepository
+from app.repositories.inbox_repository import InboxRepository
 from app.schemas.events import (
     CatalogReadyEvent,
     CatalogScrapeFailedEvent,
@@ -57,6 +58,22 @@ class CatalogMessageConsumer:
         if self.review_intelligence_service is None:
             self.review_intelligence_service = ReviewIntelligenceService()
         return self.review_intelligence_service
+
+    async def _claim_inbox(self, session: AsyncSession, event: Any, handler_name: str) -> bool:
+        """Claim an event inside the active transaction; False means duplicate."""
+        claimed = await InboxRepository(session).claim_message(
+            message_id=event.event_id,
+            event_type=event.event_type,
+            handler_name=handler_name,
+        )
+        if not claimed:
+            logger.info(
+                "Duplicate event [%s, event_type=%s] already processed by %s. Skipping.",
+                event.event_id,
+                event.event_type,
+                handler_name,
+            )
+        return claimed
 
     async def start_listening(self) -> None:
         """Declare queues and register event consumer handlers on RabbitMQ."""
@@ -116,6 +133,9 @@ class CatalogMessageConsumer:
 
         async with self._session_factory() as session:
             async with session.begin():
+                if not await self._claim_inbox(session, event, "handle_catalog_ready_event"):
+                    return
+
                 result = await self.ingestion_service.ingest_from_s3(
                     session=session,
                     s3_key=payload.s3_key,
@@ -152,6 +172,9 @@ class CatalogMessageConsumer:
 
         async with self._session_factory() as session:
             async with session.begin():
+                if not await self._claim_inbox(session, event, "handle_catalog_scrape_failed"):
+                    return
+
                 batch_repo = BatchLogRepository(session)
                 existing = await batch_repo.get_by_id(batch_uuid)
 
@@ -182,11 +205,16 @@ class CatalogMessageConsumer:
             payload.changed_items_count,
         )
 
+        summary = None
         async with self._session_factory() as session:
             async with session.begin():
+                if not await self._claim_inbox(session, event, "handle_prices_checked_event"):
+                    return
+
                 summary = await self.price_sync_service.apply_batch_results(
                     session=session,
                     batch_response=payload.model_dump(),
+                    commit=False,
                 )
 
                 logger.info(
@@ -196,6 +224,12 @@ class CatalogMessageConsumer:
                     summary.price_drops_detected,
                     summary.price_hikes_detected,
                     summary.out_of_stock_detected,
+                )
+
+            if summary and summary.affected_laptop_ids:
+                await self.price_sync_service.invalidate_caches(
+                    session,
+                    summary.affected_laptop_ids,
                 )
 
     async def handle_reviews_ready_event(self, raw_data: dict[str, Any]) -> None:
@@ -218,10 +252,15 @@ class CatalogMessageConsumer:
             return
 
         async with self._session_factory() as session:
-            result = await self._resolve_review_intelligence_service().ingest_from_s3(
-                session=session,
-                s3_key=payload.s3_key,
-            )
+            async with session.begin():
+                if not await self._claim_inbox(session, event, "handle_reviews_ready_event"):
+                    return
+
+                result = await self._resolve_review_intelligence_service().ingest_from_s3(
+                    session=session,
+                    s3_key=payload.s3_key,
+                    commit=False,
+                )
 
         logger.info(
             "ReviewsReadyEvent [%s] ingested: status=%s, chassis=%d, chroma_docs=%d, sql_laptops=%d",

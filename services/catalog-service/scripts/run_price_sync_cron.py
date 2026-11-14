@@ -1,21 +1,21 @@
-"""Standalone CLI runner for the lightweight price & stock sync cron job.
+"""Standalone CLI runner for the lightweight price and stock sync cron job.
 
-Invoked periodically by task schedulers (Kubernetes CronJob, Linux crontab,
-AWS ECS scheduled tasks) or manually by operators.
+Invoked periodically by an ephemeral Kubernetes CronJob pod or manually by
+operators. Stages ``prices.check.command`` batches in the transactional outbox
+so the pod can exit immediately and the outbox relay dispatches them to
+RabbitMQ.
 
 Usage:
-    # Direct synchronous HTTP run across all stores (unlimited)
-    python scripts/run_price_sync_cron.py --no-limit
-
-    # Run for a specific store with a limit
-    python scripts/run_price_sync_cron.py --store compumarts --limit 20
-
-    # Asynchronous event-driven run via Transactional Outbox & RabbitMQ
-    python scripts/run_price_sync_cron.py --no-limit --mode rabbitmq
+    python scripts/run_price_sync_cron.py --dry-run
+    python scripts/run_price_sync_cron.py --commit --no-limit
+    python scripts/run_price_sync_cron.py --commit --store compumarts --limit 20
 """
+
+from __future__ import annotations
 
 import argparse
 import asyncio
+from dataclasses import dataclass, field
 from pathlib import Path
 import sys
 
@@ -24,101 +24,116 @@ SERVICE_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SERVICE_ROOT))
 
 from app.common.logger import configure_logging, get_logger  # noqa: E402
+from app.jobs.base_cli import BaseCliJobOptions, BaseCliJobRunner  # noqa: E402
 from app.jobs.price_sync_cron import PriceSyncCronJob  # noqa: E402
 
 configure_logging()
 logger = get_logger("catalog.scripts.price_sync_cron")
 
 
-async def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Trigger the lightweight price and stock monitor sync job.",
-    )
-    parser.add_argument(
-        "--store",
-        type=str,
-        default=None,
-        help="Target store ('compumarts', 'elbadr', 'sigma') or None for all stores",
-    )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        default=None,
-        help="Maximum stale offers to check per cycle (default: from .env PRICE_SYNC_BATCH_LIMIT, 0 for unlimited)",
-    )
-    parser.add_argument(
-        "--no-limit",
-        action="store_true",
-        default=False,
-        help="Fetch and sync all stale offers without any limit",
-    )
-    parser.add_argument(
-        "--mode",
-        type=str,
-        choices=["http", "rabbitmq", "outbox"],
-        default="http",
-        help="Execution mode: 'http' (direct synchronous HTTP call) or 'rabbitmq'/'outbox' (event-driven via Transactional Outbox & RabbitMQ)",
-    )
-    parser.add_argument(
-        "--scraper-url",
-        type=str,
-        default=None,
-        help="Custom scraper-service URL override",
-    )
+@dataclass
+class PriceSyncCliOptions(BaseCliJobOptions):
+    """Domain options for one price and availability monitoring run."""
 
-    args = parser.parse_args()
+    store: str | None = None
+    limit: int | None = None
+    no_limit: bool = False
 
-    job = PriceSyncCronJob(scraper_url=args.scraper_url)
-    effective_limit = 0 if args.no_limit else args.limit
 
-    if args.mode in ("rabbitmq", "outbox"):
+@dataclass
+class PriceSyncCliResult:
+    """Structured terminal summary payload for outbox dispatch."""
+
+    store: str | None = None
+    message_ids: list[str] = field(default_factory=list)
+
+
+class PriceSyncCronCliRunner(BaseCliJobRunner[PriceSyncCliOptions, PriceSyncCliResult]):
+    """CLI adapter for :class:`PriceSyncCronJob`."""
+
+    description = "Stage the lightweight price and stock monitor sync batches in the outbox."
+
+    def register_arguments(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "--store",
+            type=str,
+            default=None,
+            help="Target store ('compumarts', 'elbadr', 'sigma') or None for all stores",
+        )
+        parser.add_argument(
+            "--limit",
+            type=int,
+            default=None,
+            help="Maximum stale offers to check (default: PRICE_SYNC_BATCH_LIMIT, 0 for unlimited)",
+        )
+        parser.add_argument(
+            "--no-limit",
+            action="store_true",
+            default=False,
+            help="Fetch and sync all stale offers without any limit",
+        )
+
+    def build_options(self, parsed_args: argparse.Namespace) -> PriceSyncCliOptions:
+        return PriceSyncCliOptions(
+            commit=parsed_args.commit,
+            dry_run=parsed_args.dry_run,
+            store=parsed_args.store,
+            limit=parsed_args.limit,
+            no_limit=parsed_args.no_limit,
+        )
+
+    async def execute_job(self, session, options: PriceSyncCliOptions) -> PriceSyncCliResult:
+        job = PriceSyncCronJob()
+        effective_limit = 0 if options.no_limit else options.limit
+
         logger.info(
-            "Dispatching price sync cron cycle via Transactional Outbox (RabbitMQ) [store=%s, limit=%s]...",
-            args.store,
+            "Staging price sync cycle via transactional outbox [store=%s, limit=%s]...",
+            options.store,
             "UNLIMITED" if effective_limit == 0 else effective_limit,
         )
-        msg_ids = await job.dispatch_once(store_key=args.store, limit=effective_limit)
-
-        print("\n" + "=" * 60)
-        print("PRICE SYNC CRON CYCLE DISPATCHED (RABBITMQ OUTBOX)")
-        print("=" * 60)
-        if not msg_ids:
-            print("No stale offers required synchronization.")
-        else:
-            print(f"Dispatched {len(msg_ids)} outbox batch message(s) to RabbitMQ:")
-            for m_id in msg_ids:
-                print(f"  - Outbox Message ID: {m_id}")
-            print("\nThe running outbox relay and RabbitMQ consumers will process these batches asynchronously.")
-        print("=" * 60 + "\n")
-    else:
-        logger.info(
-            "Executing price sync cron cycle via direct HTTP [store=%s, limit=%s]...",
-            args.store,
-            "UNLIMITED" if effective_limit == 0 else effective_limit,
-        )
-        summaries = await job.run_once(
-            store_key=args.store,
+        message_ids = await job.dispatch_once(
+            store_key=options.store,
             limit=effective_limit,
+            session=session,
+            commit=options.commit,
+            dry_run=options.dry_run,
+        )
+        return PriceSyncCliResult(
+            store=options.store,
+            message_ids=message_ids,
         )
 
-        print("\n" + "=" * 60)
-        print("PRICE SYNC CRON CYCLE SUMMARY")
-        print("=" * 60)
-        if not summaries:
-            print("No stale offers required synchronization.")
+    def render_summary(self, result: PriceSyncCliResult, options: PriceSyncCliOptions) -> None:
+        transaction = "COMMITTED" if options.commit else "DRY-RUN (rolled back)"
+
+        print("\n" + "=" * 60, file=self._stdout)
+        print("PRICE SYNC CRON CYCLE DISPATCH SUMMARY (OUTBOX)", file=self._stdout)
+        print("=" * 60, file=self._stdout)
+        print(f"Transaction: {transaction}", file=self._stdout)
+        if not result.message_ids:
+            print("No stale offers required synchronization.", file=self._stdout)
         else:
-            for idx, s in enumerate(summaries, start=1):
-                print(f"Batch {idx} [{s.store_key}]:")
-                print(f"  Processed:       {s.total_processed}")
-                print(f"  Updated:         {s.offers_updated}")
-                print(f"  Unchanged:       {s.offers_unchanged}")
-                print(f"  Price Drops:     {s.price_drops_detected}")
-                print(f"  Price Hikes:     {s.price_hikes_detected}")
-                print(f"  Out of Stock:    {s.out_of_stock_detected}")
-                print(f"  Parents Recalc:  {s.parent_laptops_recalculated}")
-                print(f"  Metrics Updated: {s.metrics_recalibrated}")
-        print("=" * 60 + "\n")
+            print(
+                f"Staged {len(result.message_ids)} outbox batch message(s):",
+                file=self._stdout,
+            )
+            for message_id in result.message_ids:
+                print(f"  - Outbox Message ID: {message_id}", file=self._stdout)
+            print(
+                "\nThe running outbox relay and RabbitMQ consumers will process these batches.",
+                file=self._stdout,
+            )
+        print("=" * 60 + "\n", file=self._stdout)
+
+
+# Convenience alias for callers that prefer the shorter job-runner name.
+PriceSyncCronRunner = PriceSyncCronCliRunner
+
+
+async def main(argv: list[str] | None = None) -> int:
+    """Async entry point used by tests and embedding callers."""
+    return await PriceSyncCronCliRunner().run(argv)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    sys.exit(asyncio.run(main()))

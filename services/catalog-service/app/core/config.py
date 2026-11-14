@@ -22,18 +22,12 @@ class Settings(BaseSettings):
     # Downstream Services
     scraper_service_url: str = "http://localhost:8001"
 
-    # Scraping Cron Job Configuration
-    enable_scraping_cron: bool = False
-    scraping_cron_interval_hours: int = 168
+    # Scraping Cron Job Configuration (one-shot CLI execution)
     scraping_cron_level: int = 2
     scraping_cron_send_email: bool = True
 
-    # Price Sync Cron Job Configuration (Lightweight Monitor)
-    enable_price_sync_cron: bool = False
-    price_sync_cron_interval_hours: int = 24
+    # Price Sync Cron Job Configuration (one-shot CLI execution)
     price_sync_batch_limit: int = 50
-    price_sync_cron_mode: str = "rabbitmq"
-    price_sync_run_on_startup: bool = False
 
     # RabbitMQ Messaging Broker
     rabbitmq_url: str = "amqp://guest:guest@localhost:5672/"
@@ -46,6 +40,10 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     enable_cache: bool = True
     cache_default_ttl_seconds: int = 3600
+
+    # Transactional Outbox Relay
+    outbox_lease_duration_minutes: int = 5
+    outbox_batch_size: int = 50
 
     model_config = SettingsConfigDict(
         env_file=(SERVICE_ROOT / ".env", ".env"),

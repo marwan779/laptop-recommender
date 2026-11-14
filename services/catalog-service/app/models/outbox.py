@@ -24,6 +24,7 @@ class OutboxMessage(Base):
     __tablename__ = "outbox_message"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    event_id: Mapped[str | None] = mapped_column(String(100), unique=True, index=True, nullable=True)
     event_type: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     routing_key: Mapped[str] = mapped_column(String(100), nullable=False)
     payload_json: Mapped[str] = mapped_column(Text, nullable=False)
@@ -33,6 +34,7 @@ class OutboxMessage(Base):
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     correlation_id: Mapped[str | None] = mapped_column(String(100), index=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True, nullable=False)
+    leased_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True, nullable=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 

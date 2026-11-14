@@ -7,15 +7,16 @@ state transitions for outbox messages.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 import json
 from typing import Any
 import uuid
 
 from pydantic import BaseModel
-from sqlalchemy import select, update
+from sqlalchemy import and_, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models.outbox import OutboxMessage, OutboxStatus
 from app.repositories.base import BaseRepository
 
@@ -45,8 +46,12 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
         else:
             raise TypeError(f"Unsupported payload type: {type(payload)}. Must be BaseModel, dict, or str.")
 
+        outbox_id = message_id or uuid.uuid4()
+        event_id = self._extract_event_id(payload) or str(outbox_id)
+
         msg = OutboxMessage(
-            id=message_id or uuid.uuid4(),
+            id=outbox_id,
+            event_id=event_id,
             event_type=event_type,
             routing_key=routing_key,
             payload_json=payload_json,
@@ -56,35 +61,85 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
             last_error=None,
             correlation_id=correlation_id or str(uuid.uuid4()),
             created_at=datetime.now(UTC),
+            leased_at=None,
             published_at=None,
         )
         self.session.add(msg)
         await self.session.flush()
         return msg
 
+    @staticmethod
+    def _extract_event_id(payload: BaseModel | dict[str, Any] | str) -> str | None:
+        """Read the domain event id from the payload so inbox and outbox agree."""
+        if isinstance(payload, BaseModel):
+            value = getattr(payload, "event_id", None)
+            return str(value) if value else None
+        if isinstance(payload, dict):
+            value = payload.get("event_id")
+            return str(value) if value else None
+        if isinstance(payload, str):
+            try:
+                decoded = json.loads(payload)
+            except (TypeError, ValueError):
+                return None
+            if isinstance(decoded, dict) and decoded.get("event_id"):
+                return str(decoded["event_id"])
+        return None
+
     async def claim_batch(
         self,
-        batch_size: int = 50,
+        batch_size: int | None = None,
+        lease_duration_minutes: int | None = None,
     ) -> Sequence[OutboxMessage]:
-        """Claim a batch of pending messages using SKIP LOCKED to prevent concurrency races.
+        """Claim a batch of deliverable messages using SKIP LOCKED.
 
-        Transitions claimed messages to PUBLISHING status before returning them.
+        Pending messages are claimed immediately. Messages stuck in
+        ``PUBLISHING`` whose lease has expired are re-claimed (self-healing from
+        a crashed relay), incrementing their retry count so poison messages
+        still exhaust ``max_retries`` instead of looping forever.
         """
+        resolved_batch_size = batch_size if batch_size is not None else settings.outbox_batch_size
+        resolved_lease_minutes = (
+            lease_duration_minutes
+            if lease_duration_minutes is not None
+            else settings.outbox_lease_duration_minutes
+        )
+
+        now = datetime.now(UTC)
+        stale_threshold = now - timedelta(minutes=resolved_lease_minutes)
+
         stmt = (
             select(OutboxMessage)
             .where(
-                OutboxMessage.status == OutboxStatus.PENDING,
                 OutboxMessage.retry_count < OutboxMessage.max_retries,
+                or_(
+                    OutboxMessage.status == OutboxStatus.PENDING,
+                    and_(
+                        OutboxMessage.status == OutboxStatus.PUBLISHING,
+                        or_(
+                            OutboxMessage.leased_at.is_(None),
+                            OutboxMessage.leased_at < stale_threshold,
+                        ),
+                    ),
+                ),
             )
             .order_by(OutboxMessage.created_at.asc())
-            .limit(batch_size)
+            .limit(resolved_batch_size)
             .with_for_update(skip_locked=True)
         )
         result = await self.session.execute(stmt)
         messages = result.scalars().all()
 
         for msg in messages:
+            if msg.status == OutboxStatus.PUBLISHING and (
+                msg.leased_at is None or msg.leased_at < stale_threshold
+            ):
+                msg.retry_count += 1
+                msg.last_error = (
+                    f"Reclaimed zombie message after lease expired ({resolved_lease_minutes}m)"
+                )
             msg.status = OutboxStatus.PUBLISHING
+            msg.leased_at = now
 
         if messages:
             await self.session.flush()
@@ -107,6 +162,7 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
             .values(
                 status=OutboxStatus.PUBLISHED,
                 published_at=published_at or datetime.now(UTC),
+                leased_at=None,
             )
         )
         await self.session.execute(stmt)
@@ -124,6 +180,7 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
 
         msg.retry_count += 1
         msg.last_error = error_message[:1000] if error_message else None
+        msg.leased_at = None
 
         if msg.retry_count >= msg.max_retries:
             msg.status = OutboxStatus.FAILED

@@ -27,6 +27,11 @@ def mock_session():
     session.add = MagicMock()
     session.begin = MagicMock()
 
+    # Default inbox claim result: the message is new and can be processed.
+    claim_result = MagicMock()
+    claim_result.scalar_one_or_none.return_value = "claimed-event-id"
+    session.execute.return_value = claim_result
+
     class FakeBeginCM:
         async def __aenter__(self):
             return session
@@ -232,6 +237,79 @@ async def test_handle_prices_checked_event(mock_session_factory):
     await consumer.handle_prices_checked_event(event.model_dump())
 
     mock_price_sync.apply_batch_results.assert_called_once()
+    assert mock_price_sync.apply_batch_results.call_args.kwargs["commit"] is False
+    mock_price_sync.invalidate_caches.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_handle_prices_checked_event_invalidates_cache_after_commit(
+    mock_session, mock_session_factory
+):
+    execution_order: list[str] = []
+    affected_id = uuid.uuid4()
+
+    class TrackingBeginCM:
+        async def __aenter__(self):
+            return mock_session
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            execution_order.append("tx_exit")
+            return None
+
+    mock_session.begin.return_value = TrackingBeginCM()
+
+    mock_broker = AsyncMock()
+    mock_price_sync = AsyncMock()
+    mock_price_sync.apply_batch_results.return_value = PriceSyncSummary(
+        batch_id="batch-p2",
+        store_key="compumarts",
+        total_processed=1,
+        offers_updated=1,
+        price_drops_detected=1,
+        affected_laptop_ids=[affected_id],
+    )
+
+    async def record_invalidate(session, laptop_ids):
+        execution_order.append("cache_invalidate")
+
+    mock_price_sync.invalidate_caches.side_effect = record_invalidate
+
+    consumer = CatalogMessageConsumer(
+        broker=mock_broker,
+        session_factory=mock_session_factory,
+        price_sync_service=mock_price_sync,
+    )
+
+    event = PricesCheckedEvent(
+        payload=PricesCheckedPayload(
+            batch_id="batch-p2",
+            store_key="compumarts",
+            total_items=1,
+            changed_items_count=1,
+            price_drops_count=1,
+            results=[
+                PriceCheckItemResult(
+                    offer_id=str(uuid.uuid4()),
+                    laptop_id=str(affected_id),
+                    product_url="https://compumarts.com/p",
+                    old_price_egp=50000.0,
+                    new_price_egp=48000.0,
+                    old_in_stock=True,
+                    new_in_stock=True,
+                    has_changed=True,
+                    change_type=PriceChangeType.PRICE_DROP,
+                    price_delta_egp=-2000.0,
+                )
+            ],
+        )
+    )
+
+    await consumer.handle_prices_checked_event(event.model_dump())
+
+    mock_price_sync.apply_batch_results.assert_called_once()
+    assert mock_price_sync.apply_batch_results.call_args.kwargs["commit"] is False
+    mock_price_sync.invalidate_caches.assert_awaited_once_with(mock_session, [affected_id])
+    assert execution_order == ["tx_exit", "cache_invalidate"]
 
 
 @pytest.mark.asyncio
@@ -250,3 +328,35 @@ async def test_handle_reviews_ready_event():
 
     # Should not raise
     await consumer.handle_reviews_ready_event(event.model_dump())
+
+
+@pytest.mark.asyncio
+async def test_handle_reviews_ready_event_defers_commit_to_outer_transaction(
+    mock_session,
+    mock_session_factory,
+):
+    mock_broker = AsyncMock()
+    mock_review_service = AsyncMock()
+
+    consumer = CatalogMessageConsumer(
+        broker=mock_broker,
+        session_factory=mock_session_factory,
+        review_intelligence_service=mock_review_service,
+    )
+
+    event = ReviewsReadyEvent(
+        payload=ReviewsReadyPayload(
+            job_id="job-rec-2",
+            total_laptops=1,
+            total_snippets=5,
+            s3_key="reviews/batch_1.json",
+        )
+    )
+
+    await consumer.handle_reviews_ready_event(event.model_dump())
+
+    mock_review_service.ingest_from_s3.assert_awaited_once_with(
+        session=mock_session,
+        s3_key="reviews/batch_1.json",
+        commit=False,
+    )

@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 import logging
 import uuid
 
@@ -84,10 +85,14 @@ class PriceSyncService:
         self,
         session: AsyncSession,
         batch_response: PriceCheckBatchResponse | dict,
+        commit: bool = True,
     ) -> PriceSyncSummary:
         """Process price monitor response, update offers, roll up parent laptops,
 
         and recalibrate price-dependent hardware value metrics using pure domain rules.
+
+        ``commit=False`` leaves the transaction open so a caller (e.g. a CLI
+        runner performing a dry run) can decide whether to commit or roll back.
         """
         if isinstance(batch_response, dict):
             resp = PriceCheckBatchResponse(**batch_response)
@@ -247,17 +252,20 @@ class PriceSyncService:
             offers_updated=summary.offers_updated,
         )
 
-        await session.commit()
+        summary.affected_laptop_ids = sorted(affected_laptop_ids, key=str)
 
-        # Evict cached price-history payloads for every affected canonical laptop.
-        await self._invalidate_price_history_cache(session, affected_laptop_ids)
+        if commit:
+            await session.commit()
+
+            # Evict cached price-history payloads for every affected canonical laptop.
+            await self.invalidate_caches(session, affected_laptop_ids)
 
         return summary
 
-    async def _invalidate_price_history_cache(
+    async def invalidate_caches(
         self,
         session: AsyncSession,
-        laptop_ids: set[uuid.UUID],
+        laptop_ids: Sequence[uuid.UUID] | set[uuid.UUID],
     ) -> None:
         """Clear cached price-history curves and catalog responses for laptops touched by this batch."""
         if not self.cache or not laptop_ids:
@@ -285,3 +293,11 @@ class PriceSyncService:
                     prefix,
                     exc,
                 )
+
+    async def _invalidate_price_history_cache(
+        self,
+        session: AsyncSession,
+        laptop_ids: set[uuid.UUID],
+    ) -> None:
+        """Backward-compatible wrapper for invalidate_caches."""
+        await self.invalidate_caches(session, laptop_ids)
