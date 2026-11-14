@@ -1,8 +1,9 @@
 """Integration tests for the review chassis outbox dispatch during ingestion.
 
 These exercise the real application use case against the isolated ``db_session``
-fixture (NullPool + rollback), verifying that seeding, the outbox message, and
-the reviewed flags all live inside one transaction.
+fixture (NullPool + rollback), verifying that Stage 1 seeding and the outbox
+message share one transaction while reviewed flags are stamped only after
+Stage 2 review intelligence persistence.
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.laptop import LaptopConfiguration
 from app.models.outbox import OutboxMessage
+from app.repositories.laptop_repository import LaptopRepository
 from app.repositories.outbox_repository import OutboxRepository
 from app.schemas.events import EventType, ScrapeReviewsCommand
 from app.services.catalog_ingestion_service import CatalogIngestionService
@@ -94,7 +96,8 @@ async def test_ingestion_emits_single_outbox_command_with_collapsed_chassis(
     assert {f"MPN-A-{suffix}", f"MPN-B-{suffix}"} <= set(target.mpns)
     assert not hasattr(target, "search_queries")
 
-    # Both variants are flagged reviewed with a timestamp.
+    # Stage 1 seeding must NOT mark laptops as reviewed; that happens only after
+    # Stage 2 review intelligence ingestion actually persists their NLP profile.
     laptops = (
         (
             await db_session.execute(
@@ -108,8 +111,8 @@ async def test_ingestion_emits_single_outbox_command_with_collapsed_chassis(
     )
     assert len(laptops) == 2
     for laptop in laptops:
-        assert laptop.has_reviews is True
-        assert laptop.reviews_checked_at is not None
+        assert laptop.has_reviews is False
+        assert laptop.reviews_checked_at is None
 
 
 @pytest.mark.asyncio
@@ -133,6 +136,32 @@ async def test_second_ingestion_does_not_requeue_reviewed_laptops(
     first = await service.ingest_from_file(session=db_session, file_path=catalog_file)
     assert first.status == "SUCCESS"
 
+    # Stage 1 leaves the newly seeded laptop unreviewed until Stage 2 completes.
+    canonical_id = f"idem-{suffix}"
+    seeded = (
+        await db_session.execute(
+            select(LaptopConfiguration).where(LaptopConfiguration.canonical_id == canonical_id)
+        )
+    ).scalar_one()
+    assert seeded.has_reviews is False
+
+    # Simulate Stage 2 review intelligence ingestion persisting the NLP profile.
+    updated = await LaptopRepository(db_session).update_review_intelligence_by_canonical_ids(
+        {
+            canonical_id: {
+                "community_nlp_score": 82.4,
+                "evidence_count": 27,
+                "pros_en": ["Strong cooling"],
+                "pros_ar": ["تبريد قوي"],
+                "cons_en": ["Loud turbo fans"],
+                "cons_ar": ["صوت مراوح مرتفع"],
+            }
+        }
+    )
+    assert updated == 1
+    await db_session.refresh(seeded)
+    assert seeded.has_reviews is True
+
     second = await service.ingest_from_file(session=db_session, file_path=catalog_file)
     assert second.status == "SUCCESS"
 
@@ -144,7 +173,7 @@ async def test_second_ingestion_does_not_requeue_reviewed_laptops(
 
 @pytest.mark.asyncio
 async def test_outbox_message_and_flags_share_the_same_transaction(db_session: AsyncSession):
-    """Rolling the transaction back must discard both the outbox row and the flags."""
+    """Rolling the transaction back must discard writes from the same transaction."""
     from app.models.base import utcnow
 
     laptop = LaptopConfiguration(

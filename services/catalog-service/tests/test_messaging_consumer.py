@@ -328,3 +328,35 @@ async def test_handle_reviews_ready_event():
 
     # Should not raise
     await consumer.handle_reviews_ready_event(event.model_dump())
+
+
+@pytest.mark.asyncio
+async def test_handle_reviews_ready_event_defers_commit_to_outer_transaction(
+    mock_session,
+    mock_session_factory,
+):
+    mock_broker = AsyncMock()
+    mock_review_service = AsyncMock()
+
+    consumer = CatalogMessageConsumer(
+        broker=mock_broker,
+        session_factory=mock_session_factory,
+        review_intelligence_service=mock_review_service,
+    )
+
+    event = ReviewsReadyEvent(
+        payload=ReviewsReadyPayload(
+            job_id="job-rec-2",
+            total_laptops=1,
+            total_snippets=5,
+            s3_key="reviews/batch_1.json",
+        )
+    )
+
+    await consumer.handle_reviews_ready_event(event.model_dump())
+
+    mock_review_service.ingest_from_s3.assert_awaited_once_with(
+        session=mock_session,
+        s3_key="reviews/batch_1.json",
+        commit=False,
+    )

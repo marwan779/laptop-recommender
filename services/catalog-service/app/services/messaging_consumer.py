@@ -259,6 +259,7 @@ class CatalogMessageConsumer:
                 result = await self._resolve_review_intelligence_service().ingest_from_s3(
                     session=session,
                     s3_key=payload.s3_key,
+                    commit=False,
                 )
 
         logger.info(

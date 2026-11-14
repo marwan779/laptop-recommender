@@ -147,6 +147,7 @@ class ReviewIntelligenceService:
         self,
         session: AsyncSession,
         source_path: str | Path | None = None,
+        commit: bool = True,
     ) -> ReviewIngestionResult:
         """Load an enriched reviews artifact from disk and ingest it."""
         path = Path(source_path) if source_path else self.chroma_service.reviews_json_path
@@ -154,22 +155,24 @@ class ReviewIntelligenceService:
             raise FileNotFoundError(f"Reviews artifact not found at: {path}")
 
         data = await asyncio.to_thread(self._read_json_file, path)
-        return await self.ingest_reviews_dict(session, data)
+        return await self.ingest_reviews_dict(session, data, commit=commit)
 
     async def ingest_from_s3(
         self,
         session: AsyncSession,
         s3_key: str | None = None,
+        commit: bool = True,
     ) -> ReviewIngestionResult:
         """Load an enriched reviews artifact from object storage and ingest it."""
         key = s3_key or DEFAULT_REVIEWS_S3_KEY
         data = await asyncio.to_thread(self.storage_service.read_json, key)
-        return await self.ingest_reviews_dict(session, data)
+        return await self.ingest_reviews_dict(session, data, commit=commit)
 
     async def ingest_reviews_dict(
         self,
         session: AsyncSession,
         reviews_data: dict[str, Any],
+        commit: bool = True,
     ) -> ReviewIngestionResult:
         """Embed chassis reviews into ChromaDB and persist NLP profiles to PostgreSQL."""
         start_time = time.perf_counter()
@@ -191,7 +194,8 @@ class ReviewIntelligenceService:
         )
 
         sql_updated = await LaptopRepository(session).update_review_intelligence_by_canonical_ids(profiles)
-        await session.commit()
+        if commit:
+            await session.commit()
 
         elapsed = round(time.perf_counter() - start_time, 3)
         logger.info(

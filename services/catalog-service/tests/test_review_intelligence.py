@@ -18,6 +18,7 @@ from app.schemas.recommendation import RecommendationRequest
 from app.services.catalog_metrics_service import CatalogMetricsService
 from app.services.catalog_query_service import CatalogQueryService
 from app.services.recommendation_service import RecommendationService
+from app.services.review_intelligence_service import ReviewIntelligenceService
 from tests.test_catalog_seeder import _build_sample_catalog_item
 
 
@@ -223,6 +224,59 @@ async def test_recommendation_service_surfaces_review_pros_and_cons(db_session: 
         "keyboard_and_trackpad_score": 80.4,
         "real_battery_and_reliability_score": 79.6,
     }
+
+
+@pytest.mark.asyncio
+async def test_ingest_reviews_dict_with_commit_false_defers_transaction(db_session: AsyncSession):
+    cid = f"review-defer-{uuid.uuid4().hex[:8]}"
+    await CatalogSeederRepository(db_session).upsert_catalog(
+        {"laptops": [_build_sample_catalog_item(cid, mpn=f"MPN-DEF-{uuid.uuid4().hex[:6]}")]}
+    )
+
+    class _FakeChroma:
+        def upsert_chassis_reviews(self, laptops):
+            return len(laptops)
+
+    service = ReviewIntelligenceService(chroma_service=_FakeChroma())
+    payload = {
+        "laptops": [
+            {
+                "primary_canonical_id": cid,
+                "matched_canonical_ids": [cid],
+                "nlp_review_profile": _community_reviews(),
+            }
+        ]
+    }
+
+    result = await service.ingest_reviews_dict(db_session, payload, commit=False)
+    assert result.status == "SUCCESS"
+    assert result.sql_laptops_updated == 1
+
+    stmt = (
+        select(LaptopConfiguration)
+        .where(LaptopConfiguration.canonical_id == cid)
+        .options(selectinload(LaptopConfiguration.metrics))
+    )
+    laptop = (await db_session.execute(stmt)).scalar_one()
+    assert laptop.has_reviews is True
+    assert laptop.reviews_checked_at is not None
+    assert laptop.reviews_evidence_count == 27
+    assert laptop.pros_en == ["Strong cooling", "Easy upgrades"]
+    assert laptop.cons_en == ["Loud turbo fans"]
+    assert laptop.metrics is not None
+    assert float(laptop.metrics.community_nlp_score) == 82.4
+    assert float(laptop.metrics.thermals_score) == 78.9
+
+    # The caller owns the transaction: rolling back must discard the uncommitted
+    # review intelligence instead of leaving it persisted behind our back.
+    await db_session.rollback()
+
+    remaining = (
+        await db_session.execute(
+            select(LaptopConfiguration).where(LaptopConfiguration.canonical_id == cid)
+        )
+    ).scalar_one_or_none()
+    assert remaining is None
 
 
 def test_topsis_result_carries_review_pros_and_cons():
