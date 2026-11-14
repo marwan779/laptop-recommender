@@ -187,6 +187,10 @@ class LaptopReviewTarget(BaseModel):
 
     laptop_id: str = Field(description="Laptop configuration UUID from catalog database")
     canonical_id: str = Field(description="Laptop canonical slug identifier")
+    chassis_key: str | None = Field(
+        default=None,
+        description="Canonical physical chassis key resolved by catalog-service",
+    )
     title: str | None = Field(default=None, description="Full retail or catalog product title")
     brand: str | None = Field(default=None, description="Brand name, e.g. ASUS")
     laptop_family: str | None = Field(default=None, description="Product family, e.g. Vivobook")

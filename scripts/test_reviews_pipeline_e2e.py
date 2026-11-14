@@ -53,6 +53,7 @@ from datetime import UTC, datetime
 import logging
 import os
 from pathlib import Path
+import random
 import subprocess
 import sys
 import time
@@ -106,13 +107,25 @@ from app.services.messaging_consumer import ScraperMessageConsumer
 from app.services.reviews.collector import ReviewCollectorService
 
 
+class _NoOpStorage:
+    \"\"\"Placeholder storage backend so dry-runs never initialize S3/MinIO.\"\"\"
+
+    provider_name = "noop"
+    bucket_name = "noop"
+
+    def __getattr__(self, name: str):
+        raise RuntimeError(f"S3/storage method '{name}' called while upload_to_s3=False.")
+
+
 async def main() -> None:
     broker = RabbitMQBroker()
     await broker.connect()
 
+    upload_s3 = os.environ.get("E2E_UPLOAD_S3") == "1"
     collector = ReviewCollectorService(
+        storage_service=None if upload_s3 else _NoOpStorage(),
         broker=broker,
-        upload_to_s3=os.environ.get("E2E_UPLOAD_S3") == "1",
+        upload_to_s3=upload_s3,
         local_output_dir=Path(os.environ["E2E_OUTPUT_DIR"]),
     )
     consumer = ScraperMessageConsumer(broker=broker, review_collector=collector)
@@ -157,6 +170,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=int,
         default=None,
         help="Max number of chassis targets to dispatch (useful for batch testing without scraping all 189 targets).",
+    )
+    parser.add_argument(
+        "--random",
+        action="store_true",
+        default=False,
+        help="Randomly sample up to --limit chassis targets instead of taking the first N.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Optional RNG seed when --random is used for reproducible sampling.",
     )
     parser.add_argument(
         "--upload-s3",
@@ -453,15 +478,23 @@ async def dispatch_and_wait(
 
 
 def print_targets(targets: list[LaptopReviewTarget]) -> None:
-    print(f"\nResolved {len(targets)} chassis target(s):")
-    for index, target in enumerate(targets[:10], start=1):
+    print(f"\nSelected {len(targets)} chassis target(s) to dispatch:")
+    for index, target in enumerate(targets[:15], start=1):
         size = f"{target.screen_size}in" if target.screen_size is not None else "size?"
+        grouped = len(target.matched_laptop_ids)
         print(
-            f"  {index:>2}. {target.brand or '?'} {target.laptop_family or '?'} "
-            f"{target.laptop_model or '?'}  [{size}]  canonical={target.canonical_id}"
+            f"  {index:>2}. [{target.chassis_key or '?'}] "
+            f"{target.brand or '?'} {target.laptop_family or '?'} "
+            f"{target.laptop_model or '?'} [{size}] "
+            f"(grouped={grouped}, canonical={target.canonical_id})"
         )
-    if len(targets) > 10:
-        print(f"  ... and {len(targets) - 10} more")
+    if len(targets) > 15:
+        print(f"  ... and {len(targets) - 15} more")
+
+
+def _count_duplicates(values: list[str]) -> int:
+    cleaned = [val for val in values if val]
+    return len(cleaned) - len(set(cleaned))
 
 
 def print_summary(
@@ -472,8 +505,6 @@ def print_summary(
     summary = artifact.batch_metadata.metrics_summary
     total_editorial = sum(len(item.communities.editorial) for item in artifact.laptops)
     total_discussions = sum(len(item.communities.discussions) for item in artifact.laptops)
-    total_reddit = sum(len(item.communities.reddit) for item in artifact.laptops)
-    total_facebook = sum(len(item.communities.facebook) for item in artifact.laptops)
 
     print("\n" + "=" * 78)
     print("REVIEWS PIPELINE E2E SUMMARY")
@@ -485,13 +516,54 @@ def print_summary(
     print(f"laptops aggregated    : {sum(len(i.matched_laptop_ids) for i in artifact.laptops)}")
     print(f"youtube videos        : {summary.total_youtube_videos}")
     print(f"youtube comments      : {summary.total_youtube_comments}")
-    print(f"reddit posts          : {total_reddit}")
-    print(f"facebook posts        : {total_facebook}")
     print(f"editorial reviews     : {total_editorial}")
     print(f"forum discussions     : {total_discussions}")
     print(f"event total_chassis   : {event.payload.total_chassis}")
     print(f"event total_laptops   : {event.payload.total_laptops}")
     print("=" * 78)
+
+    for index, item in enumerate(artifact.laptops, start=1):
+        yt = item.youtube
+        video_ids = [v.video_id for v in yt.videos]
+        video_urls = [v.video_url for v in yt.videos]
+        transcripts_ok = sum(1 for v in yt.videos if v.transcript_text.strip())
+        yt_comments = sum(len(v.top_comments) for v in yt.videos)
+        editorial_urls = [e.review_url for e in item.communities.editorial]
+        discussion_urls = [d.post_url for d in item.communities.discussions]
+
+        print(
+            f"\n[{index}] chassis_key={item.chassis_key} | "
+            f"canonical={item.primary_canonical_id} | matched_laptops={len(item.matched_laptop_ids)}"
+        )
+        print(
+            f"    YouTube : query={yt.query_used!r} | found={yt.total_videos_found} | "
+            f"kept={len(yt.videos)} | dup_ids={_count_duplicates(video_ids)} | "
+            f"dup_urls={_count_duplicates(video_urls)} | transcripts={transcripts_ok}/{len(yt.videos)} | "
+            f"comments={yt_comments}"
+        )
+        for v_idx, video in enumerate(yt.videos, start=1):
+            t_len = len(video.transcript_text.strip())
+            print(
+                f"      {v_idx}. [{video.language}, chars={t_len}, comments={len(video.top_comments)}] "
+                f"{video.title} -> {video.video_url}"
+            )
+
+        print(
+            f"    Editorial ({len(item.communities.editorial)}, dup_urls={_count_duplicates(editorial_urls)})"
+        )
+        for rev in item.communities.editorial:
+            print(
+                f"      - [{rev.source}, verdict_chars={len(rev.verdict)}] {rev.review_url}"
+            )
+
+        print(
+            f"    Discussions ({len(item.communities.discussions)}, dup_urls={_count_duplicates(discussion_urls)})"
+        )
+        for post in item.communities.discussions:
+            print(
+                f"      - [{post.platform}, comments={len(post.comments)}] "
+                f"{post.post_title} -> {post.post_url}"
+            )
 
 
 async def run(args: argparse.Namespace) -> int:
@@ -507,14 +579,22 @@ async def run(args: argparse.Namespace) -> int:
     print(f"  output dir    : {output_dir}")
     print(f"  upload to s3  : {args.upload_s3}")
     if args.limit is not None:
-        print(f"  limit         : {args.limit}")
+        print(f"  limit         : {args.limit} (random={args.random})")
     print(f"  timeout       : {timeout}s")
 
     try:
         laptops = await select_laptops(args)
         targets = build_targets(laptops)
+        print(
+            f"\nCatalog resolution: {len(laptops)} SQL laptop(s) -> "
+            f"{len(targets)} unique chassis target(s)."
+        )
         if args.limit is not None and args.limit > 0:
-            targets = targets[: args.limit]
+            if args.random:
+                rng = random.Random(args.seed) if args.seed is not None else random.Random()
+                targets = rng.sample(targets, min(args.limit, len(targets)))
+            else:
+                targets = targets[: args.limit]
     finally:
         await engine.dispose()
 

@@ -25,6 +25,7 @@ from pathlib import Path
 from app.common.messaging.contract import IMessageBroker
 from app.common.storage.base import IObjectStorageService
 from app.common.storage.factory import get_storage_service
+from app.domain.reviews.relevance import consolidate_targets_by_chassis
 from app.schemas.events import (
     EventType,
     LaptopReviewTarget,
@@ -105,12 +106,14 @@ class ReviewCollectorService:
             path when S3 upload is disabled.
         """
         job_id = command.payload.job_id
-        targets = command.payload.targets
+        raw_targets = command.payload.targets
+        targets = consolidate_targets_by_chassis(raw_targets, key_fn=build_chassis_key)
 
         logger.info(
-            "Processing reviews batch [job_id=%s] with %d chassis targets.",
+            "Processing reviews batch [job_id=%s] with %d unique chassis targets (from %d input targets).",
             job_id,
             len(targets),
+            len(raw_targets),
         )
 
         # 1. Run the platform collectors independently, in parallel.

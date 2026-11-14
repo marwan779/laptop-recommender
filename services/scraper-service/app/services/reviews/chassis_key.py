@@ -25,15 +25,20 @@ def normalize_key_part(value: str | None) -> str | None:
 
 
 def build_chassis_key(target: LaptopReviewTarget) -> str:
-    """Derive a stable ``brand:family:sub_model`` chassis key for a target.
+    """Derive or preserve a stable ``brand:family:sub_model`` chassis key.
 
-    Matches the shape produced by catalog-service's ``ChassisKeyExtractor`` so
-    both services agree on chassis identity. A repeated family prefix in the
-    model is stripped to avoid ``lenovo:loq:loq-15irx9``.
+    When ``catalog-service`` already resolved ``target.chassis_key`` (using its
+    chassis-code extractor), honor it directly so both services stay 100%
+    aligned. Otherwise fall back to normalizing ``brand:family:model`` after
+    stripping a repeated family prefix.
 
     Falls back to the canonical id when identity fields are absent so the key is
     never blank.
     """
+    explicit = str(getattr(target, "chassis_key", None) or "").strip()
+    if explicit:
+        return explicit
+
     brand = normalize_key_part(target.brand)
     family = normalize_key_part(target.laptop_family)
     model = normalize_key_part(target.laptop_model)

@@ -17,12 +17,12 @@ import logging
 from typing import Any
 from urllib.parse import quote_plus
 
-from app.domain.reviews.community_queries import CommunityQueryBuilder, clean_sub_model
+from app.domain.reviews.community_queries import CommunityQueryBuilder
+from app.domain.reviews.relevance import matches_target_text
 from app.schemas.events import LaptopReviewTarget
 from app.schemas.reviews_s3 import CommunityPost
 from app.services.reviews.community.contracts import ICommunityPlatformScraper
 from app.services.reviews.community.filters import (
-    code_tokens,
     is_deal_listing,
     is_non_laptop_device,
     is_substantive,
@@ -74,7 +74,6 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
                 topics = {
                     str(topic.get("id")): topic for topic in payload.get("topics") or [] if isinstance(topic, dict)
                 }
-                tokens = self._hardware_tokens(laptop_target)
 
                 results: list[CommunityPost] = []
                 seen: set[str] = set()
@@ -84,13 +83,15 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
                     mapped = self._to_community_post(post, topics)
                     if mapped is None or mapped.post_id in seen:
                         continue
-                    if not self._passes_gate(mapped, laptop_target, tokens):
+                    if not self._passes_gate(mapped, laptop_target):
                         continue
                     seen.add(mapped.post_id)
 
                     # Hydrate full un-truncated post body from Discourse post API
                     full_body = await self._fetch_full_post(client, mapped.post_id)
                     if full_body:
+                        if is_non_laptop_device(mapped.post_title, full_body) or is_deal_listing(full_body):
+                            continue
                         mapped = CommunityPost(
                             platform=mapped.platform,
                             post_id=mapped.post_id,
@@ -137,27 +138,22 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
         self,
         post: CommunityPost,
         target: LaptopReviewTarget,
-        hardware_tokens: set[str],
     ) -> bool:
-        body_upper = post.post_body.upper()
-        title_upper = post.post_title.upper()
-        haystack = f"{title_upper} {body_upper}"
+        haystack = f"{post.post_title} {post.post_body}"
 
-        # L1: hardware relevance check.
-        # Match either a specific hardware token (SKU, MPN, sub-model) in title/body
-        # OR the laptop family name in the post body.
-        family = (target.laptop_family or "").strip().upper()
-        _generic = {"GAMING", "LAPTOP", "NOTEBOOK", "SERIES", "EDITION"}
-        family_tokens = {family} | {w for w in family.split() if len(w) >= 3 and w not in _generic}
-        family_tokens.discard("")
-
-        has_token_match = bool(hardware_tokens and any(token in haystack for token in hardware_tokens))
-        has_family_match = bool(family_tokens and any(ft in body_upper for ft in family_tokens))
-
-        if not (has_token_match or has_family_match):
+        # L1: strict word-boundary headline/URL + brand + series/code relevance.
+        has_domain_match = matches_target_text(
+            target,
+            post.post_title,
+            post.post_body,
+            post.post_url,
+            require_brand=True,
+            require_headline_match=True,
+        )
+        if not has_domain_match:
             return False
 
-        # L1b: reject non-laptop devices (motherboards, monitors, consoles, ...).
+        # L1b: reject non-laptop devices & accessories.
         if is_non_laptop_device(post.post_title, post.post_body):
             return False
 
@@ -167,24 +163,6 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
 
         # L3: require substantive discussion content.
         return is_substantive(post.post_body, self.min_body_length)
-
-    @staticmethod
-    def _hardware_tokens(target: LaptopReviewTarget) -> set[str]:
-        """Collect the codes a relevant post should mention."""
-        tokens = code_tokens(
-            [
-                target.laptop_model or "",
-                *(target.skus or []),
-                target.mpn or "",
-                target.manufacturer_part_number or "",
-            ]
-        )
-        sub_model = clean_sub_model(target)
-        if sub_model:
-            tokens.add(sub_model.upper())
-        brand = (target.brand or "").upper()
-        family = (target.laptop_family or "").upper()
-        return {token for token in tokens if token and token not in {brand, family}}
 
     # ── Mapping ────────────────────────────────────────────────────────────
 

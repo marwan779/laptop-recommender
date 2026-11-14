@@ -21,6 +21,7 @@ from app.schemas.reviews_s3 import CommunitiesData, CommunityPost, EditorialRevi
 from app.services.reviews.chassis_key import build_chassis_key
 from app.services.reviews.community.arabhardware import ArabhardwarePlatformScraper
 from app.services.reviews.community.contracts import ICommunityPlatformScraper
+from app.services.reviews.community.http import shared_community_session
 from app.services.reviews.community.laptopmag import LaptopMagPlatformScraper
 from app.services.reviews.community.level1techs import Level1TechsPlatformScraper
 from app.services.reviews.contracts import ICommunitiesReviewsCollector
@@ -69,7 +70,8 @@ class CommunitiesReviewsCollector(ICommunitiesReviewsCollector):
                     )
                     return chassis_key, CommunitiesData()
 
-        collected = await asyncio.gather(*[_collect(target) for target in targets])
+        async with shared_community_session():
+            collected = await asyncio.gather(*[_collect(target) for target in targets])
         return dict(collected)
 
     async def _collect_for_target(self, target: LaptopReviewTarget) -> CommunitiesData:

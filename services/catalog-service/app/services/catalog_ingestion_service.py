@@ -325,6 +325,7 @@ class CatalogIngestionService:
         return LaptopReviewTarget(
             laptop_id=target.laptop_id,
             canonical_id=target.canonical_id,
+            chassis_key=getattr(target, "chassis_key", None),
             title=target.title,
             brand=target.brand,
             laptop_family=target.laptop_family,

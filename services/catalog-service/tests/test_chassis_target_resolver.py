@@ -188,9 +188,10 @@ def test_distinct_chassis_codes_do_not_collapse():
         (None, "Lenovo Legion Pro 5 16IAX10H 83F500FBIN", "16IAX10H"),
         ("FA608PM-RV169W", None, "FA608PM"),
         ("X1605VA-OACH007W", None, "X1605VA"),
-        (None, "HP Victus 15-fa2352TX Gaming Laptop", "15-FA2352TX"),
+        (None, "HP Victus 15-fa2352TX Gaming Laptop", "15-FA"),
         (None, "Acer Nitro V ANV15-52-78UM", "ANV15-52"),
         (None, "Lenovo IdeaPad Slim 3 15IRH10 (83K100QNED)", "15IRH10"),
+        (None, "MSI Prestige 13 AI Evo A1MG", "A1MG"),
     ],
 )
 def test_extract_sub_model_from_identity_fields(model, title, expected_code):
@@ -360,3 +361,209 @@ def test_resolver_leaves_screen_size_none_without_data():
 
 def test_none_like_input_returns_empty_list():
     assert ChassisTargetResolver().resolve(()) == []
+
+
+# ─── Realistic physical chassis grouping ─────────────────────────────────────
+
+
+def test_hp_victus_regional_skus_collapse_to_series_and_separate_amd():
+    resolver = ChassisTargetResolver()
+
+    targets = resolver.resolve(
+        [
+            LaptopInputDto(
+                laptop_id="v1",
+                canonical_id="hp-victus-15-fa2317tx",
+                brand="HP",
+                laptop_family="Victus",
+                laptop_model="15-FA2317TX",
+                mpn="15FA2317TX",
+                screen_size=15.6,
+            ),
+            LaptopInputDto(
+                laptop_id="v2",
+                canonical_id="hp-victus-15-fa2082wm",
+                brand="HP",
+                laptop_family="Victus",
+                laptop_model="HP Victus 15-fa2082wm",
+                mpn="B5EQ3UA",
+                screen_size=15.6,
+            ),
+            LaptopInputDto(
+                laptop_id="v3",
+                canonical_id="hp-victus-15-fa1043ne",
+                brand="HP",
+                laptop_family="Victus",
+                laptop_model="Victus 15",
+                mpn="15FA1043NE",
+                screen_size=15.6,
+            ),
+            LaptopInputDto(
+                laptop_id="v4",
+                canonical_id="hp-victus-15-fb3093dx",
+                brand="HP",
+                laptop_family="Victus",
+                laptop_model="15-fb3093dx",
+                mpn="FB3093DX",
+                screen_size=15.6,
+            ),
+        ]
+    )
+
+    assert len(targets) == 2
+    assert {t.chassis_key for t in targets} == {"hp:victus:15-FA", "hp:victus:15-FB"}
+    fa_group = next(t for t in targets if t.chassis_key == "hp:victus:15-FA")
+    assert fa_group.matched_laptop_ids == ("v1", "v2", "v3")
+
+
+def test_screen_size_and_tier_keep_distinct_chassis_apart_without_codes():
+    resolver = ChassisTargetResolver()
+
+    targets = resolver.resolve(
+        [
+            LaptopInputDto(
+                laptop_id="viv15",
+                canonical_id="asus-vivobook-15",
+                brand="ASUS",
+                laptop_family="Vivobook",
+                laptop_model="Vivobook 15",
+                screen_size=15.6,
+            ),
+            LaptopInputDto(
+                laptop_id="viv16",
+                canonical_id="asus-vivobook-16",
+                brand="ASUS",
+                laptop_family="Vivobook",
+                laptop_model="Vivobook 16",
+                screen_size=16.0,
+            ),
+            LaptopInputDto(
+                laptop_id="ip-2in1",
+                canonical_id="lenovo-ideapad-5-2in1",
+                brand="Lenovo",
+                laptop_family="IdeaPad",
+                laptop_model="IdeaPad 5 2-in-1",
+                screen_size=14.0,
+            ),
+            LaptopInputDto(
+                laptop_id="ip-gaming",
+                canonical_id="lenovo-ideapad-gaming-3",
+                brand="Lenovo",
+                laptop_family="IdeaPad",
+                laptop_model="IdeaPad Gaming 3",
+                screen_size=15.6,
+            ),
+        ]
+    )
+
+    assert len(targets) == 4
+    keys = {t.chassis_key for t in targets}
+    assert len(keys) == 4
+    assert "asus:vivobook:15" in keys
+    assert "asus:vivobook:16" in keys
+
+
+def test_loq_essential_and_lenovo_mtm_stay_distinct():
+    resolver = ChassisTargetResolver()
+
+    targets = resolver.resolve(
+        [
+            LaptopInputDto(
+                laptop_id="ess",
+                canonical_id="loq-ess",
+                brand="Lenovo",
+                laptop_family="LOQ Essential",
+                laptop_model="83S000C2IN",
+                mpn="83S000C2IN",
+            ),
+            LaptopInputDto(
+                laptop_id="loq-1",
+                canonical_id="loq-1",
+                brand="Lenovo",
+                laptop_family="LOQ",
+                laptop_model="83DV01HSED",
+                mpn="83DV01HSED",
+            ),
+            LaptopInputDto(
+                laptop_id="loq-2",
+                canonical_id="loq-2",
+                brand="Lenovo",
+                laptop_family="LOQ",
+                laptop_model="83DV012HED",
+                mpn="83DV012HED",
+            ),
+            LaptopInputDto(
+                laptop_id="loq-3",
+                canonical_id="loq-3",
+                brand="Lenovo",
+                laptop_family="LOQ",
+                laptop_model="83JC0057PS",
+                mpn="83JC0057PS",
+            ),
+        ]
+    )
+
+    keys = {t.chassis_key: t for t in targets}
+    assert set(keys) == {"lenovo:loq-essential:83S0", "lenovo:loq:83DV", "lenovo:loq:83JC"}
+    assert keys["lenovo:loq:83DV"].matched_laptop_ids == ("loq-1", "loq-2")
+
+
+def test_to_review_target_preserves_resolved_chassis_key():
+    from app.services.catalog_ingestion_service import CatalogIngestionService
+
+    resolved = ChassisTargetResolver().resolve([_lenovo_loq("lap-1", "loq-15irx9", "83DV01HSED")])[0]
+    transport = CatalogIngestionService._to_review_target(resolved)
+
+    assert transport.chassis_key == resolved.chassis_key == "lenovo:loq:15IRX9"
+
+
+def test_family_inference_recovers_generic_and_polluted_db_families():
+    resolver = ChassisTargetResolver()
+
+    targets = resolver.resolve(
+        [
+            LaptopInputDto(
+                laptop_id="hp-omni",
+                canonical_id="hp-omnibook-5-flip-14-fp",
+                brand="HP",
+                laptop_family="HP",
+                laptop_model="OmniBook 5 Flip 14-FP0023DX",
+                title="HP OmniBook 5 Flip 14-FP0023DX 2 In 1 Laptop",
+                screen_size=14.0,
+            ),
+            LaptopInputDto(
+                laptop_id="asus-viv",
+                canonical_id="asus-vivobook-16-x1607ca",
+                brand="ASUS",
+                laptop_family="Notebook",
+                laptop_model="Vivobook 16 X1607CA-MB157W",
+                title="ASUS Vivobook 16 X1607CA-MB157W Laptop",
+                screen_size=16.0,
+            ),
+            LaptopInputDto(
+                laptop_id="len-flex",
+                canonical_id="lenovo-flex-5-14iau7",
+                brand="Lenovo",
+                laptop_family="Lenovo",
+                laptop_model="FLEX 5 14IAU7",
+                title="Lenovo FLEX 5 14IAU7 82R700L4US 2-IN-1",
+                screen_size=14.0,
+            ),
+            LaptopInputDto(
+                laptop_id="asus-cpu",
+                canonical_id="asus-zenbook-ux3407qa",
+                brand="ASUS",
+                laptop_family="Ultra 7",
+                laptop_model="UX3407QA",
+                title="ASUS Zenbook A14 UX3407QA Core Ultra 7 Laptop",
+                screen_size=14.0,
+            ),
+        ]
+    )
+
+    assert {t.chassis_key for t in targets} == {
+        "hp:omnibook:14-FP",
+        "asus:vivobook:X1607CA",
+        "lenovo:flex:14IAU7",
+        "asus:zenbook:UX3407QA",
+    }

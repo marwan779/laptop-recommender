@@ -327,3 +327,188 @@ def test_collector_defaults_to_the_three_community_scrapers():
         "level1techs",
         "arabhardware",
     ]
+
+
+@pytest.mark.anyio
+async def test_laptopmag_scopes_cards_and_rejects_mismatched_h1_review():
+    search_html = """
+    <html><body>
+      <nav><a href="/reviews/lenovo-loq-15-review">Nav LOQ link</a></nav>
+      <div class="search-results">
+        <article>
+          <h3><a href="/reviews/hp-victus-16-review">HP Victus Review</a></h3>
+        </article>
+      </div>
+    </body></html>
+    """
+    mismatched_review_html = """
+    <html><body>
+      <h1>HP Victus 16 Review: Big Screen Gaming</h1>
+      <span class="rating">4.0 out of 5</span>
+      <div class="verdict"><p>Great 16-inch budget laptop.</p></div>
+    </body></html>
+    """
+    victus_15 = LaptopReviewTarget(
+        laptop_id="v15",
+        canonical_id="hp-victus-15",
+        brand="HP",
+        laptop_family="Victus",
+        laptop_model="Victus 15",
+        screen_size=15.6,
+    )
+    client = FakeClient(
+        routes={
+            "/search?searchTerm=": FakeResponse(text=search_html),
+            "/reviews/hp-victus-16-review": FakeResponse(text=mismatched_review_html),
+        }
+    )
+    scraper = LaptopMagPlatformScraper(http_client=client)
+    reviews = await scraper.scrape_for_target(victus_15, [])
+
+    assert reviews == []
+    # Must NOT follow navigation-bar links outside search-result cards
+    assert all("lenovo-loq" not in url for url in client.requested_urls)
+
+
+@pytest.mark.anyio
+async def test_arabhardware_drops_hydrated_article_revealing_non_laptop_device():
+    ambiguous_search_html = """
+    <html><body>
+      <article>
+        <h2><a href="/reviews/asus-tuf-display">مراجعة ASUS TUF الجديدة</a></h2>
+        <p>تجربة شاملة ومميزة للألعاب والمهام اليومية.</p>
+      </article>
+    </body></html>
+    """
+    monitor_article_html = """
+    <html><body>
+      <div class="post-content">
+        <p>هذه المراجعة مخصصة لشاشة ألعاب ASUS TUF VG27AQ بقياس 27 بوصة ومعدل تحديث 165Hz كشاشة خارجية.</p>
+        <p>الشاشة الخارجية ممتازة لأجهزة الكمبيوتر المكتبية.</p>
+      </div>
+    </body></html>
+    """
+    tuf_target = LaptopReviewTarget(
+        laptop_id="tuf-1",
+        canonical_id="asus-tuf-a16",
+        brand="ASUS",
+        laptop_family="TUF Gaming",
+        laptop_model="FA608PM",
+        screen_size=16.0,
+    )
+    client = FakeClient(
+        routes={
+            "/search?s=": FakeResponse(text=ambiguous_search_html),
+            "/reviews/asus-tuf-display": FakeResponse(text=monitor_article_html),
+        }
+    )
+    scraper = ArabhardwarePlatformScraper(http_client=client)
+    posts = await scraper.scrape_for_target(tuf_target, [])
+
+    assert posts == []
+
+
+@pytest.mark.anyio
+async def test_community_collector_pools_http_and_caches_duplicate_urls(monkeypatch):
+    from unittest.mock import patch
+
+    import httpx
+
+    seen_urls: list[str] = []
+
+    class MockTransport(httpx.AsyncBaseTransport):
+        async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+            url = str(request.url)
+            seen_urls.append(url)
+            if "/search?searchTerm=" in url:
+                return httpx.Response(200, text=_LAPTOPMAG_SEARCH_HTML)
+            if "/reviews/lenovo-loq-15-review" in url:
+                return httpx.Response(200, text=_LAPTOPMAG_REVIEW_HTML)
+            return httpx.Response(404, text="")
+
+    real_async_client = httpx.AsyncClient
+
+    def fake_client_factory(*args, **kwargs):
+        kwargs["transport"] = MockTransport()
+        return real_async_client(*args, **kwargs)
+
+    collector = CommunitiesReviewsCollector(scrapers=[LaptopMagPlatformScraper()])
+    t1 = LaptopReviewTarget(
+        laptop_id="l1",
+        canonical_id="c1",
+        chassis_key="lenovo:loq:15-a",
+        brand="Lenovo",
+        laptop_family="LOQ",
+        laptop_model="LOQ 15",
+        screen_size=15.0,
+    )
+    t2 = LaptopReviewTarget(
+        laptop_id="l2",
+        canonical_id="c2",
+        chassis_key="lenovo:loq:15-b",
+        brand="Lenovo",
+        laptop_family="LOQ",
+        laptop_model="LOQ 15",
+        screen_size=15.0,
+    )
+
+    with patch.object(httpx, "AsyncClient", side_effect=fake_client_factory):
+        results = await collector.collect_for_targets([t1, t2])
+
+    assert len(results) == 2
+    # Search URL + review URL each requested exactly once across both targets!
+    assert len(seen_urls) == 2
+
+
+@pytest.mark.anyio
+async def test_arabhardware_skips_news_and_unrelated_series():
+    search_html = """
+    <html><body>
+      <article>
+        <h2><a href="/news/hp-memory-costs">HP RAM Prices Rising</a></h2>
+        <p>News about HP memory pricing.</p>
+      </article>
+      <article>
+        <h2><a href="/reviews/hp-omnibook-5-flip-review">مراجعة لابتوب HP OmniBook 5 Flip</a></h2>
+        <p>مراجعة تفصيلية لجهاز HP OmniBook 5 Flip مع الشاشة والتبريد.</p>
+      </article>
+    </body></html>
+    """
+    omnibook = LaptopReviewTarget(
+        laptop_id="omni-1",
+        canonical_id="hp-omnibook-5-flip",
+        brand="HP",
+        laptop_family="omnibook",
+        laptop_model="OmniBook 5 Flip 14-FP0023DX",
+        screen_size=14.0,
+    )
+    client = FakeClient(routes={"/search?s=": FakeResponse(text=search_html)})
+    posts = await ArabhardwarePlatformScraper(http_client=client).scrape_for_target(omnibook, [])
+    assert [p.post_url for p in posts] == ["https://arabhardware.net/reviews/hp-omnibook-5-flip-review"]
+
+
+@pytest.mark.anyio
+async def test_level1techs_rejects_unbranded_generic_word_collision():
+    payload = {
+        "topics": [{"id": 99, "slug": "no-irq-handler-for-vector", "title": "No irq handler for vector"}],
+        "posts": [
+            {
+                "id": 9901,
+                "topic_id": 99,
+                "post_number": 1,
+                "username": "kerneldev",
+                "blurb": "Seeing No irq handler for vector 0x31 on Linux boot with this workstation.",
+            }
+        ],
+    }
+    vector = LaptopReviewTarget(
+        laptop_id="vec-1",
+        canonical_id="msi-vector-16",
+        brand="MSI",
+        laptop_family="Vector",
+        laptop_model="Vector 16 HX AI A2XWHG",
+        screen_size=16.0,
+    )
+    client = FakeClient(routes={"/search.json": FakeResponse(json_data=payload)})
+    posts = await Level1TechsPlatformScraper(http_client=client).scrape_for_target(vector, [])
+    assert posts == []
