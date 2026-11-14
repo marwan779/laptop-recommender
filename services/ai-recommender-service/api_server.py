@@ -79,6 +79,9 @@ class IngestReviewsRequest(BaseModel):
     recalibrate_first: bool = True
     raw_reviews_payload: Optional[Dict[str, Any]] = None
     include_profiles: bool = True
+    enrich_raw: bool = True
+    force_reenrich: bool = False
+    enricher_mode: str = "primary_with_fallback"
 
 
 def health() -> Dict[str, Any]:
@@ -163,19 +166,78 @@ async def recommend_laptops(req: RecommendRequest) -> Dict[str, Any]:
 
 
 def _run_ingest_sync(req: IngestReviewsRequest) -> Dict[str, Any]:
-    if req.raw_reviews_payload is not None:
-        with open(req.reviews_path, "w", encoding="utf-8") as f:
-            json.dump(req.raw_reviews_payload, f, indent=2, ensure_ascii=False)
+    from raw_reviews_enricher import detect_reviews_format, enrich_reviews_dataset
+    from audit_and_deduplicate_reviews import run_audit_and_dedup
 
-    if not Path(req.reviews_path).exists():
-        raise FileNotFoundError(f"Reviews file not found: {req.reviews_path}")
+    if req.raw_reviews_payload is not None:
+        payload = req.raw_reviews_payload
+    else:
+        if not Path(req.reviews_path).exists():
+            raise FileNotFoundError(f"Reviews file not found: {req.reviews_path}")
+        with open(req.reviews_path, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+
+    detected_format = detect_reviews_format(payload)
+    enrichment_summary: Optional[Dict[str, Any]] = None
+    target_dedup_path = req.reviews_path
+
+    if detected_format == "format_b2_deduplicated":
+        if req.raw_reviews_payload is not None:
+            Path(target_dedup_path).parent.mkdir(parents=True, exist_ok=True)
+            with open(target_dedup_path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, indent=2, ensure_ascii=False)
+    else:
+        src_p = Path(req.reviews_path)
+        if req.raw_reviews_payload is None:
+            target_dedup_path = str(src_p.with_suffix(".deduplicated.json"))
+
+        b1_path = src_p.with_suffix(".enriched_b1.json")
+        if (detected_format == "format_a_raw" or req.force_reenrich) and req.enrich_raw:
+            _, enrichment_summary = enrich_reviews_dataset(
+                payload_or_path=payload,
+                catalog_path=req.catalog_path,
+                mode=req.enricher_mode,
+                force=req.force_reenrich,
+                output_path=str(b1_path),
+            )
+            b1_input_path = str(b1_path)
+        else:
+            enrichment_summary = {
+                "detected_format": detected_format,
+                "total_chassis": len(payload.get("laptops", [])),
+                "enriched_count": 0,
+                "skipped_reason": (
+                    "Already enriched Format B1"
+                    if detected_format == "format_b1_enriched"
+                    else "enrich_raw=False"
+                ),
+            }
+            if req.raw_reviews_payload is not None:
+                b1_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(b1_path, "w", encoding="utf-8") as f:
+                    json.dump(payload, f, indent=2, ensure_ascii=False)
+                b1_input_path = str(b1_path)
+            else:
+                b1_input_path = req.reviews_path
+
+        tasks_md_out = str(Path(target_dedup_path).with_name("youtube_gap_tasks.md"))
+        run_audit_and_dedup(
+            reviews_in=b1_input_path,
+            catalog_in=req.catalog_path,
+            dedup_out=target_dedup_path,
+            tasks_md_out=tasks_md_out,
+        )
+
+    if not Path(target_dedup_path).exists():
+        raise FileNotFoundError(f"Reviews file not found: {target_dedup_path}")
 
     summary = build_chroma_reviews_db(
-        reviews_json_path=req.reviews_path,
+        reviews_json_path=target_dedup_path,
         catalog_json_path=req.catalog_path,
         chroma_dir=req.chroma_dir,
         model_name=MODEL_NAME,
         recalibrate_first=req.recalibrate_first,
+        auto_enrich=False,
     )
 
     # Refresh in-memory catalog, deduplicated reviews lookup, ChromaDB collection handle, and clear LRU query cache
@@ -183,7 +245,7 @@ def _run_ingest_sync(req: IngestReviewsRequest) -> Dict[str, Any]:
     if Path(req.catalog_path).exists():
         with open(req.catalog_path, "r", encoding="utf-8") as f:
             svc._cached_catalog = json.load(f).get("laptops", [])
-    svc._load_reviews_lookup(req.reviews_path)
+    svc._load_reviews_lookup(target_dedup_path)
     client = chromadb.PersistentClient(path=req.chroma_dir)
     svc.collection = client.get_collection(
         name=COLLECTION_NAME,
@@ -193,6 +255,9 @@ def _run_ingest_sync(req: IngestReviewsRequest) -> Dict[str, Any]:
 
     resp: Dict[str, Any] = {
         "status": "ok",
+        "detected_format": detected_format,
+        "enrichment_summary": enrichment_summary,
+        "effective_reviews_path": target_dedup_path,
         "indexed_documents_count": summary["indexed_documents_count"],
         "updated_laptops_count": summary["updated_laptops_count"],
         "chroma_collection_name": COLLECTION_NAME,
