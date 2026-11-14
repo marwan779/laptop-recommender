@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.8.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.7.0...scraper-service-v1.8.0) (2026-11-14)
+
+
+### Features
+
+* **catalog:** aggregate chassis review targets and emit reviews scrape command via outbox ([af394c4](https://github.com/marwan779/laptop-recommender/commit/af394c4379fb4ef7db525a37fba964120dff2710))
+* **messaging,catalog-service:** harden transactional inbox/outbox, retire internal cron loops, and fix stage-2 review & price-cache flows ([dc3d9b0](https://github.com/marwan779/laptop-recommender/commit/dc3d9b0d9f4d4209159d49171f92a842c3c83d73))
+* **messaging:** implement transactional inbox, redis deduplication, and outbox lease recovery ([ac667ac](https://github.com/marwan779/laptop-recommender/commit/ac667ac0c8baa8126f74a70513eab52fcb4a1c34))
+* **reviews:** add community reddit review collection and 4-layer relevance gating ([b9728f4](https://github.com/marwan779/laptop-recommender/commit/b9728f4b4473afb259bebc24d7169b2dbe19273a))
+* **reviews:** add e2e test script, local artifact persistence, and update docs ([07f8ae4](https://github.com/marwan779/laptop-recommender/commit/07f8ae40cb6c81eba7ffc5058e4f91fc444f872e))
+* **reviews:** add review collector orchestrator with s3 upload and event dispatch ([6782423](https://github.com/marwan779/laptop-recommender/commit/678242315041e77a95aac1936721d27eaffb9558))
+* **reviews:** add screen size to targets and multi-platform community scrapers ([df264d2](https://github.com/marwan779/laptop-recommender/commit/df264d2b0aece23c589b8f4c4ffc459cf9a3a135))
+* **reviews:** carry matched chassis ids in review targets and add s3 reviews schema ([ff17a9b](https://github.com/marwan779/laptop-recommender/commit/ff17a9b669f0c8c6aef5bf5d627a5d73c033e0a2))
+* **reviews:** filter non-laptop devices and dedupe YouTube video fetches ([2d3fb33](https://github.com/marwan779/laptop-recommender/commit/2d3fb334531318b3329e961539af3b71f3769b02))
+* **reviews:** implement review target identity extraction and batching schemas ([44bc93b](https://github.com/marwan779/laptop-recommender/commit/44bc93bd93130d7aee96b918c7af31f1e082dfe3))
+
+
+### Bug Fixes
+
+* **reviews:** harden chassis grouping, deduplication, relevance filtering, and cookieless youtube scraping ([1e1dfd6](https://github.com/marwan779/laptop-recommender/commit/1e1dfd638549e11037b2ab59ee80c1290f8a201e))
+* **reviews:** harden chassis key grouping, relevance filtering, deduplication, and cookieless scraping ([07efc07](https://github.com/marwan779/laptop-recommender/commit/07efc0739eaf5aa4f0409de5b00de74eef144c4c))
+
 ## [1.7.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.6.1...scraper-service-v1.7.0) (2026-11-05)
 
 
