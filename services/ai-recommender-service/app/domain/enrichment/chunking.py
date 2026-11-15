@@ -204,8 +204,14 @@ def _format_catalog_specs_summary(item: Dict[str, Any], cat_map: Optional[Dict[s
                     cat_entry = cat_map[cid]
                     break
 
-    specs = (cat_entry or {}).get("specs", {})
-    dm = (cat_entry or {}).get("derived_metrics", {})
+    item_specs = item.get("specs") if isinstance(item.get("specs"), dict) else {}
+    specs = (cat_entry or {}).get("specs") or item_specs
+    dm = (
+        (cat_entry or {}).get("derived_metrics")
+        or (item.get("derived_metrics") if isinstance(item.get("derived_metrics"), dict) else None)
+        or (item_specs.get("derived_metrics") if isinstance(item_specs.get("derived_metrics"), dict) else None)
+        or {}
+    )
     cpu = specs.get("cpu") or {}
     gpu = specs.get("gpu") or {}
     mem = specs.get("memory") or {}

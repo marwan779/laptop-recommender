@@ -587,3 +587,104 @@ def test_build_synthesized_texts_exact_format() -> None:
         "ملخص المراجعة العملية وتجربة الاستخدام لجهاز G834JY: "
         "المميزات العملية: ميزة أولى. العيوب والملاحظات: عيب أول."
     )
+
+
+# ---------------------------------------------------------------------------
+# Sealed Format A `specs` envelope fallback (new laptops absent from cat_map)
+# ---------------------------------------------------------------------------
+
+def _format_a_specs_envelope() -> Dict[str, Any]:
+    return {
+        "identity": {"primary_category": "gaming"},
+        "cpu": {"raw": "Intel Core i9-14900HX", "model": "Core i9-14900HX", "base_power_w": 55},
+        "gpu": {"raw": "GeForce RTX 4080", "model": "GeForce RTX 4080", "tgp_watts": 175, "integrated": False},
+        "memory": {"capacity_gb": 32, "upgradeable": True, "max_supported_gb": 64},
+        "storage": {"capacity_gb": 1000, "slot_count": 2},
+        "display": {
+            "size_inches": 16.0,
+            "panel_type": "IPS",
+            "refresh_rate_hz": 240,
+            "brightness_nits": 500,
+            "srgb_percent": 100.0,
+            "color_gamut": "100% sRGB",
+        },
+        "battery": {"capacity_whr": 90.0},
+        "derived_metrics": {
+            "silicon": {"inferred_tgp_w": 175.0},
+            "display": {"color_gamut_tier": "100% sRGB"},
+            "mobility": {"weight_kg": 2.5, "battery_whr": 90.0, "battery_hours_estimate": 4.0},
+            "longevity": {"total_m2_slots": 2, "max_ram_gb": 64, "chassis_tier": "Metal"},
+        },
+    }
+
+
+def test_format_catalog_specs_summary_falls_back_to_item_specs_envelope() -> None:
+    item = {
+        "chassis_key": "asus:rog:G634JZR",
+        "primary_canonical_id": "new-unseen-sku",
+        "matched_canonical_ids": ["new-unseen-sku"],
+        "identity": {"brand": "Asus", "laptop_family": "ROG Strix", "laptop_model": "G634JZR"},
+        "specs": _format_a_specs_envelope(),
+    }
+
+    summary = rre._format_catalog_specs_summary(item, cat_map=None)
+
+    assert summary["brand"] == "Asus"
+    assert summary["category"] == "gaming"
+    assert summary["cpu"] == "Intel Core i9-14900HX"
+    assert summary["gpu"] == "GeForce RTX 4080"
+    assert summary["gpu_tgp_w"] == 175
+    assert summary["ram_gb"] == 32
+    assert summary["storage_gb"] == 1000
+    assert summary["display_hz"] == 240
+    assert summary["display_srgb_pct"] == 100.0
+    assert summary["battery_whr"] == 90.0
+    assert summary["weight_kg"] == 2.5
+
+
+def test_recalibrate_uses_item_specs_envelope_when_absent_from_catalog() -> None:
+    ident = {"brand": "Asus", "laptop_family": "ROG Strix", "laptop_model": "G834JY"}
+    out = cre._recalibrate_item(
+        ident,
+        ["new-unseen-sku"],
+        "new-unseen-sku",
+        dict(BASE),
+        {},
+        item_specs=_format_a_specs_envelope(),
+    )
+    assert out == {
+        "community_nlp_score": 75.9,
+        "aspect_scores": {
+            "thermals_score": 78.8,
+            "acoustics_score": 72.5,
+            "build_and_hinges_score": 89.0,
+            "keyboard_and_trackpad_score": 78.8,
+            "real_battery_and_reliability_score": 48.8,
+        },
+    }
+
+
+def test_finalize_profile_recalibrates_with_item_specs_even_without_cat_map() -> None:
+    item = {
+        "chassis_key": "asus:rog:G834JY",
+        "primary_canonical_id": "new-unseen-sku",
+        "matched_canonical_ids": ["new-unseen-sku"],
+        "identity": {"brand": "Asus", "laptop_family": "ROG Strix", "laptop_model": "G834JY"},
+        "specs": _format_a_specs_envelope(),
+    }
+
+    prof = rre._finalize_profile_with_recalibration(
+        item=item,
+        base_aspects=dict(BASE),
+        pros_en=["Strong RTX 4080 sustained TGP.", "Clean 240Hz display calibration."],
+        pros_ar=["أداء قوي ومستقر مع كارت الشاشة.", "شاشة ممتازة بمعدل تحديث 240Hz."],
+        cons_en=["Audible fans in Turbo mode.", "Heavy 2.5kg gaming chassis."],
+        cons_ar=["صوت المراوح مرتفع في وضع الأداء العالي.", "وزن الجهاز ثقيل نسبياً للتنقل."],
+        evidence_count=8,
+        cat_map=None,
+    )
+
+    assert prof["community_nlp_score"] == 75.9
+    assert prof["aspect_scores"]["acoustics_score"] == 72.5
+    assert prof["aspect_scores"]["real_battery_and_reliability_score"] == 48.8
+    assert "Intel Core i9-14900HX" in prof["synthesized_review_en"]

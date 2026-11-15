@@ -38,6 +38,7 @@ def _recalibrate_item(
     primary_cid: Optional[str],
     base_aspects: Dict[str, float],
     cat_map: Dict[str, Any],
+    item_specs: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     primary_lap = cat_map.get(primary_cid) if primary_cid else None
     if not primary_lap:
@@ -53,13 +54,27 @@ def _recalibrate_item(
     ).lower()
 
     if primary_lap:
-        s = primary_lap["specs"]
-        dm = primary_lap["derived_metrics"]
-        is_igpu = s["gpu"].get("integrated", True)
-        tgp_w = float(dm["silicon"].get("inferred_tgp_w") or 0.0)
-        cpu_w = float(s["cpu"].get("base_power_w") or 28.0)
-        batt_hrs = float(dm["mobility"].get("battery_hours_estimate") or 5.0)
-        chassis_tier = str(dm["longevity"].get("chassis_tier") or "")
+        s: Optional[Dict[str, Any]] = primary_lap.get("specs") or {}
+        dm: Optional[Dict[str, Any]] = primary_lap.get("derived_metrics") or {}
+    elif isinstance(item_specs, dict) and item_specs:
+        s = item_specs
+        dm = item_specs.get("derived_metrics") or {}
+    else:
+        s = None
+        dm = None
+
+    if s is not None:
+        gpu = s.get("gpu") or {}
+        cpu = s.get("cpu") or {}
+        silicon = (dm or {}).get("silicon") or {}
+        mobility = (dm or {}).get("mobility") or {}
+        longevity = (dm or {}).get("longevity") or {}
+        raw_integrated = gpu.get("integrated")
+        is_igpu = True if raw_integrated is None else bool(raw_integrated)
+        tgp_w = float(silicon.get("inferred_tgp_w") or gpu.get("tgp_watts") or 0.0)
+        cpu_w = float(cpu.get("base_power_w") or 28.0)
+        batt_hrs = float(mobility.get("battery_hours_estimate") or 5.0)
+        chassis_tier = str(longevity.get("chassis_tier") or "")
     else:
         is_igpu = True
         tgp_w = 0.0

@@ -18,13 +18,15 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 import numpy as np
-import chromadb
 
-from chroma_reviews_engine import (
-    JinaV3EmbeddingFunction,
-    MODEL_NAME,
+from app.infrastructure.chroma_repository import (
     CHROMA_DEFAULT_DIR,
     COLLECTION_NAME,
+    ChromaDualVectorQuery,
+)
+from app.infrastructure.jina_embedder import (
+    JinaV3EmbeddingFunction,
+    MODEL_NAME,
 )
 from topsis_engine import (
     rank_laptops_topsis,
@@ -119,6 +121,8 @@ class LaptopRecommenderService:
 
         if Path(self.chroma_dir).exists():
             try:
+                import chromadb
+
                 self.query_emb_fn = JinaV3EmbeddingFunction(
                     model_name=self.model_name,
                     task="retrieval.query",
@@ -154,16 +158,9 @@ class LaptopRecommenderService:
         q_vec = np.array(q_vec_list[0], dtype=float)
 
         # 1. Query ChromaDB Pros & Cons using pre-computed query embedding
-        pro_res = self.collection.query(
-            query_embeddings=q_vec_list,
-            n_results=189,
-            where={"polarity": "pro"},
-        )
-        con_res = self.collection.query(
-            query_embeddings=q_vec_list,
-            n_results=189,
-            where={"polarity": "con"},
-        )
+        dual_res = ChromaDualVectorQuery(self.collection).query(q_vec_list, n_results=189)
+        pro_res = dual_res["pro"]
+        con_res = dual_res["con"]
 
         pro_sim, base_scores, cids_map = {}, {}, {}
         if pro_res and pro_res.get("metadatas") and pro_res.get("distances"):

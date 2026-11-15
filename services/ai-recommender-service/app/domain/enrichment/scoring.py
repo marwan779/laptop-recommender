@@ -15,14 +15,8 @@ import numpy as np
 
 from app.domain.enrichment.models import (
     _ARABIC_CHAR_RE,
-    _ASPECT_FALLBACK_AR,
-    _ASPECT_FALLBACK_EN,
     _ASPECT_KEYWORDS,
-    _CODE_BLOCK_RE,
-    _DETAILS_BLOCK_RE,
-    _HTML_TAG_RE,
     _THINK_TAG_RE,
-    _URL_RE,
     ASPECT_KEYS,
     SOVEREIGNEG_PRICING_EGP_PER_1M,
 )
@@ -424,8 +418,16 @@ def _finalize_profile_with_recalibration(
         for k in ASPECT_KEYS
     }
 
-    if cat_map is not None:
-        recal = _recalibrate_item(ident, cids, primary_cid, clean_base, cat_map)
+    item_specs = item.get("specs") if isinstance(item.get("specs"), dict) else None
+    if cat_map is not None or item_specs:
+        recal = _recalibrate_item(
+            ident,
+            cids,
+            primary_cid,
+            clean_base,
+            cat_map or {},
+            item_specs=item_specs,
+        )
         final_aspects = recal["aspect_scores"]
         final_score = recal["community_nlp_score"]
     else:
