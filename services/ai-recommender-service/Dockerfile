@@ -23,8 +23,8 @@ ENV HF_HUB_OFFLINE=1 \
 COPY . .
 
 # Ensure ./chroma_reviews_db is baked in; build if missing from context
-RUN if [ ! -d "./chroma_reviews_db" ]; then python chroma_reviews_engine.py; fi
+RUN if [ ! -d "./chroma_reviews_db" ]; then python -m app.services.reviews_ingestion_service; fi
 
 EXPOSE 8000
 
-CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD ["uvicorn", "app.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

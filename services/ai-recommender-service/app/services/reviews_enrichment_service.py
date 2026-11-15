@@ -573,3 +573,40 @@ def enrich_reviews_dataset(
         output_path=output_path,
         llm_caller=llm_caller,
     )
+
+
+if __name__ == "__main__":
+    import argparse
+    from app.domain.enrichment.models import DEFAULT_DELTA_CACHE_PATH
+    from app.infrastructure.sovereigneg_client import load_enricher_env
+
+    load_enricher_env()
+
+    parser = argparse.ArgumentParser(description="Enrich Format A raw chassis reviews into Format B1.")
+    parser.add_argument("--input", default="cleaned_and_enriched_chassis_reviews_v6.json")
+    parser.add_argument("--output", default="cleaned_and_enriched_chassis_reviews_v6.json")
+    parser.add_argument("--catalog", default="unified_catalog_topsis_ready_v6.json")
+    parser.add_argument("--cache", default=DEFAULT_DELTA_CACHE_PATH)
+    parser.add_argument(
+        "--mode",
+        default="primary_with_fallback",
+        choices=["primary_with_fallback", "single_model", "zero_llm"],
+    )
+    parser.add_argument("--primary-model", default=None)
+    parser.add_argument("--fallback-model", default=None)
+    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--workers", type=int, default=8)
+    cli_args = parser.parse_args()
+
+    _, summary = enrich_reviews_dataset(
+        payload_or_path=cli_args.input,
+        catalog_path=cli_args.catalog,
+        delta_cache_path=cli_args.cache,
+        primary_model=cli_args.primary_model,
+        fallback_model=cli_args.fallback_model,
+        mode=cli_args.mode,
+        force=cli_args.force,
+        max_workers=cli_args.workers,
+        output_path=cli_args.output,
+    )
+    print(json.dumps(summary, indent=2, ensure_ascii=False))

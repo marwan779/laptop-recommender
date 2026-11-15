@@ -3,11 +3,11 @@
 ## 1. Architecture & Memory Sizing
 - **Embeddings Model:** `jinaai/jina-embeddings-v3` (`float32` on CPU, `truncate_dim=512` Matryoshka, `max_seq_length=256`).
 - **Vector Store:** Persistent ChromaDB (`./chroma_reviews_db`, collection `laptop_chassis_reviews_jina_v3`, cosine space, 360 unique `pro`/`con` chassis documents).
-- **Ranking Engine:** 10-column Vector TOPSIS (`cpu_score`, `gpu_score`, `power_therm_score`, `display_score`, `mobility_score`, `longevity_score`, `ergonomics_score`, `connectivity_score`, `community_nlp_score`, and `effective_price_egp` cost) + LRU Query Cache (max 256 entries) + Deterministic Role-Model Workload & Career Track Evaluator (`workload_engine.py`).
+- **Ranking Engine:** 10-column Vector TOPSIS (`cpu_score`, `gpu_score`, `power_therm_score`, `display_score`, `mobility_score`, `longevity_score`, `ergonomics_score`, `connectivity_score`, `community_nlp_score`, and `effective_price_egp` cost) + LRU Query Cache (max 256 entries) + Deterministic Role-Model Workload & Career Track Evaluator (`app.domain.recommendation.workloads`).
 - **Runtime Memory Footprint (DevOps Sizing):**
   - Measured singleton process RSS RAM: **~3.18 GB** (`3,176.9 MB` verified in benchmark).
   - Recommended Kubernetes / Docker container memory limit: **`4Gi–4.5Gi`**.
-  - **IMPORTANT:** Always launch with `--workers 1` (`uvicorn api_server:app --host 0.0.0.0 --port 8000 --workers 1`) so workers do not duplicate the `jinaai/jina-embeddings-v3` model in RAM. Blocking inference and DB operations execute inside `asyncio.to_thread` to keep the ASGI event loop responsive.
+  - **IMPORTANT:** Always launch with `--workers 1` (`uvicorn app.api.app:app --host 0.0.0.0 --port 8000 --workers 1`) so workers do not duplicate the `jinaai/jina-embeddings-v3` model in RAM. Blocking inference and DB operations execute inside `asyncio.to_thread` to keep the ASGI event loop responsive.
 
 ---
 

@@ -113,6 +113,25 @@ class HttpAIRecommenderClient:
             resp.raise_for_status()
             data = resp.json()
             return data if isinstance(data, dict) else None
+        except httpx.HTTPStatusError as exc:
+            status_code = exc.response.status_code
+            if status_code in (401, 403, 503):
+                logger.warning(
+                    "ai-recommender-service at %s rejected the request with HTTP %s. "
+                    "Verify AI_RECOMMENDER_API_KEY is identical across catalog-service "
+                    "and ai-recommender-service before relying on remote semantic "
+                    "recommendations; falling back to local TOPSIS.",
+                    url,
+                    status_code,
+                )
+            else:
+                logger.warning(
+                    "ai-recommender-service call to %s failed with HTTP %s; "
+                    "falling back to local TOPSIS.",
+                    url,
+                    status_code,
+                )
+            return None
         except Exception as exc:
             logger.warning(
                 "ai-recommender-service call to %s failed (%s); falling back to local TOPSIS.",

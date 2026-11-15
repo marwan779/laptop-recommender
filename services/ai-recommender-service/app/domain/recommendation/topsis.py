@@ -1,28 +1,16 @@
-#!/usr/bin/env python3
+"""Pure TOPSIS, persona weighting, bilingual prompt parsing, and semantic scoring domain logic.
+
+Zero external I/O, database, HTTP framework, or model loading dependencies.
 """
-Production TOPSIS & Persona Recommendation Engine (topsis_engine.py)
---------------------------------------------------------------------
-Designed for seamless Backend integration:
-1. Pre-computes `persona_scores` (fit & value scores across 6 personas) into the catalog JSON/DB
-   for instant zero-compute sorting on landing/category pages.
-2. Provides `rank_laptops_topsis()` for dynamic, budget-scoped TOPSIS ranking in < 0.5 ms,
-   including:
-   - Implicit Persona Gates (with automatic graceful relaxation if budget is tight)
-   - Smart 60% Budget Floor inside TOPSIS (prevents ultra-cheap laptops from distorting the price vector)
-   - Bilingual (Arabic/English) Text Box Parser (extracts hard filters & dynamic weight boosts)
-   - Explainable Recommendation Badges (`why_recommended_ar`, `why_recommended_en`)
-"""
-import json
-import math
-import re
-import sys
+
+from __future__ import annotations
+
 import copy
-from typing import Dict, Any, List, Optional, Tuple
+import re
+from typing import Any, Dict, List, Optional
+
 import numpy as np
 
-# =============================================================================
-# 1. PERSONA WEIGHT CONFIGURATIONS (Sum of weights = 1.00 for each persona)
-# =============================================================================
 # The 10 TOPSIS columns in order:
 # [0] cpu_score           (Benefit +)
 # [1] gpu_score           (Benefit +)
@@ -34,7 +22,6 @@ import numpy as np
 # [7] connectivity_score  (Benefit +)
 # [8] community_nlp_score (Benefit +)
 # [9] effective_price_egp (Cost    -)
-
 TOPSIS_CRITERIA_KEYS: List[str] = [
     "cpu_score",
     "gpu_score",
@@ -61,6 +48,18 @@ IS_BENEFIT_CRITERION: List[bool] = [
     True,   # community_nlp_score
     False,  # effective_price_egp (Cost criterion: cheaper within the budget window is better)
 ]
+
+# Reference bilingual anchor descriptions for Semantic Weight Boosting
+CRITERIA_SEMANTIC_ANCHORS: Dict[str, str] = {
+    "cpu_score": "معالج قوي بروسيسور سريع للبرمجة والملتي تاسكينج والمحاكاة والداتا fast CPU processor heavy coding multitasking virtualization",
+    "gpu_score": "كارت شاشة قوي للألعاب الثقيلة وفريمات عالية وريندر وجرافيك 3D powerful gaming GPU high FPS RTX rendering",
+    "power_therm_score": "تبريد ممتاز ميسخنش في الصيف مراوح قوية باور عالي بدون اختناق حراري excellent cooling thermals runs cool no thermal throttling full TGP",
+    "display_score": "شاشة اوليد ألوان دقيقة مونتاج وتصميم سطوع عالي 100% sRGB OLED display screen accurate colors brightness",
+    "mobility_score": "بطارية تقعد وقت طويل وزن خفيف للتنقل والسفر والجامعة والمحاضرات long battery life lightweight portable thin travel",
+    "longevity_score": "قابل للتطوير وزيادة الرامات والهارد ومفصلات وشاسيه متين يعيش للمستقبل upgradeable RAM SSD slots durable metal chassis sturdy hinges",
+    "ergonomics_score": "كيبورد مريحة في الكتابة كاميرا نقية للاجتماعات وصوت عالي وبصمة comfortable backlit keyboard good webcam microphone speakers fingerprint",
+    "connectivity_score": "منافذ كتير تايب سي ثندربولت وكابل نت وشاشات خارجية thunderbolt USB-C PD HDMI ethernet LAN ports",
+}
 
 PERSONA_CONFIGS: Dict[str, Dict[str, Any]] = {
     "gaming": {
@@ -200,15 +199,8 @@ PERSONA_CONFIGS: Dict[str, Dict[str, Any]] = {
 }
 
 
-# =============================================================================
-# 2. BILINGUAL (AR/EN) TEXT PROMPT PARSER (Extracts Filters + Weight Boosts)
-# =============================================================================
 def parse_user_text_prompt(prompt: Optional[str]) -> Dict[str, Any]:
-    """
-    Lightweight, zero-latency bilingual parser that turns optional user text into:
-      1. `extracted_filters`: hard constraints if explicitly mentioned (e.g. '32GB RAM', '1TB', 'OLED')
-      2. `weight_boosts`: additive boosts to TOPSIS criteria weights based on user intent keywords.
-    """
+    """Turn optional Arabic/English user text into hard constraints and criteria weight boosts."""
     if not prompt or not str(prompt).strip():
         return {"extracted_filters": {}, "weight_boosts": {}}
 
@@ -216,19 +208,18 @@ def parse_user_text_prompt(prompt: Optional[str]) -> Dict[str, Any]:
     extracted_filters: Dict[str, Any] = {}
     weight_boosts: Dict[str, float] = {}
 
-    # --- A. Extract Explicit Hardware Constraints from Text ---
-    if re.search(r"(64\s*gb|64\s*جيجا)", txt):
+    if re.search(r" (64\s*gb|64\s*جيجا) ", txt):
         extracted_filters["min_ram_gb"] = 64
-    elif re.search(r"(32\s*gb|32\s*جيجا)", txt):
+    elif re.search(r" (32\s*gb|32\s*جيجا) ", txt):
         extracted_filters["min_ram_gb"] = 32
-    elif re.search(r"(24\s*gb|24\s*جيجا)", txt):
+    elif re.search(r" (24\s*gb|24\s*جيجا) ", txt):
         extracted_filters["min_ram_gb"] = 24
-    elif re.search(r"(16\s*gb|16\s*جيجا)", txt):
+    elif re.search(r" (16\s*gb|16\s*جيجا) ", txt):
         extracted_filters["min_ram_gb"] = 16
 
-    if re.search(r"(2\s*tb|2000\s*gb|2\s*تيرا)", txt):
+    if re.search(r" (2\s*tb|2000\s*gb|2\s*تيرا) ", txt):
         extracted_filters["min_storage_gb"] = 2048
-    elif re.search(r"(1\s*tb|1000\s*gb|1024\s*gb|تيرا|1\s*تيرا)", txt):
+    elif re.search(r" (1\s*tb|1000\s*gb|1024\s*gb|تيرا|1\s*تيرا) ", txt):
         extracted_filters["min_storage_gb"] = 1024
 
     if any(k in txt for k in ["oled", "اوليد", "أوليد"]):
@@ -236,42 +227,177 @@ def parse_user_text_prompt(prompt: Optional[str]) -> Dict[str, Any]:
     if any(k in txt for k in ["touch", "تاتش", "لمس", "x360", "flip", "2-in-1"]):
         extracted_filters["require_touchscreen"] = True
 
-    # --- B. Extract Dynamic Weight Boosts from Intent Keywords ---
-    # 1. Mobility / Battery / Lightweight
-    if any(k in txt for k in ["بطاريه", "بطارية", "خفيف", "تنقل", "سفر", "مواصلات", "محاضرات", "battery", "lightweight", "portable", "travel", "thin"]):
+    if any(
+        k in txt
+        for k in [
+            "بطاريه",
+            "بطارية",
+            "خفيف",
+            "تنقل",
+            "سفر",
+            "مواصلات",
+            "محاضرات",
+            "battery",
+            "lightweight",
+            "portable",
+            "travel",
+            "thin",
+        ]
+    ):
         weight_boosts["mobility_score"] = weight_boosts.get("mobility_score", 0.0) + 0.15
 
-    # 2. Display / Colors / Screen / OLED
-    if any(k in txt for k in ["شاشه", "شاشة", "الوان", "ألوان", "دقة", "سطوع", "مونتاج", "جرافيك", "display", "screen", "color", "srgb", "oled", "hdr"]):
+    if any(
+        k in txt
+        for k in [
+            "شاشه",
+            "شاشة",
+            "الوان",
+            "ألوان",
+            "دقة",
+            "سطوع",
+            "مونتاج",
+            "جرافيك",
+            "display",
+            "screen",
+            "color",
+            "srgb",
+            "oled",
+            "hdr",
+        ]
+    ):
         weight_boosts["display_score"] = weight_boosts.get("display_score", 0.0) + 0.14
 
-    # 3. GPU / Gaming / Graphics / Rendering
-    if any(k in txt for k in ["كارت شاشه", "كارت شاشة", "العاب", "ألعاب", "فريمات", "رندر", "جيمز", "gaming", "fps", "rtx", "gpu", "render", "3d"]):
+    if any(
+        k in txt
+        for k in [
+            "كارت شاشه",
+            "كارت شاشة",
+            "العاب",
+            "ألعاب",
+            "فريمات",
+            "رندر",
+            "جيمز",
+            "gaming",
+            "fps",
+            "rtx",
+            "gpu",
+            "render",
+            "3d",
+        ]
+    ):
         weight_boosts["gpu_score"] = weight_boosts.get("gpu_score", 0.0) + 0.15
         weight_boosts["power_therm_score"] = weight_boosts.get("power_therm_score", 0.0) + 0.06
 
-    # 4. CPU / Multitasking / Heavy Coding / VMs
-    if any(k in txt for k in ["معالج", "بروسيسور", "برمجه", "برمجة", "محاكاة", "داتا", "كود", "cpu", "processor", "coding", "docker", "vm", "multitask"]):
+    if any(
+        k in txt
+        for k in [
+            "معالج",
+            "بروسيسور",
+            "برمجه",
+            "برمجة",
+            "محاكاة",
+            "داتا",
+            "كود",
+            "cpu",
+            "processor",
+            "coding",
+            "docker",
+            "vm",
+            "multitask",
+        ]
+    ):
         weight_boosts["cpu_score"] = weight_boosts.get("cpu_score", 0.0) + 0.14
 
-    # 5. Cooling / Thermals / Power
-    if any(k in txt for k in ["تبريد", "حراره", "حرارة", "مراوح", "سخونة", "باور", "cooling", "thermal", "heat", "tgp", "watt"]):
+    if any(
+        k in txt
+        for k in [
+            "تبريد",
+            "حراره",
+            "حرارة",
+            "مراوح",
+            "سخونة",
+            "باور",
+            "cooling",
+            "thermal",
+            "heat",
+            "tgp",
+            "watt",
+        ]
+    ):
         weight_boosts["power_therm_score"] = weight_boosts.get("power_therm_score", 0.0) + 0.14
 
-    # 6. Upgradeability / Longevity / Future-proof
-    if any(k in txt for k in ["تطوير", "ترقيه", "ترقية", "يعيش", "مستقبل", "رامات بتزيد", "upgrade", "future", "slots", "longevity", "expand"]):
+    if any(
+        k in txt
+        for k in [
+            "تطوير",
+            "ترقيه",
+            "ترقية",
+            "يعيش",
+            "مستقبل",
+            "رامات بتزيد",
+            "upgrade",
+            "future",
+            "slots",
+            "longevity",
+            "expand",
+        ]
+    ):
         weight_boosts["longevity_score"] = weight_boosts.get("longevity_score", 0.0) + 0.14
 
-    # 7. Keyboard / Webcam / Audio / Meetings
-    if any(k in txt for k in ["كيبورد", "كاميرا", "صوت", "اجتماعات", "زووم", "بصمه", "بصمة", "keyboard", "webcam", "camera", "mic", "audio", "zoom"]):
+    if any(
+        k in txt
+        for k in [
+            "كيبورد",
+            "كاميرا",
+            "صوت",
+            "اجتماعات",
+            "زووم",
+            "بصمه",
+            "بصمة",
+            "keyboard",
+            "webcam",
+            "camera",
+            "mic",
+            "audio",
+            "zoom",
+        ]
+    ):
         weight_boosts["ergonomics_score"] = weight_boosts.get("ergonomics_score", 0.0) + 0.12
 
-    # 8. Ports / Thunderbolt / Type-C / LAN
-    if any(k in txt for k in ["منافذ", "تايب سي", "ثندربولت", "لان", "شاشات خارجية", "ports", "thunderbolt", "usb-c", "hdmi", "ethernet", "lan"]):
+    if any(
+        k in txt
+        for k in [
+            "منافذ",
+            "تايب سي",
+            "ثندربولت",
+            "لان",
+            "شاشات خارجية",
+            "ports",
+            "thunderbolt",
+            "usb-c",
+            "hdmi",
+            "ethernet",
+            "lan",
+        ]
+    ):
         weight_boosts["connectivity_score"] = weight_boosts.get("connectivity_score", 0.0) + 0.12
 
-    # 9. Budget / Cheapest / Value
-    if any(k in txt for k in ["ارخص", "أرخص", "توفير", "سعر", "اقتصادي", "على قد الايد", "cheap", "budget", "value", "save", "affordable"]):
+    if any(
+        k in txt
+        for k in [
+            "ارخص",
+            "أرخص",
+            "توفير",
+            "سعر",
+            "اقتصادي",
+            "على قد الايد",
+            "cheap",
+            "budget",
+            "value",
+            "save",
+            "affordable",
+        ]
+    ):
         weight_boosts["effective_price_egp"] = weight_boosts.get("effective_price_egp", 0.0) + 0.14
 
     return {
@@ -280,19 +406,10 @@ def parse_user_text_prompt(prompt: Optional[str]) -> Dict[str, Any]:
     }
 
 
-# =============================================================================
-# 3. HELPER FOR BACKEND DB QUERY GENERATION
-# =============================================================================
 def get_persona_db_query_spec(persona: str, max_budget_egp: float) -> Dict[str, Any]:
-    """
-    Returns the exact baseline filter dictionary that the Backend can translate into
-    SQL WHERE / MongoDB find() clauses if desired.
-    Note: Even if the Backend only queries by `min_price_egp <= max_budget_egp`,
-    `rank_laptops_topsis()` automatically enforces these gates in-memory with smart fallback!
-    """
+    """Return baseline filter spec with low-budget relaxation for backend queries."""
     p_key = persona if persona in PERSONA_CONFIGS else "balanced"
     gates = copy.deepcopy(PERSONA_CONFIGS[p_key]["implicit_gates"])
-    # If budget is under 35,000 EGP, relax 16GB RAM gate to 8GB and dGPU gate automatically
     if max_budget_egp < 35000:
         if gates.get("min_ram_gb", 8) > 8:
             gates["min_ram_gb"] = 8
@@ -308,34 +425,25 @@ def get_persona_db_query_spec(persona: str, max_budget_egp: float) -> Dict[str, 
     }
 
 
-# =============================================================================
-# 4. CORE VECTOR-NORMALIZED TOPSIS MATHEMATICAL ENGINE
-# =============================================================================
 def _run_topsis_vector(
     decision_matrix: np.ndarray,
     weights_vec: np.ndarray,
     is_benefit_vec: List[bool],
 ) -> np.ndarray:
-    """
-    Executes standard Vector-Normalized TOPSIS on an (M x N) NumPy matrix.
-    Returns an array of Closeness Scores scaled [0.0, 100.0] for the M laptops.
-    """
+    """Execute standard Vector-Normalized TOPSIS on an (M x N) NumPy matrix."""
     m_rows, n_cols = decision_matrix.shape
     if m_rows == 0:
         return np.array([], dtype=float)
     if m_rows == 1:
         return np.array([100.0], dtype=float)
 
-    # Step 1: Vector Normalization r_ij = x_ij / sqrt(sum(x_ij^2))
     col_norms = np.linalg.norm(decision_matrix, axis=0)
     col_norms[col_norms == 0.0] = 1.0
     r_mat = decision_matrix / col_norms
 
-    # Step 2: Weighted Normalized Matrix v_ij = w_j * r_ij
     w_norm = weights_vec / np.sum(weights_vec)
     v_mat = r_mat * w_norm
 
-    # Step 3: Ideal Best (A+) and Ideal Worst (A-)
     ideal_best = np.zeros(n_cols, dtype=float)
     ideal_worst = np.zeros(n_cols, dtype=float)
     for j in range(n_cols):
@@ -343,23 +451,17 @@ def _run_topsis_vector(
             ideal_best[j] = np.max(v_mat[:, j])
             ideal_worst[j] = np.min(v_mat[:, j])
         else:
-            # Cost criterion (Price): lower is better
             ideal_best[j] = np.min(v_mat[:, j])
             ideal_worst[j] = np.max(v_mat[:, j])
 
-    # Step 4: Euclidean Distances D+ and D-
     d_pos = np.linalg.norm(v_mat - ideal_best, axis=1)
     d_neg = np.linalg.norm(v_mat - ideal_worst, axis=1)
 
-    # Step 5: Relative Closeness C_i = D- / (D+ + D-) * 100
     denom = d_pos + d_neg
     closeness = np.where(denom > 1e-12, (d_neg / denom) * 100.0, 50.0)
     return np.round(closeness, 2)
 
 
-# =============================================================================
-# 5. EXPLAINABLE RECOMMENDATION REASONS GENERATOR (AR & EN)
-# =============================================================================
 def _build_why_recommended(laptop: Dict[str, Any], persona: str) -> Dict[str, List[str]]:
     s = laptop["specs"]
     dm = laptop["derived_metrics"]
@@ -385,7 +487,6 @@ def _build_why_recommended(laptop: Dict[str, Any], persona: str) -> Dict[str, Li
         reasons_ar.append(f"معالج {cpu_name} ({cores} أنوية حتى {boost}GHz) مع رام {ram_gb}GB {mem_type}")
         reasons_en.append(f"{cpu_name} ({cores}C, up to {boost}GHz) with {ram_gb}GB {mem_type} RAM")
 
-    # Display highlight
     disp_size = s["display"].get("size_inches")
     panel = dm["display"].get("panel_technology")
     hz = dm["display"].get("refresh_rate_hz")
@@ -393,7 +494,6 @@ def _build_why_recommended(laptop: Dict[str, Any], persona: str) -> Dict[str, Li
     reasons_ar.append(f"شاشة {disp_size} بوصة {panel} بتردد {hz}Hz وتغطية ألوان {gamut}")
     reasons_en.append(f"{disp_size}-inch {panel} {hz}Hz display ({gamut})")
 
-    # Persona-specific 3rd highlight
     if persona in ["student_and_office", "business_and_mobility"]:
         w_kg = dm["mobility"].get("weight_kg")
         b_hrs = dm["mobility"].get("battery_hours_estimate")
@@ -405,7 +505,6 @@ def _build_why_recommended(laptop: Dict[str, Any], persona: str) -> Dict[str, Li
         reasons_ar.append(f"رام {ram_gb}GB {mem_type} (تقبل حتى {max_r}GB) وتخزين {ssd_str} ({m2_slots} فتحات M.2)")
         reasons_en.append(f"{ram_gb}GB {mem_type} RAM (up to {max_r}GB) & {ssd_str} SSD ({m2_slots}x M.2 slots)")
 
-    # Store & Price spread highlight
     price = dm["topsis_inputs"].get("effective_price_egp")
     store = laptop.get("cheapest_store")
     spread = laptop.get("price_spread_egp") or 0
@@ -419,9 +518,74 @@ def _build_why_recommended(laptop: Dict[str, Any], persona: str) -> Dict[str, Li
     return {"ar": reasons_ar, "en": reasons_en}
 
 
-# =============================================================================
-# 6. MAIN DYNAMIC TOPSIS API ENDPOINT FUNCTION FOR BACKEND
-# =============================================================================
+def score_dual_review_vectors(
+    pro_res: Optional[Dict[str, Any]],
+    con_res: Optional[Dict[str, Any]],
+) -> Dict[str, float]:
+    """Compute net Dual-Vector review similarity adjustment per canonical ID."""
+    pro_sim: Dict[str, float] = {}
+    base_scores: Dict[str, float] = {}
+    cids_map: Dict[str, List[str]] = {}
+    if pro_res and pro_res.get("metadatas") and pro_res.get("distances"):
+        for meta, dist in zip(pro_res["metadatas"][0], pro_res["distances"][0]):
+            ckey = meta["chassis_key"]
+            pro_sim[ckey] = max(0.0, 1.0 - float(dist))
+            base_scores[ckey] = float(meta.get("community_nlp_score", 75.0))
+            cids_map[ckey] = [c for c in meta.get("matched_canonical_ids", "").split(",") if c]
+
+    con_sim: Dict[str, float] = {}
+    if con_res and con_res.get("metadatas") and con_res.get("distances"):
+        for meta, dist in zip(con_res["metadatas"][0], con_res["distances"][0]):
+            ckey = meta["chassis_key"]
+            con_sim[ckey] = max(0.0, 1.0 - float(dist))
+
+    adjusted_nlp_scores: Dict[str, float] = {}
+    for ckey, base_s in base_scores.items():
+        net_sim = pro_sim.get(ckey, 0.0) - 0.75 * con_sim.get(ckey, 0.0)
+        adj = max(35.0, min(98.0, round(base_s + net_sim * 32.0, 2)))
+        for cid in cids_map.get(ckey, []):
+            adjusted_nlp_scores[cid] = adj
+    return adjusted_nlp_scores
+
+
+def compute_semantic_weight_boosts(
+    anchor_keys: List[str],
+    anchor_matrix: Optional[np.ndarray],
+    query_vec: np.ndarray,
+) -> Dict[str, float]:
+    """Compute cosine-similarity TOPSIS criteria boosts against normalized semantic anchors."""
+    semantic_boosts: Dict[str, float] = {}
+    if anchor_matrix is None:
+        return semantic_boosts
+    sims = np.dot(anchor_matrix, query_vec)
+    for idx, sim_val in enumerate(sims):
+        if sim_val >= 0.48:
+            key = anchor_keys[idx]
+            semantic_boosts[key] = round(float((sim_val - 0.45) * 0.35), 3)
+    return semantic_boosts
+
+
+def build_budget_too_low_fallback(working_laptops: List[Dict[str, Any]], limit: int = 3) -> List[Dict[str, Any]]:
+    """Return cheapest in-stock alternatives when no laptop matches the requested budget window."""
+    active_all = [
+        l
+        for l in working_laptops
+        if l.get("derived_metrics", {}).get("topsis_inputs", {}).get("in_stock_active")
+    ]
+    active_all.sort(
+        key=lambda x: x["derived_metrics"]["topsis_inputs"].get("effective_price_egp") or 999999
+    )
+    return [
+        {
+            "canonical_id": l["canonical_id"],
+            "title": l.get("title"),
+            "effective_price_egp": l["derived_metrics"]["topsis_inputs"].get("effective_price_egp"),
+            "cheapest_store": l.get("cheapest_store"),
+        }
+        for l in active_all[:limit]
+    ]
+
+
 def rank_laptops_topsis(
     laptops: List[Dict[str, Any]],
     max_budget_egp: float = 300000.0,
@@ -437,21 +601,14 @@ def rank_laptops_topsis(
     min_floor_candidates: int = 5,
     top_k: int = 10,
 ) -> Dict[str, Any]:
-    """
-    Main entry point for Backend `POST /recommend`.
-    Accepts either the full 295-laptop catalog OR a pre-queried subset of laptops (`price <= max_budget_egp`),
-    applies Implicit Persona Gates + Smart 60% Budget Floor + Text Prompt Weight Modifiers,
-    and returns the Top-K ranked laptops with match percentages and explanations in < 0.5 ms.
-    """
+    """Run budget-scoped 10-column TOPSIS ranking with implicit persona gates and smart fallback."""
     p_key = persona if persona in PERSONA_CONFIGS else "balanced"
     p_cfg = PERSONA_CONFIGS[p_key]
 
-    # 1. Parse optional text prompt
     parsed_prompt = parse_user_text_prompt(user_text_prompt)
     ext_filters = parsed_prompt["extracted_filters"]
     w_boosts = parsed_prompt["weight_boosts"]
 
-    # 2. Merge weights: Base Persona -> Community NLP baseline -> Custom Weights -> Text Prompt Boosts
     final_weights_dict = copy.deepcopy(p_cfg["weights"])
     final_weights_dict.setdefault("community_nlp_score", 0.08)
     if custom_weights:
@@ -462,12 +619,10 @@ def rank_laptops_topsis(
         if k in final_weights_dict:
             final_weights_dict[k] += boost
 
-    # Normalize weights to sum to 1.00
     w_sum = sum(final_weights_dict.values()) or 1.0
     final_weights_dict = {k: round(v / w_sum, 4) for k, v in final_weights_dict.items()}
     weights_vec = np.array([final_weights_dict[k] for k in TOPSIS_CRITERIA_KEYS], dtype=float)
 
-    # 3. Base Hard Filter: Active in-stock + within max_budget_egp + explicit user filters
     eff_min_ram = min_ram_gb or ext_filters.get("min_ram_gb")
     eff_min_sto = min_storage_gb or ext_filters.get("min_storage_gb")
     brands_norm = {b.lower() for b in brand_filter} if brand_filter else None
@@ -496,7 +651,6 @@ def rank_laptops_topsis(
             continue
         base_pool.append(lap)
 
-    # 4. Apply Implicit Persona Gates (with graceful fallback if budget is too low to satisfy all gates)
     gates = p_cfg["implicit_gates"]
     persona_pool: List[Dict[str, Any]] = []
     for lap in base_pool:
@@ -520,13 +674,11 @@ def rank_laptops_topsis(
             continue
         persona_pool.append(lap)
 
-    # Graceful relaxation if strict persona gates left fewer than 3 laptops (e.g. low budget)
     gates_relaxed = False
     if len(persona_pool) < 3 and len(base_pool) >= 3:
         persona_pool = base_pool
         gates_relaxed = True
 
-    # 5. Smart 60% Budget Floor inside TOPSIS (Backend Engineer's design)
     applied_floor_egp = min_budget_egp if min_budget_egp is not None else 0.0
     scoped_pool = persona_pool
     if min_budget_egp is None and apply_smart_60pct_floor and len(persona_pool) > min_floor_candidates:
@@ -552,21 +704,22 @@ def rank_laptops_topsis(
         return {
             "persona": p_key,
             "persona_label_ar": p_cfg["label_ar"],
+            "persona_label_en": p_cfg["label_en"],
+            "gates_relaxed_for_low_budget": gates_relaxed,
             "total_candidates_before_floor": len(base_pool),
             "total_candidates_after_gates_and_floor": 0,
             "applied_budget_window_egp": [applied_floor_egp, max_budget_egp],
+            "parsed_text_prompt": parsed_prompt,
             "effective_weights": final_weights_dict,
             "results": [],
         }
 
-    # 6. Build Decision Matrix (M x 9) and Run Vector TOPSIS
     mat = np.array(
         [[l["derived_metrics"]["topsis_inputs"][k] for k in TOPSIS_CRITERIA_KEYS] for l in scoped_pool],
         dtype=float,
     )
     scores = _run_topsis_vector(mat, weights_vec, IS_BENEFIT_CRITERION)
 
-    # 7. Sort & Format Top-K Output
     ranked_indices = np.argsort(-scores)[:top_k]
     results = []
     for rank_idx, idx in enumerate(ranked_indices, start=1):
@@ -606,22 +759,13 @@ def rank_laptops_topsis(
     }
 
 
-# =============================================================================
-# 7. PRE-COMPUTE STATIC PERSONA SCORES INTO CATALOG JSON FOR LANDING/DB PAGES
-# =============================================================================
-def enrich_catalog_with_persona_scores(input_path: str, output_path: str) -> Dict[str, Any]:
-    """
-    Computes and attaches `derived_metrics.persona_scores` for all 295 laptops:
-    - `hardware_fit`: 0-100 TOPSIS score using only the 8 hardware benefit metrics (price-independent)
-    - `value_fit`: 0-100 TOPSIS score combining the 8 hardware metrics + `value_score`
-    This allows the Backend to do simple `ORDER BY derived_metrics.persona_scores.gaming.value_fit DESC`
-    on general catalog browse pages without running any code!
-    """
-    with open(input_path, "r", encoding="utf-8") as f:
-        catalog = json.load(f)
+def apply_persona_scores_to_catalog(catalog: Dict[str, Any]) -> Dict[str, Any]:
+    """Compute and attach static `persona_scores` (`hardware_fit`, `value_fit`) in-place."""
+    laptops = catalog.get("laptops", [])
+    if not laptops:
+        return catalog
 
-    laptops = catalog["laptops"]
-    hw_keys = TOPSIS_CRITERIA_KEYS[:9]  # The 9 benefit criteria (8 hardware + community_nlp_score)
+    hw_keys = TOPSIS_CRITERIA_KEYS[:9]
     hw_mat = np.array(
         [[l["derived_metrics"]["topsis_inputs"][k] for k in hw_keys] for l in laptops],
         dtype=float,
@@ -634,7 +778,11 @@ def enrich_catalog_with_persona_scores(input_path: str, output_path: str) -> Dic
 
     for p_key, p_cfg in PERSONA_CONFIGS.items():
         w_hw = np.array([p_cfg["weights"].get(k, 0.08) for k in hw_keys], dtype=float)
-        w_val = np.array([p_cfg["weights"].get(k, 0.08) for k in hw_keys] + [p_cfg["weights"]["effective_price_egp"] * 1.5], dtype=float)
+        w_val = np.array(
+            [p_cfg["weights"].get(k, 0.08) for k in hw_keys]
+            + [p_cfg["weights"]["effective_price_egp"] * 1.5],
+            dtype=float,
+        )
 
         hw_scores = _run_topsis_vector(hw_mat, w_hw, [True] * 9)
         val_scores = _run_topsis_vector(hw_plus_val_mat, w_val, [True] * 10)
@@ -646,14 +794,4 @@ def enrich_catalog_with_persona_scores(input_path: str, output_path: str) -> Dic
                 "value_fit": float(val_scores[i]),
             }
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(catalog, f, indent=2, ensure_ascii=False)
-
     return catalog
-
-
-if __name__ == "__main__":
-    in_p = sys.argv[1] if len(sys.argv) > 1 else "unified_catalog_with_metrics_v6.json"
-    out_p = sys.argv[2] if len(sys.argv) > 2 else "unified_catalog_topsis_ready_v6.json"
-    cat_out = enrich_catalog_with_persona_scores(in_p, out_p)
-    print(f"Enriched {len(cat_out['laptops'])} laptops with pre-computed persona_scores -> {out_p}")

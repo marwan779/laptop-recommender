@@ -28,6 +28,12 @@ logger = get_logger("catalog.main")
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting %s in %s mode", settings.service_name, settings.environment)
 
+    if settings.ai_recommender_url and not settings.ai_recommender_api_key.strip():
+        logger.warning(
+            "AI_RECOMMENDER_API_KEY is empty; remote semantic recommendations may "
+            "fail authentication until it is populated."
+        )
+
     # 1. Initialize Cache Provider (Redis with graceful fallback to In-Memory)
     redis_cache = RedisCacheProvider()
     await redis_cache.connect()

@@ -6,10 +6,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.middlewares import APIKeyAuthMiddleware
 from app.api.routes import _get_service, router
 from app.common.cache import InMemoryCacheProvider, RedisCacheProvider
 from app.common.logger import configure_logging, get_logger
 from app.common.messaging import RabbitMQBroker, RedisInboxDeduplicator
+from app.core.security_config import get_security_settings
 from app.services.messaging_consumer import AIRecommenderMessageConsumer
 
 configure_logging()
@@ -33,7 +35,19 @@ async def lifespan(app: FastAPI):
         app.state.cache = memory_cache
         logger.info("Using InMemoryCacheProvider fallback while Redis is offline.")
 
-    # 3. Initialize RabbitMQ broker & review enrichment consumer
+    # 3. Report X-API-Key authentication posture (never log the key value)
+    sec = get_security_settings()
+    if sec.require_api_key and not sec.api_key_configured:
+        logger.warning(
+            "AI_RECOMMENDER_API_KEY is not configured while REQUIRE_API_KEY is true. "
+            "Protected routes will return HTTP 503 until it is set in .env."
+        )
+    elif sec.require_api_key:
+        logger.info("X-API-Key authentication is enabled for protected routes.")
+    else:
+        logger.info("X-API-Key authentication is disabled; protected routes are open.")
+
+    # 4. Initialize RabbitMQ broker & review enrichment consumer
     inbox = RedisInboxDeduplicator(cache=app.state.cache)
     broker = RabbitMQBroker()
     consumer = AIRecommenderMessageConsumer(broker=broker, inbox=inbox)
@@ -72,4 +86,5 @@ app = FastAPI(
     description="10-column Vector TOPSIS + Jina-v3 (512d) Dual-Vector ChromaDB + Deterministic Workloads API.",
     lifespan=lifespan,
 )
+app.add_middleware(APIKeyAuthMiddleware)
 app.include_router(router)

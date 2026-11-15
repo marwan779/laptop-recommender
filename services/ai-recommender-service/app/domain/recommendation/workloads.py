@@ -1,11 +1,12 @@
-#!/usr/bin/env python3
+"""Pure deterministic workload & career-track evaluation engine.
+
+Maps structured hardware and `derived_metrics` into 1080p gaming FPS estimates,
+creative/engineering software readiness, and career-track suitability with zero I/O.
 """
-Deterministic Workload & Career Track Evaluation Engine (workload_engine.py)
-----------------------------------------------------------------------------
-Maps structured hardware and `derived_metrics` into realistic 1080p gaming FPS
-estimates, creative/engineering software readiness, and career track suitability.
-"""
-from typing import Dict, Any, List
+
+from __future__ import annotations
+
+from typing import Any, Dict, List
 
 
 def _classify_fps_tier(fps: int) -> str:
@@ -60,10 +61,7 @@ def _build_game_entry(
 
 
 def evaluate_workloads(laptop: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Evaluates a laptop across 6 role-model games (1080p), 6 role-model software
-    suites, and 5 career tracks deterministically from `specs` & `derived_metrics`.
-    """
+    """Evaluate a laptop across 6 games, 6 software suites, and 5 career tracks."""
     dm = laptop.get("derived_metrics", {})
     ti = dm.get("topsis_inputs", {})
     silicon = dm.get("silicon", {})
@@ -96,29 +94,19 @@ def evaluate_workloads(laptop: Dict[str, Any]) -> Dict[str, Any]:
     is_arm = any(tok in cpu_arch_str for tok in ["qualcomm", "snapdragon", "oryon", "arm", "apple"])
     cpu_architecture = "ARM64" if is_arm else "x86_64"
 
-    # Multipliers for GPU wattage headroom and VRAM capacity
     tgp_factor = min(1.18, max(0.72, 0.72 + (inferred_tgp_w / 140.0) * 0.42))
     vram_factor = 1.08 if vram_gb >= 8 else (0.95 if vram_gb >= 6 else (0.78 if vram_gb >= 4 else 0.50))
 
-    # -------------------------------------------------------------------------
-    # 1. 6 Role-Model Games (1080p)
-    # -------------------------------------------------------------------------
     valorant_fps = int(round(max(45.0, min(420.0, 35.0 + (cpu_score * 1.65) + (gpu_score * 1.95)))))
-
     fortnite_comp_fps = int(round(max(38.0, min(320.0, 25.0 + (cpu_score * 0.95) + (gpu_score * 1.95) * (0.90 + 0.10 * tgp_factor)))))
     fortnite_dx12_fps = int(round(max(18.0, min(180.0, (gpu_score * 1.28 * tgp_factor) + (cpu_score * 0.18) - (12.0 if is_igpu else 0.0)))))
-
     gtav_fps = int(round(max(22.0, min(210.0, 14.0 + (gpu_score * 1.55 * tgp_factor) + (cpu_score * 0.25)))))
-
     mc_vanilla_fps = int(round(max(55.0, min(450.0, 45.0 + (cpu_score * 1.85) + (gpu_score * 1.75)))))
     mc_shaders_fps = int(round(max(12.0, min(145.0, (gpu_score * 1.05 * tgp_factor * vram_factor) - (10.0 if is_igpu else 0.0)))))
-
     rdr2_fps = int(round(max(15.0, min(145.0, (gpu_score * 1.08 * tgp_factor) + (cpu_score * 0.14) - (8.0 if vram_gb < 4 else 0.0)))))
-
     cp2077_fps = int(round(max(12.0, min(135.0, (gpu_score * 0.98 * tgp_factor * vram_factor) + (cpu_score * 0.12)))))
 
     if is_arm:
-        # Windows on ARM emulation penalty / compatibility caveat for heavy DX12 games
         valorant_fps = int(round(valorant_fps * 0.65))
         fortnite_comp_fps = int(round(fortnite_comp_fps * 0.65))
         fortnite_dx12_fps = int(round(fortnite_dx12_fps * 0.60))
@@ -153,9 +141,6 @@ def evaluate_workloads(laptop: Dict[str, Any]) -> Dict[str, Any]:
         _build_game_entry("Cyberpunk 2077", cp2077_fps, refresh_rate_hz, "High (FSR/DLSS Balanced)"),
     ]
 
-    # -------------------------------------------------------------------------
-    # 2. 6 Role-Model Software
-    # -------------------------------------------------------------------------
     ram_bonus = 10.0 if ram_gb >= 32 else (4.0 if ram_gb >= 16 else -12.0)
 
     premiere_score = round(min(100.0, max(15.0, cpu_score * 0.52 + gpu_score * 0.35 + (vram_gb * 1.5) + ram_bonus)), 1)
@@ -221,10 +206,6 @@ def evaluate_workloads(laptop: Dict[str, Any]) -> Dict[str, Any]:
         },
     ]
 
-    # -------------------------------------------------------------------------
-    # 3. 5 Career Tracks
-    # -------------------------------------------------------------------------
-    # Track 1: Full-Stack & Mobile Dev
     if is_arm:
         fs_suitability = "Conditional (Web/JS/Python OK; Unsuitable for heavy x86 DevOps/Docker)"
         fs_score = round(min(74.0, cpu_score * 0.55 + (15.0 if ram_gb >= 16 else 5.0)), 1)
@@ -241,7 +222,6 @@ def evaluate_workloads(laptop: Dict[str, Any]) -> Dict[str, Any]:
         fs_notes = "Full x86_64 support for Docker, Android Studio emulators, and local databases."
         fs_notes_ar = "معمارية x86_64 متوافقة بالكامل مع Docker ومحاكيات الأندرويد وقواعد البيانات."
 
-    # Track 2: AI / ML & Data Science
     local_training_ready = (vram_gb >= 6) and has_cuda
     if local_training_ready:
         ai_score = round(min(100.0, gpu_score * 0.50 + cpu_score * 0.30 + (vram_gb * 2.2) + (6.0 if ram_gb >= 16 else 0.0)), 1)
@@ -258,7 +238,6 @@ def evaluate_workloads(laptop: Dict[str, Any]) -> Dict[str, Any]:
             ai_notes = f"Only {int(vram_gb)}GB VRAM (<6GB minimum); insufficient for local deep learning training."
             ai_notes_ar = f"ذاكرة الكارت {int(vram_gb)} جيجا فقط (الحد الأدنى 6 جيجا VRAM)؛ غير كافية لتدريب نماذج الذكاء الاصطناعي محلياً."
 
-    # Track 3: Cybersecurity & Pentesting
     cyber_ram_ok = (ram_gb >= 16) or (ram_upgradeable and max_ram_gb >= 16)
     cyber_arch_ok = cpu_architecture == "x86_64"
     if is_arm:
@@ -292,7 +271,6 @@ def evaluate_workloads(laptop: Dict[str, Any]) -> Dict[str, Any]:
             f"{'رام 16 جيجا أو قابلة للترقية' if cyber_ram_ok else 'الرام محدودة أقل من 16 جيجا'}."
         )
 
-    # Track 4: Pro Video & Motion Design
     pv_score = round((premiere_score + davinci_score + ae_ps_score) / 3.0, 1)
     if is_low_gamut:
         pv_suitability = "Hardware Only (Screen Color Warning: 45% NTSC)"
@@ -301,7 +279,6 @@ def evaluate_workloads(laptop: Dict[str, Any]) -> Dict[str, Any]:
     else:
         pv_suitability = "Entry / 1080p Editing"
 
-    # Track 5: Data Analysis & Business
     dab_score = round(min(100.0, cpu_score * 0.55 + float(ti.get("mobility_score") or 50.0) * 0.25 + (15.0 if ram_gb >= 16 else 8.0)), 1)
     dab_suitability = "Recommended" if dab_score >= 65.0 else "Adequate"
 

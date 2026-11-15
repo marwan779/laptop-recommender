@@ -14,8 +14,10 @@ from fastapi import APIRouter, HTTPException
 from app.api.schemas import IngestReviewsRequest, RecommendRequest
 from app.infrastructure.chroma_repository import COLLECTION_NAME, CHROMA_DEFAULT_DIR
 from app.infrastructure.jina_embedder import EMBED_DIM, MODEL_NAME
-from app.services.recommendation_service import get_recommendation_service
-from recommendation_pipeline import LaptopRecommenderService
+from app.services.recommendation_service import (
+    LaptopRecommenderService,
+    get_recommendation_service,
+)
 
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 

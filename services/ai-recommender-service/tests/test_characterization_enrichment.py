@@ -8,10 +8,40 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Tuple
 
+import types
+
 import pytest
 
-import chroma_reviews_engine as cre
-import raw_reviews_enricher as rre
+from app.domain.enrichment.chunking import (
+    _format_catalog_specs_summary,
+    _gather_raw_candidate_chunks,
+    _select_top_candidates_for_jina,
+    compute_chassis_delta_hash,
+    detect_reviews_format,
+)
+from app.domain.enrichment.models import ASPECT_KEYS
+from app.domain.enrichment.scoring import (
+    _build_synthesized_texts,
+    _finalize_profile_with_recalibration,
+    is_valid_nlp_profile,
+    validate_enriched_profile,
+)
+import app.domain.reviews.calibration as cre
+from app.services.reviews_enrichment_service import enrich_chassis_with_fallback
+
+rre = types.SimpleNamespace(
+    ASPECT_KEYS=ASPECT_KEYS,
+    _build_synthesized_texts=_build_synthesized_texts,
+    _finalize_profile_with_recalibration=_finalize_profile_with_recalibration,
+    _format_catalog_specs_summary=_format_catalog_specs_summary,
+    _gather_raw_candidate_chunks=_gather_raw_candidate_chunks,
+    _select_top_candidates_for_jina=_select_top_candidates_for_jina,
+    compute_chassis_delta_hash=compute_chassis_delta_hash,
+    detect_reviews_format=detect_reviews_format,
+    enrich_chassis_with_fallback=enrich_chassis_with_fallback,
+    is_valid_nlp_profile=is_valid_nlp_profile,
+    validate_enriched_profile=validate_enriched_profile,
+)
 
 
 # ---------------------------------------------------------------------------

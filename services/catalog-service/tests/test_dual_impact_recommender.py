@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import logging
 from unittest.mock import MagicMock
 
+import httpx
 import pytest
 
 from app.domain.recommender import (
@@ -376,3 +378,66 @@ async def test_http_ai_recommender_client_sends_api_key_and_serializes_dates():
     assert captured["url"] == "http://ai-recommender:8002/recommend"
     assert captured["headers"]["X-API-Key"] == "secret-inter-service-key"
     assert captured["json"]["candidate_laptops"][0]["offers"][0]["last_checked_at"] == "2026-11-15T00:00:00+00:00"
+
+
+@pytest.mark.asyncio
+async def test_http_ai_recommender_client_omits_api_key_header_when_unset():
+    captured: dict = {}
+
+    class _FakeHttpClient:
+        async def post(self, url: str, json: dict, headers: dict):
+            captured["headers"] = headers
+            resp = MagicMock()
+            resp.raise_for_status = MagicMock()
+            resp.json.return_value = {"status": "OK", "results": []}
+            return resp
+
+    client = HttpAIRecommenderClient(
+        base_url="http://ai-recommender:8002",
+        api_key="",
+        client=_FakeHttpClient(),  # type: ignore[arg-type]
+    )
+
+    result = await client.recommend(
+        request=RecommendationRequest(budget_egp=80000.0, persona="balanced"),
+        primary_persona=PersonaType.BALANCED,
+        blended_weights=None,
+        candidate_laptops=[_build_laptop("candidate-a", 60000.0)],
+    )
+
+    assert result == {"status": "OK", "results": []}
+    assert "X-API-Key" not in captured["headers"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status_code", [401, 403])
+async def test_http_ai_recommender_client_logs_auth_warning_without_leaking_key(
+    status_code: int, caplog: pytest.LogCaptureFixture
+):
+    secret = "super-secret-inter-service-key"
+    request = httpx.Request("POST", "http://ai-recommender:8002/recommend")
+    response = httpx.Response(status_code, request=request)
+    error = httpx.HTTPStatusError("rejected", request=request, response=response)
+
+    class _FailingHttpClient:
+        async def post(self, url: str, json: dict, headers: dict):
+            raise error
+
+    client = HttpAIRecommenderClient(
+        base_url="http://ai-recommender:8002",
+        api_key=secret,
+        client=_FailingHttpClient(),  # type: ignore[arg-type]
+    )
+
+    with caplog.at_level(logging.WARNING, logger="catalog.services.ai_recommender_client"):
+        result = await client.recommend(
+            request=RecommendationRequest(budget_egp=80000.0, persona="balanced"),
+            primary_persona=PersonaType.BALANCED,
+            blended_weights=None,
+            candidate_laptops=[_build_laptop("candidate-a", 60000.0)],
+        )
+
+    assert result is None
+    assert "AI_RECOMMENDER_API_KEY" in caplog.text
+    assert str(status_code) in caplog.text
+    assert secret not in caplog.text

@@ -309,3 +309,21 @@ def build_chroma_reviews_db(
         force_reenrich=force_reenrich,
         enricher_mode=enricher_mode,
     )
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Build/Update ChromaDB Review Index with Jina-v3")
+    parser.add_argument("--reviews", default="reviews_deduplicated_v6.json")
+    parser.add_argument("--catalog", default="unified_catalog_topsis_ready_v6.json")
+    parser.add_argument("--chroma-dir", default=CHROMA_DEFAULT_DIR)
+    parser.add_argument("--model", default=MODEL_NAME)
+    cli_args = parser.parse_args()
+
+    build_chroma_reviews_db(
+        reviews_json_path=cli_args.reviews,
+        catalog_json_path=cli_args.catalog,
+        chroma_dir=cli_args.chroma_dir,
+        model_name=cli_args.model,
+    )
