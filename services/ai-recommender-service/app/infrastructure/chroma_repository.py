@@ -49,38 +49,32 @@ class ChromaReviewsRepository(IReviewsVectorStore):
             embedding_function=embedding_function,
         )
 
-    def build(self, data: Dict[str, Any], chroma_dir: str, model_name: str) -> Dict[str, Any]:
-        """Build/update the persistent collection from deduplicated review data."""
-        import chromadb
-
-        client = chromadb.PersistentClient(path=chroma_dir)
-        passage_emb_fn = JinaV3EmbeddingFunction(model_name=model_name, task="retrieval.passage")
-
-        # Recreate collection cleanly so 512d vectors never clash with previous collections
-        try:
-            client.delete_collection(name=COLLECTION_NAME)
-        except Exception:
-            pass
-        collection = client.create_collection(
-            name=COLLECTION_NAME,
-            embedding_function=passage_emb_fn,
-            metadata={"hnsw:space": "cosine"},
-        )
-        self.collection = collection
-
+    def _extract_records_and_profiles(
+        self,
+        data: Dict[str, Any],
+    ) -> tuple[Dict[str, tuple], Dict[str, Dict[str, Any]]]:
+        """Extract Chroma `(text, metadata)` documents and canonical-id NLP profiles."""
         merged_by_ckey: Dict[str, Dict[str, Any]] = {}
         db_update_payload: Dict[str, Dict[str, Any]] = {}
 
         if "chassis_reviews" in data:
             for item in data.get("chassis_reviews", []):
                 ckey = item["chassis_key"]
-                cids_list = item.get("matched_canonical_ids", [])
+                cids_list = self._resolve_canonical_ids(item)
                 brand = item.get("identity", {}).get("brand", "") or ""
                 comm_score = float(item.get("community_nlp_score", 75.0))
                 clean_lists = item.get("clean_profile_lists", {})
                 chunks = item.get("deduplicated_chunks", [])
-                ed_pros = [c["text"] for c in chunks if c.get("source_type") == "scraped_editorial" and c.get("polarity") == "pro"]
-                ed_cons = [c["text"] for c in chunks if c.get("source_type") == "scraped_editorial" and c.get("polarity") == "con"]
+                ed_pros = [
+                    c["text"]
+                    for c in chunks
+                    if c.get("source_type") == "scraped_editorial" and c.get("polarity") == "pro"
+                ]
+                ed_cons = [
+                    c["text"]
+                    for c in chunks
+                    if c.get("source_type") == "scraped_editorial" and c.get("polarity") == "con"
+                ]
 
                 pros_ar_list = list(clean_lists.get("pros_ar", []))
                 cons_ar_list = list(clean_lists.get("cons_ar", []))
@@ -111,8 +105,8 @@ class ChromaReviewsRepository(IReviewsVectorStore):
             for item in data.get("laptops", []):
                 ckey = item["chassis_key"]
                 prof = item.get("nlp_review_profile", {})
-                cids_list = item.get("matched_canonical_ids", [])
-                brand = item.get("identity", {}).get("brand", "")
+                cids_list = self._resolve_canonical_ids(item)
+                brand = item.get("identity", {}).get("brand", "") or ""
                 comm_score = float(prof.get("community_nlp_score", 75.0))
 
                 for cid in cids_list:
@@ -174,12 +168,63 @@ class ChromaReviewsRepository(IReviewsVectorStore):
                     },
                 )
 
-        existing_ids = set(collection.get(include=[])["ids"])
+        return records_by_id, db_update_payload
+
+    @staticmethod
+    def _resolve_canonical_ids(item: Dict[str, Any]) -> List[str]:
+        cids = [str(c) for c in (item.get("matched_canonical_ids") or []) if c]
+        for fallback_key in ("primary_canonical_id", "canonical_id"):
+            cid = item.get(fallback_key)
+            if cid and str(cid) not in cids:
+                cids.append(str(cid))
+        return cids
+
+    def _sync_collection(
+        self,
+        data: Dict[str, Any],
+        chroma_dir: str,
+        model_name: str,
+        *,
+        recreate: bool,
+    ) -> Dict[str, Any]:
+        """Shared ChromaDB persistence helper for full rebuilds and incremental batch upserts."""
+        import chromadb
+
+        client = chromadb.PersistentClient(path=chroma_dir)
+        passage_emb_fn = JinaV3EmbeddingFunction(model_name=model_name, task="retrieval.passage")
+
+        if recreate:
+            # Recreate collection cleanly so 512d vectors never clash with previous collections
+            try:
+                client.delete_collection(name=COLLECTION_NAME)
+            except Exception:
+                pass
+            collection = client.create_collection(
+                name=COLLECTION_NAME,
+                embedding_function=passage_emb_fn,
+                metadata={"hnsw:space": "cosine"},
+            )
+        else:
+            collection = client.get_or_create_collection(
+                name=COLLECTION_NAME,
+                embedding_function=passage_emb_fn,
+                metadata={"hnsw:space": "cosine"},
+            )
+
+        self.collection = collection
+        records_by_id, db_update_payload = self._extract_records_and_profiles(data)
+
+        existing_ids = set(collection.get(include=[]).get("ids") or []) if recreate else set()
         pending = [(did, txt, meta) for did, (txt, meta) in records_by_id.items() if did not in existing_ids]
         docs = [p[1] for p in pending]
         metadatas = [p[2] for p in pending]
         ids = [p[0] for p in pending]
-        print(f"[ChromaDB] Total unique docs: {len(records_by_id)}, already indexed: {len(existing_ids)}, remaining: {len(ids)}")
+
+        action = "rebuilt" if recreate else "upserted"
+        print(
+            f"[ChromaDB] ({action}) Batch docs: {len(records_by_id)}, "
+            f"already indexed skipped: {len(existing_ids)}, pending: {len(ids)}"
+        )
 
         batch_size = 16
         for i in range(0, len(docs), batch_size):
@@ -188,15 +233,23 @@ class ChromaReviewsRepository(IReviewsVectorStore):
                 metadatas=metadatas[i:i + batch_size],
                 ids=ids[i:i + batch_size],
             )
-            print(f"  [ChromaDB] Indexed {min(i + batch_size, len(docs))}/{len(docs)} remaining documents...")
+            print(f"  [ChromaDB] Indexed {min(i + batch_size, len(docs))}/{len(docs)} documents...")
 
-        print(f"[ChromaDB] Indexed {len(records_by_id)} total unique documents into '{chroma_dir}' using {model_name}.")
+        print(f"[ChromaDB] Persisted {len(records_by_id)} unique documents into '{chroma_dir}' using {model_name}.")
         self.last_profiles_by_canonical_id = db_update_payload
         return {
             "indexed_documents_count": len(records_by_id),
             "updated_laptops_count": len(db_update_payload),
             "profiles_by_canonical_id": db_update_payload,
         }
+
+    def build(self, data: Dict[str, Any], chroma_dir: str, model_name: str) -> Dict[str, Any]:
+        """Destructively rebuild the persistent collection from scratch (CLI/batch rebuilds)."""
+        return self._sync_collection(data, chroma_dir=chroma_dir, model_name=model_name, recreate=True)
+
+    def upsert_reviews(self, data: Dict[str, Any], chroma_dir: str, model_name: str) -> Dict[str, Any]:
+        """Incrementally add/update a review batch in ChromaDB without wiping existing laptops."""
+        return self._sync_collection(data, chroma_dir=chroma_dir, model_name=model_name, recreate=False)
 
     # -- query ------------------------------------------------------------
     def query_dual(

@@ -112,6 +112,74 @@ class LaptopRecommenderService:
                     lookup[cid] = fallback_profile
         self._reviews_by_cid = lookup
 
+    def refresh_reviews_state(
+        self,
+        chroma_dir: Optional[str] = None,
+        reviews_payload: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Refresh in-memory review lookups, ChromaDB collection handle, and query cache."""
+        if isinstance(reviews_payload, dict):
+            if isinstance(reviews_payload.get("chassis_reviews"), list):
+                for entry in reviews_payload["chassis_reviews"]:
+                    if not isinstance(entry, dict):
+                        continue
+                    clean_lists = entry.get("clean_profile_lists", {})
+                    chunks = entry.get("deduplicated_chunks", [])
+                    ed_pros = [
+                        c["text"]
+                        for c in chunks
+                        if c.get("source_type") == "scraped_editorial" and c.get("polarity") == "pro"
+                    ]
+                    ed_cons = [
+                        c["text"]
+                        for c in chunks
+                        if c.get("source_type") == "scraped_editorial" and c.get("polarity") == "con"
+                    ]
+                    profile = {
+                        "community_nlp_score": float(entry.get("community_nlp_score", 75.0)),
+                        "aspect_scores": dict(entry.get("aspect_scores", {})),
+                        "pros_ar": list(clean_lists.get("pros_ar", [])),
+                        "cons_ar": list(clean_lists.get("cons_ar", [])),
+                        "pros_en": list(dict.fromkeys(list(clean_lists.get("pros_en", [])) + ed_pros)),
+                        "cons_en": list(dict.fromkeys(list(clean_lists.get("cons_en", [])) + ed_cons)),
+                    }
+                    cids = list(entry.get("matched_canonical_ids") or [])
+                    for fb in (entry.get("primary_canonical_id"), entry.get("canonical_id")):
+                        if fb and fb not in cids:
+                            cids.append(fb)
+                    for cid in cids:
+                        if cid:
+                            self._reviews_by_cid[str(cid)] = profile
+            elif isinstance(reviews_payload.get("laptops"), list):
+                for entry in reviews_payload["laptops"]:
+                    if not isinstance(entry, dict):
+                        continue
+                    prof = entry.get("nlp_review_profile")
+                    if not isinstance(prof, dict) or not prof:
+                        continue
+                    cids = list(entry.get("matched_canonical_ids") or [])
+                    for fb in (entry.get("primary_canonical_id"), entry.get("canonical_id")):
+                        if fb and fb not in cids:
+                            cids.append(fb)
+                    for cid in cids:
+                        if cid:
+                            self._reviews_by_cid[str(cid)] = dict(prof)
+
+        target_dir = chroma_dir or self.chroma_dir
+        if self.query_emb_fn is not None and target_dir and Path(target_dir).exists():
+            try:
+                import chromadb
+
+                client = chromadb.PersistentClient(path=target_dir)
+                self.collection = client.get_collection(
+                    name=COLLECTION_NAME,
+                    embedding_function=self.query_emb_fn,
+                )
+            except Exception as exc:
+                print(f"[Warning] Could not refresh ChromaDB collection handle: {exc}")
+
+        self._cached_dual_query.cache_clear()
+
     def _init_resources(self) -> None:
         if Path(self.catalog_fallback_path).exists():
             with open(self.catalog_fallback_path, "r", encoding="utf-8") as f:

@@ -22,6 +22,18 @@ class RecommendationService:
     def warm_up(self) -> LaptopRecommenderService:
         return self.recommender
 
+    def refresh_reviews_state(
+        self,
+        chroma_dir: Optional[str] = None,
+        reviews_payload: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Refresh live Chroma collection and review lookup caches after batch ingestion."""
+        if self._recommender is not None:
+            self._recommender.refresh_reviews_state(
+                chroma_dir=chroma_dir,
+                reviews_payload=reviews_payload,
+            )
+
     def recommend(
         self,
         laptops: Optional[List[Dict[str, Any]]] = None,

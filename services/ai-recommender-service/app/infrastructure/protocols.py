@@ -55,6 +55,14 @@ class IReviewsVectorStore(Protocol):
     ) -> Dict[str, Any]:
         ...
 
+    def upsert_reviews(
+        self,
+        data: Dict[str, Any],
+        chroma_dir: str,
+        model_name: str,
+    ) -> Dict[str, Any]:
+        ...
+
     def query_dual(
         self,
         query_embeddings: List[List[float]],
