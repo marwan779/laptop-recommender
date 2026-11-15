@@ -45,6 +45,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     consumer = CatalogMessageConsumer(
         broker=broker,
         price_sync_service=PriceSyncService(cache=app.state.cache),
+        cache=app.state.cache,
     )
     app.state.broker = broker
     app.state.consumer = consumer

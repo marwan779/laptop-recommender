@@ -15,10 +15,13 @@ from app.schemas.events import (
     PricesCheckedPayload,
     ReviewsEnrichedEvent,
     ReviewsEnrichedPayload,
+    ReviewsEnrichFailedEvent,
+    ReviewsEnrichFailedPayload,
 )
 from app.schemas.price_sync import PriceChangeType, PriceCheckItemResult, PriceSyncSummary
 from app.services.catalog_ingestion_service import IngestionResult
 from app.services.messaging_consumer import CatalogMessageConsumer
+from app.services.review_intelligence_service import ReviewIngestionResult
 
 
 @pytest.fixture
@@ -62,7 +65,7 @@ async def test_consumer_start_listening():
 
     await consumer.start_listening()
 
-    assert mock_broker.subscribe.call_count == 4
+    assert mock_broker.subscribe.call_count == 5
     subscriptions = {
         call.kwargs["queue_name"]: call.kwargs["routing_key"] for call in mock_broker.subscribe.call_args_list
     }
@@ -71,6 +74,7 @@ async def test_consumer_start_listening():
     assert subscriptions["catalog.scrape.failed.jobs"] == EventType.CATALOG_SCRAPE_FAILED_EVENT
     assert subscriptions["catalog.prices.checked.jobs"] == EventType.PRICES_CHECKED_EVENT
     assert subscriptions["catalog.reviews.enriched.jobs"] == EventType.REVIEWS_ENRICHED_EVENT
+    assert subscriptions["catalog.reviews.enrich.failed.jobs"] == EventType.REVIEWS_ENRICH_FAILED_EVENT
 
 
 @pytest.mark.asyncio
@@ -359,4 +363,209 @@ async def test_handle_reviews_enriched_event_defers_commit_to_outer_transaction(
         session=mock_session,
         s3_key="reviews/batch_1.json",
         commit=False,
+    )
+
+
+@pytest.mark.asyncio
+async def test_handle_catalog_ready_event_invalidates_caches_after_commit(
+    mock_session,
+    mock_session_factory,
+):
+    execution_order: list[str] = []
+
+    class TrackingBeginCM:
+        async def __aenter__(self):
+            return mock_session
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            execution_order.append("tx_exit")
+            return None
+
+    mock_session.begin.return_value = TrackingBeginCM()
+
+    cleared_prefixes: list[str] = []
+    mock_cache = AsyncMock()
+
+    async def track_clear(prefix: str) -> int:
+        execution_order.append("cache_invalidate")
+        cleared_prefixes.append(prefix)
+        return 1
+
+    mock_cache.clear_prefix.side_effect = track_clear
+
+    batch_id = uuid.uuid4()
+    mock_ingestion = AsyncMock()
+    mock_ingestion.ingest_from_s3.return_value = IngestionResult(
+        batch_id=batch_id,
+        status="SUCCESS",
+        source="s3://test-bucket/catalogs/catalog_1.json",
+        duration_seconds=5.0,
+        total_laptops=10,
+        new_laptops=5,
+        updated_laptops=5,
+        offers_created=5,
+        offers_updated=5,
+        metrics_created=5,
+        metrics_updated=5,
+        metrics_summary={},
+    )
+
+    consumer = CatalogMessageConsumer(
+        broker=AsyncMock(),
+        session_factory=mock_session_factory,
+        ingestion_service=mock_ingestion,
+        cache=mock_cache,
+    )
+
+    event = CatalogReadyEvent(
+        payload=CatalogReadyPayload(
+            batch_id=str(batch_id),
+            s3_bucket="test-bucket",
+            s3_key="catalogs/catalog_1.json",
+            total_laptops=10,
+        )
+    )
+
+    await consumer.handle_catalog_ready_event(event.model_dump())
+
+    assert execution_order[0] == "tx_exit"
+    assert set(cleared_prefixes) == {
+        "catalog:browse",
+        "catalog:laptop",
+        "catalog:recommendation",
+        "catalog:price_history",
+    }
+
+
+@pytest.mark.asyncio
+async def test_handle_reviews_enriched_event_invalidates_caches_after_commit(
+    mock_session,
+    mock_session_factory,
+):
+    execution_order: list[str] = []
+
+    class TrackingBeginCM:
+        async def __aenter__(self):
+            return mock_session
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            execution_order.append("tx_exit")
+            return None
+
+    mock_session.begin.return_value = TrackingBeginCM()
+
+    cleared_prefixes: list[str] = []
+    mock_cache = AsyncMock()
+
+    async def track_clear(prefix: str) -> int:
+        execution_order.append("cache_invalidate")
+        if prefix == "catalog:browse":
+            raise RuntimeError("redis temporarily unreachable")
+        cleared_prefixes.append(prefix)
+        return 1
+
+    mock_cache.clear_prefix.side_effect = track_clear
+
+    mock_review_service = AsyncMock()
+    mock_review_service.ingest_from_s3.return_value = ReviewIngestionResult(
+        status="SUCCESS",
+        chassis_processed=3,
+        chroma_documents_upserted=0,
+        sql_laptops_updated=5,
+        duration_seconds=0.4,
+    )
+
+    consumer = CatalogMessageConsumer(
+        broker=AsyncMock(),
+        session_factory=mock_session_factory,
+        review_intelligence_service=mock_review_service,
+        cache=mock_cache,
+    )
+
+    event = ReviewsEnrichedEvent(
+        payload=ReviewsEnrichedPayload(
+            job_id="reviews_batch_cache_1",
+            s3_key="reviews/enriched_cache.json",
+            total_chassis=3,
+            total_laptops=5,
+        )
+    )
+
+    await consumer.handle_reviews_enriched_event(event.model_dump())
+
+    assert execution_order[0] == "tx_exit"
+    # Fail-open: catalog:browse raised, yet the remaining prefixes still cleared.
+    assert cleared_prefixes == ["catalog:laptop", "catalog:recommendation"]
+
+
+@pytest.mark.asyncio
+async def test_handle_reviews_enriched_event_skips_cache_invalidation_when_no_rows_updated(
+    mock_session,
+    mock_session_factory,
+):
+    mock_cache = AsyncMock()
+    mock_review_service = AsyncMock()
+    mock_review_service.ingest_from_s3.return_value = ReviewIngestionResult(
+        status="SKIPPED",
+        chassis_processed=1,
+        chroma_documents_upserted=0,
+        sql_laptops_updated=0,
+        duration_seconds=0.1,
+    )
+
+    consumer = CatalogMessageConsumer(
+        broker=AsyncMock(),
+        session_factory=mock_session_factory,
+        review_intelligence_service=mock_review_service,
+        cache=mock_cache,
+    )
+
+    event = ReviewsEnrichedEvent(
+        payload=ReviewsEnrichedPayload(
+            job_id="reviews_batch_noop",
+            s3_key="reviews/enriched_noop.json",
+        )
+    )
+
+    await consumer.handle_reviews_enriched_event(event.model_dump())
+
+    mock_cache.clear_prefix.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_handle_reviews_enrich_failed_records_audit_log(
+    mock_session,
+    mock_session_factory,
+):
+    from unittest.mock import patch
+
+    consumer = CatalogMessageConsumer(
+        broker=AsyncMock(),
+        session_factory=mock_session_factory,
+    )
+
+    event = ReviewsEnrichFailedEvent(
+        payload=ReviewsEnrichFailedPayload(
+            job_id="reviews_batch_err_1",
+            error_message="ChromaDB upsert timeout",
+            s3_key="reviews/raw_1.json",
+        )
+    )
+
+    expected_uuid = uuid.uuid5(uuid.NAMESPACE_OID, "reviews-enrich-failed:reviews_batch_err_1")
+
+    with patch("app.services.messaging_consumer.BatchLogRepository") as mock_repo_cls:
+        mock_repo = mock_repo_cls.return_value
+        mock_repo.get_by_id = AsyncMock(return_value=None)
+        mock_repo.record_batch_log = AsyncMock()
+
+        await consumer.handle_reviews_enrich_failed(event.model_dump())
+
+    mock_repo.get_by_id.assert_awaited_once_with(expected_uuid)
+    mock_repo.record_batch_log.assert_awaited_once_with(
+        batch_id=expected_uuid,
+        store_key="reviews_enrichment",
+        trigger_type="REVIEWS_ENRICH_FAILED",
+        status="FAILED",
+        error_message="[reviews_batch_err_1] ChromaDB upsert timeout",
     )

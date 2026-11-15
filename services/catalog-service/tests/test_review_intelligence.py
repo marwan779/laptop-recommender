@@ -352,3 +352,19 @@ async def test_ingest_reviews_dict_supports_format_b2_chassis_reviews(db_session
     assert laptop.metrics is not None
     assert float(laptop.metrics.community_nlp_score) == 84.5
     assert float(laptop.metrics.acoustics_score) == 83.0
+
+
+def test_collect_review_profiles_uses_canonical_id_fallback():
+    profiles = ReviewIntelligenceService._collect_review_profiles(
+        [
+            {
+                "canonical_id": "laptop-fallback-id",
+                "community_nlp_score": 80.0,
+                "aspect_scores": {"thermals_score": 79.0},
+                "clean_profile_lists": {"pros_en": ["Cool"], "pros_ar": ["بارد"]},
+            }
+        ]
+    )
+    assert "laptop-fallback-id" in profiles
+    assert profiles["laptop-fallback-id"]["pros_en"] == ["Cool"]
+    assert profiles["laptop-fallback-id"]["community_nlp_score"] == 80.0

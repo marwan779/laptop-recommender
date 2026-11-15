@@ -17,6 +17,8 @@ from app.schemas.events import (
     PricesCheckedPayload,
     ReviewsEnrichedEvent,
     ReviewsEnrichedPayload,
+    ReviewsEnrichFailedEvent,
+    ReviewsEnrichFailedPayload,
 )
 from app.schemas.price_sync import PriceSyncSummary
 from app.services.messaging_consumer import CatalogMessageConsumer
@@ -153,6 +155,32 @@ async def test_duplicate_reviews_enriched_event_skips_review_ingestion():
     await consumer.handle_reviews_enriched_event(event.model_dump())
 
     review_service.ingest_from_s3.assert_not_called()
+    session.execute.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_duplicate_reviews_enrich_failed_event_skips_audit_log():
+    session = AsyncMock()
+    session.execute.return_value = _duplicate_result()
+
+    consumer = CatalogMessageConsumer(
+        broker=AsyncMock(),
+        session_factory=_session_factory(session),
+    )
+
+    event = ReviewsEnrichFailedEvent(
+        payload=ReviewsEnrichFailedPayload(
+            job_id="job-dup-fail",
+            error_message="boom",
+        )
+    )
+
+    from unittest.mock import patch
+
+    with patch("app.services.messaging_consumer.BatchLogRepository") as batch_log_repo:
+        await consumer.handle_reviews_enrich_failed(event.model_dump())
+
+    batch_log_repo.assert_not_called()
     session.execute.assert_awaited_once()
 
 

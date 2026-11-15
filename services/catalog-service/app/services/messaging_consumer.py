@@ -1,11 +1,13 @@
 """Catalog Message Consumer for RabbitMQ Events.
 
-Consumes events emitted by scraper-service and orchestrates database updates:
+Consumes events emitted by scraper-service and ai-recommender-service and
+orchestrates database updates and post-commit cache invalidation:
 - `catalog.ready.event` -> Downloads S3 catalog, runs in-memory metrics calculation,
   applies TOPSIS hook, and seeds relational database via CatalogIngestionService.
 - `catalog.scrape.failed` -> Updates ScrapingBatchLog status to FAILED.
 - `prices.checked.event` -> Applies price and stock verification via PriceSyncService.
-- `reviews.ready.event` -> Receives community review analysis (Phase 2).
+- `reviews.enriched.event` -> Downloads enriched S3 reviews and persists SQL NLP profiles.
+- `reviews.enrich.failed` -> Records failed enrichment audit entry in ScrapingBatchLog.
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.common.cache import ICacheProvider
 from app.common.messaging.contract import IMessageBroker
 from app.core.database import AsyncSessionLocal
 from app.models.base import utcnow
@@ -28,6 +31,7 @@ from app.schemas.events import (
     EventType,
     PricesCheckedEvent,
     ReviewsEnrichedEvent,
+    ReviewsEnrichFailedEvent,
 )
 from app.services.catalog_ingestion_service import CatalogIngestionService
 from app.services.price_sync_service import PriceSyncService
@@ -46,13 +50,30 @@ class CatalogMessageConsumer:
         ingestion_service: CatalogIngestionService | None = None,
         price_sync_service: PriceSyncService | None = None,
         review_intelligence_service: ReviewIntelligenceService | None = None,
+        cache: ICacheProvider | None = None,
     ) -> None:
         self.broker = broker
         self._session_factory = session_factory or AsyncSessionLocal
         self.ingestion_service = ingestion_service or CatalogIngestionService()
-        self.price_sync_service = price_sync_service or PriceSyncService()
+        self.price_sync_service = price_sync_service or PriceSyncService(cache=cache)
         self.review_intelligence_service = review_intelligence_service
+        self.cache = cache
         self._is_listening: bool = False
+
+    async def _invalidate_catalog_caches(self, *, include_price_history: bool = False) -> None:
+        """Evict read-side catalog and recommendation cache namespaces after DB commit."""
+        if not self.cache:
+            return
+
+        prefixes = ["catalog:browse", "catalog:laptop", "catalog:recommendation"]
+        if include_price_history:
+            prefixes.append("catalog:price_history")
+
+        for prefix in prefixes:
+            try:
+                await self.cache.clear_prefix(prefix)
+            except Exception as exc:
+                logger.warning("Failed to invalidate cache prefix '%s': %s", prefix, exc)
 
     def _resolve_review_intelligence_service(self) -> ReviewIntelligenceService:
         if self.review_intelligence_service is None:
@@ -115,6 +136,14 @@ class CatalogMessageConsumer:
             prefetch_count=2,
         )
 
+        # 5. Reviews Enrich Failed Event (Fast audit update -> prefetch 5)
+        await self.broker.subscribe(
+            queue_name="catalog.reviews.enrich.failed.jobs",
+            routing_key=EventType.REVIEWS_ENRICH_FAILED_EVENT,
+            handler=self.handle_reviews_enrich_failed,
+            prefetch_count=5,
+        )
+
         self._is_listening = True
         logger.info("CatalogMessageConsumer is actively listening for domain events.")
 
@@ -157,6 +186,8 @@ class CatalogMessageConsumer:
                     result.total_laptops,
                     result.duration_seconds,
                 )
+
+        await self._invalidate_catalog_caches(include_price_history=True)
 
     async def handle_catalog_scrape_failed(self, raw_data: dict[str, Any]) -> None:
         """Mark ScrapingBatchLog as FAILED when scraper encounters fatal error."""
@@ -262,6 +293,9 @@ class CatalogMessageConsumer:
                     commit=False,
                 )
 
+        if isinstance(result.sql_laptops_updated, int) and result.sql_laptops_updated > 0:
+            await self._invalidate_catalog_caches()
+
         logger.info(
             "ReviewsEnrichedEvent [%s] ingested: status=%s, chassis=%d, sql_laptops=%d",
             payload.job_id,
@@ -269,3 +303,43 @@ class CatalogMessageConsumer:
             result.chassis_processed,
             result.sql_laptops_updated,
         )
+
+    async def handle_reviews_enrich_failed(self, raw_data: dict[str, Any]) -> None:
+        """Record a failed ScrapingBatchLog entry when AI review enrichment fails."""
+        event = ReviewsEnrichFailedEvent.model_validate(raw_data)
+        payload = event.payload
+        logger.warning(
+            "Processing ReviewsEnrichFailedEvent [job_id=%s, s3_key=%s]: %s",
+            payload.job_id,
+            payload.s3_key,
+            payload.error_message,
+        )
+
+        audit_uuid = uuid.uuid5(uuid.NAMESPACE_OID, f"reviews-enrich-failed:{payload.job_id}")
+        formatted_error = f"[{payload.job_id}] {payload.error_message}"
+
+        async with self._session_factory() as session:
+            async with session.begin():
+                if not await self._claim_inbox(session, event, "handle_reviews_enrich_failed"):
+                    return
+
+                batch_repo = BatchLogRepository(session)
+                existing = await batch_repo.get_by_id(audit_uuid)
+                if existing:
+                    existing.status = "FAILED"
+                    existing.error_message = formatted_error
+                    existing.completed_at = utcnow()
+                else:
+                    await batch_repo.record_batch_log(
+                        batch_id=audit_uuid,
+                        store_key="reviews_enrichment",
+                        trigger_type="REVIEWS_ENRICH_FAILED",
+                        status="FAILED",
+                        error_message=formatted_error,
+                    )
+
+                logger.info(
+                    "ScrapingBatchLog [%s] marked as FAILED for review enrichment job [%s].",
+                    audit_uuid,
+                    payload.job_id,
+                )

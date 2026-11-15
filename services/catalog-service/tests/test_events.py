@@ -17,6 +17,8 @@ from app.schemas.events import (
     PricesCheckedPayload,
     ReviewsEnrichedEvent,
     ReviewsEnrichedPayload,
+    ReviewsEnrichFailedEvent,
+    ReviewsEnrichFailedPayload,
     ReviewsReadyEvent,
     ReviewsReadyPayload,
     ScrapeCatalogCommand,
@@ -198,3 +200,25 @@ def test_reviews_enriched_event_serialization():
     assert restored.payload.s3_key == "reviews/enriched/job-enrich-42.json"
     assert restored.payload.total_chassis == 12
     assert restored.payload.total_laptops == 29
+
+    empty_evt = ReviewsEnrichedEvent(
+        payload=ReviewsEnrichedPayload(job_id="job-enrich-empty", s3_key=None)
+    )
+    assert empty_evt.payload.s3_key is None
+
+
+def test_reviews_enrich_failed_event_serialization():
+    evt = ReviewsEnrichFailedEvent(
+        payload=ReviewsEnrichFailedPayload(
+            job_id="reviews_batch_123",
+            error_message="LLM quota exceeded",
+            s3_key="reviews/raw/reviews_batch_123.json",
+            details={"status_code": 429},
+        )
+    )
+    dumped = evt.model_dump(mode="json")
+    restored = ReviewsEnrichFailedEvent.model_validate(dumped)
+    assert restored.event_type == EventType.REVIEWS_ENRICH_FAILED_EVENT
+    assert restored.payload.job_id == "reviews_batch_123"
+    assert restored.payload.error_message == "LLM quota exceeded"
+    assert restored.payload.details == {"status_code": 429}

@@ -262,9 +262,9 @@ class ReviewIntelligenceService:
             clean_profile["cons_ar"] = c_ar
 
             canonical_ids = list(item.get("matched_canonical_ids") or [])
-            primary_canonical_id = item.get("primary_canonical_id")
-            if primary_canonical_id and primary_canonical_id not in canonical_ids:
-                canonical_ids.append(primary_canonical_id)
+            for fallback_id in (item.get("primary_canonical_id"), item.get("canonical_id")):
+                if fallback_id and fallback_id not in canonical_ids:
+                    canonical_ids.append(fallback_id)
 
             for canonical_id in canonical_ids:
                 if canonical_id:

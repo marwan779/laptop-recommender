@@ -35,6 +35,7 @@ class EventType(StrEnum):
     REVIEWS_SCRAPE_COMMAND = "reviews.scrape.command"
     REVIEWS_READY_EVENT = "reviews.ready.event"
     REVIEWS_ENRICHED_EVENT = "reviews.enriched.event"
+    REVIEWS_ENRICH_FAILED_EVENT = "reviews.enrich.failed"
 
 
 # ─── Standard Message Envelope ──────────────────────────────────────────────
@@ -299,7 +300,10 @@ class ReviewsEnrichedPayload(BaseModel):
     """Payload emitted by ai-recommender-service after enriching raw reviews into S3."""
 
     job_id: str = Field(description="Review enrichment job ID")
-    s3_key: str = Field(description="Object storage key for the enriched Format B1/B2 reviews JSON")
+    s3_key: str | None = Field(
+        default=None,
+        description="Object storage key for the enriched Format B1/B2 reviews JSON",
+    )
     s3_bucket: str | None = Field(
         default=None,
         description="Optional S3 bucket name if overridden",
@@ -313,3 +317,22 @@ class ReviewsEnrichedEvent(BaseEvent):
 
     event_type: str = EventType.REVIEWS_ENRICHED_EVENT
     payload: ReviewsEnrichedPayload
+
+
+class ReviewsEnrichFailedPayload(BaseModel):
+    """Payload emitted when ai-recommender-service fails a review enrichment job."""
+
+    job_id: str = Field(description="Associated review enrichment job ID")
+    error_message: str = Field(description="Description of the fatal enrichment failure")
+    s3_key: str | None = Field(
+        default=None,
+        description="Optional raw reviews S3 key that triggered the failed enrichment",
+    )
+    details: dict[str, Any] | None = Field(default=None, description="Optional diagnostic details")
+
+
+class ReviewsEnrichFailedEvent(BaseEvent):
+    """Event emitted when community review enrichment fails fatally."""
+
+    event_type: str = EventType.REVIEWS_ENRICH_FAILED_EVENT
+    payload: ReviewsEnrichFailedPayload
