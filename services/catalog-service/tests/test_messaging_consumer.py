@@ -17,6 +17,8 @@ from app.schemas.events import (
     ReviewsEnrichedPayload,
     ReviewsEnrichFailedEvent,
     ReviewsEnrichFailedPayload,
+    ReviewsFailedEvent,
+    ReviewsFailedPayload,
 )
 from app.schemas.price_sync import PriceChangeType, PriceCheckItemResult, PriceSyncSummary
 from app.services.catalog_ingestion_service import IngestionResult
@@ -65,7 +67,7 @@ async def test_consumer_start_listening():
 
     await consumer.start_listening()
 
-    assert mock_broker.subscribe.call_count == 5
+    assert mock_broker.subscribe.call_count == 6
     subscriptions = {
         call.kwargs["queue_name"]: call.kwargs["routing_key"] for call in mock_broker.subscribe.call_args_list
     }
@@ -74,6 +76,7 @@ async def test_consumer_start_listening():
     assert subscriptions["catalog.scrape.failed.jobs"] == EventType.CATALOG_SCRAPE_FAILED_EVENT
     assert subscriptions["catalog.prices.checked.jobs"] == EventType.PRICES_CHECKED_EVENT
     assert subscriptions["catalog.reviews.enriched.jobs"] == EventType.REVIEWS_ENRICHED_EVENT
+    assert subscriptions["catalog.reviews.failed.jobs"] == EventType.REVIEWS_FAILED_EVENT
     assert subscriptions["catalog.reviews.enrich.failed.jobs"] == EventType.REVIEWS_ENRICH_FAILED_EVENT
 
 
@@ -568,6 +571,45 @@ async def test_handle_reviews_enrich_failed_records_audit_log(
         trigger_type="REVIEWS_ENRICH_FAILED",
         status="FAILED",
         error_message="[reviews_batch_err_1] ChromaDB upsert timeout",
+    )
+
+
+@pytest.mark.asyncio
+async def test_handle_reviews_failed_records_audit_log(
+    mock_session,
+    mock_session_factory,
+):
+    from unittest.mock import patch
+
+    consumer = CatalogMessageConsumer(
+        broker=AsyncMock(),
+        session_factory=mock_session_factory,
+    )
+
+    event = ReviewsFailedEvent(
+        payload=ReviewsFailedPayload(
+            job_id="reviews_scrape_err_1",
+            error_message="YouTube quota exhausted",
+            details={"exception_type": "RuntimeError"},
+        )
+    )
+
+    expected_uuid = uuid.uuid5(uuid.NAMESPACE_OID, "reviews-failed:reviews_scrape_err_1")
+
+    with patch("app.services.messaging_consumer.BatchLogRepository") as mock_repo_cls:
+        mock_repo = mock_repo_cls.return_value
+        mock_repo.get_by_id = AsyncMock(return_value=None)
+        mock_repo.record_batch_log = AsyncMock()
+
+        await consumer.handle_reviews_failed(event.model_dump())
+
+    mock_repo.get_by_id.assert_awaited_once_with(expected_uuid)
+    mock_repo.record_batch_log.assert_awaited_once_with(
+        batch_id=expected_uuid,
+        store_key="reviews_scraping",
+        trigger_type="REVIEWS_SCRAPE_FAILED",
+        status="FAILED",
+        error_message="[reviews_scrape_err_1] YouTube quota exhausted",
     )
 
 

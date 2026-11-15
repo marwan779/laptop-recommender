@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import importlib.util
 import sys
 import types
 from typing import Any, Dict, List, Optional
@@ -22,7 +21,7 @@ from app.schemas.events import (
 )
 from app.services.messaging_consumer import AIRecommenderMessageConsumer
 from app.services.reviews_pipeline_service import (
-    OptionalAuditDeduplicator,
+    DomainReviewsDeduplicator,
     ReviewsPipelineService,
 )
 
@@ -227,24 +226,19 @@ def test_chroma_repository_upsert_reviews_is_incremental(monkeypatch: pytest.Mon
     assert "lenovo|loq_15__pro" in rebuilt_col.records
 
 
-def test_optional_audit_deduplicator_skips_when_missing_and_passes_b2(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    dedup = OptionalAuditDeduplicator()
-
-    real_find_spec = importlib.util.find_spec
-
-    def _missing_audit_spec(name: str, *args: Any, **kwargs: Any) -> Any:
-        if name == "audit_and_deduplicate_reviews":
-            return None
-        return real_find_spec(name, *args, **kwargs)
-
-    monkeypatch.setattr(importlib.util, "find_spec", _missing_audit_spec)
+def test_domain_reviews_deduplicator_dedupes_b1_to_b2_and_passes_b2() -> None:
+    dedup = DomainReviewsDeduplicator()
 
     b1_payload = {
         "laptops": [_sample_format_b1_item(canonical_id="cid-1")],
     }
-    assert dedup.deduplicate(b1_payload) is b1_payload
+    b2_out = dedup.deduplicate(b1_payload)
+    assert isinstance(b2_out.get("chassis_reviews"), list)
+    assert len(b2_out["chassis_reviews"]) == 1
+    entry = b2_out["chassis_reviews"][0]
+    assert entry["chassis_key"] == "lenovo|legion_5"
+    assert entry["community_nlp_score"] == 82.0
+    assert entry["aspect_scores"]["thermals"] == 8.5
 
     b2_payload = {
         "chassis_reviews": [{"chassis_key": "lenovo|legion_5", "matched_canonical_ids": ["cid-1"]}],
@@ -361,8 +355,12 @@ def test_pipeline_process_reviews_ready_end_to_end() -> None:
     assert len(vector_calls) == 1
     assert vector_calls[0]["chroma_dir"] == "./test_chroma"
     assert uploaded["s3_key"] == "reviews/enriched/job-99.json"
-    assert uploaded["payload"] is enriched_payload
-    assert refresh_calls == [("./test_chroma", enriched_payload)]
+    processed = uploaded["payload"]
+    assert isinstance(processed.get("chassis_reviews"), list)
+    assert len(processed["chassis_reviews"]) == 1
+    assert processed["chassis_reviews"][0]["matched_canonical_ids"] == ["cid-1", "cid-2"]
+    assert processed["chassis_reviews"][0]["community_nlp_score"] == 82.0
+    assert refresh_calls == [("./test_chroma", processed)]
 
     assert result.job_id == "job-99"
     assert result.s3_key == "reviews/enriched/job-99.json"

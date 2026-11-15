@@ -43,7 +43,7 @@ class ReviewsIngestionService:
         with open(reviews_path, "r", encoding="utf-8") as f:
             payload = json.load(f)
 
-        from audit_and_deduplicate_reviews import run_audit_and_dedup
+        from app.services.reviews_audit_service import run_audit_and_dedup
 
         fmt = detect_reviews_format(payload)
         if fmt == "format_b2_deduplicated":

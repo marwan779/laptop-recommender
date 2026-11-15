@@ -5,8 +5,6 @@ from app.services.reviews.collector import ReviewCollectorService, build_s3_key
 from app.services.reviews.community import (
     CommunitiesReviewsCollector,
     ICommunityPlatformScraper,
-    RedditPlatformScraper,
-    SubTargets,
 )
 from app.services.reviews.contracts import (
     ICommunitiesReviewsCollector,
@@ -25,11 +23,9 @@ __all__ = [
     "ICommunitiesReviewsCollector",
     "ICommunityPlatformScraper",
     "IYouTubeReviewsCollector",
-    "RedditPlatformScraper",
     "ReviewCollectorService",
     "StubCommunitiesReviewsCollector",
     "StubYouTubeReviewsCollector",
-    "SubTargets",
     "YouTubeReviewsCollector",
     "YouTubeSearchService",
     "YouTubeTranscriptService",

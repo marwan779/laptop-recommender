@@ -315,8 +315,6 @@ async def test_collector_maps_editorial_and_discussions():
     assert isinstance(data, CommunitiesData)
     assert [review.review_url for review in data.editorial] == ["https://example.com/review"]
     assert sorted(post.post_id for post in data.discussions) == ["d1", "d2"]
-    assert data.reddit == []
-    assert data.facebook == []
 
 
 def test_collector_defaults_to_the_three_community_scrapers():

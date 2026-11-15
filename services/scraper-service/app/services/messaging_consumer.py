@@ -26,6 +26,8 @@ from app.schemas.events import (
     EventType,
     PricesCheckedEvent,
     PricesCheckedPayload,
+    ReviewsFailedEvent,
+    ReviewsFailedPayload,
     ScrapeCatalogCommand,
     ScrapeReviewsCommand,
 )
@@ -308,7 +310,28 @@ class ScraperMessageConsumer:
         try:
             s3_key = await self.review_collector.process_reviews_batch(command)
             await self._complete(command.event_id)
-        except Exception:
+        except Exception as exc:
+            logger.error(
+                "Reviews scraping failed for job [%s]: %s. Emitting ReviewsFailedEvent.",
+                payload.job_id,
+                exc,
+                exc_info=True,
+            )
+            failed_event = ReviewsFailedEvent(
+                correlation_id=command.correlation_id,
+                payload=ReviewsFailedPayload(
+                    job_id=payload.job_id,
+                    error_message=str(exc),
+                    details={"exception_type": type(exc).__name__},
+                ),
+            )
+            try:
+                await self.broker.publish(
+                    routing_key=EventType.REVIEWS_FAILED_EVENT,
+                    message=failed_event,
+                )
+            except Exception as pub_exc:
+                logger.error("Failed to publish ReviewsFailedEvent: %s", pub_exc)
             await self._release(command.event_id)
             raise
 

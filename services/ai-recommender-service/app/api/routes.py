@@ -116,9 +116,9 @@ async def recommend_laptops(req: RecommendRequest) -> Dict[str, Any]:
 
 def _run_ingest_sync(req: IngestReviewsRequest) -> Dict[str, Any]:
     from app.domain.enrichment.chunking import detect_reviews_format
+    from app.services.reviews_audit_service import run_audit_and_dedup
     from app.services.reviews_enrichment_service import enrich_reviews_dataset
     from app.services.reviews_ingestion_service import build_chroma_reviews_db
-    from audit_and_deduplicate_reviews import run_audit_and_dedup
 
     if req.raw_reviews_payload is not None:
         payload = req.raw_reviews_payload

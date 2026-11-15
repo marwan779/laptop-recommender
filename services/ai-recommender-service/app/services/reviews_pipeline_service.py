@@ -7,10 +7,6 @@ optional deduplication hook, vector store, and live recommendation reloader).
 from __future__ import annotations
 
 import asyncio
-import importlib.util
-import json
-from pathlib import Path
-import tempfile
 from typing import Any, Dict, Optional, Protocol
 
 from app.common.logger import get_logger
@@ -22,6 +18,7 @@ from app.infrastructure.jina_embedder import MODEL_NAME
 from app.infrastructure.protocols import IReviewsVectorStore
 from app.schemas.events import ReviewsEnrichedPayload
 from app.services.recommendation_service import RecommendationService, get_recommendation_service
+from app.services.reviews_audit_service import ReviewsAuditService
 from app.services.reviews_enrichment_service import ReviewsEnrichmentService
 
 logger = get_logger("ai_recommender.services.reviews_pipeline")
@@ -39,8 +36,11 @@ class IReviewsDeduplicator(Protocol):
         ...
 
 
-class OptionalAuditDeduplicator:
-    """Adapter for `audit_and_deduplicate_reviews` when available; skips safely otherwise."""
+class DomainReviewsDeduplicator:
+    """In-memory adapter executing Clean Architecture review deduplication."""
+
+    def __init__(self, audit_service: Optional[ReviewsAuditService] = None) -> None:
+        self._audit_service = audit_service or ReviewsAuditService()
 
     def deduplicate(
         self,
@@ -51,30 +51,13 @@ class OptionalAuditDeduplicator:
         if fmt == "format_b2_deduplicated":
             return payload
 
-        if importlib.util.find_spec("audit_and_deduplicate_reviews") is None:
-            logger.info(
-                "Optional module 'audit_and_deduplicate_reviews' is not present; "
-                "proceeding directly with enriched Format B1 payload."
-            )
-            return payload
+        return self._audit_service.deduplicate_payload(
+            reviews_data=payload,
+            catalog_path=catalog_path,
+        )
 
-        from audit_and_deduplicate_reviews import run_audit_and_dedup
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmp = Path(tmpdir)
-            b1_path = tmp / "enriched_b1.json"
-            b2_path = tmp / "deduplicated_b2.json"
-            tasks_md = tmp / "gap_tasks.md"
-            b1_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-            run_audit_and_dedup(
-                reviews_in=str(b1_path),
-                catalog_in=catalog_path or "unified_catalog_topsis_ready_v6.json",
-                dedup_out=str(b2_path),
-                tasks_md_out=str(tasks_md),
-            )
-            if not b2_path.exists():
-                return payload
-            return json.loads(b2_path.read_text(encoding="utf-8"))
+OptionalAuditDeduplicator = DomainReviewsDeduplicator
 
 
 class ReviewsPipelineService:
@@ -228,6 +211,7 @@ class ReviewsPipelineService:
 
 
 __all__ = [
+    "DomainReviewsDeduplicator",
     "IReviewsDeduplicator",
     "OptionalAuditDeduplicator",
     "ReviewsPipelineService",

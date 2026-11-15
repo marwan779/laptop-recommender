@@ -7,8 +7,8 @@ import pytest
 from app.schemas.events import LaptopReviewTarget, ScrapeReviewsCommand, ScrapeReviewsPayload
 from app.schemas.reviews_s3 import (
     CommunitiesData,
+    CommunityPost,
     RawChassisReviewsFile,
-    RedditPost,
     YouTubeReviewData,
     YouTubeVideo,
 )
@@ -45,12 +45,12 @@ class FakeCommunitiesCollector(ICommunitiesReviewsCollector):
         for t in targets:
             key = f"{t.brand.lower()}:{t.laptop_family.lower()}:{t.laptop_model.lower()}"
             results[key] = CommunitiesData(
-                reddit=[
-                    RedditPost(
-                        post_id="post_red_1",
-                        subreddit="GamingLaptops",
+                discussions=[
+                    CommunityPost(
+                        platform="level1techs",
+                        post_id="post_forum_1",
                         post_title=f"{t.laptop_model} thermals discussion",
-                        post_url="https://reddit.com/r/GamingLaptops/post_red_1",
+                        post_url="https://forum.level1techs.com/t/post_forum_1",
                         score=35,
                     )
                 ]
@@ -105,8 +105,8 @@ async def test_process_reviews_batch_merges_and_uploads(tmp_path):
 
     item = uploaded_file.laptops[0]
     assert len(item.youtube.videos) == 1
-    assert len(item.communities.reddit) == 1
-    assert item.communities.reddit[0].post_id == "post_red_1"
+    assert len(item.communities.discussions) == 1
+    assert item.communities.discussions[0].post_id == "post_forum_1"
 
 
 @pytest.mark.anyio
@@ -182,7 +182,7 @@ async def test_upload_to_s3_disabled_returns_local_path_and_skips_upload(tmp_pat
     storage_mock.upload_json.assert_not_called()
     broker_mock.publish.assert_awaited_once()
     published_event = broker_mock.publish.call_args.kwargs["message"]
-    assert published_event.payload.s3_key == s3_key
+    assert published_event.payload.s3_key is None
 
 
 @pytest.mark.anyio

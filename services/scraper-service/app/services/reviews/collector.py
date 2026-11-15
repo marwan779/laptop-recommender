@@ -147,10 +147,12 @@ class ReviewCollectorService:
                 data=artifact_data,
                 object_key=s3_key,
             )
+            event_s3_key: str | None = s3_key
         else:
             s3_key = str(local_path)
+            event_s3_key = None
             logger.info(
-                "S3 upload disabled [job_id=%s]; using local artifact path '%s'.",
+                "S3 upload disabled [job_id=%s]; saved local artifact '%s' (event s3_key omitted).",
                 job_id,
                 s3_key,
             )
@@ -172,7 +174,7 @@ class ReviewCollectorService:
                 correlation_id=command.correlation_id,
                 payload=ReviewsReadyPayload(
                     job_id=job_id,
-                    s3_key=s3_key,
+                    s3_key=event_s3_key,
                     total_chassis=len(items),
                     total_laptops=total_laptops,
                     total_snippets=0,
@@ -278,12 +280,7 @@ class ReviewCollectorService:
             total_comments += sum(len(video.top_comments) for video in youtube.videos)
 
             communities = item.communities
-            total_posts += (
-                len(communities.reddit)
-                + len(communities.facebook)
-                + len(communities.editorial)
-                + len(communities.discussions)
-            )
+            total_posts += len(communities.editorial) + len(communities.discussions)
 
         return BatchMetadataSummary(
             total_youtube_videos=total_videos,

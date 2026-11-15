@@ -161,9 +161,9 @@ def test_reviews_command_and_ready_event_serialization():
                     canonical_id="lenovo-legion-pro-5-16irx8",
                     snippets=[
                         LaptopReviewSnippet(
-                            source="reddit",
+                            source="forum",
                             title="Legion Pro 5 long term review",
-                            url="https://reddit.com/r/GamingLaptops/123",
+                            url="https://forum.level1techs.com/t/123",
                             snippet_text="Thermals are fantastic under high workload.",
                             score_or_upvotes=45,
                         ),

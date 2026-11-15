@@ -39,7 +39,7 @@ class IYouTubeReviewsCollector(ABC):
 
 
 class ICommunitiesReviewsCollector(ABC):
-    """Contract for collecting community (Reddit, Facebook, ...) review evidence."""
+    """Contract for collecting editorial and forum community review evidence."""
 
     @abstractmethod
     async def collect_for_targets(

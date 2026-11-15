@@ -6,6 +6,7 @@ orchestrates database updates and post-commit cache invalidation:
   applies TOPSIS hook, and seeds relational database via CatalogIngestionService.
 - `catalog.scrape.failed` -> Updates ScrapingBatchLog status to FAILED.
 - `prices.checked.event` -> Applies price and stock verification via PriceSyncService.
+- `reviews.failed` -> Records failed review scrape audit entry in ScrapingBatchLog.
 - `reviews.enriched.event` -> Downloads enriched S3 reviews and persists SQL NLP profiles.
 - `reviews.enrich.failed` -> Records failed enrichment audit entry in ScrapingBatchLog.
 """
@@ -32,6 +33,7 @@ from app.schemas.events import (
     PricesCheckedEvent,
     ReviewsEnrichedEvent,
     ReviewsEnrichFailedEvent,
+    ReviewsFailedEvent,
 )
 from app.services.catalog_ingestion_service import CatalogIngestionService
 from app.services.price_sync_service import PriceSyncService
@@ -136,7 +138,15 @@ class CatalogMessageConsumer:
             prefetch_count=2,
         )
 
-        # 5. Reviews Enrich Failed Event (Fast audit update -> prefetch 5)
+        # 5. Reviews Failed Event (Scraper review failure audit -> prefetch 5)
+        await self.broker.subscribe(
+            queue_name="catalog.reviews.failed.jobs",
+            routing_key=EventType.REVIEWS_FAILED_EVENT,
+            handler=self.handle_reviews_failed,
+            prefetch_count=5,
+        )
+
+        # 6. Reviews Enrich Failed Event (Fast audit update -> prefetch 5)
         await self.broker.subscribe(
             queue_name="catalog.reviews.enrich.failed.jobs",
             routing_key=EventType.REVIEWS_ENRICH_FAILED_EVENT,
@@ -359,6 +369,59 @@ class CatalogMessageConsumer:
             result.sql_laptops_updated,
         )
 
+    async def _record_reviews_failure_log(
+        self,
+        *,
+        event: ReviewsFailedEvent | ReviewsEnrichFailedEvent,
+        handler_name: str,
+        audit_namespace_prefix: str,
+        store_key: str,
+        trigger_type: str,
+        job_id: str,
+        error_message: str,
+    ) -> None:
+        """Persist a FAILED ScrapingBatchLog entry for Flow 3 scraper/enrichment failures."""
+        audit_uuid = uuid.uuid5(uuid.NAMESPACE_OID, f"{audit_namespace_prefix}:{job_id}")
+        formatted_error = f"[{job_id}] {error_message}"
+
+        async with self._session_factory() as session:
+            async with session.begin():
+                if not await self._claim_inbox(session, event, handler_name):
+                    return
+
+                await self._upsert_failed_batch_log(
+                    session,
+                    audit_uuid,
+                    formatted_error,
+                    store_key=store_key,
+                    trigger_type=trigger_type,
+                )
+                logger.info(
+                    "ScrapingBatchLog [%s] marked as FAILED for review job [%s] (%s).",
+                    audit_uuid,
+                    job_id,
+                    trigger_type,
+                )
+
+    async def handle_reviews_failed(self, raw_data: dict[str, Any]) -> None:
+        """Record a failed ScrapingBatchLog entry when scraper-service fails review collection."""
+        event = ReviewsFailedEvent.model_validate(raw_data)
+        payload = event.payload
+        logger.warning(
+            "Processing ReviewsFailedEvent [job_id=%s]: %s",
+            payload.job_id,
+            payload.error_message,
+        )
+        await self._record_reviews_failure_log(
+            event=event,
+            handler_name="handle_reviews_failed",
+            audit_namespace_prefix="reviews-failed",
+            store_key="reviews_scraping",
+            trigger_type="REVIEWS_SCRAPE_FAILED",
+            job_id=payload.job_id,
+            error_message=payload.error_message,
+        )
+
     async def handle_reviews_enrich_failed(self, raw_data: dict[str, Any]) -> None:
         """Record a failed ScrapingBatchLog entry when AI review enrichment fails."""
         event = ReviewsEnrichFailedEvent.model_validate(raw_data)
@@ -369,32 +432,12 @@ class CatalogMessageConsumer:
             payload.s3_key,
             payload.error_message,
         )
-
-        audit_uuid = uuid.uuid5(uuid.NAMESPACE_OID, f"reviews-enrich-failed:{payload.job_id}")
-        formatted_error = f"[{payload.job_id}] {payload.error_message}"
-
-        async with self._session_factory() as session:
-            async with session.begin():
-                if not await self._claim_inbox(session, event, "handle_reviews_enrich_failed"):
-                    return
-
-                batch_repo = BatchLogRepository(session)
-                existing = await batch_repo.get_by_id(audit_uuid)
-                if existing:
-                    existing.status = "FAILED"
-                    existing.error_message = formatted_error
-                    existing.completed_at = utcnow()
-                else:
-                    await batch_repo.record_batch_log(
-                        batch_id=audit_uuid,
-                        store_key="reviews_enrichment",
-                        trigger_type="REVIEWS_ENRICH_FAILED",
-                        status="FAILED",
-                        error_message=formatted_error,
-                    )
-
-                logger.info(
-                    "ScrapingBatchLog [%s] marked as FAILED for review enrichment job [%s].",
-                    audit_uuid,
-                    payload.job_id,
-                )
+        await self._record_reviews_failure_log(
+            event=event,
+            handler_name="handle_reviews_enrich_failed",
+            audit_namespace_prefix="reviews-enrich-failed",
+            store_key="reviews_enrichment",
+            trigger_type="REVIEWS_ENRICH_FAILED",
+            job_id=payload.job_id,
+            error_message=payload.error_message,
+        )

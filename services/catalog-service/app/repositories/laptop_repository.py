@@ -639,16 +639,53 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             laptop.reviews_checked_at = reviewed_at
 
             metrics = laptop.metrics
-            if metrics is not None:
-                nlp_score = _coerce_optional_float(payload.get("community_nlp_score"))
-                if nlp_score is not None:
-                    metrics.community_nlp_score = nlp_score
+            if metrics is None:
+                metrics = LaptopMetrics(
+                    laptop_id=laptop.id,
+                    cpu_score=0.0,
+                    gpu_score=0.0,
+                    silicon_index=0.0,
+                    power_therm_score=0.0,
+                    display_score=0.0,
+                    mobility_score=0.0,
+                    longevity_score=0.0,
+                    ergonomics_score=0.0,
+                    connectivity_score=0.0,
+                    community_nlp_score=75.0,
+                    value_score=0.0,
+                    thermals_score=75.0,
+                    acoustics_score=75.0,
+                    build_and_hinges_score=75.0,
+                    keyboard_and_trackpad_score=75.0,
+                    real_battery_and_reliability_score=75.0,
+                    effective_price_egp=0.0,
+                    is_recommendable_price=True,
+                    in_stock_active=True,
+                    delta_p_watts=0.0,
+                    simultaneous_load_w=0.0,
+                    electrical_status="UNKNOWN",
+                    estimated_battery_hours=0.0,
+                    silicon_tier="STANDARD",
+                    display_tier="STANDARD",
+                    portability_tier="BALANCED",
+                    upgradeability_tier="MODERATE",
+                    is_copilot_plus_pc=False,
+                    pricing_status="IN_STOCK_ACTIVE",
+                    updated_at=reviewed_at,
+                )
+                laptop.metrics = metrics
+                self.session.add(metrics)
 
-                for key in _REVIEW_ASPECT_KEYS:
-                    score = _coerce_optional_float(aspects.get(key, payload.get(key)))
-                    if score is not None:
-                        setattr(metrics, key, score)
+            nlp_score = _coerce_optional_float(payload.get("community_nlp_score"))
+            if nlp_score is not None:
+                metrics.community_nlp_score = nlp_score
 
+            for key in _REVIEW_ASPECT_KEYS:
+                score = _coerce_optional_float(aspects.get(key, payload.get(key)))
+                if score is not None:
+                    setattr(metrics, key, score)
+
+            metrics.updated_at = reviewed_at
             updated_count += 1
 
         await self.session.flush()

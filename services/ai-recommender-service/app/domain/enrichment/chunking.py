@@ -142,6 +142,42 @@ def _gather_raw_candidate_chunks(item: Dict[str, Any]) -> Tuple[List[Dict[str, A
         for post in posts:
             if not isinstance(post, dict):
                 continue
+
+            # Editorial reviews use pros/cons/verdict/review_url instead of post_title/post_body.
+            is_editorial = bucket_name == "editorial" or any(
+                key in post for key in ("verdict", "pros", "cons", "review_url")
+            )
+            if is_editorial:
+                ed_title = str(post.get("source") or post.get("post_title") or "Editorial").strip()
+                ed_parts: List[str] = []
+                for p in post.get("pros") or []:
+                    if isinstance(p, str) and p.strip():
+                        ed_parts.append(p.strip())
+                for c in post.get("cons") or []:
+                    if isinstance(c, str) and c.strip():
+                        ed_parts.append(c.strip())
+                verdict = str(post.get("verdict") or "").strip()
+                if verdict:
+                    ed_parts.append(verdict)
+                ed_segs = [
+                    s
+                    for part in ed_parts
+                    for s in _split_clean_chunks(part, word_chunk_size=32)[:10]
+                    if not _is_noisy_or_offtopic(s, ed_title, ident)
+                ]
+                if ed_segs:
+                    doc_count += 1
+                    review_src = str(post.get("source") or bucket_name).strip()
+                    for seg in ed_segs:
+                        candidates.append(
+                            {
+                                "text": seg,
+                                "source": f"Comm:editorial:{review_src}",
+                                "source_weight": 1.1,
+                            }
+                        )
+                continue
+
             ptitle = str(post.get("post_title") or post.get("title") or post.get("headline") or "").strip()
             pbody = str(
                 post.get("post_body")
@@ -321,7 +357,7 @@ def _select_top_candidates_for_jina(
 def detect_reviews_format(payload: Any) -> str:
     """
     Auto-detect review dataset schema:
-    - 'format_b2_deduplicated': `chassis_reviews[]` payload from `audit_and_deduplicate_reviews.py`
+    - 'format_b2_deduplicated': `chassis_reviews[]` payload from review deduplication
     - 'format_b1_enriched': `laptops[]` where items already carry valid `nlp_review_profile`
     - 'format_a_raw': `laptops[]` raw scraper output lacking valid `nlp_review_profile`
     """
@@ -391,14 +427,23 @@ def compute_chassis_delta_hash(
         for p in posts:
             if not isinstance(p, dict):
                 continue
+            raw_body = (
+                p.get("post_body")
+                or p.get("body")
+                or p.get("text")
+                or p.get("verdict")
+                or ""
+            )
+            pros_cons = " | ".join(
+                str(x) for x in ([*(p.get("pros") or []), *(p.get("cons") or [])]) if x
+            )
+            combined_body = f"{raw_body}\n{pros_cons}".strip()
             comm_items.append(
                 {
                     "bucket": bname,
-                    "post_id": str(p.get("post_id") or p.get("post_url") or ""),
-                    "title": str(p.get("post_title") or p.get("title") or ""),
-                    "body_hash": hashlib.sha256(
-                        str(p.get("post_body") or p.get("body") or p.get("text") or "").encode("utf-8")
-                    ).hexdigest(),
+                    "post_id": str(p.get("post_id") or p.get("post_url") or p.get("review_url") or ""),
+                    "title": str(p.get("post_title") or p.get("title") or p.get("source") or ""),
+                    "body_hash": hashlib.sha256(combined_body.encode("utf-8")).hexdigest(),
                 }
             )
     comm_items.sort(key=lambda x: (x["bucket"], x["post_id"], x["body_hash"]))

@@ -34,6 +34,7 @@ class EventType(StrEnum):
     # Flow 3: Community Reviews Scraping & Enrichment (Phase 2)
     REVIEWS_SCRAPE_COMMAND = "reviews.scrape.command"
     REVIEWS_READY_EVENT = "reviews.ready.event"
+    REVIEWS_FAILED_EVENT = "reviews.failed"
     REVIEWS_ENRICHED_EVENT = "reviews.enriched.event"
     REVIEWS_ENRICH_FAILED_EVENT = "reviews.enrich.failed"
 
@@ -254,7 +255,7 @@ class ScrapeReviewsCommand(BaseEvent):
 class LaptopReviewSnippet(BaseModel):
     """A single community review snippet or opinion extract."""
 
-    source: str = Field(description="Source platform: 'reddit', 'youtube', or 'web'")
+    source: str = Field(description="Source platform: 'editorial', 'youtube', 'forum', or 'web'")
     title: str | None = Field(default=None, description="Post, thread, or video title")
     url: str | None = Field(default=None, description="Direct URL to source")
     snippet_text: str = Field(description="Cleaned text content or transcript excerpt")
@@ -317,6 +318,21 @@ class ReviewsEnrichedEvent(BaseEvent):
 
     event_type: str = EventType.REVIEWS_ENRICHED_EVENT
     payload: ReviewsEnrichedPayload
+
+
+class ReviewsFailedPayload(BaseModel):
+    """Payload emitted when scraper-service fails a community review scraping job."""
+
+    job_id: str = Field(description="Associated review scraping job ID")
+    error_message: str = Field(description="Description of the fatal scraping failure")
+    details: dict[str, Any] | None = Field(default=None, description="Optional diagnostic details")
+
+
+class ReviewsFailedEvent(BaseEvent):
+    """Event emitted when community review scraping fails fatally."""
+
+    event_type: str = EventType.REVIEWS_FAILED_EVENT
+    payload: ReviewsFailedPayload
 
 
 class ReviewsEnrichFailedPayload(BaseModel):

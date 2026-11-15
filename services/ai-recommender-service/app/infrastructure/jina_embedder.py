@@ -79,7 +79,7 @@ class JinaV3EmbeddingFunction(_EmbeddingFunctionBase):  # type: ignore[misc,vali
             vecs = model.encode(
                 list(input),
                 task=self.task,
-                Prompt_name=self.task,
+                prompt_name=self.task,
                 normalize_embeddings=True,
                 show_progress_bar=False,
             )

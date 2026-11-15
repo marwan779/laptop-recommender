@@ -9,21 +9,11 @@ from app.services.reviews.community.collector import CommunitiesReviewsCollector
 from app.services.reviews.community.contracts import ICommunityPlatformScraper
 from app.services.reviews.community.laptopmag import LaptopMagPlatformScraper
 from app.services.reviews.community.level1techs import Level1TechsPlatformScraper
-from app.services.reviews.community.reddit import (
-    DEFAULT_USER_AGENT,
-    REDDIT_BASE_URL,
-    RedditPlatformScraper,
-    SubTargets,
-)
 
 __all__ = [
-    "DEFAULT_USER_AGENT",
-    "REDDIT_BASE_URL",
     "ArabhardwarePlatformScraper",
     "CommunitiesReviewsCollector",
     "ICommunityPlatformScraper",
     "LaptopMagPlatformScraper",
     "Level1TechsPlatformScraper",
-    "RedditPlatformScraper",
-    "SubTargets",
 ]

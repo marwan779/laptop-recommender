@@ -2,14 +2,14 @@
 
 import pytest
 from app.schemas.events import LaptopReviewTarget
-from app.schemas.reviews_s3 import FacebookPost, RedditPost
+from app.schemas.reviews_s3 import CommunityPost, EditorialReview
 from app.services.reviews.chassis_key import build_chassis_key
 from app.services.reviews.community.collector import CommunitiesReviewsCollector
 from app.services.reviews.community.contracts import ICommunityPlatformScraper
 
 
-class FakeRedditScraper(ICommunityPlatformScraper):
-    platform_name = "reddit"
+class FakeForumScraper(ICommunityPlatformScraper):
+    platform_name = "level1techs"
 
     def __init__(self, posts_by_target=None, raise_on_target=None):
         self.posts_by_target = posts_by_target or {}
@@ -17,18 +17,18 @@ class FakeRedditScraper(ICommunityPlatformScraper):
 
     async def scrape_for_target(self, laptop_target, queries):
         if self.raise_on_target == laptop_target.canonical_id:
-            raise RuntimeError("Fake Reddit failure")
+            raise RuntimeError("Fake forum failure")
         return self.posts_by_target.get(laptop_target.canonical_id, [])
 
 
-class FakeFacebookScraper(ICommunityPlatformScraper):
-    platform_name = "facebook"
+class FakeEditorialScraper(ICommunityPlatformScraper):
+    platform_name = "laptopmag"
 
-    def __init__(self, posts=None):
-        self.posts = posts or []
+    def __init__(self, reviews=None):
+        self.reviews = reviews or []
 
     async def scrape_for_target(self, laptop_target, queries):
-        return self.posts
+        return self.reviews
 
 
 @pytest.mark.anyio
@@ -48,45 +48,42 @@ async def test_collect_for_targets_returns_pattern_b_keyed_dict():
         laptop_model="TUF Gaming A15 FA507NV",
     )
 
-    reddit_post1 = RedditPost(
-        post_id="r1",
-        subreddit="GamingLaptops",
+    forum_post = CommunityPost(
+        platform="level1techs",
+        post_id="f1",
         post_title="Lenovo LOQ thermals",
-        post_url="https://reddit.com/r1",
+        post_url="https://forum.level1techs.com/t/1",
     )
-    fb_post1 = FacebookPost(
-        group_name="Egypt Laptop Deals",
-        post_url="https://facebook.com/groups/1/p1",
-        comment_text="Great thermals on the LOQ",
+    ed_review = EditorialReview(
+        source="LaptopMag",
+        review_url="https://www.laptopmag.com/reviews/loq",
+        verdict="Great thermals on the LOQ",
     )
 
-    scraper_reddit = FakeRedditScraper(posts_by_target={"lenovo-loq-15irx9": [reddit_post1]})
-    scraper_fb = FakeFacebookScraper(posts=[fb_post1])
+    scraper_forum = FakeForumScraper(posts_by_target={"lenovo-loq-15irx9": [forum_post]})
+    scraper_ed = FakeEditorialScraper(reviews=[ed_review])
 
-    collector = CommunitiesReviewsCollector(scrapers=[scraper_reddit, scraper_fb])
+    collector = CommunitiesReviewsCollector(scrapers=[scraper_forum, scraper_ed])
     results = await collector.collect_for_targets([t1, t2])
 
     assert len(results) == 2
-    # Chassis key check
     chassis_keys = list(results.keys())
     assert any("lenovo" in k and "15irx9" in k for k in chassis_keys)
     assert any("asus" in k and "fa507nv" in k for k in chassis_keys)
 
-    # Content check for t1
     loq_key = [k for k in chassis_keys if "15irx9" in k][0]
     loq_data = results[loq_key]
-    assert len(loq_data.reddit) == 1
-    assert loq_data.reddit[0].post_id == "r1"
-    assert len(loq_data.facebook) == 1
+    assert len(loq_data.discussions) == 1
+    assert loq_data.discussions[0].post_id == "f1"
+    assert len(loq_data.editorial) == 1
 
-    # Content check for t2 (empty)
     tuf_key = [k for k in chassis_keys if "fa507nv" in k][0]
     tuf_data = results[tuf_key]
-    assert len(tuf_data.reddit) == 0
+    assert len(tuf_data.discussions) == 0
 
 
 @pytest.mark.anyio
-async def test_deduplicates_posts_by_post_id():
+async def test_deduplicates_discussions_by_platform_and_post_id():
     target = LaptopReviewTarget(
         laptop_id="l1",
         canonical_id="lenovo-loq-15irx9",
@@ -94,21 +91,20 @@ async def test_deduplicates_posts_by_post_id():
         laptop_family="LOQ",
         laptop_model="LOQ 15IRX9",
     )
-    p1 = RedditPost(post_id="dup_id", subreddit="GamingLaptops", post_title="Title 1", post_url="url1", score=10)
-    p2 = RedditPost(post_id="dup_id", subreddit="SuggestALaptop", post_title="Title 2", post_url="url2", score=5)
-    p3 = RedditPost(post_id="unique_id", subreddit="laptops", post_title="Title 3", post_url="url3", score=20)
+    p1 = CommunityPost(platform="level1techs", post_id="dup_id", post_title="Title 1", post_url="url1", score=10)
+    p2 = CommunityPost(platform="level1techs", post_id="dup_id", post_title="Title 2", post_url="url2", score=5)
+    p3 = CommunityPost(platform="arabhardware", post_id="unique_id", post_title="Title 3", post_url="url3", score=20)
 
-    scraper = FakeRedditScraper(posts_by_target={"lenovo-loq-15irx9": [p1, p2, p3]})
+    scraper = FakeForumScraper(posts_by_target={"lenovo-loq-15irx9": [p1, p2, p3]})
     collector = CommunitiesReviewsCollector(scrapers=[scraper])
 
     results = await collector.collect_for_targets([target])
     chassis_key = next(iter(results.keys()))
-    posts = results[chassis_key].reddit
+    posts = results[chassis_key].discussions
 
     assert len(posts) == 2
-    post_ids = [p.post_id for p in posts]
-    assert post_ids == ["dup_id", "unique_id"]
-    assert posts[0].post_title == "Title 1"  # Keeps the first occurrence
+    assert [p.post_id for p in posts] == ["dup_id", "unique_id"]
+    assert posts[0].post_title == "Title 1"
 
 
 @pytest.mark.anyio
@@ -126,8 +122,8 @@ async def test_scraper_failure_isolation():
         laptop_model="ModelB",
     )
 
-    good_post = RedditPost(post_id="g1", subreddit="laptops", post_title="Good", post_url="url_g")
-    scraper = FakeRedditScraper(
+    good_post = CommunityPost(platform="level1techs", post_id="g1", post_title="Good", post_url="url_g")
+    scraper = FakeForumScraper(
         posts_by_target={"working-chassis": [good_post]},
         raise_on_target="failing-chassis",
     )
@@ -139,9 +135,6 @@ async def test_scraper_failure_isolation():
     key_work = build_chassis_key(t_working)
 
     assert len(results) == 2
-    # Failing target safely gets empty CommunitiesData
-    assert results[key_fail].reddit == []
-
-    # Working target still succeeds
-    assert len(results[key_work].reddit) == 1
-    assert results[key_work].reddit[0].post_id == "g1"
+    assert results[key_fail].discussions == []
+    assert len(results[key_work].discussions) == 1
+    assert results[key_work].discussions[0].post_id == "g1"

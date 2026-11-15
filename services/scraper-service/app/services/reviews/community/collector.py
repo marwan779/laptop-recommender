@@ -2,8 +2,8 @@
 
 Runs every registered platform scraper for every target and assembles a
 ``CommunitiesData`` per chassis. Platform scrapers are injected, so adding a new
-source (Facebook, forums, ...) requires only registering another strategy here —
-no orchestrator or contract changes.
+source (editorial outlets, forums, ...) requires only registering another strategy
+here — no orchestrator or contract changes.
 
 Pattern B: returns a pure ``chassis_key -> CommunitiesData`` mapping and performs
 no file or object-storage I/O.
@@ -17,7 +17,7 @@ from typing import Any
 
 from app.domain.reviews.community_queries import CommunityQueryBuilder
 from app.schemas.events import LaptopReviewTarget
-from app.schemas.reviews_s3 import CommunitiesData, CommunityPost, EditorialReview, FacebookPost, RedditPost
+from app.schemas.reviews_s3 import CommunitiesData, CommunityPost, EditorialReview
 from app.services.reviews.chassis_key import build_chassis_key
 from app.services.reviews.community.arabhardware import ArabhardwarePlatformScraper
 from app.services.reviews.community.contracts import ICommunityPlatformScraper
@@ -78,8 +78,6 @@ class CommunitiesReviewsCollector(ICommunitiesReviewsCollector):
         """Query every registered platform and merge results into one model."""
         queries = self.query_builder.build_queries(target)
 
-        reddit_posts: list[RedditPost] = []
-        facebook_posts: list[FacebookPost] = []
         editorial_reviews: list[EditorialReview] = []
         discussions: list[CommunityPost] = []
 
@@ -87,23 +85,13 @@ class CommunitiesReviewsCollector(ICommunitiesReviewsCollector):
             *[self._run_scraper(scraper, target, queries) for scraper in self.scrapers]
         )
 
-        for scraper, posts in zip(self.scrapers, scraper_results, strict=True):
-            if scraper.platform_name == "reddit":
-                reddit_posts.extend(post for post in posts if isinstance(post, RedditPost))
-            elif scraper.platform_name == "facebook":
-                facebook_posts.extend(post for post in posts if isinstance(post, FacebookPost))
-
+        for _scraper, posts in zip(self.scrapers, scraper_results, strict=True):
             # Platform-native items are grouped by type, not by scraper name, so
             # a new editorial/forum source needs no change here (Open/Closed).
             editorial_reviews.extend(item for item in posts if isinstance(item, EditorialReview))
             discussions.extend(item for item in posts if isinstance(item, CommunityPost))
 
-        # Deduplicate posts if multiple Reddit strategies are registered.
-        reddit_posts = self._dedupe_posts(reddit_posts)
-
         return CommunitiesData(
-            reddit=reddit_posts,
-            facebook=facebook_posts,
             editorial=self._dedupe_editorial(editorial_reviews),
             discussions=self._dedupe_discussions(discussions),
         )
@@ -125,18 +113,6 @@ class CommunitiesReviewsCollector(ICommunitiesReviewsCollector):
                 exc,
             )
             return []
-
-    @staticmethod
-    def _dedupe_posts(posts: list[RedditPost]) -> list[RedditPost]:
-        """Deduplicate by post id, keeping the first (highest-ranked) occurrence."""
-        seen: set[str] = set()
-        unique: list[RedditPost] = []
-        for post in posts:
-            if post.post_id in seen:
-                continue
-            seen.add(post.post_id)
-            unique.append(post)
-        return unique
 
     @staticmethod
     def _dedupe_editorial(reviews: list[EditorialReview]) -> list[EditorialReview]:

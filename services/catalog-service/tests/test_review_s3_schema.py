@@ -17,10 +17,10 @@ from app.schemas.reviews_s3 import (
     ChassisIdentity,
     CommunitiesData,
     CommunityComment,
-    FacebookPost,
+    CommunityPost,
+    EditorialReview,
     LaptopChassisReviewItem,
     RawChassisReviewsFile,
-    RedditPost,
     TranscriptSegment,
     YouTubeComment,
     YouTubeReviewData,
@@ -95,12 +95,22 @@ def _sample_payload() -> dict:
                     ],
                 },
                 "communities": {
-                    "reddit": [
+                    "editorial": [
                         {
+                            "source": "LaptopMag",
+                            "review_url": "https://www.laptopmag.com/reviews/loq-15",
+                            "rating": 4.2,
+                            "pros": ["Strong cooling"],
+                            "cons": ["Loud fans on performance mode"],
+                            "verdict": "Great value gaming laptop.",
+                        }
+                    ],
+                    "discussions": [
+                        {
+                            "platform": "level1techs",
                             "post_id": "t3_xyz789",
-                            "subreddit": "GamingLaptops",
                             "post_title": "LOQ 15IRX9 owner impressions after 3 months",
-                            "post_url": "https://reddit.com/r/GamingLaptops/xyz789",
+                            "post_url": "https://forum.level1techs.com/t/xyz789",
                             "author": "loq_owner",
                             "published_at": "2026-09-01T00:00:00+00:00",
                             "score": 342,
@@ -114,16 +124,6 @@ def _sample_payload() -> dict:
                                     "published_at": "2026-09-01T05:00:00+00:00",
                                 }
                             ],
-                        }
-                    ],
-                    "facebook": [
-                        {
-                            "group_name": "Egypt Laptop Deals",
-                            "post_url": "https://facebook.com/groups/eglaptops/posts/123",
-                            "author": "Ahmed M.",
-                            "published_at": "2026-09-10T00:00:00+00:00",
-                            "comment_text": "Bought the LOQ, very happy with performance.",
-                            "reaction_count": 47,
                         }
                     ],
                 },
@@ -169,15 +169,15 @@ def test_raw_chassis_reviews_file_parses_full_payload():
     assert len(loq.youtube.videos) == 1
     assert loq.youtube.videos[0].transcript_segments[1].start_seconds == 2.5
     assert loq.youtube.videos[0].top_comments[0].like_count == 128
-    assert loq.communities.reddit[0].comments[0].comment_text == "How is the fan noise?"
-    assert loq.communities.facebook[0].reaction_count == 47
+    assert loq.communities.editorial[0].rating == 4.2
+    assert loq.communities.discussions[0].comments[0].comment_text == "How is the fan noise?"
 
     # Second item omits youtube/communities entirely; defaults must apply.
     tuf = parsed.laptops[1]
     assert tuf.youtube.videos == []
     assert tuf.youtube.total_videos_found == 0
-    assert tuf.communities.reddit == []
-    assert tuf.communities.facebook == []
+    assert tuf.communities.editorial == []
+    assert tuf.communities.discussions == []
 
 
 def test_raw_chassis_reviews_file_round_trip_is_lossless():
@@ -216,22 +216,28 @@ def test_laptop_item_defaults_are_empty_collections():
 
 def test_communities_supports_multiple_platforms_independently():
     data = CommunitiesData(
-        reddit=[
-            RedditPost(
-                post_id="p1",
-                subreddit="GamingLaptops",
-                post_title="Title",
-                post_url="https://reddit.com/p1",
+        editorial=[
+            EditorialReview(
+                source="LaptopMag",
+                review_url="https://www.laptopmag.com/reviews/p1",
+                verdict="Nice laptop",
             )
         ],
-        facebook=[FacebookPost(comment_text="Nice laptop")],
+        discussions=[
+            CommunityPost(
+                platform="level1techs",
+                post_id="p1",
+                post_title="Title",
+                post_url="https://forum.level1techs.com/t/p1",
+            )
+        ],
     )
 
-    assert len(data.reddit) == 1
-    assert data.reddit[0].post_body == ""
-    assert data.reddit[0].comments == []
-    assert len(data.facebook) == 1
-    assert data.facebook[0].group_name is None
+    assert len(data.editorial) == 1
+    assert data.editorial[0].source == "LaptopMag"
+    assert len(data.discussions) == 1
+    assert data.discussions[0].post_body == ""
+    assert data.discussions[0].comments == []
 
 
 def test_youtube_video_defaults_and_nested_models():

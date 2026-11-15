@@ -368,3 +368,35 @@ def test_collect_review_profiles_uses_canonical_id_fallback():
     assert "laptop-fallback-id" in profiles
     assert profiles["laptop-fallback-id"]["pros_en"] == ["Cool"]
     assert profiles["laptop-fallback-id"]["community_nlp_score"] == 80.0
+
+
+@pytest.mark.asyncio
+async def test_update_review_intelligence_creates_metrics_when_missing(db_session: AsyncSession):
+    from sqlalchemy import delete
+
+    cid = f"review-no-metrics-{uuid.uuid4().hex[:8]}"
+    await CatalogSeederRepository(db_session).upsert_catalog(
+        {"laptops": [_build_sample_catalog_item(cid, mpn=f"MPN-NOM-{uuid.uuid4().hex[:6]}")]}
+    )
+    stmt = select(LaptopConfiguration).where(LaptopConfiguration.canonical_id == cid)
+    laptop = (await db_session.execute(stmt)).scalar_one()
+    await db_session.execute(delete(LaptopMetrics).where(LaptopMetrics.laptop_id == laptop.id))
+    db_session.expire_all()
+
+    updated = await LaptopRepository(db_session).update_review_intelligence_by_canonical_ids(
+        {cid: _community_reviews()}
+    )
+    assert updated == 1
+
+    db_session.expire_all()
+    refreshed = (
+        await db_session.execute(
+            select(LaptopConfiguration)
+            .where(LaptopConfiguration.canonical_id == cid)
+            .options(selectinload(LaptopConfiguration.metrics))
+        )
+    ).scalar_one()
+    assert refreshed.metrics is not None
+    assert float(refreshed.metrics.community_nlp_score) == 82.4
+    assert float(refreshed.metrics.thermals_score) == 78.9
+    assert float(refreshed.metrics.real_battery_and_reliability_score) == 79.6

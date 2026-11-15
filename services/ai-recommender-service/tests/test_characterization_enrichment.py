@@ -139,7 +139,7 @@ def test_detect_format_a_raw_with_youtube_and_communities() -> None:
             {
                 **_item(),
                 "youtube": {"videos": [{"video_id": "v1", "transcript_text": "Cooling is good."}]},
-                "communities": {"reddit": [{"post_title": "Owner thread", "post_body": "Battery lasts."}]},
+                "communities": {"discussions": [{"post_title": "Owner thread", "post_body": "Battery lasts."}]},
             }
         ]
     }
@@ -201,30 +201,41 @@ def test_gather_candidates_filters_noise_questions_desktop_and_brand_mismatch() 
             ]
         },
         "communities": {
-            "reddit": [
+            "editorial": [
                 {
+                    "source": "LaptopMag",
+                    "review_url": "https://www.laptopmag.com/reviews/asus-zenbook-14",
+                    "pros": ["Comfortable keyboard with smooth glass trackpad and sturdy hinge."],
+                    "cons": ["Limited port selection with only USB-C ports."],
+                    "verdict": "Battery endurance remains excellent for daily travel workloads.",
+                }
+            ],
+            "discussions": [
+                {
+                    "platform": "level1techs",
                     "post_title": "Experience with the Zenbook 14 after six months",
                     "post_body": "The keyboard has comfortable key travel and the trackpad is smooth glass. "
                     "Battery endurance remains excellent for travel.",
                 },
                 {
+                    "platform": "level1techs",
                     "post_title": "My new B850M motherboard and RTX desktop build",
                     "post_body": "The AM5 motherboard supports PCIe 5.0 and the desktop GPU is huge.",
                 },
                 {
+                    "platform": "level1techs",
                     "post_title": "Alienware m18 review roundup",
                     "post_body": "The Alienware laptop has a massive 18 inch display and heavy chassis.",
                 },
-            ],
-            "discussions": [
                 {
+                    "platform": "arabhardware",
                     "post_title": "Zenbook 14 discussion",
                     "post_body": "Thermals are good and the fan noise is quiet during everyday tasks.",
                     "comments": [
                         {"comment_text": "The screen brightness is excellent outdoors at 500 nits."},
                         {"comment_text": "Is this model good for video editing?"},
                     ],
-                }
+                },
             ],
         },
     }
@@ -232,12 +243,14 @@ def test_gather_candidates_filters_noise_questions_desktop_and_brand_mismatch() 
     candidates, doc_count = rre._gather_raw_candidate_chunks(item)
     texts = " || ".join(c["text"] for c in candidates).lower()
 
-    # Real evidence survives (transcript, comment, community post + comment).
+    # Real evidence survives (transcript, comment, editorial, community post + comment).
     assert "aluminum chassis feels rigid" in texts
     assert "battery life is around ten hours" in texts
     assert "comfortable key travel" in texts
+    assert "smooth glass trackpad" in texts
+    assert "limited port selection" in texts
     assert "screen brightness is excellent" in texts
-    assert doc_count == 3  # one YT transcript + one reddit post + one discussion post
+    assert doc_count == 4  # one YT transcript + one editorial review + two valid discussion posts
 
     # Noise, desktop parts, mismatched brands, and questions are dropped.
     assert "subscribe" not in texts
@@ -251,7 +264,8 @@ def test_gather_candidates_filters_noise_questions_desktop_and_brand_mismatch() 
     sources = {c["source"] for c in candidates}
     assert "YT:NotebookCheck" in sources
     assert "YT_Comment" in sources
-    assert "Comm:reddit" in sources
+    assert "Comm:editorial:LaptopMag" in sources
+    assert "Comm:level1techs" in sources
     assert "Comm_Cmt:discussions" in sources
 
 
@@ -336,9 +350,9 @@ def test_compute_chassis_delta_hash_is_deterministic_and_sensitive() -> None:
             ]
         },
         "communities": {
-            "reddit": [
-                {"post_id": "p1", "post_title": "Owner thread", "post_body": "Sturdy metal chassis."},
-                {"post_id": "p0", "post_title": "Second thread", "post_body": "Good display."},
+            "discussions": [
+                {"platform": "level1techs", "post_id": "p1", "post_title": "Owner thread", "post_body": "Sturdy metal chassis."},
+                {"platform": "arabhardware", "post_id": "p0", "post_title": "Second thread", "post_body": "Good display."},
             ]
         },
     }

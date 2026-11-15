@@ -15,6 +15,7 @@ from app.schemas.events import (
     CheckPricesPayload,
     EventType,
     PricesCheckedEvent,
+    ReviewsFailedEvent,
     ScrapeCatalogCommand,
     ScrapeCatalogPayload,
     ScrapeReviewsCommand,
@@ -221,6 +222,34 @@ async def test_handle_reviews_scrape_command(mock_broker):
     collector.process_reviews_batch.assert_awaited_once()
     delegated: ScrapeReviewsCommand = collector.process_reviews_batch.await_args.args[0]
     assert delegated.payload.job_id == "job-rec-001"
+
+
+@pytest.mark.anyio
+async def test_handle_reviews_scrape_command_emits_failed_event_and_reraises(mock_broker):
+    collector = MagicMock()
+    collector.process_reviews_batch = AsyncMock(side_effect=RuntimeError("YouTube quota exhausted"))
+    consumer = ScraperMessageConsumer(broker=mock_broker, review_collector=collector)
+
+    cmd = ScrapeReviewsCommand(
+        correlation_id="corr-rev-fail",
+        payload=ScrapeReviewsPayload(
+            job_id="job-rev-fail",
+            targets=[],
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="YouTube quota exhausted"):
+        await consumer.handle_reviews_scrape_command(cmd.model_dump())
+
+    mock_broker.publish.assert_awaited_once()
+    pub_kwargs = mock_broker.publish.call_args.kwargs
+    assert pub_kwargs["routing_key"] == EventType.REVIEWS_FAILED_EVENT
+    failed_evt = pub_kwargs["message"]
+    assert isinstance(failed_evt, ReviewsFailedEvent)
+    assert failed_evt.correlation_id == "corr-rev-fail"
+    assert failed_evt.payload.job_id == "job-rev-fail"
+    assert failed_evt.payload.error_message == "YouTube quota exhausted"
+    assert failed_evt.payload.details == {"exception_type": "RuntimeError"}
 
 
 @pytest.mark.anyio
