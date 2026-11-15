@@ -196,7 +196,49 @@ def _install_boto_stubs() -> None:
     sys.modules.setdefault("boto3.session", boto3_session)
 
 
+def _install_aio_pika_stub() -> None:
+    """Minimal aio_pika fallback used only when aio-pika is unavailable."""
+    try:
+        import aio_pika  # noqa: F401
+        import aio_pika.abc  # noqa: F401
+
+        return
+    except Exception:
+        pass
+
+    class ExchangeType:
+        TOPIC = "topic"
+
+    class DeliveryMode:
+        PERSISTENT = 2
+
+    class Message:
+        def __init__(self, body: bytes = b"", **kwargs):
+            self.body = body
+            self.__dict__.update(kwargs)
+
+    async def connect_robust(*args, **kwargs):  # pragma: no cover - only without injection
+        raise RuntimeError("aio-pika is not installed in this test environment; mock connect_robust.")
+
+    abc_module = types.ModuleType("aio_pika.abc")
+    abc_module.AbstractChannel = object
+    abc_module.AbstractConnection = object
+    abc_module.AbstractExchange = object
+    abc_module.AbstractIncomingMessage = object
+
+    module = types.ModuleType("aio_pika")
+    module.ExchangeType = ExchangeType
+    module.DeliveryMode = DeliveryMode
+    module.Message = Message
+    module.connect_robust = connect_robust
+    module.abc = abc_module
+
+    sys.modules.setdefault("aio_pika", module)
+    sys.modules.setdefault("aio_pika.abc", abc_module)
+
+
 _install_chromadb_stub()
 _install_pydantic_settings_stub()
 _install_boto_stubs()
 _install_redis_stub()
+_install_aio_pika_stub()
