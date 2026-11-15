@@ -1,0 +1,1265 @@
+{
+  "entries": {
+    "acer:travelmate-p2-nx-vpqem-008:travelmate-p2-nx-vpqem-008": {
+      "delta_hash": "2d81a6ca3c5436ab673ad0bdcabd483b535d7439ff6592074028b760c6a1a1b9",
+      "model_used": "curated_preserved",
+      "path_taken": "zero_doc_preserved",
+      "evidence_count": 6,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "dell:dell-pro:dellpronb16-e001": {
+      "delta_hash": "a7365691f65e23dbdbde81a83afa1bf8b6f0df06a56d77159d401b899314fc25",
+      "model_used": "curated_preserved",
+      "path_taken": "zero_doc_preserved",
+      "evidence_count": 6,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "hp:hp-essential:15-fd2002ne": {
+      "delta_hash": "7948066db50d2a54391cd51553b3d8640063049a0886876a91545b1f34b69cda",
+      "model_used": "curated_preserved",
+      "path_taken": "zero_doc_preserved",
+      "evidence_count": 6,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "hp:hp-essential:15-fd2040ne": {
+      "delta_hash": "7584cb32e4335769fcace17668b1a312c3af186447a124c733f089e435a2b812",
+      "model_used": "curated_preserved",
+      "path_taken": "zero_doc_preserved",
+      "evidence_count": 6,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "hp:hp-essential:2e9j0ea": {
+      "delta_hash": "5480f171097ed6fca23ed3ceb1c69cdf7c19684a1831944d4a3b70b2f8e3d8bb",
+      "model_used": "curated_preserved",
+      "path_taken": "zero_doc_preserved",
+      "evidence_count": 6,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "asus:tuf-gaming:asus-tuf-gaming-a16-fa608pm-rv169w": {
+      "delta_hash": "bd9b1869ce788f8cdcdcbe612916e1b69021d05026177d439cd9ca60153a9d66",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 26,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "hp:victus:hp-victus-15-fa2082wm": {
+      "delta_hash": "0fe0313dc8bb0d2d304530b639853a7fdde0d879f0f730052d93d87e1c408b07",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "lenovo:loq:83dv01hsed": {
+      "delta_hash": "ea4637997c1c66e4f37eca4f7cbad7e56b56f241d9c13b342ce5de1c9760e932",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 21,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "msi:cyborg:15-black-edition-a13ve": {
+      "delta_hash": "387a4c1d8ad00df1b82aa5ac0f168ee1ace646f224b79810a83a2fc4b1669f5d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "lenovo:legion:83f0006elk-machine-type-83f0": {
+      "delta_hash": "31ca9bfff8db8e0aaa3af29cda267bc959d46bb88d97470787d4472d9c7ea705",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "lenovo:ideapad-slim:3-15irh10": {
+      "delta_hash": "1a0907ea5c79bada04aa45a2b04af09996c626ad86d8a6acaf0325ac2544db1e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 20,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "asus:zenbook:14-ux3405ca-su157w": {
+      "delta_hash": "04374c8725193db1aad0708f49d561ca6e6c5379f023b271e4de53e47ac50df1",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "hp:hp:omnibook-5-flip-14-fp0023dx": {
+      "delta_hash": "36e4f71cc04b566553a24834905dcf04cfbafa073c77772f2dd7835b7845d114",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "lenovo:thinkpad:21u20032gr": {
+      "delta_hash": "9db09f436a5403e05eecc57c92caa543041a53526e3577f0dc87cf80163d31aa",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 29,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "msi:prestige:msi-prestige-13-ai-evo-a1mg": {
+      "delta_hash": "ca989939d341f0182dce861e5c181e0014d52abc840d732dc7c193f922a1d1a6",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "benchmark_seed",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:05:03Z"
+    },
+    "asus:tuf-gaming:asus-tuf-gaming-a16-fa608pp-rv169w": {
+      "delta_hash": "ec669e0a30362b42a8c688a1412f2aa3284ea02b62dac448079f3f27a129e47d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:26:19Z"
+    },
+    "asus:proart:asus-proart-p16-h7606ww-se926w-creator-laptop": {
+      "delta_hash": "b4f5fce660709cc5207808c498e64edfe208502823ee76ee43e5fdaf1e3e7b84",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 31,
+      "updated_at": "2026-11-14T20:26:20Z"
+    },
+    "acer:nitro-v:acer-nitro-v-15-anv15-52-9340": {
+      "delta_hash": "e860c400eafb37230def01bd17c9c9086553dfa2161838bf91f7df87df67eeda",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:26:20Z"
+    },
+    "msi:cyborg:msi-cyborg-15-max-c2we": {
+      "delta_hash": "6fbd00f08f18278de82a69bbb66b05587333cc578f7286530d1a98ced50d74d3",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:20Z"
+    },
+    "asus:vivobook:asus-vivobook-16-x1607ca-ul005w": {
+      "delta_hash": "967d06722ccc8c24a455a092e3a4708408e3889701c2fe51c0726cc8a49aa591",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 25,
+      "updated_at": "2026-11-14T20:26:20Z"
+    },
+    "asus:tuf-gaming:fx608jmr-rv057w": {
+      "delta_hash": "ece19a453e6370b69f52ea3c72d1169c1ab9a4456bc73a65b6ddf5e9d2d91729",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 29,
+      "updated_at": "2026-11-14T20:26:20Z"
+    },
+    "lenovo:loq:15irx10-ai-powered-gaming-laptop": {
+      "delta_hash": "0bd5a93d7b57b9c556fda4ec7973e510529fb2bbf8f367ab8e3ee5a2806a9e42",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:26:21Z"
+    },
+    "asus:tuf-gaming:asus-tuf-gaming-a15-fa506ncg-hn857w": {
+      "delta_hash": "7fb2fc2b52c5c3f40e9dc223351506896375d8e47ee06c2a120a4f46faa7c079",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 26,
+      "updated_at": "2026-11-14T20:26:21Z"
+    },
+    "asus:tuf-gaming:fx607vu-rl167w": {
+      "delta_hash": "a48de74060fb6e3f42c25376e3cf74b185f50d5a43d07292fc3c7b4e6a97fb47",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 29,
+      "updated_at": "2026-11-14T20:26:21Z"
+    },
+    "asus:tuf:asus-tuf-f16-fx610jh-tu657w": {
+      "delta_hash": "f39c215586911fc1fe0e3928ec0ae1b406b65b4654b600ce2011666dc4487be3",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 24,
+      "updated_at": "2026-11-14T20:26:21Z"
+    },
+    "asus:tuf-gaming:asus-tuf-gaming-a15-fa506ncq-hn167w": {
+      "delta_hash": "d66fb9bc0ff7ebb457181696d5f039880f97a029f39969ebca74809c6153e925",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 26,
+      "updated_at": "2026-11-14T20:26:23Z"
+    },
+    "msi:cyborg:msi-cyborg-15-max-c13wg-019eg": {
+      "delta_hash": "f07973e5dd83d12a87bf6b53f5b5f132ef1ad9685194c6dd40b12f2535ac4881",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:23Z"
+    },
+    "asus:rog-strix:asus-rog-strix-g16-g614ph-rv161w": {
+      "delta_hash": "cfb86b54e69d5ff020f57d7f67562bece17b400d1d1963dd4ac98d68f37c5f5c",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:26:25Z"
+    },
+    "asus:tuf-gaming:asus-tuf-gaming-f16-fx608jhr-rv057w": {
+      "delta_hash": "96b2fd02a6c4639a17522df18f72dec3bb685a403b1cac6ec45979beca53c5cf",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 24,
+      "updated_at": "2026-11-14T20:26:26Z"
+    },
+    "asus:rog-strix:g16-g614pr-g016w-pn-90nr0nj7-m00440": {
+      "delta_hash": "5ccbdf1c3f00d9de4cdfe1d02ee4aeb2edaf4bc3ed1982077c31e0fe66ce5890",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:26:27Z"
+    },
+    "asus:tuf-gaming:a16-fa608p-series": {
+      "delta_hash": "6076e22aa7ebfa793dac610359d13523fe58950319a7600f1f929c335b95eb6d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:26:27Z"
+    },
+    "asus:vivobook:s14-s3407aa-sf155w": {
+      "delta_hash": "6fca569ac09df30902e2dbc6f71954d5d7c35e7e14972567104385e941401c2d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 25,
+      "updated_at": "2026-11-14T20:26:27Z"
+    },
+    "asus:vivobook:15": {
+      "delta_hash": "a14906551474eab50d5e4980f036cc41e9ec672423d6c68e1464e3bf481fae4e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 25,
+      "updated_at": "2026-11-14T20:27:14Z"
+    },
+    "asus:vivobook:s14-m3407ka-sf155w": {
+      "delta_hash": "efc97a3feb0ebf1d715e67ae25748e25d345f17a782f95b1a247852c4f9e0957",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 25,
+      "updated_at": "2026-11-14T20:26:29Z"
+    },
+    "acer:nitro:anv15-52-786f": {
+      "delta_hash": "e0f5645af8ab8b4786c5c272c0b953189ff81b934406db0c2dc12641b0400760",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:26:29Z"
+    },
+    "asus:rog-strix:g615lm-rv009w-rog-strix-g16": {
+      "delta_hash": "9ee9d486848226640f6d5c45e71d68e2155154630d85d3cc6377a97d197b2983",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:26:29Z"
+    },
+    "dell:dell-pro:14-pc14250-ultra-7-255u": {
+      "delta_hash": "4cdaa8ce25282c094ab9378264459193a0ea6328fddc3c35b2d96cb6e335d80c",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 18,
+      "updated_at": "2026-11-14T20:26:29Z"
+    },
+    "dell:vostro:15-3530-120hz": {
+      "delta_hash": "be1d3018098b2ce1b76ec1e809293a6dd9fc045c3af7e9cd9576e295beca3749",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:29Z"
+    },
+    "gigabyte:aero:gigabyte-aero-x16-1vh93usc94ah-16-wqxga-165hz-creator-laptop": {
+      "delta_hash": "85cc5a8af1d0009996c954e432a8d5d758ec0922833c7e98ec714ed926c17663",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 21,
+      "updated_at": "2026-11-14T20:26:30Z"
+    },
+    "gigabyte:gaming-a16:gigabyte-gaming-a16-ga63h": {
+      "delta_hash": "e9e391aa23493fc1436cf5002cf125ba01fc5c76dc250c7845bf03846f6f5b3d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:34Z"
+    },
+    "lenovo:legion-pro:83f500fbin": {
+      "delta_hash": "3aef6fbcd0368735af7bff87639037aa7020d60386afcd448f4474f4d64a0db4",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:34Z"
+    },
+    "lenovo:loq:83jc0057ps": {
+      "delta_hash": "cbd5146964e216628f40256faff14eda6f79b703c3ed5114b00a18b5a6114cb5",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:26:34Z"
+    },
+    "lenovo:loq-essential:essential-15iax9e": {
+      "delta_hash": "463a7e58c38c0389825ac9f454770a3813062e5c039c97313a5394d4f44e024c",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:34Z"
+    },
+    "lenovo:legion-pro:5": {
+      "delta_hash": "d9f719e0774caa02efd050832303977ed8ccab7e5d3f3edd44ebe7565ac8f6f3",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:36Z"
+    },
+    "lenovo:legion:5-15irx10": {
+      "delta_hash": "ee799315c55e6141126275f0fd53a6695ac7f0448bcd792081b69d50b4278f14",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:26:36Z"
+    },
+    "lenovo:loq-essential:15irx11-83sc000dax": {
+      "delta_hash": "6a0a3823e4b73aa6fadbe940e515158839761069fc2d048bb30447f6fd35ef4d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:36Z"
+    },
+    "msi:cyborg:max-c13wf-020eg": {
+      "delta_hash": "5833577fb3aef96eb86627b357610f7502fd993ee4d0249257975c1df7d9b3ef",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 18,
+      "updated_at": "2026-11-14T20:26:36Z"
+    },
+    "msi:katana:15-hx-b14wgk": {
+      "delta_hash": "519febd8b04f980bd1a37f9689cecb3b2ee04fead9bcccac34d8fd0d442155cf",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:36Z"
+    },
+    "lenovo:legion-pro:lenovo-legion-pro-5-16adr10-83lt0031lk": {
+      "delta_hash": "468e3ea524d376cfb4c351e117661c52debac65e78d1074f1bde7bc30465cdbb",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:36Z"
+    },
+    "msi:raider:msi-raider-18-hx-ai-a2xwjg": {
+      "delta_hash": "dbeac6075ae41f99cc1604a372b7b7bc9e4a4f6990e7566831faecde8f5b4c8e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:37Z"
+    },
+    "msi:vector:msi-vector-17-hx-ai-a2xwjg-204eg": {
+      "delta_hash": "68560228da481a83b080cd4c174c1399be00282cc3f9d798bbdb43ff8c605fbb",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:26:38Z"
+    },
+    "msi:thin:msi-thin-15-b13uc": {
+      "delta_hash": "4cb9ea6619693fb6d05c2c374eaab7443c28168f46f10bf43e92a72338f45471",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 17,
+      "updated_at": "2026-11-14T20:26:39Z"
+    },
+    "asus:rog-strix-scar:asus-rog-strix-g16-g615lp-rv329w": {
+      "delta_hash": "5a0748d21e3d96b823b09a96c99c3a6f9d7932fcf9ce3e867c691831d8668323",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:26:40Z"
+    },
+    "asus:proart:asus-proart-gopro-edition-px13-hn7306eac-lx11w": {
+      "delta_hash": "030229257d635940adcaf93c78e1c1b151b5eaca763b4592afa9a03140368b3e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 26,
+      "updated_at": "2026-11-14T20:26:40Z"
+    },
+    "asus:rog-strix-scar:asus-rog-strix-scar-18-g835lx-ai464w": {
+      "delta_hash": "6d90dee71755d6e0e994a1c85953741baf47a37860d160d89f571ba492210e1e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 26,
+      "updated_at": "2026-11-14T20:26:41Z"
+    },
+    "asus:tuf-gaming:asus-tuf-gaming-f16-fx607vjb-rl165w": {
+      "delta_hash": "9ef689d3b0dddc10547cdb5ad0411c08e72c1fd07be7c0947e3a1dfba700a37e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 24,
+      "updated_at": "2026-11-14T20:26:42Z"
+    },
+    "asus:vivobook:asus-vivobook-16-x1605va-oled507w": {
+      "delta_hash": "c887cd5d653ff934489458e4b01d8752e6131711db528da35f7e8d333fa0f655",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 35,
+      "updated_at": "2026-11-14T20:26:42Z"
+    },
+    "asus:vivobook:asus-e203": {
+      "delta_hash": "d23267d826b22587e88c73ae7f8866bcb5334e174f7bdab049f4b8333cad556c",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 34,
+      "updated_at": "2026-11-14T20:26:42Z"
+    },
+    "asus:expertbook:b1503cva-i78512g0d": {
+      "delta_hash": "d3bfaf95b857939fab8ad49ab2193edf0e2e55ebde31972cda0780e64ed69d8e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:26:43Z"
+    },
+    "asus:vivobook:asus-x1607qa-mb054w": {
+      "delta_hash": "b43a6eacdfed78808c6065a7487a299c5eceb080c0f5c8f1d2d1c44ad81e19bb",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 35,
+      "updated_at": "2026-11-14T20:26:43Z"
+    },
+    "asus:vivobook-pro:asus-vivobook-pro-15-oled-n6506": {
+      "delta_hash": "69f4cf7123b481cba69811cab0d4b66e4f46fdead32b8c67aedbbe45b7af4c8f",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 30,
+      "updated_at": "2026-11-14T20:26:44Z"
+    },
+    "asus:tuf:f16-fx607vjr-tu855w": {
+      "delta_hash": "9e2b794fd46bc23f0fe17189577d413aa7378ebe1e24ad72aee52e4404e01063",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 24,
+      "updated_at": "2026-11-14T20:26:44Z"
+    },
+    "asus:tuf-gaming:fx608jmi-tu657w": {
+      "delta_hash": "7d34a91fca3dce05cfc61f4e2d15ce3f91380dc32fc935ff9eba10a8736fabad",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 29,
+      "updated_at": "2026-11-14T20:26:45Z"
+    },
+    "asus:rog-strix:rog-strix": {
+      "delta_hash": "eb59da64642a9ebd62af31241060e327de33b068c976ef4925f8f41d9b1f51d6",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:27:03Z"
+    },
+    "asus:tuf:f16-fx608jpr-rv027w": {
+      "delta_hash": "b1646fbbed6844fdb20bc5e21c43db347eee8ba95e8ec86de8ed288f64ee92a2",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 24,
+      "updated_at": "2026-11-14T20:26:48Z"
+    },
+    "asus:rog-strix:g614jir-n3009w": {
+      "delta_hash": "e9d3266b3581644c24c1c4f535762599063dae76b46dc525b71f532fba9c76ff",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 30,
+      "updated_at": "2026-11-14T20:26:49Z"
+    },
+    "asus:rog-strix:g614pw-ts161w": {
+      "delta_hash": "3221332e8de0fda55eef88b80c9b05908a3c531fd0083d41a2ce03e7a133ee40",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 30,
+      "updated_at": "2026-11-14T20:26:49Z"
+    },
+    "asus:rog-strix:g614jv-n3487w": {
+      "delta_hash": "43dd860c2f33f2745263dc9b5c614efacf85499c465902400da748775bccde58",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 30,
+      "updated_at": "2026-11-14T20:26:49Z"
+    },
+    "asus:rog-strix-scar:g834jzr-n6027w": {
+      "delta_hash": "66df98517fdb3d661600889b7e77c279b211c6383bdb77e52837d4ab5bbeb871",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:26:51Z"
+    },
+    "asus:rog-strix-scar:g835lr-ai3201w": {
+      "delta_hash": "679af9bd9d2249b4e140b8c418e5406ad734a54c5db225bd3f982a686d0b0f88",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:26:51Z"
+    },
+    "asus:rog-strix-scar:g834jyr-r6041w": {
+      "delta_hash": "c6ee085af85cb5683c313017a481f00db9a2533614f7bc8c8af77f297c88860d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:26:51Z"
+    },
+    "asus:rog-strix-scar:g635lw-ai264w": {
+      "delta_hash": "1696d8187b821be69e55e400f227d7c234fa1db8771765e0afeb83477fcaffa4",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:26:51Z"
+    },
+    "asus:rog-strix-scar:g635lr-ai321w": {
+      "delta_hash": "0f2cb871466300e26503d12b8eedba0a8ad3f2b2c4343c7d820257a8aec536a6",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:26:53Z"
+    },
+    "asus:rog-strix-scar:g835lw-ai642w-rog-strix-scar-18": {
+      "delta_hash": "53c6803aaac2c895f4d5047a702610d468fe48fd5bfb488d109ebed42b1b4c94",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:26:53Z"
+    },
+    "asus:rog-zephyrus:gu605cr-qr232w": {
+      "delta_hash": "024975f787d00916d93f79ca313aebee484b791cd8861893c5c999743dba79da",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:26:54Z"
+    },
+    "asus:rog-zephyrus:gu605my-qr061w": {
+      "delta_hash": "6fb9ad0a317b12950813142c6359f1f2942071304fa3c25b4c893c23402d5f00",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:26:57Z"
+    },
+    "asus:rog-zephyrus:gu606ar-tb321w": {
+      "delta_hash": "610baea1dcdf069eb4b71c897a0a32c8844baae27b74d41e4f88c5cf79620ecb",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:26:57Z"
+    },
+    "asus:expertbook:p1503cva-s72825": {
+      "delta_hash": "6d11b09c436580e57891d8039a2661557eac8a0d0fa84abdfc029a1b315dc775",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 17,
+      "updated_at": "2026-11-14T20:26:58Z"
+    },
+    "asus:rog-flow:gv601vu-nf060w": {
+      "delta_hash": "c3940865175651f1d492aadfe4f7778c695db36565fe58e47c071f37c95a3657",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:26:58Z"
+    },
+    "asus:rog-strix-scar:16": {
+      "delta_hash": "9f1d83a0a50d91a13d4a74a3b2e146c01e06ea8123d04ded71f2a3356e12fd98",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:27:02Z"
+    },
+    "asus:rog-zephyrus:gu605cw-gr164w": {
+      "delta_hash": "e24c9a51f422865a6b008fe5fbb1ec98d72c3f219c10123af33cbbffc3767b4e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:27:03Z"
+    },
+    "asus:vivobook:s14-s5408qa-tm8552w": {
+      "delta_hash": "b0dd940d7702b6eb3189feabb3b07d8acbfb7d7bef50a9b30a23df2f80f40e0a",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:27:03Z"
+    },
+    "asus:vivobook:s14-flip-tp5408qa-sg155w": {
+      "delta_hash": "eb94c0e9bed8f25189a17f337847a4537521deb294ae723d466b870dac7ab1f9",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 25,
+      "updated_at": "2026-11-14T20:27:03Z"
+    },
+    "asus:vivobook:s14-s5452ma-tm857w": {
+      "delta_hash": "339607d494e5eb1f02e5a49c4258c085a900be7c27c51dfc0b531980345ea8d6",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:27:06Z"
+    },
+    "asus:vivobook:s3407ca-ly065w": {
+      "delta_hash": "6e2b1941c780abde5b3a7295f683b5605ada052d898f5e3866bd008bb7d5f091",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 35,
+      "updated_at": "2026-11-14T20:27:06Z"
+    },
+    "asus:tuf-gaming:asus-tuf-gaming-f16-tuf608jpr-rv084": {
+      "delta_hash": "11d22d733c59c503aa43404e0c3e5a649a0a453c39c98c1e7d30137dd2f47b83",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 24,
+      "updated_at": "2026-11-14T20:27:07Z"
+    },
+    "asus:vivobook:tp3407sa-sg157w": {
+      "delta_hash": "1b27cd3e76d0f548014ab0274b9e461f99f80ba69676e37a8b1a295ac7a27160",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 35,
+      "updated_at": "2026-11-14T20:27:07Z"
+    },
+    "asus:tuf-gaming-a16:fa608uhi-tu657w": {
+      "delta_hash": "be6d42fddae9bc7a9b86d22e81097179bce1306e5a34ae9457e2bf4738d0449e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:27:13Z"
+    },
+    "asus:v16:asus-v16-v3607vh-eg005w": {
+      "delta_hash": "27d0c942f4bb50fa0c9acfae67f21b7092673a1732ceeba7e102ec8c988ed3f6",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:13Z"
+    },
+    "asus:vivobook:16": {
+      "delta_hash": "87bb4d908ae0bcd6e892f4679c4e8b35d8ab90b53081412f228081bbc754f643",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 35,
+      "updated_at": "2026-11-14T20:27:14Z"
+    },
+    "asus:tuf-gaming:f16-2025": {
+      "delta_hash": "6ca0f8fdaac99ec7e1626840f2af5d0656afb22b58dd9306cc53368b2f5d702d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 24,
+      "updated_at": "2026-11-14T20:27:14Z"
+    },
+    "asus:zenbook-duo:ux8407aa-snl319w": {
+      "delta_hash": "b3f3c23c28ab2901b40204356390840b401b53ec3ad12be394bd7edc60a39303",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:27:15Z"
+    },
+    "asus:vivobook-go:15": {
+      "delta_hash": "21ddabd4bb0224987544a1023aa0e86896abd6bf5b98684d757347de906b0e34",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:15Z"
+    },
+    "asus:vivobook-15:x1504ma-bq8515w": {
+      "delta_hash": "3d7c3d54cfa2569450a93aa8f24277936f87e524a01590b1d8fcc603795d6d23",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 29,
+      "updated_at": "2026-11-14T20:27:15Z"
+    },
+    "asus:zenbook:ux3407qa-qd155w": {
+      "delta_hash": "d0739b71f2eb5c9abbdafdb20fc2c65ddae125389239063c6266eab0820e6743",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 38,
+      "updated_at": "2026-11-14T20:27:15Z"
+    },
+    "asus:tuf-gaming:tuf-gaming": {
+      "delta_hash": "3b13bd595227bfee520f48d51a0eab43abc33c4c3e22038a6194e4029d1e2b5a",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 25,
+      "updated_at": "2026-11-14T20:27:15Z"
+    },
+    "asus:vivobook-16:x1607aa-mb155w": {
+      "delta_hash": "6b3c13a67cfa868ea706e1c5d5ea105d166b231ccf63c407f8b312eef42a8045",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:15Z"
+    },
+    "asus:notebook:vivobook-16-x1607ca-mb157w": {
+      "delta_hash": "f480f11ea6b33bbc017b6646a167269f71e6e4a67e1de29ed8969230c5393465",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:27:16Z"
+    },
+    "acer:nitro:anv16s-71-79tt": {
+      "delta_hash": "6ec15788a1d5be1824a7c79ebc0f71be0f9e34d0d79d4f3af3f555edfaf513a7",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:27:20Z"
+    },
+    "acer:aspire-go:acer-aspire-go-16-ag16-71p-96tx": {
+      "delta_hash": "33050f9d225d472b035eefb1ea6494a970e971b77f3a1ef66f31beb4297602d5",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:23Z"
+    },
+    "acer:nitro-v:acer-nitro-v-16s-anv16s-71-71u7": {
+      "delta_hash": "1481fcbf7637dac77af00e5eeb38906b96ddceaea15bc3c7d3dc40562cb1e7f5",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 21,
+      "updated_at": "2026-11-14T20:27:25Z"
+    },
+    "acer:nitro:lite-nl-16-71g-53a0": {
+      "delta_hash": "cf8a7bc7d51870cb6b74412b55feebb124de6c146956e3707a30da58ec287fd6",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:27:25Z"
+    },
+    "asus:zenbook:ux3405ca-nt319w": {
+      "delta_hash": "542fec0472c99f7d3f4bf4f4d66ad4e928996a34c1b504cf6792c9b4c70f7531",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 38,
+      "updated_at": "2026-11-14T20:27:25Z"
+    },
+    "acer:nitro-v:15": {
+      "delta_hash": "7fbb25c3de66baa23751a39140ed846dc7f292e83caf016c9b6c02dc698fe3e7",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 21,
+      "updated_at": "2026-11-14T20:27:25Z"
+    },
+    "acer:nitro:acer-nitro-lite-nl16-71g-500l": {
+      "delta_hash": "e57ee3ff002ade2f8ab6dd153c2ce007b171e8c8a6e6b1a4635799887f30715d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:27:28Z"
+    },
+    "acer:predator-helios-neo:16": {
+      "delta_hash": "ea145404dfadc966b13ce1b89b0ec5079aa16543f53598486499fe6079101df0",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:28Z"
+    },
+    "dell:g15:5530": {
+      "delta_hash": "562d24b1a5e96c8a592237b173455ed752ad64ed67eac7056df80fcf770bca35",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:29Z"
+    },
+    "acer:predator-helios-neo:acer-predator-helios-neo-16-ai-phn16-73-71v6": {
+      "delta_hash": "afc9b6e1a1a2bc23cc07986cf0682c6390c9db6f95e4773c0cbff5f1f4b1dd1a",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:31Z"
+    },
+    "acer:predator-helios:16-ai-ph16-73-92v4": {
+      "delta_hash": "9496967ec69c16fdb415ed794eda143939e96600951a625d89c2edeae20c7000",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 23,
+      "updated_at": "2026-11-14T20:27:34Z"
+    },
+    "gigabyte:aorus:16x-2024": {
+      "delta_hash": "f8d124aab0e99ed6abd27dea79b4bb7e6c45efcad899bee306eb34fdbf99d619",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 26,
+      "updated_at": "2026-11-14T20:27:34Z"
+    },
+    "dell:alienware:16": {
+      "delta_hash": "f7e2dcb039aeb34d00dc975824048674f40470be34f07a5a077370f5d3e39dd3",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 21,
+      "updated_at": "2026-11-14T20:27:35Z"
+    },
+    "dell:inspiron:14-7440-2-in-1": {
+      "delta_hash": "7a27678d2c3c13b8a91409f37697a3a255da53e12a2867274f474edae1c8dab5",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 20,
+      "updated_at": "2026-11-14T20:27:35Z"
+    },
+    "dell:pro-15-essential:pv15250": {
+      "delta_hash": "5d7ba2f2085ba85e91421ffd10a07933aeab270eb291c8c22edd593eee30241d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:36Z"
+    },
+    "dell:latitude:dell-latitude-5550": {
+      "delta_hash": "51d0b7bb684fd1c381e5c155cb7aab272b609e1dd56d62cc3d5615216abc5cdc",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 21,
+      "updated_at": "2026-11-14T20:27:37Z"
+    },
+    "xpg:xenia-xe:xeniaxe15ti5g11gxelx-sgcus": {
+      "delta_hash": "163c581bd759c0a116967eeea8fc5e1ffb1cfdb04cce31f2141113b8de089b4e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 17,
+      "updated_at": "2026-11-14T20:27:37Z"
+    },
+    "dell:alienware:dell-alienware-ac1620": {
+      "delta_hash": "aa06ef52e4fe45596e965f5c4309b4a0106723286fb940b8adfd80c798da25d9",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 21,
+      "updated_at": "2026-11-14T20:27:37Z"
+    },
+    "dell:dell-latitude:3450": {
+      "delta_hash": "fc2eee7a791943cdec035b0e358727da92aff1e44184c512017174653e826948",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 20,
+      "updated_at": "2026-11-14T20:27:37Z"
+    },
+    "acer:nitro:anv15-51-767g": {
+      "delta_hash": "41340a19f2eb85116d422bf5f6588c7e9c17b2b1f2db09d078e480dc447a8d45",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:27:38Z"
+    },
+    "gigabyte:g5:kf5-2024": {
+      "delta_hash": "591169f74852e1aa68f57131e8032f0f8ce72aa7858ff2b02f080196046901d2",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 17,
+      "updated_at": "2026-11-14T20:27:43Z"
+    },
+    "gigabyte:gigabyte-g-series:g6x-9kg-43ae853sd": {
+      "delta_hash": "0bb4fd10ab1ae84c24e2aa7bb452f43a404c244d859f6413cb762dd906952d65",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 18,
+      "updated_at": "2026-11-14T20:27:43Z"
+    },
+    "hp:victus:15-fa2317tx": {
+      "delta_hash": "88352e6941068a3a07462d0b906f4611ba08054d12b92d0d106399e071d8e3c2",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:43Z"
+    },
+    "hp:hp:14-fm0013dx": {
+      "delta_hash": "c531c7b175eba76a6ead023b636e237d64434b8b6fc7e689313dffed99381a1e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:27:43Z"
+    },
+    "gigabyte:g6:kf": {
+      "delta_hash": "a5ff281c4dd4bcf879737f70c3606351c4e541b9c994266bf2c45a1d2481c529",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 18,
+      "updated_at": "2026-11-14T20:27:43Z"
+    },
+    "hp:victus:15-fa2394tx": {
+      "delta_hash": "2b98386404dd8a3da3fde5749a59d73f8d38a9b6a033f9518abf67572dc28e3d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:44Z"
+    },
+    "dell:latitude:dell-3510-core-i5-1135g7-4gb-1tb-hdd-mx350-2gb": {
+      "delta_hash": "bd0fbba0c997612c72732bfae6106b1ae2c65a30d20dab4048aa283f922dc1fd",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 18,
+      "updated_at": "2026-11-14T20:27:44Z"
+    },
+    "hp:victus:15-fa1018nia": {
+      "delta_hash": "bbb1b80fc3b938d1f1bea82d7a5c1c0db43b4e93d245f5fcf9163c49cebc0fc0",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:44Z"
+    },
+    "hp:victus:15-fa2025nia": {
+      "delta_hash": "635f8b935b98d35ced359bc75e5889086ce2cf614cca581993ab4958f940dbdc",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:44Z"
+    },
+    "hp:hp-essential:15-fd0531nia": {
+      "delta_hash": "adf6e86be197347a883cd35c519a09448abebc8390994fc79a94d37267a44c4d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 18,
+      "updated_at": "2026-11-14T20:27:44Z"
+    },
+    "hp:victus:15-fa2787nr": {
+      "delta_hash": "7070892247f7d64a6991ebb10fee89b68b1fc5305c95b34b267b5c545aa3798b",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:49Z"
+    },
+    "hp:victus:15-fb3093dx": {
+      "delta_hash": "39428875eb859f722c45bc9a549b0347312f430166c68925d754428f4878f386",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:49Z"
+    },
+    "hp:victus:15-r0050nia": {
+      "delta_hash": "ccbb6d38d6d438349b0ced62b2a481ad2d43ee5fe228feb76f2adf53cf62f5e8",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:50Z"
+    },
+    "hp:hp-essential:15-fd1052ne": {
+      "delta_hash": "a765b7f77fe99c34c408eea93f36d5559c8fc898d817a5fb4f1cd9af4d311df8",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 18,
+      "updated_at": "2026-11-14T20:27:51Z"
+    },
+    "hp:omen-16:16-am0056ne": {
+      "delta_hash": "a04db7e4317095b2ed9270b2b0de5ddd05dba6be20a749459997bd14ce0e18d3",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:52Z"
+    },
+    "hp:envy-x360:hp-envy-x360-14-es1013dx-2-in-1-intel-core-5-120u": {
+      "delta_hash": "8ec261e5c32bc06c9f5bc17dc33860d5e1c3e19693cc3424b47e5455fcc34314",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:27:53Z"
+    },
+    "hp:omen:16-an008tx": {
+      "delta_hash": "ccf3fa7cfb7522e39f061fdebbb307fa13262d21ebc59c630828143d96453c0c",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:27:53Z"
+    },
+    "hp:omen:16-am0073dx": {
+      "delta_hash": "efc76c752999cb98f3ad7d22918388ec02141e2b0bf8e8f6ec1dd61bcb37147a",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:27:53Z"
+    },
+    "hp:hp-essential:15-fd1063ne": {
+      "delta_hash": "7ecc935205a75a979c3927b770c599b875d5b589976d64cf3ecbb7913c20ee65",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:53Z"
+    },
+    "hp:hp-essential:15-fd2003ne": {
+      "delta_hash": "bb967c30d6d3aa500127f7c6055f4000d6258205695ec21be2c9a10223b84b87",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 18,
+      "updated_at": "2026-11-14T20:27:54Z"
+    },
+    "hp:hp:255r-g10": {
+      "delta_hash": "7719d189fdbaf083e83aef2ba2489bed17b68f646c5fd172e923057ac1af2b28",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 36,
+      "updated_at": "2026-11-14T20:27:55Z"
+    },
+    "hp:255:g8": {
+      "delta_hash": "b8d8c6c1948dc2673695f94f728d97e22d7ac3d47ad8795eabd8804027d56ba4",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:27:55Z"
+    },
+    "hp:250:hp-250-g10": {
+      "delta_hash": "44c484cb26defb830e813f3e339c6fe060b7356f0343dd2d1b9f735552719789",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:57Z"
+    },
+    "hp:hp-omen-16-slim-16-am0001nia:hp-omen-16-slim-16-am0001nia": {
+      "delta_hash": "80efbfd7b9e609070e0dea69e7cde146e1e6790813aeb00c71e48afbaa2ac20b",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 8,
+      "updated_at": "2026-11-14T20:27:57Z"
+    },
+    "hp:victus:hp-victus-15-fa1014nia-801t6ea": {
+      "delta_hash": "c22aa2c29e73a501017c028ccd2dec3307687418fa171b72d76453a50f44f22a",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:58Z"
+    },
+    "hp:hp-essential:hp-laptop-15-fd1062ne": {
+      "delta_hash": "6e0276f3a2891d7b6c38016da524f663def725008e45980fc0df0c930d9c07cb",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 26,
+      "updated_at": "2026-11-14T20:27:58Z"
+    },
+    "hp:probook:hp-probook-4-g2i-16": {
+      "delta_hash": "f006a125095bf426dec973389562d785cf2b6cd408be82cdf9f21c20bc38491e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:27:58Z"
+    },
+    "hp:victus:15": {
+      "delta_hash": "461ae476cca2abfd67f84efeccef13413f15fe6b6d9fda0e26b4834229d4c050",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:28:01Z"
+    },
+    "hp:victus:hp-victus-15-fa2352tx-gaming-laptop": {
+      "delta_hash": "90fcd6e97cbb83ce939205aa340150906abcfee9625bc2854d26b7abb56aae28",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:00Z"
+    },
+    "hp:probook:460-g11": {
+      "delta_hash": "ed1093e89296ed4045596743b224f718ada61aa214aee9183390b93bff19a9c4",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 17,
+      "updated_at": "2026-11-14T20:28:00Z"
+    },
+    "hp:omen:max": {
+      "delta_hash": "a7894e2cc1ac2b568fc2a502bde513bcc7175d7c0960a1e53a6bc73d504a3617",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 37,
+      "updated_at": "2026-11-14T20:28:02Z"
+    },
+    "hp:victus:15-fa2013dx": {
+      "delta_hash": "d9997a6d14a458c897f422cf0eea56f95d1d4ef92a1692f8f33a81a8c220356d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:28:03Z"
+    },
+    "hp:victus:16": {
+      "delta_hash": "ade0e31189fe3fd02b142affee30f0154640b03a53136f492eff8a71300a8c17",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:28:05Z"
+    },
+    "hp:victus:16-r0051ne": {
+      "delta_hash": "7bb8efe41e2db27d1e3491456234672ecfe35b55818fd4665e003a68c3b3308a",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:28:04Z"
+    },
+    "hp:victus:16-r1048ne": {
+      "delta_hash": "63ac4d217f414ca552fe99be92f0f426ca63f33125930c20edbe5ad1b3723b83",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:05Z"
+    },
+    "hp:victus:gaming-laptop-16-r1011nia": {
+      "delta_hash": "6c2397c5c47aa49854a9820957d3f49f94edde1c5960177dbe8208ffa9c03a38",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:06Z"
+    },
+    "lenovo:loq:15arp10e": {
+      "delta_hash": "1092a1b54dcb3e87be18e33ab9a662ac66d46394e59fe514564919c3b8c4b914",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 20,
+      "updated_at": "2026-11-14T20:28:09Z"
+    },
+    "hp:hp-essential:laptop-hp-15-gw0054nia": {
+      "delta_hash": "2e6959ef4edeb6abd85a55370e44ab5ec291186398a20c8526ef0421531bda8e",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:12Z"
+    },
+    "hp:ultra-7:fd1062ne": {
+      "delta_hash": "7c7668afb8a329a0155619e3b52abb422e34debb5aca76492d2afa725b9315d5",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:12Z"
+    },
+    "lenovo:thinkpad:21srs1c500": {
+      "delta_hash": "6ce6b62144a8501b96edaec1d16e040addc1125901d8d66d462f035524538dd0",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:28:12Z"
+    },
+    "lenovo:ideapad-slim:82x700hblk": {
+      "delta_hash": "0dc7ba75649637d17755a77766e6de6ab15e040be27698da9be4f6ee0b3a0067",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 20,
+      "updated_at": "2026-11-14T20:28:12Z"
+    },
+    "lenovo:ideapad:83ug002qed": {
+      "delta_hash": "bb02cacc9c624fb591f5f39e89581ebd89b79015c050dbb2566e1abc9210c898",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:28:12Z"
+    },
+    "lenovo:legion:83m0005xed": {
+      "delta_hash": "69d9b30c2e59ff6f7b6a2d09a4e872fc9b783bfcd736d5cc08c6f0f0a49f2738",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 36,
+      "updated_at": "2026-11-14T20:28:12Z"
+    },
+    "lenovo:thinkpad:21nss29y00": {
+      "delta_hash": "9847cf3a1f4427d8718f4f3b2bd5650d1ab968e4c1362838782f4407e55c5f80",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:28:12Z"
+    },
+    "lenovo:loq:83sl001med": {
+      "delta_hash": "8cfbf1f682e23239c23a98d552b23a27a477f40ab6287eb8136e0ce4cea0562b",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 20,
+      "updated_at": "2026-11-14T20:28:12Z"
+    },
+    "lenovo:ideapad-slim:83ur003yed": {
+      "delta_hash": "f3a294640ae7b3fbc4ded15044eafb1a1c30acdb31931a0365cec2c85d600cab",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:16Z"
+    },
+    "lenovo:loq-essential:83s000c2in": {
+      "delta_hash": "1e91a419aa7d49f59f38f08f0c4c017ebc1a59631c5a91cfa928e99d4d2cc935",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:16Z"
+    },
+    "lenovo:lenovo:flex-5-14iau7": {
+      "delta_hash": "0af50fe209aa861015cf45ef49152bb9aabfce94aa3d0ab5f5437f1fc78d01ad",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 27,
+      "updated_at": "2026-11-14T20:28:19Z"
+    },
+    "lenovo:ideapad:gaming-3": {
+      "delta_hash": "2e2dd4d349cc77cc3cda3277c707f600b9bbf77e4af31ef64e00880b8b3c3acf",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 21,
+      "updated_at": "2026-11-14T20:28:19Z"
+    },
+    "lenovo:loq-15arp9:loq-15arp9": {
+      "delta_hash": "221054181a0a7c16c88633d211441d0f21297791fb491d8668ac73bc5da1cfcc",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:23Z"
+    },
+    "lenovo:legion-pro:lenovo-legion-pro-5-16iax10-83f3004fed": {
+      "delta_hash": "33e581a1e8f005d7424d74fc902b5988dd2fdef494a08bfcf0e7563f446f1ad9",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:23Z"
+    },
+    "lenovo:ideapad:5-2-in-1": {
+      "delta_hash": "e2bc448bea3554b6d4b7240c972b35ed1fdedee11d8bbee55e2e192ebb7bf894",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 21,
+      "updated_at": "2026-11-14T20:28:23Z"
+    },
+    "lenovo:loq:15ahp10": {
+      "delta_hash": "9b6a0bb02efafadf5e6b41ec9b64db686855bea1734aef47e65e04d7d5f52903",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 20,
+      "updated_at": "2026-11-14T20:28:23Z"
+    },
+    "lenovo:yoga:7": {
+      "delta_hash": "4acfb4d77603ad48e740b7d45b79de46fbcea691ee7ed723add04e05eaede2ff",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 26,
+      "updated_at": "2026-11-14T20:28:24Z"
+    },
+    "msi:cyborg:msi-laptop-cyborg-15-a2rve-2274eg": {
+      "delta_hash": "bc273cdcd06f8d9eed6343fd67a6c8ce1c1dda25f6dfae9330959252fd2a7238",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:24Z"
+    },
+    "lenovo:loq:15iax9": {
+      "delta_hash": "0b1141e74555d8b66d6f0e9eb3d07ca00dab0f21ca4c8d29ae2975cca3a5df07",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 20,
+      "updated_at": "2026-11-14T20:28:24Z"
+    },
+    "msi:vector-16-hx-ai:a2xwig": {
+      "delta_hash": "c4ad02f10c4589549e07dbf8d940e004989d4dcba53f3b1d07ce0fae6ae50d98",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:25Z"
+    },
+    "msi:crosshair:16-hx-ai-d2xwgkg-271ng": {
+      "delta_hash": "b7d2d2553a681d6cdfca72d3b305a1c957926ea4b800c1817573de4e650898d6",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:25Z"
+    },
+    "msi:modern:15-f1mg": {
+      "delta_hash": "c82b67adb66fc3713143fa7e8c1f014d272c415305080172cd950fe6cf06595a",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:25Z"
+    },
+    "msi:thin:msi-thin-15-b13ve": {
+      "delta_hash": "716ee9fd87f76889dd85a8c48b2f89e5462925656db3dea7e26e62ad1154636f",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 19,
+      "updated_at": "2026-11-14T20:28:26Z"
+    },
+    "lenovo:legion:5-16irx9": {
+      "delta_hash": "03e95422e327b95c5563d99e76762bfdef326a58e9212ae11ee4b715ced65b00",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 28,
+      "updated_at": "2026-11-14T20:28:26Z"
+    },
+    "msi:prestige:14": {
+      "delta_hash": "c3a807d213278300fc2d5fbedcc7c8c9af2cf6acf2daca34e319fc4740827c6d",
+      "model_used": "claude-haiku-5.5",
+      "path_taken": "primary",
+      "evidence_count": 22,
+      "updated_at": "2026-11-14T20:28:29Z"
+    }
+  },
+  "schema_version": "v2_yt_pipeline"
+}

@@ -14,3 +14,5 @@ benchmark_*.json
 resume_youtube_scraper_safe.py
 test_pipeline_e2e.py
 youtube_gap_tasks.md
+ 
+.env
