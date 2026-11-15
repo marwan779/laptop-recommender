@@ -221,3 +221,150 @@ async def test_handle_reviews_scrape_command(mock_broker):
     collector.process_reviews_batch.assert_awaited_once()
     delegated: ScrapeReviewsCommand = collector.process_reviews_batch.await_args.args[0]
     assert delegated.payload.job_id == "job-rec-001"
+
+
+@pytest.mark.anyio
+async def test_handle_catalog_scrape_command_emits_failed_when_missing_s3_key(mock_broker, mock_orchestrator):
+    consumer = ScraperMessageConsumer(
+        broker=mock_broker,
+        orchestrator=mock_orchestrator,
+    )
+    mock_target = ScrapeTargetResult(
+        target_type="store",
+        target_key="compumarts",
+        target_name="Compumarts",
+        level=2,
+        items_scraped=0,
+        error="HTTP 503",
+    )
+    mock_orchestrator.execute.return_value = ScrapeResponse(
+        results=[mock_target],
+        total_targets=1,
+        total_items_scraped=0,
+        unified_storage_key=None,
+        unified_error="S3 upload failed: NoCredentialsError",
+    )
+
+    cmd = ScrapeCatalogCommand(
+        payload=ScrapeCatalogPayload(
+            batch_id="batch-missing-s3",
+            targets=["compumarts"],
+            level=2,
+            upload_to_bucket=True,
+        )
+    )
+
+    with pytest.raises(RuntimeError):
+        await consumer.handle_catalog_scrape_command(cmd.model_dump())
+
+    mock_broker.publish.assert_called_once()
+    assert mock_broker.publish.call_args.kwargs["routing_key"] == EventType.CATALOG_SCRAPE_FAILED_EVENT
+    failed_evt: CatalogScrapeFailedEvent = mock_broker.publish.call_args.kwargs["message"]
+    assert failed_evt.payload.batch_id == "batch-missing-s3"
+
+
+@pytest.mark.anyio
+async def test_handle_catalog_scrape_command_uses_unified_total_laptops(mock_broker, mock_orchestrator):
+    consumer = ScraperMessageConsumer(
+        broker=mock_broker,
+        orchestrator=mock_orchestrator,
+    )
+    mock_target = ScrapeTargetResult(
+        target_type="store",
+        target_key="compumarts",
+        target_name="Compumarts",
+        level=2,
+        items_scraped=12,
+        store_result=StoreCatalogResult(
+            store_key="compumarts",
+            store_name="Compumarts",
+            store_domain="compumarts.com",
+            total_products=12,
+            latest_pointers=["LOQ 15"],
+        ),
+    )
+    mock_orchestrator.execute.return_value = ScrapeResponse(
+        results=[mock_target],
+        total_targets=1,
+        total_items_scraped=12,
+        unified_storage_key="catalogs/catalog_batch-uniq.json",
+        unified_storage_bucket="test-catalog-bucket",
+        unified_total_laptops=7,
+    )
+
+    cmd = ScrapeCatalogCommand(
+        payload=ScrapeCatalogPayload(
+            batch_id="batch-uniq",
+            targets=["compumarts"],
+            level=2,
+        )
+    )
+
+    await consumer.handle_catalog_scrape_command(cmd.model_dump())
+
+    ready_evt: CatalogReadyEvent = mock_broker.publish.call_args.kwargs["message"]
+    assert ready_evt.payload.total_laptops == 7
+
+
+def test_orchestrator_skips_s3_upload_and_records_error_when_unified_catalog_empty(tmp_path):
+    from unittest.mock import patch
+
+    from app.common.storage.base import IObjectStorageService
+    from app.schemas.laptop import RetailerProduct
+    from app.schemas.orchestrator import ScrapeRequest
+    from app.services.orchestrator import ScrapeOrchestrator
+
+    mock_storage = MagicMock(spec=IObjectStorageService)
+    mock_storage.bucket_name = "test-catalog-bucket"
+    orchestrator = ScrapeOrchestrator(
+        email_service=MagicMock(),
+        no_audit=True,
+        ai_type="none",
+        storage_service=mock_storage,
+        upload_to_bucket=True,
+    )
+
+    empty_unified = MagicMock()
+    empty_unified.total_unique_laptops = 0
+    empty_unified.stores_included = []
+    empty_unified.model_dump.return_value = {"total_unique_laptops": 0, "laptops": []}
+
+    sample_product = RetailerProduct(
+        store_name="Compumarts",
+        store_key="compumarts",
+        store_domain="compumarts.com",
+        title="Test Laptop",
+        product_url="https://compumarts.com/p/1",
+        price_egp=40000.0,
+    )
+
+    req = ScrapeRequest(
+        target_type="store",
+        targets=["compumarts"],
+        level=2,
+        output_dir=str(tmp_path),
+        upload_to_bucket=True,
+        send_email=False,
+        batch_id="batch-empty-unified",
+    )
+
+    with (
+        patch("app.services.orchestrator.get_store_scraper") as mock_get_store,
+        patch("app.matching.combiner.CatalogCombiner.combine_catalogs", return_value=empty_unified),
+        patch("app.pipeline.icecat.enricher.IcecatCatalogEnricher.enrich_catalog", return_value=empty_unified),
+    ):
+        mock_scraper = MagicMock()
+        mock_scraper.store_name = "Compumarts"
+        mock_scraper.store_key = "compumarts"
+        mock_scraper.base_domain = "compumarts.com"
+        mock_scraper.scrape_catalog.return_value = [sample_product]
+        mock_scraper.skipped_laptops = []
+        mock_get_store.return_value = mock_scraper
+
+        res = orchestrator.execute(req)
+
+    uploaded_keys = [call.kwargs.get("object_key") for call in mock_storage.upload_json.call_args_list]
+    assert all(not str(k).startswith("catalogs/") for k in uploaded_keys)
+    assert res.unified_storage_key is None
+    assert res.unified_total_laptops == 0
+    assert res.unified_error is not None

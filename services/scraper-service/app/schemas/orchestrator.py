@@ -214,6 +214,14 @@ class ScrapeResponse(BaseModel):
         default=None,
         description="Object storage bucket containing the unified catalog artifact",
     )
+    unified_total_laptops: int | None = Field(
+        default=None,
+        description="Unique consolidated laptop count in the unified catalog artifact",
+    )
+    unified_error: str | None = Field(
+        default=None,
+        description="Error captured if unified catalog combining, enrichment, or upload failed",
+    )
 
 
 # ─── Endpoint Trigger Response ──────────────────────────────────────────────

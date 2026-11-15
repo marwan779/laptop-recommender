@@ -147,6 +147,59 @@ class CatalogMessageConsumer:
         self._is_listening = True
         logger.info("CatalogMessageConsumer is actively listening for domain events.")
 
+    async def _persist_failed_batch_log_safely(
+        self,
+        batch_uuid: uuid.UUID,
+        error_message: str,
+        *,
+        store_key: str,
+        trigger_type: str,
+    ) -> None:
+        """Record or update a FAILED ScrapingBatchLog in an isolated committed transaction."""
+        try:
+            async with self._session_factory() as err_session:
+                async with err_session.begin():
+                    await self._upsert_failed_batch_log(
+                        err_session,
+                        batch_uuid,
+                        error_message,
+                        store_key=store_key,
+                        trigger_type=trigger_type,
+                    )
+        except Exception as audit_exc:
+            logger.warning(
+                "Could not persist FAILED ScrapingBatchLog [%s]: %s",
+                batch_uuid,
+                audit_exc,
+            )
+
+    @staticmethod
+    async def _upsert_failed_batch_log(
+        session: AsyncSession,
+        batch_uuid: uuid.UUID,
+        error_message: str,
+        *,
+        store_key: str,
+        trigger_type: str,
+    ) -> None:
+        batch_repo = BatchLogRepository(session)
+        existing = await batch_repo.get_by_id(batch_uuid)
+        if existing is None:
+            await batch_repo.record_batch_log(
+                batch_id=batch_uuid,
+                store_key=store_key,
+                trigger_type=trigger_type,
+                status="FAILED",
+                error_message=error_message,
+            )
+            return
+
+        # Guard against test mocks returning placeholder scalar values instead of ORM rows.
+        if hasattr(existing, "status") and hasattr(existing, "error_message"):
+            existing.status = "FAILED"
+            existing.error_message = error_message
+            existing.completed_at = utcnow()
+
     async def handle_catalog_ready_event(self, raw_data: dict[str, Any]) -> None:
         """Download catalog from S3, compute metrics, seed relational tables, and update batch log."""
         event = CatalogReadyEvent.model_validate(raw_data)
@@ -160,32 +213,42 @@ class CatalogMessageConsumer:
 
         batch_uuid = uuid.UUID(payload.batch_id)
 
-        async with self._session_factory() as session:
-            async with session.begin():
-                if not await self._claim_inbox(session, event, "handle_catalog_ready_event"):
-                    return
+        try:
+            async with self._session_factory() as session:
+                async with session.begin():
+                    if not await self._claim_inbox(session, event, "handle_catalog_ready_event"):
+                        return
 
-                result = await self.ingestion_service.ingest_from_s3(
-                    session=session,
-                    s3_key=payload.s3_key,
-                    trigger_type="CATALOG_READY_EVENT",
-                    batch_id=batch_uuid,
-                )
-
-                if result.status != "SUCCESS":
-                    logger.error(
-                        "Catalog ingestion failed for batch [%s]: %s",
-                        payload.batch_id,
-                        result.error_message,
+                    result = await self.ingestion_service.ingest_from_s3(
+                        session=session,
+                        s3_key=payload.s3_key,
+                        trigger_type="CATALOG_READY_EVENT",
+                        batch_id=batch_uuid,
                     )
-                    raise RuntimeError(f"Catalog ingestion failed: {result.error_message}")
 
-                logger.info(
-                    "CatalogReadyEvent successfully processed for batch [%s]: %d laptops ingested in %.2fs",
-                    payload.batch_id,
-                    result.total_laptops,
-                    result.duration_seconds,
-                )
+                    if result.status != "SUCCESS":
+                        logger.error(
+                            "Catalog ingestion failed for batch [%s]: %s",
+                            payload.batch_id,
+                            result.error_message,
+                        )
+                        raise RuntimeError(f"Catalog ingestion failed: {result.error_message}")
+
+                    logger.info(
+                        "CatalogReadyEvent successfully processed for batch [%s]: %d laptops ingested in %.2fs",
+                        payload.batch_id,
+                        result.total_laptops,
+                        result.duration_seconds,
+                    )
+        except Exception as exc:
+            # Persist failure audit log outside the rolled-back seeding transaction.
+            await self._persist_failed_batch_log_safely(
+                batch_uuid,
+                str(exc),
+                store_key="catalog_ingestion",
+                trigger_type="CATALOG_READY_EVENT",
+            )
+            raise
 
         await self._invalidate_catalog_caches(include_price_history=True)
 
@@ -206,21 +269,13 @@ class CatalogMessageConsumer:
                 if not await self._claim_inbox(session, event, "handle_catalog_scrape_failed"):
                     return
 
-                batch_repo = BatchLogRepository(session)
-                existing = await batch_repo.get_by_id(batch_uuid)
-
-                if existing:
-                    existing.status = "FAILED"
-                    existing.error_message = payload.error_message
-                    existing.completed_at = utcnow()
-                else:
-                    await batch_repo.record_batch_log(
-                        batch_id=batch_uuid,
-                        store_key="multi-store",
-                        trigger_type="SCRAPE_FAILED",
-                        status="FAILED",
-                        error_message=payload.error_message,
-                    )
+                await self._upsert_failed_batch_log(
+                    session,
+                    batch_uuid,
+                    payload.error_message,
+                    store_key="multi-store",
+                    trigger_type="SCRAPE_FAILED",
+                )
 
                 logger.info("ScrapingBatchLog [%s] marked as FAILED in catalog database.", payload.batch_id)
 

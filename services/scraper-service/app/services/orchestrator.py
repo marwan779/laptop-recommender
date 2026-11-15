@@ -144,6 +144,8 @@ class ScrapeOrchestrator:
         # Stage 2, 3 & 4: Dynamic Multi-Store Catalog Consolidation + Icecat Enrichment + Targeted LLM Fallback
         uploaded_key: str | None = None
         uploaded_bucket: str | None = None
+        unified_total_laptops: int | None = None
+        unified_error: str | None = None
         store_targets = [r for r in results if r.target_type == "store" and r.store_result is not None]
         if store_targets and request.level == 2:
             out_dir = Path(request.output_dir) if request.output_dir else Path("scraping results")
@@ -183,7 +185,7 @@ class ScrapeOrchestrator:
                     category=ErrorCategory.DOM_PARSING,
                     source_component="matching.combiner",
                     suppress=True,
-                ):
+                ) as boundary_ctx:
                     from app.matching.combiner import CatalogCombiner
                     from app.pipeline.icecat.enricher import IcecatCatalogEnricher
 
@@ -199,50 +201,66 @@ class ScrapeOrchestrator:
                         )
                         unified_catalog = enricher.enrich_catalog(unified_catalog)
 
+                    unified_total_laptops = unified_catalog.total_unique_laptops
                     unified_path = out_dir / "unified_catalog_latest.json"
                     if unified_catalog.total_unique_laptops > 0:
                         unified_catalog.save_json(unified_path)
-                    logger.info("[Orchestrator] Saved enriched unified catalog to: %s", unified_path.resolve())
+                        logger.info("[Orchestrator] Saved enriched unified catalog to: %s", unified_path.resolve())
 
                     # Upload to object storage if configured (both immutable snapshot and latest pointer)
                     if self._should_upload(request):
-                        try:
-                            from datetime import UTC, datetime
-
-                            if request.batch_id:
-                                batch_key = f"catalogs/catalog_{request.batch_id}.json"
-                            else:
-                                timestamp_str = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-                                batch_key = f"catalogs/catalog_{timestamp_str}.json"
-
-                            latest_key = "catalogs/catalog_latest.json"
-                            upload_meta = {
-                                "total_unique_laptops": str(unified_catalog.total_unique_laptops),
-                                "stores_included": ",".join(unified_catalog.stores_included),
-                                "batch_id": request.batch_id or "",
-                            }
-
-                            # 1. Primary: Upload immutable batch artifact
-                            self.storage_service.upload_json(
-                                data=unified_catalog.model_dump(),
-                                object_key=batch_key,
-                                metadata=upload_meta,
+                        if unified_catalog.total_unique_laptops <= 0:
+                            unified_error = (
+                                "Unified catalog produced 0 unique laptops; skipping S3 upload "
+                                "to preserve existing catalogs/catalog_latest.json."
                             )
-                            # 2. Convenience: Overwrite latest pointer
-                            self.storage_service.upload_json(
-                                data=unified_catalog.model_dump(),
-                                object_key=latest_key,
-                                metadata=upload_meta,
-                            )
-                            uploaded_key = batch_key
-                            uploaded_bucket = getattr(self.storage_service, "bucket_name", None)
-                            logger.info(
-                                "[Orchestrator] [+] Uploaded unified catalog to S3: '%s' and '%s'",
-                                batch_key,
-                                latest_key,
-                            )
-                        except Exception as s3_exc:
-                            logger.warning("[Orchestrator] Failed to upload unified catalog to S3: %s", s3_exc)
+                            logger.warning("[Orchestrator] %s", unified_error)
+                        else:
+                            try:
+                                from datetime import UTC, datetime
+
+                                if request.batch_id:
+                                    batch_key = f"catalogs/catalog_{request.batch_id}.json"
+                                else:
+                                    timestamp_str = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+                                    batch_key = f"catalogs/catalog_{timestamp_str}.json"
+
+                                latest_key = "catalogs/catalog_latest.json"
+                                upload_meta = {
+                                    "total_unique_laptops": str(unified_catalog.total_unique_laptops),
+                                    "stores_included": ",".join(unified_catalog.stores_included),
+                                    "batch_id": request.batch_id or "",
+                                }
+
+                                # 1. Primary: Upload immutable batch artifact
+                                self.storage_service.upload_json(
+                                    data=unified_catalog.model_dump(),
+                                    object_key=batch_key,
+                                    metadata=upload_meta,
+                                )
+                                # 2. Convenience: Overwrite latest pointer
+                                self.storage_service.upload_json(
+                                    data=unified_catalog.model_dump(),
+                                    object_key=latest_key,
+                                    metadata=upload_meta,
+                                )
+                                uploaded_key = batch_key
+                                uploaded_bucket = getattr(self.storage_service, "bucket_name", None)
+                                logger.info(
+                                    "[Orchestrator] [+] Uploaded unified catalog to S3: '%s' and '%s'",
+                                    batch_key,
+                                    latest_key,
+                                )
+                            except Exception as s3_exc:
+                                unified_error = f"Failed to upload unified catalog to S3: {s3_exc}"
+                                logger.warning("[Orchestrator] %s", unified_error)
+
+                if boundary_ctx.has_error and not unified_error:
+                    unified_error = (
+                        getattr(boundary_ctx.error_record, "error_message", None)
+                        or getattr(boundary_ctx.error_record, "message", None)
+                        or "Unified catalog combining or enrichment failed."
+                    )
 
         total_items = sum(r.items_scraped for r in results)
 
@@ -254,6 +272,8 @@ class ScrapeOrchestrator:
             finished_at=utcnow_str(),
             unified_storage_key=uploaded_key,
             unified_storage_bucket=uploaded_bucket,
+            unified_total_laptops=unified_total_laptops,
+            unified_error=unified_error,
         )
 
     # ── private helpers ─────────────────────────────────────────────────

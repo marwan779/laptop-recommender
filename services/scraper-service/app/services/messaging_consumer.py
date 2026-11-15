@@ -151,9 +151,31 @@ class ScraperMessageConsumer:
                         if sample_models:
                             pointers[target_res.target_key] = [str(m) for m in sample_models]
 
-            s3_key = response.unified_storage_key or f"catalogs/catalog_{payload.batch_id}.json"
+            # Verify the run actually produced an artifact before notifying catalog-service.
+            target_errors = [f"{r.target_key}: {r.error}" for r in response.results if r.error]
+            if not response.results:
+                raise RuntimeError("Catalog scraping produced no target results.")
+            if target_errors and response.total_items_scraped == 0:
+                raise RuntimeError(f"Catalog scraping failed for all targets: {'; '.join(target_errors)}")
+            if response.unified_error:
+                err_detail = response.unified_error
+                if target_errors:
+                    err_detail = f"{err_detail} (target_errors={'; '.join(target_errors)})"
+                raise RuntimeError(err_detail)
+            if not response.unified_storage_key:
+                err_detail = "Catalog scraping did not produce a unified S3 artifact."
+                if target_errors:
+                    err_detail = f"{err_detail} Target errors: {'; '.join(target_errors)}"
+                raise RuntimeError(err_detail)
+
+            s3_key = response.unified_storage_key
             s3_bucket = response.unified_storage_bucket or getattr(
                 self.orchestrator.storage_service, "bucket_name", "laptop-recommender-raw-catalog"
+            )
+            total_laptops = (
+                response.unified_total_laptops
+                if response.unified_total_laptops is not None
+                else response.total_items_scraped
             )
 
             ready_event = CatalogReadyEvent(
@@ -162,7 +184,7 @@ class ScraperMessageConsumer:
                     batch_id=payload.batch_id,
                     s3_bucket=s3_bucket,
                     s3_key=s3_key,
-                    total_laptops=response.total_items_scraped,
+                    total_laptops=total_laptops,
                     pointers_found=pointers,
                     duration_seconds=duration,
                 ),
@@ -175,7 +197,7 @@ class ScraperMessageConsumer:
             logger.info(
                 "Published CatalogReadyEvent for batch [%s]: %d laptops at s3://%s/%s (took %ss)",
                 payload.batch_id,
-                response.total_items_scraped,
+                total_laptops,
                 s3_bucket,
                 s3_key,
                 duration,

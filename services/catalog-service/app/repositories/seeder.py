@@ -70,6 +70,26 @@ def _safe_bool(val: Any, default: bool = False) -> bool:
     return bool(val)
 
 
+_HDR_NEGATIVE_TOKENS = frozenset({"", "false", "0", "no", "n", "f", "none", "null", "n/a", "na", "off", "disabled"})
+_HDR_POSITIVE_TOKENS = ("hdr", "dolby vision", "hlg", "displayhdr")
+
+
+def _parse_hdr_bool(val: Any, default: bool = False) -> bool:
+    """Parse boolean and descriptive HDR labels (e.g. 'HDR', 'HDR10', 'Dolby Vision')."""
+    if val is None:
+        return default
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        cleaned = val.strip().lower()
+        if cleaned in _HDR_NEGATIVE_TOKENS or cleaned.startswith(("no ", "non-", "without ")):
+            return False
+        if cleaned in ("true", "1", "yes", "t", "y") or any(tok in cleaned for tok in _HDR_POSITIVE_TOKENS):
+            return True
+        return default
+    return bool(val)
+
+
 def _safe_str(val: Any, default: str | None = None, max_length: int | None = None) -> str | None:
     if val is None:
         return default
@@ -477,7 +497,7 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         laptop.display_brightness_nits = _safe_int(disp.get("brightness_nits"))
         laptop.display_color_gamut = _safe_str(disp.get("color_gamut"), max_length=50)
         laptop.display_touchscreen = _safe_bool(disp.get("touchscreen"), False)
-        laptop.display_hdr = _safe_bool(disp.get("hdr"), False)
+        laptop.display_hdr = _parse_hdr_bool(disp.get("hdr"), False)
 
         # Power & Battery
         laptop.battery_capacity_wh = _safe_float(pwr.get("battery_capacity_wh"))

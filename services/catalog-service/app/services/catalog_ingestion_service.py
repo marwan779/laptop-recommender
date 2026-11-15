@@ -12,6 +12,7 @@ Wires the complete catalog pipeline:
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 import json
 import logging
@@ -82,17 +83,37 @@ class CatalogIngestionService:
         trigger_type: str = "S3_INGESTION",
         batch_id: uuid.UUID | None = None,
     ) -> IngestionResult:
-        """Download catalog from S3 and ingest into the catalog database."""
+        """Download catalog from S3 without blocking the event loop and ingest into DB."""
         logger.info("Starting catalog ingestion from S3 key: %s (bucket: %s)", s3_key, self.storage_service.bucket_name)
         source_label = f"s3://{self.storage_service.bucket_name}/{s3_key}"
+        bid = batch_id or uuid.uuid4()
 
-        catalog_dict = self.storage_service.read_json(s3_key)
+        try:
+            catalog_dict = await asyncio.to_thread(self.storage_service.read_json, s3_key)
+        except Exception as exc:
+            logger.exception("[%s] Failed to read catalog JSON from %s: %s", bid, source_label, exc)
+            return IngestionResult(
+                batch_id=bid,
+                status="FAILED",
+                source=source_label,
+                duration_seconds=0.0,
+                total_laptops=0,
+                new_laptops=0,
+                updated_laptops=0,
+                offers_created=0,
+                offers_updated=0,
+                metrics_created=0,
+                metrics_updated=0,
+                metrics_summary={},
+                error_message=str(exc),
+            )
+
         return await self.ingest_catalog_dict(
             session=session,
             catalog_data=catalog_dict,
             source=source_label,
             trigger_type=trigger_type,
-            batch_id=batch_id,
+            batch_id=bid,
         )
 
     async def ingest_from_file(

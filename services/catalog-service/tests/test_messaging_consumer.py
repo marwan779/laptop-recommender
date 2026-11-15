@@ -569,3 +569,95 @@ async def test_handle_reviews_enrich_failed_records_audit_log(
         status="FAILED",
         error_message="[reviews_batch_err_1] ChromaDB upsert timeout",
     )
+
+
+@pytest.mark.asyncio
+async def test_handle_catalog_ready_event_persists_failed_log_outside_rolled_back_tx():
+    from app.models.scraping import ScrapingBatchLog
+
+    tx_events: list[str] = []
+    added_rows: list[object] = []
+
+    class _FakeBegin:
+        def __init__(self, idx: int) -> None:
+            self.idx = idx
+
+        async def __aenter__(self):
+            tx_events.append(f"begin:{self.idx}")
+            return self
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            tx_events.append(f"rollback:{self.idx}" if exc_type else f"commit:{self.idx}")
+            return False
+
+    class _FakeSession:
+        def __init__(self, idx: int) -> None:
+            self.idx = idx
+            self.flush = AsyncMock()
+
+        def begin(self):
+            return _FakeBegin(self.idx)
+
+        def add(self, obj):
+            added_rows.append(obj)
+
+        async def execute(self, *args, **kwargs):
+            res = MagicMock()
+            # Session 1 inbox claim succeeds; session 2 BatchLog lookup returns None.
+            res.scalar_one_or_none.return_value = "claimed-event-id" if self.idx == 1 else None
+            return res
+
+    session_counter = 0
+
+    class _FakeSessionCM:
+        async def __aenter__(self):
+            nonlocal session_counter
+            session_counter += 1
+            return _FakeSession(session_counter)
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            return None
+
+    mock_broker = AsyncMock()
+    mock_ingestion = AsyncMock()
+    batch_id = uuid.uuid4()
+    mock_ingestion.ingest_from_s3.return_value = IngestionResult(
+        batch_id=batch_id,
+        status="FAILED",
+        source="s3://test-bucket/catalogs/bad.json",
+        duration_seconds=0.5,
+        total_laptops=0,
+        new_laptops=0,
+        updated_laptops=0,
+        offers_created=0,
+        offers_updated=0,
+        metrics_created=0,
+        metrics_updated=0,
+        metrics_summary={},
+        error_message="NoSuchKey",
+    )
+
+    consumer = CatalogMessageConsumer(
+        broker=mock_broker,
+        session_factory=lambda: _FakeSessionCM(),
+        ingestion_service=mock_ingestion,
+    )
+    event = CatalogReadyEvent(
+        payload=CatalogReadyPayload(
+            batch_id=str(batch_id),
+            s3_bucket="test-bucket",
+            s3_key="catalogs/bad.json",
+            total_laptops=10,
+        )
+    )
+
+    with pytest.raises(RuntimeError, match="NoSuchKey"):
+        await consumer.handle_catalog_ready_event(event.model_dump())
+
+    # First tx rolled back ingestion; second tx committed FAILED ScrapingBatchLog.
+    assert tx_events == ["begin:1", "rollback:1", "begin:2", "commit:2"]
+    failed_logs = [row for row in added_rows if isinstance(row, ScrapingBatchLog)]
+    assert len(failed_logs) == 1
+    assert failed_logs[0].id == batch_id
+    assert failed_logs[0].status == "FAILED"
+    assert "NoSuchKey" in (failed_logs[0].error_message or "")
