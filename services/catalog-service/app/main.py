@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.errors import setup_exception_handlers
-from app.api.middleware import CorrelationIdMiddleware, ResponseCacheMiddleware
+from app.api.middlewares import CorrelationIdMiddleware, ResponseCacheMiddleware
 from app.api.routes.catalog import router as catalog_router
 from app.api.routes.health import router as health_router
 from app.api.routes.recommendations import router as recommendations_router
