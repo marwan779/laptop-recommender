@@ -71,6 +71,17 @@ class PricingDomainService:
     SIGNIFICANT_PRICE_DELTA: float = 1.0
 
     @classmethod
+    def has_significant_price_change(
+        cls,
+        previous_price: float | None,
+        new_price: float,
+    ) -> bool:
+        """Return True when new_price differs meaningfully from a prior non-null price."""
+        if previous_price is None:
+            return False
+        return abs(round(float(new_price) - float(previous_price), 2)) >= cls.SIGNIFICANT_PRICE_DELTA
+
+    @classmethod
     def evaluate_offer_transition(
         cls,
         current_price: float,
@@ -79,8 +90,25 @@ class PricingDomainService:
         new_stock: bool,
     ) -> OfferPriceTransition:
         """Evaluate price change and stock availability transition for a single offer."""
+        has_stock_change = current_stock != new_stock
+
         if new_price is None:
-            # If price could not be fetched or errored, no change to price
+            if has_stock_change:
+                change_type = PriceChangeType.RESTOCKED if new_stock else PriceChangeType.OUT_OF_STOCK
+                return OfferPriceTransition(
+                    has_changed=True,
+                    change_type=change_type,
+                    old_price=current_price,
+                    new_price=None,
+                    price_delta=0.0,
+                    old_in_stock=current_stock,
+                    new_in_stock=new_stock,
+                    is_price_drop=False,
+                    is_price_hike=False,
+                    is_stock_change=True,
+                )
+
+            # Price could not be fetched and stock stayed unchanged -> no state change
             return OfferPriceTransition(
                 has_changed=False,
                 change_type=PriceChangeType.UNCHANGED,
@@ -96,23 +124,8 @@ class PricingDomainService:
 
         delta = round(new_price - current_price, 2)
         has_price_change = abs(delta) >= cls.SIGNIFICANT_PRICE_DELTA
-        has_stock_change = current_stock != new_stock
-
-        if has_price_change:
-            is_drop = delta < 0
-            change_type = PriceChangeType.PRICE_DROP if is_drop else PriceChangeType.PRICE_HIKE
-            return OfferPriceTransition(
-                has_changed=True,
-                change_type=change_type,
-                old_price=current_price,
-                new_price=new_price,
-                price_delta=delta,
-                old_in_stock=current_stock,
-                new_in_stock=new_stock,
-                is_price_drop=is_drop,
-                is_price_hike=not is_drop,
-                is_stock_change=has_stock_change,
-            )
+        is_drop = has_price_change and delta < 0
+        is_hike = has_price_change and delta > 0
 
         if has_stock_change:
             change_type = PriceChangeType.RESTOCKED if new_stock else PriceChangeType.OUT_OF_STOCK
@@ -124,9 +137,24 @@ class PricingDomainService:
                 price_delta=delta,
                 old_in_stock=current_stock,
                 new_in_stock=new_stock,
-                is_price_drop=False,
-                is_price_hike=False,
+                is_price_drop=is_drop,
+                is_price_hike=is_hike,
                 is_stock_change=True,
+            )
+
+        if has_price_change:
+            change_type = PriceChangeType.PRICE_DROP if is_drop else PriceChangeType.PRICE_HIKE
+            return OfferPriceTransition(
+                has_changed=True,
+                change_type=change_type,
+                old_price=current_price,
+                new_price=new_price,
+                price_delta=delta,
+                old_in_stock=current_stock,
+                new_in_stock=new_stock,
+                is_price_drop=is_drop,
+                is_price_hike=is_hike,
+                is_stock_change=False,
             )
 
         return OfferPriceTransition(

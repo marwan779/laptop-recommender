@@ -87,3 +87,18 @@ def test_matched_ids_default_to_empty_lists():
 
     assert target.matched_laptop_ids == []
     assert target.matched_canonical_ids == []
+    assert target.specs is None
+
+
+def test_review_command_round_trip_preserves_specs_envelope():
+    specs = {
+        "cpu": {"raw": "Intel Core i7-14650HX", "base_power_w": 55},
+        "gpu": {"model": "GeForce RTX 5060", "tgp_watts": 115, "integrated": False},
+        "derived_metrics": {"mobility": {"battery_hours_estimate": 6.1}},
+    }
+    target = LaptopReviewTarget(laptop_id="lap-1", canonical_id="canonical-1", specs=specs)
+    command = ScrapeReviewsCommand(payload=ScrapeReviewsPayload(job_id="job-specs", targets=[target]))
+
+    restored = ScrapeReviewsCommand.model_validate(command.model_dump())
+
+    assert restored.payload.targets[0].specs == specs

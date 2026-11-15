@@ -17,8 +17,15 @@ logger = logging.getLogger(__name__)
 class ScraperClientService:
     """Client service coordinating scrape job dispatching and watermark injection."""
 
-    def __init__(self, scraper_url: str | None = None) -> None:
+    def __init__(self, scraper_url: str | None = None, api_key: str | None = None) -> None:
         self.scraper_url = (scraper_url or settings.scraper_service_url).rstrip("/")
+        self.api_key = (settings.scraper_api_key if api_key is None else api_key).strip()
+
+    def _build_headers(self) -> dict[str, str]:
+        """Return the inter-service auth header, omitting it when no key is set."""
+        if self.api_key:
+            return {"X-API-Key": self.api_key}
+        return {}
 
     async def get_active_store_pointers(
         self,
@@ -141,16 +148,39 @@ class ScraperClientService:
         )
 
         try:
+            headers = self._build_headers()
             if client:
-                resp = await client.post(endpoint, json=scrape_payload, timeout=10.0)
+                resp = await client.post(
+                    endpoint, json=scrape_payload, timeout=10.0, headers=headers
+                )
             else:
                 async with httpx.AsyncClient(timeout=10.0) as http_client:
-                    resp = await http_client.post(endpoint, json=scrape_payload)
+                    resp = await http_client.post(
+                        endpoint, json=scrape_payload, headers=headers
+                    )
 
             if resp.status_code in (200, 202):
                 batch_log.status = "DISPATCHED"
                 await session.flush()
                 message = f"Scrape job successfully queued on scraper-service for {targets}."
+            elif resp.status_code in (401, 403, 503):
+                logger.warning(
+                    "scraper-service at %s rejected the dispatch with HTTP %s. "
+                    "Verify SCRAPER_API_KEY is identical across catalog-service and "
+                    "scraper-service.",
+                    endpoint,
+                    resp.status_code,
+                )
+                batch_log.status = "DISPATCH_FAILED"
+                batch_log.error_message = (
+                    f"HTTP {resp.status_code}: scraper-service rejected authentication. "
+                    "Verify SCRAPER_API_KEY matches across catalog-service and scraper-service."
+                )
+                await session.flush()
+                message = (
+                    f"Scraper-service rejected the job with HTTP {resp.status_code} "
+                    "due to failed X-API-Key authentication."
+                )
             else:
                 batch_log.status = "DISPATCH_FAILED"
                 batch_log.error_message = f"HTTP {resp.status_code}: {resp.text}"

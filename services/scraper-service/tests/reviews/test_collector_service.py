@@ -7,8 +7,8 @@ import pytest
 from app.schemas.events import LaptopReviewTarget, ScrapeReviewsCommand, ScrapeReviewsPayload
 from app.schemas.reviews_s3 import (
     CommunitiesData,
+    CommunityPost,
     RawChassisReviewsFile,
-    RedditPost,
     YouTubeReviewData,
     YouTubeVideo,
 )
@@ -45,12 +45,12 @@ class FakeCommunitiesCollector(ICommunitiesReviewsCollector):
         for t in targets:
             key = f"{t.brand.lower()}:{t.laptop_family.lower()}:{t.laptop_model.lower()}"
             results[key] = CommunitiesData(
-                reddit=[
-                    RedditPost(
-                        post_id="post_red_1",
-                        subreddit="GamingLaptops",
+                discussions=[
+                    CommunityPost(
+                        platform="level1techs",
+                        post_id="post_forum_1",
                         post_title=f"{t.laptop_model} thermals discussion",
-                        post_url="https://reddit.com/r/GamingLaptops/post_red_1",
+                        post_url="https://forum.level1techs.com/t/post_forum_1",
                         score=35,
                     )
                 ]
@@ -105,8 +105,8 @@ async def test_process_reviews_batch_merges_and_uploads(tmp_path):
 
     item = uploaded_file.laptops[0]
     assert len(item.youtube.videos) == 1
-    assert len(item.communities.reddit) == 1
-    assert item.communities.reddit[0].post_id == "post_red_1"
+    assert len(item.communities.discussions) == 1
+    assert item.communities.discussions[0].post_id == "post_forum_1"
 
 
 @pytest.mark.anyio
@@ -182,7 +182,7 @@ async def test_upload_to_s3_disabled_returns_local_path_and_skips_upload(tmp_pat
     storage_mock.upload_json.assert_not_called()
     broker_mock.publish.assert_awaited_once()
     published_event = broker_mock.publish.call_args.kwargs["message"]
-    assert published_event.payload.s3_key == s3_key
+    assert published_event.payload.s3_key is None
 
 
 @pytest.mark.anyio
@@ -240,3 +240,44 @@ async def test_process_reviews_batch_consolidates_colliding_chassis_keys(tmp_pat
     assert len(parsed.laptops) == 1
     assert parsed.laptops[0].chassis_key == "hp:victus:15-FA"
     assert parsed.laptops[0].matched_laptop_ids == ["lap-1", "lap-2"]
+
+
+@pytest.mark.anyio
+async def test_process_reviews_batch_preserves_specs_envelope_in_format_a(tmp_path):
+    import json
+
+    specs = {
+        "cpu": {"raw": "Intel Core i7-13650HX", "base_power_w": 55},
+        "gpu": {"model": "RTX 4060", "tgp_watts": 115, "integrated": False},
+        "derived_metrics": {"mobility": {"battery_hours_estimate": 5.2}},
+    }
+    target = LaptopReviewTarget(
+        laptop_id="lap-loq",
+        canonical_id="lenovo-loq-15irx9",
+        chassis_key="lenovo:loq:15IRX9",
+        brand="Lenovo",
+        laptop_family="LOQ",
+        laptop_model="15IRX9",
+        specs=specs,
+    )
+    cmd = ScrapeReviewsCommand(payload=ScrapeReviewsPayload(job_id="job-specs-pass", targets=[target]))
+
+    yt_mock = MagicMock()
+    yt_mock.collect_for_targets = AsyncMock(return_value={})
+    comm_mock = MagicMock()
+    comm_mock.collect_for_targets = AsyncMock(return_value={})
+
+    service = ReviewCollectorService(
+        storage_service=MagicMock(),
+        broker=AsyncMock(),
+        youtube_collector=yt_mock,
+        communities_collector=comm_mock,
+        upload_to_s3=False,
+        local_output_dir=tmp_path,
+    )
+
+    await service.process_reviews_batch(cmd)
+
+    saved = json.loads((tmp_path / "raw_chassis_reviews_job-specs-pass.json").read_text(encoding="utf-8"))
+    parsed = RawChassisReviewsFile.model_validate(saved)
+    assert parsed.laptops[0].specs == specs

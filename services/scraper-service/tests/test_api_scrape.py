@@ -8,6 +8,7 @@ import pytest
 
 from app.api.deps import get_orchestrator
 from app.api.routes.scrape import _execute_scrape_background
+from app.core.security_config import SecuritySettings, get_security_settings
 from app.main import app
 from app.schemas.orchestrator import ScrapeRequest, ScrapeResponse, ScrapeTargetResult
 from app.services.orchestrator import ScrapeOrchestrator
@@ -25,6 +26,7 @@ def client():
     )
 
     app.dependency_overrides[get_orchestrator] = lambda: mock_orchestrator
+    app.dependency_overrides[get_security_settings] = lambda: SecuritySettings(require_api_key=False)
     yield TestClient(app)
     app.dependency_overrides.clear()
 

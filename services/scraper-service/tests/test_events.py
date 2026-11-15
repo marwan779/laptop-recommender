@@ -130,7 +130,7 @@ def test_reviews_command_and_ready_serialization():
                 LaptopReviewTarget(
                     laptop_id="lap-1",
                     canonical_id="laptop_lenovo_loq_83dv01hsed_16gb_512gb",
-                    search_queries=["Lenovo LOQ 83DV01HSED review Reddit"],
+                    search_queries=["Lenovo LOQ 83DV01HSED review"],
                 )
             ],
         )
@@ -149,9 +149,9 @@ def test_reviews_command_and_ready_serialization():
                     canonical_id="laptop_lenovo_loq_83dv01hsed_16gb_512gb",
                     snippets=[
                         LaptopReviewSnippet(
-                            source="reddit",
+                            source="forum",
                             title="Great budget gaming laptop",
-                            url="https://reddit.com/r/Lenovo/123",
+                            url="https://forum.level1techs.com/t/123",
                             snippet_text="Thermals are great, battery life around 4 hours.",
                             score_or_upvotes=45,
                         ),

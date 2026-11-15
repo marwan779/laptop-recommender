@@ -31,9 +31,12 @@ class EventType(StrEnum):
     PRICES_CHECK_COMMAND = "prices.check.command"
     PRICES_CHECKED_EVENT = "prices.checked.event"
 
-    # Flow 3: Community Reviews Scraping (Phase 2)
+    # Flow 3: Community Reviews Scraping & Enrichment (Phase 2)
     REVIEWS_SCRAPE_COMMAND = "reviews.scrape.command"
     REVIEWS_READY_EVENT = "reviews.ready.event"
+    REVIEWS_FAILED_EVENT = "reviews.failed"
+    REVIEWS_ENRICHED_EVENT = "reviews.enriched.event"
+    REVIEWS_ENRICH_FAILED_EVENT = "reviews.enrich.failed"
 
 
 # ─── Standard Message Envelope ──────────────────────────────────────────────
@@ -223,6 +226,10 @@ class LaptopReviewTarget(BaseModel):
         default_factory=list,
         description="All canonical slugs belonging to this chassis group",
     )
+    specs: dict[str, Any] | None = Field(
+        default=None,
+        description="Optional sealed hardware specs envelope for downstream review enrichment",
+    )
 
 
 class ScrapeReviewsPayload(BaseModel):
@@ -248,7 +255,7 @@ class ScrapeReviewsCommand(BaseEvent):
 class LaptopReviewSnippet(BaseModel):
     """A single community review snippet or opinion extract."""
 
-    source: str = Field(description="Source platform: 'reddit', 'youtube', or 'web'")
+    source: str = Field(description="Source platform: 'editorial', 'youtube', 'forum', or 'web'")
     title: str | None = Field(default=None, description="Post, thread, or video title")
     url: str | None = Field(default=None, description="Direct URL to source")
     snippet_text: str = Field(description="Cleaned text content or transcript excerpt")
@@ -288,3 +295,60 @@ class ReviewsReadyEvent(BaseEvent):
 
     event_type: str = EventType.REVIEWS_READY_EVENT
     payload: ReviewsReadyPayload
+
+
+class ReviewsEnrichedPayload(BaseModel):
+    """Payload emitted by ai-recommender-service after enriching raw reviews into S3."""
+
+    job_id: str = Field(description="Review enrichment job ID")
+    s3_key: str | None = Field(
+        default=None,
+        description="Object storage key for the enriched Format B1/B2 reviews JSON",
+    )
+    s3_bucket: str | None = Field(
+        default=None,
+        description="Optional S3 bucket name if overridden",
+    )
+    total_chassis: int = Field(default=0, description="Number of chassis processed")
+    total_laptops: int = Field(default=0, description="Number of matched catalog laptops")
+
+
+class ReviewsEnrichedEvent(BaseEvent):
+    """Event emitted when ai-recommender-service finishes review enrichment & ChromaDB indexing."""
+
+    event_type: str = EventType.REVIEWS_ENRICHED_EVENT
+    payload: ReviewsEnrichedPayload
+
+
+class ReviewsFailedPayload(BaseModel):
+    """Payload emitted when scraper-service fails a community review scraping job."""
+
+    job_id: str = Field(description="Associated review scraping job ID")
+    error_message: str = Field(description="Description of the fatal scraping failure")
+    details: dict[str, Any] | None = Field(default=None, description="Optional diagnostic details")
+
+
+class ReviewsFailedEvent(BaseEvent):
+    """Event emitted when community review scraping fails fatally."""
+
+    event_type: str = EventType.REVIEWS_FAILED_EVENT
+    payload: ReviewsFailedPayload
+
+
+class ReviewsEnrichFailedPayload(BaseModel):
+    """Payload emitted when ai-recommender-service fails a review enrichment job."""
+
+    job_id: str = Field(description="Associated review enrichment job ID")
+    error_message: str = Field(description="Description of the fatal enrichment failure")
+    s3_key: str | None = Field(
+        default=None,
+        description="Optional raw reviews S3 key that triggered the failed enrichment",
+    )
+    details: dict[str, Any] | None = Field(default=None, description="Optional diagnostic details")
+
+
+class ReviewsEnrichFailedEvent(BaseEvent):
+    """Event emitted when community review enrichment fails fatally."""
+
+    event_type: str = EventType.REVIEWS_ENRICH_FAILED_EVENT
+    payload: ReviewsEnrichFailedPayload

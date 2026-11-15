@@ -21,6 +21,10 @@ class Settings(BaseSettings):
 
     # Downstream Services
     scraper_service_url: str = "http://localhost:8001"
+    scraper_api_key: str = ""
+    ai_recommender_url: str = "http://localhost:8002"
+    ai_recommender_api_key: str = ""
+    ai_recommender_timeout_seconds: float = 10.0
 
     # Scraping Cron Job Configuration (one-shot CLI execution)
     scraping_cron_level: int = 2

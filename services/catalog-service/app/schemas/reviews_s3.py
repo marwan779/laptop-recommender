@@ -12,6 +12,7 @@ database or network dependencies and can be validated in isolation.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -87,38 +88,13 @@ class YouTubeReviewData(BaseModel):
 
 
 class CommunityComment(BaseModel):
-    """A comment on a community platform post (e.g. a Reddit reply)."""
+    """A comment on a community platform post (e.g. a forum reply)."""
 
     comment_id: str | None = None
     author: str | None = None
     comment_text: str
     score: int | None = None
     published_at: datetime | str | None = None
-
-
-class RedditPost(BaseModel):
-    """A Reddit discussion thread about a chassis."""
-
-    post_id: str
-    subreddit: str
-    post_title: str
-    post_url: str
-    author: str | None = None
-    published_at: datetime | str | None = None
-    score: int | None = None
-    post_body: str = ""
-    comments: list[CommunityComment] = Field(default_factory=list)
-
-
-class FacebookPost(BaseModel):
-    """A Facebook group post about a chassis."""
-
-    group_name: str | None = None
-    post_url: str | None = None
-    author: str | None = None
-    published_at: datetime | str | None = None
-    comment_text: str
-    reaction_count: int | None = None
 
 
 class EditorialReview(BaseModel):
@@ -149,13 +125,11 @@ class CommunityPost(BaseModel):
 class CommunitiesData(BaseModel):
     """Community platform evidence for one chassis.
 
-    New platforms (e.g. X, TikTok, forums) are added as additional optional
-    list fields with ``default_factory=list`` so the contract stays backward
-    compatible: older artifacts simply deserialize with an empty list.
+    New platforms (e.g. editorial outlets, forums) are added as additional
+    optional list fields with ``default_factory=list`` so the contract stays
+    backward compatible: older artifacts simply deserialize with an empty list.
     """
 
-    reddit: list[RedditPost] = Field(default_factory=list)
-    facebook: list[FacebookPost] = Field(default_factory=list)
     editorial: list[EditorialReview] = Field(default_factory=list)
     discussions: list[CommunityPost] = Field(default_factory=list)
 
@@ -183,6 +157,7 @@ class LaptopChassisReviewItem(BaseModel):
     matched_laptop_ids: list[str] = Field(default_factory=list)
     matched_canonical_ids: list[str] = Field(default_factory=list)
     identity: ChassisIdentity = Field(default_factory=ChassisIdentity)
+    specs: dict[str, Any] | None = None
     youtube: YouTubeReviewData = Field(default_factory=YouTubeReviewData)
     communities: CommunitiesData = Field(default_factory=CommunitiesData)
 
@@ -202,10 +177,8 @@ __all__ = [
     "CommunityComment",
     "CommunityPost",
     "EditorialReview",
-    "FacebookPost",
     "LaptopChassisReviewItem",
     "RawChassisReviewsFile",
-    "RedditPost",
     "TranscriptSegment",
     "YouTubeComment",
     "YouTubeReviewData",

@@ -6,12 +6,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.middlewares import APIKeyAuthMiddleware
 from app.api.routes.price_monitor import router as price_monitor_router
 from app.api.routes.scrape import router as scrape_router
 from app.common.cache import InMemoryCacheProvider, RedisCacheProvider
 from app.common.logger import configure_logging, get_logger
 from app.common.messaging.inbox import RedisInboxDeduplicator
 from app.common.messaging.rabbitmq import RabbitMQBroker
+from app.core.security_config import get_security_settings
 from app.services.messaging_consumer import ScraperMessageConsumer
 
 configure_logging()
@@ -36,6 +38,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         )
     app.state.cache = cache
     app.state.inbox = RedisInboxDeduplicator(cache)
+
+    # Report X-API-Key authentication posture (never log the key value)
+    security = get_security_settings()
+    if security.require_api_key and not security.api_key_configured:
+        logger.warning(
+            "SCRAPER_API_KEY is not configured while REQUIRE_API_KEY is true. "
+            "Protected routes will return HTTP 503 until it is set in .env."
+        )
+    elif security.require_api_key:
+        logger.info("X-API-Key authentication is enabled for protected routes.")
+    else:
+        logger.info("X-API-Key authentication is disabled; protected routes are open.")
 
     logger.info("Initializing RabbitMQ event broker and command consumers...")
     broker = RabbitMQBroker()
@@ -79,7 +93,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Allow cross-origin requests from downstream services and dashboards
+# Middlewares run in LIFO order: the API key guard is registered first so
+# CORSMiddleware remains the outermost layer and decorates 401/503 responses too.
+app.add_middleware(APIKeyAuthMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

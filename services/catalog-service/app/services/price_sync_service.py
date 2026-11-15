@@ -11,7 +11,6 @@ from app.domain.pricing import (
     PricingDomainService,
 )
 from app.models.base import utcnow
-from app.models.metrics import LaptopMetrics
 from app.models.offer import LaptopOffer
 from app.repositories.batch_log_repository import BatchLogRepository
 from app.repositories.laptop_repository import LaptopRepository
@@ -139,7 +138,7 @@ class PriceSyncService:
                 )
 
                 if transition.has_changed:
-                    if transition.is_price_drop or transition.is_price_hike:
+                    if (transition.is_price_drop or transition.is_price_hike) and transition.new_price is not None:
                         offer.previous_price_egp = offer.price_egp
                         offer.price_egp = transition.new_price
                         offer.price_updated_at = utcnow()
@@ -148,12 +147,18 @@ class PriceSyncService:
                     offer.last_checked_at = utcnow()
 
                     # Append the event-log observation inside the same transaction.
-                    if transition.new_price is not None and float(transition.new_price) > 0:
+                    # Fall back to the offer's known price on stock-only / 404 transitions.
+                    observed_price = (
+                        float(transition.new_price)
+                        if transition.new_price is not None and float(transition.new_price) > 0
+                        else (float(offer.price_egp) if offer.price_egp is not None else 0.0)
+                    )
+                    if observed_price > 0:
                         await history_repo.record_point(
                             offer_id=offer.id,
                             laptop_configuration_id=offer.laptop_configuration_id,
                             store_key=(offer.store_key or "generic").lower().strip(),
-                            price_egp=float(transition.new_price),
+                            price_egp=observed_price,
                             in_stock=transition.new_in_stock,
                             recorded_at=offer.last_checked_at,
                         )
@@ -202,8 +207,11 @@ class PriceSyncService:
             if not rollup:
                 continue
 
-            # Price drop detection on canonical model level
-            if rollup.min_price_egp < float(laptop.min_price_egp):
+            # Price change detection on canonical model level (both drops and hikes)
+            current_min_price = float(laptop.min_price_egp) if laptop.min_price_egp is not None else None
+            if current_min_price is None:
+                laptop.price_updated_at = utcnow()
+            elif self.domain.has_significant_price_change(current_min_price, rollup.min_price_egp):
                 laptop.previous_min_price_egp = laptop.min_price_egp
                 laptop.price_updated_at = utcnow()
 
@@ -212,12 +220,14 @@ class PriceSyncService:
             laptop.cheapest_store = rollup.cheapest_store
             laptop.price_spread_egp = rollup.price_spread_egp
             laptop.in_stock = rollup.in_stock
+            laptop.available_stores = rollup.available_stores
+            laptop.stores_count = len(rollup.available_stores)
             laptop.price_checked_at = utcnow()
 
             summary.parent_laptops_recalculated += 1
 
-            # 3. Recalibrate LaptopMetrics using pure domain mathematics
-            metrics = await session.get(LaptopMetrics, laptop_id)
+            # 3. Recalibrate LaptopMetrics via repository using pure domain mathematics
+            metrics = await laptop_repo.get_metrics_by_laptop_id(laptop_id)
             if metrics:
                 metrics_recalc = self.domain.recalculate_value_score(
                     min_price_egp=rollup.min_price_egp,

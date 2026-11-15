@@ -2,20 +2,23 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+import logging
+from unittest.mock import MagicMock
+
+import httpx
 import pytest
 
 from app.domain.recommender import (
     IS_BENEFIT_CRITERION,
     PERSONA_CONFIGS,
     TOPSIS_CRITERIA_KEYS,
+    PersonaType,
     parse_user_text_prompt,
     rank_laptops_topsis,
 )
 from app.schemas.recommendation import RecommendationRequest
-from app.services.chroma_reviews_service import (
-    ChromaReviewsService,
-    get_chroma_reviews_service,
-)
+from app.services.ai_recommender_client import HttpAIRecommenderClient
 from app.services.recommendation_service import RecommendationService
 
 
@@ -67,16 +70,30 @@ def _build_laptop(
     }
 
 
-class _FakeChromaService:
-    """Test double exposing the singleton service query contract."""
+class _FakeAIRecommenderClient:
+    """Test double exposing the remote AI recommender client contract."""
 
-    def __init__(self, scores: dict[str, float]) -> None:
-        self.scores = scores
-        self.calls: list[str] = []
+    def __init__(self, response_payload: dict | None) -> None:
+        self.response_payload = response_payload
+        self.calls: list[dict] = []
 
-    def query_dual_similarity(self, user_query: str) -> dict[str, float]:
-        self.calls.append(user_query)
-        return dict(self.scores)
+    async def recommend(
+        self,
+        *,
+        request: RecommendationRequest,
+        primary_persona: PersonaType,
+        blended_weights: dict[str, float] | None,
+        candidate_laptops: list[dict],
+    ) -> dict | None:
+        self.calls.append(
+            {
+                "prompt": request.user_text_prompt,
+                "persona": primary_persona,
+                "blended_weights": blended_weights,
+                "candidate_ids": [c.get("canonical_id") for c in candidate_laptops],
+            }
+        )
+        return self.response_payload
 
 
 # =============================================================================
@@ -154,14 +171,60 @@ def test_chroma_adjusted_scores_reorder_candidates_and_boost_review_weight():
 
 
 @pytest.mark.asyncio
-async def test_recommendation_service_applies_chroma_scores_to_response():
-    laptops = [
-        _build_laptop("candidate-a", 60000.0),
-        _build_laptop("candidate-b", 60000.0),
+async def test_recommendation_service_delegates_prompt_to_ai_client_and_hydrates_sql_fields():
+    laptop_a = _build_laptop("candidate-a", 60000.0)
+    laptop_a["offers"] = [
+        {
+            "store_key": "test-store",
+            "store_name": "Test Store",
+            "price_egp": 60000.0,
+            "product_url": "https://example.com/a",
+            "in_stock": True,
+            "is_cheapest": True,
+        }
     ]
-    fake_chroma = _FakeChromaService({"candidate-a": 98.0, "candidate-b": 35.0})
+    laptop_a["cheapest_offer_url"] = "https://example.com/a"
+    laptop_a["derived_metrics"]["community_reviews"] = {
+        "community_nlp_score": 88.0,
+        "evidence_count": 14,
+        "pros_en": ["Quiet fans"],
+        "pros_ar": ["مراوح هادئة"],
+        "cons_en": ["Heavy brick"],
+        "cons_ar": ["شاحن ثقيل"],
+        "aspect_scores": {"acoustics_score": 91.0},
+    }
+    laptops = [laptop_a, _build_laptop("candidate-b", 60000.0)]
 
-    service = RecommendationService(session=None, chroma_service=fake_chroma)
+    remote_payload = {
+        "persona": "balanced",
+        "persona_label_ar": "متوازن",
+        "persona_label_en": "Balanced",
+        "gates_relaxed_for_low_budget": False,
+        "total_candidates_before_floor": 2,
+        "total_candidates_after_gates_and_floor": 2,
+        "applied_budget_window_egp": [0.0, 100000.0],
+        "parsed_text_prompt": {"matched_keywords": ["quiet"]},
+        "effective_weights": {"community_nlp_score": 0.25},
+        "status": "OK",
+        "results": [
+            {
+                "rank": 1,
+                "canonical_id": "candidate-a",
+                "brand": "TestBrand",
+                "title": "Test Laptop candidate-a",
+                "topsis_match_score": 94.2,
+                "effective_price_egp": 60000.0,
+                "cheapest_store": "test-store",
+                "available_stores": ["test-store"],
+                "prices_by_store": {"test-store": 60000.0},
+                "why_recommended_ar": ["تبريد هادئ"],
+                "why_recommended_en": ["Quiet cooling"],
+                "topsis_inputs": {"community_nlp_score": 98.0},
+            }
+        ],
+    }
+    fake_client = _FakeAIRecommenderClient(remote_payload)
+    service = RecommendationService(session=None, ai_client=fake_client)
     service._load_fallback_catalog = lambda: laptops  # type: ignore[method-assign]
 
     response = await service.get_recommendations(
@@ -173,11 +236,43 @@ async def test_recommendation_service_applies_chroma_scores_to_response():
         )
     )
 
-    assert fake_chroma.calls == ["quiet fans and solid hinges"]
-    by_id = {result.canonical_id: result for result in response.results}
-    assert by_id["candidate-a"].topsis_inputs["community_nlp_score"] == 98.0
-    assert by_id["candidate-b"].topsis_inputs["community_nlp_score"] == 35.0
+    assert len(fake_client.calls) == 1
+    assert fake_client.calls[0]["prompt"] == "quiet fans and solid hinges"
+    assert fake_client.calls[0]["candidate_ids"] == ["candidate-a", "candidate-b"]
+    assert len(response.results) == 1
+    winner = response.results[0]
+    assert winner.canonical_id == "candidate-a"
+    assert winner.topsis_match_score == 94.2
+    assert winner.cheapest_offer_url == "https://example.com/a"
+    assert len(winner.offers) == 1
+    assert winner.pros_en == ["Quiet fans"]
+    assert winner.reviews_evidence_count == 14
+    assert winner.aspect_scores == {"acoustics_score": 91.0}
+
+
+@pytest.mark.asyncio
+async def test_recommendation_service_falls_back_to_local_topsis_when_ai_client_returns_none():
+    laptops = [
+        _build_laptop("candidate-a", 60000.0, nlp_score=92.0),
+        _build_laptop("candidate-b", 60000.0, nlp_score=65.0),
+    ]
+    fake_client = _FakeAIRecommenderClient(None)
+    service = RecommendationService(session=None, ai_client=fake_client)
+    service._load_fallback_catalog = lambda: laptops  # type: ignore[method-assign]
+
+    response = await service.get_recommendations(
+        RecommendationRequest(
+            budget_egp=100000.0,
+            persona="balanced",
+            user_text_prompt="quiet fans and solid hinges",
+            top_k=2,
+        )
+    )
+
+    assert len(fake_client.calls) == 1
     assert response.status == "OK"
+    assert len(response.results) == 2
+    assert response.results[0].canonical_id == "candidate-a"
     assert response.effective_weights["community_nlp_score"] > 0.06
 
 
@@ -246,17 +341,103 @@ def test_zero_candidate_fallback_respects_existing_brand_filter():
 
 
 # =============================================================================
-# 4. SINGLETON LIFECYCLE
+# 4. HTTP AI RECOMMENDER CLIENT
 # =============================================================================
 
 
-def test_chroma_reviews_service_is_a_process_wide_singleton():
-    ChromaReviewsService.reset_singleton()
+@pytest.mark.asyncio
+async def test_http_ai_recommender_client_sends_api_key_and_serializes_dates():
+    captured: dict = {}
 
-    first = get_chroma_reviews_service()
-    second = get_chroma_reviews_service()
+    class _FakeHttpClient:
+        async def post(self, url: str, json: dict, headers: dict):
+            captured["url"] = url
+            captured["json"] = json
+            captured["headers"] = headers
+            resp = MagicMock()
+            resp.raise_for_status = MagicMock()
+            resp.json.return_value = {"status": "OK", "results": []}
+            return resp
 
-    assert first is second
-    assert ChromaReviewsService() is first
+    client = HttpAIRecommenderClient(
+        base_url="http://ai-recommender:8002/",
+        api_key="secret-inter-service-key",
+        client=_FakeHttpClient(),  # type: ignore[arg-type]
+    )
+    cand = _build_laptop("candidate-a", 60000.0)
+    cand["offers"] = [{"store_key": "sigma", "last_checked_at": datetime(2026, 11, 15, tzinfo=timezone.utc)}]
 
-    ChromaReviewsService.reset_singleton()
+    result = await client.recommend(
+        request=RecommendationRequest(budget_egp=80000.0, persona="balanced", user_text_prompt="quiet fans"),
+        primary_persona=PersonaType.BALANCED,
+        blended_weights=None,
+        candidate_laptops=[cand],
+    )
+
+    assert result == {"status": "OK", "results": []}
+    assert captured["url"] == "http://ai-recommender:8002/recommend"
+    assert captured["headers"]["X-API-Key"] == "secret-inter-service-key"
+    assert captured["json"]["candidate_laptops"][0]["offers"][0]["last_checked_at"] == "2026-11-15T00:00:00+00:00"
+
+
+@pytest.mark.asyncio
+async def test_http_ai_recommender_client_omits_api_key_header_when_unset():
+    captured: dict = {}
+
+    class _FakeHttpClient:
+        async def post(self, url: str, json: dict, headers: dict):
+            captured["headers"] = headers
+            resp = MagicMock()
+            resp.raise_for_status = MagicMock()
+            resp.json.return_value = {"status": "OK", "results": []}
+            return resp
+
+    client = HttpAIRecommenderClient(
+        base_url="http://ai-recommender:8002",
+        api_key="",
+        client=_FakeHttpClient(),  # type: ignore[arg-type]
+    )
+
+    result = await client.recommend(
+        request=RecommendationRequest(budget_egp=80000.0, persona="balanced"),
+        primary_persona=PersonaType.BALANCED,
+        blended_weights=None,
+        candidate_laptops=[_build_laptop("candidate-a", 60000.0)],
+    )
+
+    assert result == {"status": "OK", "results": []}
+    assert "X-API-Key" not in captured["headers"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status_code", [401, 403])
+async def test_http_ai_recommender_client_logs_auth_warning_without_leaking_key(
+    status_code: int, caplog: pytest.LogCaptureFixture
+):
+    secret = "super-secret-inter-service-key"
+    request = httpx.Request("POST", "http://ai-recommender:8002/recommend")
+    response = httpx.Response(status_code, request=request)
+    error = httpx.HTTPStatusError("rejected", request=request, response=response)
+
+    class _FailingHttpClient:
+        async def post(self, url: str, json: dict, headers: dict):
+            raise error
+
+    client = HttpAIRecommenderClient(
+        base_url="http://ai-recommender:8002",
+        api_key=secret,
+        client=_FailingHttpClient(),  # type: ignore[arg-type]
+    )
+
+    with caplog.at_level(logging.WARNING, logger="catalog.services.ai_recommender_client"):
+        result = await client.recommend(
+            request=RecommendationRequest(budget_egp=80000.0, persona="balanced"),
+            primary_persona=PersonaType.BALANCED,
+            blended_weights=None,
+            candidate_laptops=[_build_laptop("candidate-a", 60000.0)],
+        )
+
+    assert result is None
+    assert "AI_RECOMMENDER_API_KEY" in caplog.text
+    assert str(status_code) in caplog.text
+    assert secret not in caplog.text

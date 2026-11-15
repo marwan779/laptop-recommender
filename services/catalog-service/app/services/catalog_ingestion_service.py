@@ -12,6 +12,7 @@ Wires the complete catalog pipeline:
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 import json
 import logging
@@ -38,6 +39,7 @@ from app.schemas.events import (
     ScrapeReviewsPayload,
 )
 from app.services.catalog_metrics_service import CatalogMetricsService
+from app.services.review_target_mapper import to_review_input, to_review_target
 
 logger = logging.getLogger("catalog.services.ingestion")
 
@@ -81,17 +83,37 @@ class CatalogIngestionService:
         trigger_type: str = "S3_INGESTION",
         batch_id: uuid.UUID | None = None,
     ) -> IngestionResult:
-        """Download catalog from S3 and ingest into the catalog database."""
+        """Download catalog from S3 without blocking the event loop and ingest into DB."""
         logger.info("Starting catalog ingestion from S3 key: %s (bucket: %s)", s3_key, self.storage_service.bucket_name)
         source_label = f"s3://{self.storage_service.bucket_name}/{s3_key}"
+        bid = batch_id or uuid.uuid4()
 
-        catalog_dict = self.storage_service.read_json(s3_key)
+        try:
+            catalog_dict = await asyncio.to_thread(self.storage_service.read_json, s3_key)
+        except Exception as exc:
+            logger.exception("[%s] Failed to read catalog JSON from %s: %s", bid, source_label, exc)
+            return IngestionResult(
+                batch_id=bid,
+                status="FAILED",
+                source=source_label,
+                duration_seconds=0.0,
+                total_laptops=0,
+                new_laptops=0,
+                updated_laptops=0,
+                offers_created=0,
+                offers_updated=0,
+                metrics_created=0,
+                metrics_updated=0,
+                metrics_summary={},
+                error_message=str(exc),
+            )
+
         return await self.ingest_catalog_dict(
             session=session,
             catalog_data=catalog_dict,
             source=source_label,
             trigger_type=trigger_type,
-            batch_id=batch_id,
+            batch_id=bid,
         )
 
     async def ingest_from_file(
@@ -294,53 +316,12 @@ class CatalogIngestionService:
     @staticmethod
     def _to_review_input(laptop: LaptopConfiguration) -> LaptopInputDto:
         """Project a LaptopConfiguration ORM row into a pure domain DTO."""
-        offers = list(laptop.offers or [])
-        product_urls = tuple(
-            dict.fromkeys(
-                offer.product_url.strip() for offer in offers if offer.product_url and offer.product_url.strip()
-            )
-        )
-        retailer_skus = tuple(
-            dict.fromkeys(
-                offer.retailer_sku.strip() for offer in offers if offer.retailer_sku and offer.retailer_sku.strip()
-            )
-        )
-        return LaptopInputDto(
-            laptop_id=str(laptop.id),
-            canonical_id=laptop.canonical_id,
-            title=laptop.title,
-            brand=laptop.brand,
-            laptop_family=laptop.laptop_family,
-            laptop_model=laptop.laptop_model,
-            mpn=laptop.mpn,
-            thumbnail_url=laptop.thumbnail_url,
-            screen_size=float(laptop.display_size_inches) if laptop.display_size_inches is not None else None,
-            retailer_skus=retailer_skus,
-            product_urls=product_urls,
-        )
+        return to_review_input(laptop)
 
     @staticmethod
     def _to_review_target(target: ResolvedReviewTarget) -> LaptopReviewTarget:
         """Map a pure resolved chassis target onto the transport event schema."""
-        return LaptopReviewTarget(
-            laptop_id=target.laptop_id,
-            canonical_id=target.canonical_id,
-            chassis_key=getattr(target, "chassis_key", None),
-            title=target.title,
-            brand=target.brand,
-            laptop_family=target.laptop_family,
-            laptop_model=target.laptop_model,
-            mpn=target.mpn,
-            manufacturer_part_number=target.manufacturer_part_number,
-            retailer_sku=target.retailer_sku,
-            skus=list(target.skus),
-            mpns=list(target.mpns),
-            product_urls=list(target.product_urls),
-            thumbnail_url=target.thumbnail_url,
-            screen_size=target.screen_size,
-            matched_laptop_ids=list(target.matched_laptop_ids),
-            matched_canonical_ids=list(target.matched_canonical_ids),
-        )
+        return to_review_target(target)
 
     async def _update_store_watermarks(
         self,

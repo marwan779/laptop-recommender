@@ -179,11 +179,11 @@ async def test_trigger_reviews_scraping_queues_outbox_command(db_session: AsyncS
 
 
 @pytest.mark.asyncio
-async def test_ingest_reviews_updates_chroma_and_postgres(
+async def test_ingest_reviews_updates_postgres(
     db_session: AsyncSession,
     tmp_path,
 ):
-    """Stage 2 ingest embeds chassis reviews and persists the SQL NLP profile."""
+    """Stage 2 ingest persists the SQL NLP profile without local ChromaDB."""
     canonical_id = "laptop_msi_prestige_9s713q222261"
     reviews_payload = {
         "laptops": [
@@ -212,18 +212,6 @@ async def test_ingest_reviews_updates_chroma_and_postgres(
     reviews_file = tmp_path / "enriched_reviews.json"
     reviews_file.write_text(json.dumps(reviews_payload, ensure_ascii=False), encoding="utf-8")
 
-    class _FakeChroma:
-        def __init__(self) -> None:
-            self.upserted: list[dict] = []
-
-        def upsert_chassis_reviews(self, laptops):
-            self.upserted = list(laptops)
-            return 3
-
-    fake_chroma = _FakeChroma()
-    original_chroma = getattr(app.state, "chroma_reviews", None)
-    app.state.chroma_reviews = fake_chroma
-
     async def override_get_db():
         yield db_session
 
@@ -238,15 +226,13 @@ async def test_ingest_reviews_updates_chroma_and_postgres(
             )
     finally:
         app.dependency_overrides.clear()
-        app.state.chroma_reviews = original_chroma
 
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "SUCCESS"
     assert data["chassis_processed"] == 1
-    assert data["chroma_documents_upserted"] == 3
+    assert data["chroma_documents_upserted"] == 0
     assert data["sql_laptops_updated"] == 1
-    assert len(fake_chroma.upserted) == 1
 
     stmt = (
         select(LaptopConfiguration)

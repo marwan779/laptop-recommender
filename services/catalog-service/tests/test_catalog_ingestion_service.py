@@ -113,3 +113,58 @@ async def test_ingest_error_logging_on_invalid_data(db_session: AsyncSession):
     assert log is not None
     assert log.status == "FAILED"
     assert log.error_message is not None
+
+
+@pytest.mark.asyncio
+async def test_ingest_from_s3_runs_storage_read_off_event_loop_and_handles_errors(db_session: AsyncSession):
+    from unittest.mock import AsyncMock, patch
+
+    mock_storage = MagicMock(spec=IObjectStorageService)
+    mock_storage.bucket_name = "test-laptop-bucket"
+    mock_storage.read_json.side_effect = FileNotFoundError("NoSuchKey")
+
+    service = CatalogIngestionService(storage_service=mock_storage)
+    with patch("app.services.catalog_ingestion_service.asyncio.to_thread", new_callable=AsyncMock) as mock_to_thread:
+        mock_to_thread.side_effect = FileNotFoundError("NoSuchKey")
+        result = await service.ingest_from_s3(
+            session=db_session,
+            s3_key="catalogs/missing.json",
+            trigger_type="CATALOG_READY_EVENT",
+        )
+
+    mock_to_thread.assert_awaited_once_with(mock_storage.read_json, "catalogs/missing.json")
+    assert result.status == "FAILED"
+    assert "NoSuchKey" in (result.error_message or "")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("raw_hdr", "expected_hdr"),
+    [
+        ("HDR", True),
+        ("HDR10", True),
+        ("Dolby Vision", True),
+        ("DisplayHDR 400", True),
+        ("No HDR", False),
+        ("false", False),
+        (None, False),
+    ],
+)
+async def test_seeder_preserves_string_display_hdr_labels(
+    db_session: AsyncSession,
+    raw_hdr: str | None,
+    expected_hdr: bool,
+):
+    from app.repositories.seeder import CatalogSeederRepository
+
+    cid = f"test_hdr_{uuid.uuid4().hex[:8]}"
+    item = _build_sample_catalog_item(cid, mpn=f"MPN-HDR-{uuid.uuid4().hex[:6]}", min_price=50000.0)
+    item["specs"]["display"]["hdr"] = raw_hdr
+
+    repo = CatalogSeederRepository(db_session)
+    await repo.upsert_catalog({"laptops": [item]})
+
+    row = (
+        await db_session.execute(select(LaptopConfiguration).where(LaptopConfiguration.canonical_id == cid))
+    ).scalar_one()
+    assert row.display_hdr is expected_hdr

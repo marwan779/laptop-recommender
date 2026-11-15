@@ -24,10 +24,15 @@ COPY --from=builder /install /usr/local
 COPY --chown=app:app --from=builder /app/app ./app
 
 RUN patchright install --with-deps chromium \
-    && chmod -R 755 /ms-playwright
+    && chmod -R 755 /ms-playwright \
+    && mkdir -p "/app/scraping results" /app/quarantine \
+    && chown -R app:app /app
 
 USER app
 
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -105,3 +105,74 @@ def test_recalculate_value_score_mathematics():
     assert calc.value_score >= 15.0
     assert calc.value_score <= 100.0
     assert calc.pricing_status in ["GREAT_DEAL", "GOOD_VALUE", "FAIR_VALUE", "POOR_VALUE"]
+
+
+def test_evaluate_offer_transition_stock_only_when_new_price_is_none():
+    oos = PricingDomainService.evaluate_offer_transition(
+        current_price=50000.0,
+        new_price=None,
+        current_stock=True,
+        new_stock=False,
+    )
+    assert oos.has_changed is True
+    assert oos.change_type == PriceChangeType.OUT_OF_STOCK
+    assert oos.is_stock_change is True
+    assert oos.new_in_stock is False
+    assert oos.new_price is None
+    assert oos.is_price_drop is False
+    assert oos.is_price_hike is False
+
+    restocked = PricingDomainService.evaluate_offer_transition(
+        current_price=50000.0,
+        new_price=None,
+        current_stock=False,
+        new_stock=True,
+    )
+    assert restocked.has_changed is True
+    assert restocked.change_type == PriceChangeType.RESTOCKED
+    assert restocked.is_stock_change is True
+    assert restocked.new_in_stock is True
+    assert restocked.new_price is None
+
+    unchanged = PricingDomainService.evaluate_offer_transition(
+        current_price=50000.0,
+        new_price=None,
+        current_stock=True,
+        new_stock=True,
+    )
+    assert unchanged.has_changed is False
+    assert unchanged.change_type == PriceChangeType.UNCHANGED
+    assert unchanged.is_stock_change is False
+
+
+def test_evaluate_offer_transition_simultaneous_price_and_stock_prioritizes_stock_type():
+    oos_with_hike = PricingDomainService.evaluate_offer_transition(
+        current_price=50000.0,
+        new_price=54000.0,
+        current_stock=True,
+        new_stock=False,
+    )
+    assert oos_with_hike.has_changed is True
+    assert oos_with_hike.change_type == PriceChangeType.OUT_OF_STOCK
+    assert oos_with_hike.is_stock_change is True
+    assert oos_with_hike.is_price_hike is True
+    assert oos_with_hike.price_delta == 4000.0
+
+    restock_with_drop = PricingDomainService.evaluate_offer_transition(
+        current_price=54000.0,
+        new_price=49000.0,
+        current_stock=False,
+        new_stock=True,
+    )
+    assert restock_with_drop.has_changed is True
+    assert restock_with_drop.change_type == PriceChangeType.RESTOCKED
+    assert restock_with_drop.is_stock_change is True
+    assert restock_with_drop.is_price_drop is True
+    assert restock_with_drop.price_delta == -5000.0
+
+
+def test_has_significant_price_change_handles_none_and_hikes():
+    assert PricingDomainService.has_significant_price_change(None, 50000.0) is False
+    assert PricingDomainService.has_significant_price_change(50000.0, 55000.0) is True
+    assert PricingDomainService.has_significant_price_change(55000.0, 50000.0) is True
+    assert PricingDomainService.has_significant_price_change(50000.0, 50000.4) is False

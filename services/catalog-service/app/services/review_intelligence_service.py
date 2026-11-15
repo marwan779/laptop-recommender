@@ -4,12 +4,11 @@ Coordinates the two halves of the community-review pipeline:
 
 1. Chassis dispatch - resolve catalog laptops into physical chassis targets and
    enqueue a ``reviews.scrape.command`` through the transactional outbox.
-2. Review ingestion - embed enriched pro/con/context documents into ChromaDB
-   and persist the bilingual NLP profile, aspect scores, evidence count, and
-   reviewed flags into PostgreSQL via repositories.
+2. Review ingestion - persist the enriched bilingual NLP profile, aspect scores,
+   evidence count, and reviewed flags into PostgreSQL via repositories.
 
-Clean Architecture note: this module contains orchestration only. All SQL lives
-in repositories and all ChromaDB access lives in ``ChromaReviewsService``.
+Clean Architecture note: this module contains orchestration only; all SQL lives
+in repositories.
 """
 
 from __future__ import annotations
@@ -38,10 +37,7 @@ from app.schemas.events import (
     ScrapeReviewsPayload,
 )
 from app.schemas.scraping import ReviewsTriggerResponse
-from app.services.chroma_reviews_service import (
-    ChromaReviewsService,
-    get_chroma_reviews_service,
-)
+from app.services.review_target_mapper import to_review_input, to_review_target
 
 logger = logging.getLogger("catalog.services.review_intelligence")
 
@@ -54,23 +50,27 @@ class ReviewIngestionResult:
 
     status: str
     chassis_processed: int
-    chroma_documents_upserted: int
-    sql_laptops_updated: int
-    duration_seconds: float
+    chroma_documents_upserted: int = 0
+    sql_laptops_updated: int = 0
+    duration_seconds: float = 0.0
 
 
 class ReviewIntelligenceService:
     """Application service orchestrating Stage 2 review dispatch and ingestion."""
 
+    DEFAULT_REVIEWS_JSON_PATH = (
+        Path(__file__).resolve().parent.parent.parent / "data" / "cleaned_and_enriched_chassis_reviews_v6.json"
+    )
+
     def __init__(
         self,
         storage_service: IObjectStorageService | None = None,
-        chroma_service: ChromaReviewsService | None = None,
         review_resolver: ChassisTargetResolver | None = None,
+        reviews_json_path: Path | None = None,
     ) -> None:
         self._storage_service = storage_service
-        self.chroma_service = chroma_service or get_chroma_reviews_service()
         self.review_resolver = review_resolver or ChassisTargetResolver()
+        self.reviews_json_path = reviews_json_path or self.DEFAULT_REVIEWS_JSON_PATH
 
     @property
     def storage_service(self) -> IObjectStorageService:
@@ -150,7 +150,7 @@ class ReviewIntelligenceService:
         commit: bool = True,
     ) -> ReviewIngestionResult:
         """Load an enriched reviews artifact from disk and ingest it."""
-        path = Path(source_path) if source_path else self.chroma_service.reviews_json_path
+        path = Path(source_path) if source_path else self.reviews_json_path
         if not path.exists():
             raise FileNotFoundError(f"Reviews artifact not found at: {path}")
 
@@ -174,24 +174,22 @@ class ReviewIntelligenceService:
         reviews_data: dict[str, Any],
         commit: bool = True,
     ) -> ReviewIngestionResult:
-        """Embed chassis reviews into ChromaDB and persist NLP profiles to PostgreSQL."""
+        """Persist enriched community NLP profiles to PostgreSQL."""
         start_time = time.perf_counter()
-        laptops = [item for item in (reviews_data.get("laptops") or []) if isinstance(item, dict)]
-        profiles = self._collect_review_profiles(laptops)
+        raw_items = reviews_data.get("chassis_reviews")
+        if not isinstance(raw_items, list) or not raw_items:
+            raw_items = reviews_data.get("laptops") or []
+        chassis_items = [item for item in raw_items if isinstance(item, dict)]
+        profiles = self._collect_review_profiles(chassis_items)
 
         if not profiles:
             return ReviewIngestionResult(
                 status="SKIPPED",
-                chassis_processed=len(laptops),
+                chassis_processed=len(chassis_items),
                 chroma_documents_upserted=0,
                 sql_laptops_updated=0,
                 duration_seconds=round(time.perf_counter() - start_time, 3),
             )
-
-        chroma_documents = await asyncio.to_thread(
-            self.chroma_service.upsert_chassis_reviews,
-            laptops,
-        )
 
         sql_updated = await LaptopRepository(session).update_review_intelligence_by_canonical_ids(profiles)
         if commit:
@@ -199,16 +197,15 @@ class ReviewIntelligenceService:
 
         elapsed = round(time.perf_counter() - start_time, 3)
         logger.info(
-            "Review intelligence ingested: %d chassis, %d Chroma documents, %d SQL laptops in %.3fs.",
-            len(laptops),
-            chroma_documents,
+            "Review intelligence ingested: %d chassis, %d SQL laptops in %.3fs.",
+            len(chassis_items),
             sql_updated,
             elapsed,
         )
         return ReviewIngestionResult(
             status="SUCCESS",
-            chassis_processed=len(laptops),
-            chroma_documents_upserted=chroma_documents,
+            chassis_processed=len(chassis_items),
+            chroma_documents_upserted=0,
             sql_laptops_updated=sql_updated,
             duration_seconds=elapsed,
         )
@@ -216,29 +213,58 @@ class ReviewIntelligenceService:
     # ─── Mappers ────────────────────────────────────────────────────────────
 
     @staticmethod
+    def _extract_profile_dict(item: dict[str, Any]) -> dict[str, Any] | None:
+        """Normalize Format B1 (`nlp_review_profile`) or Format B2 (`chassis_reviews`) into one profile."""
+        profile = item.get("nlp_review_profile")
+        if isinstance(profile, dict) and profile:
+            return dict(profile)
+
+        lists = item.get("clean_profile_lists") if isinstance(item.get("clean_profile_lists"), dict) else {}
+        aspects = item.get("aspect_scores")
+        nlp_score = item.get("community_nlp_score")
+        has_bilingual = any(item.get(k) for k in ("pros_en", "pros_ar", "cons_en", "cons_ar"))
+        if not lists and not isinstance(aspects, dict) and nlp_score is None and not has_bilingual:
+            return None
+
+        chunks = item.get("deduplicated_chunks") or []
+        evidence_count = item.get("evidence_count")
+        if evidence_count is None:
+            evidence_count = len(chunks) if isinstance(chunks, list) else 0
+
+        return {
+            "pros_en": lists.get("pros_en") if lists else item.get("pros_en"),
+            "pros_ar": lists.get("pros_ar") if lists else item.get("pros_ar"),
+            "cons_en": lists.get("cons_en") if lists else item.get("cons_en"),
+            "cons_ar": lists.get("cons_ar") if lists else item.get("cons_ar"),
+            "aspect_scores": aspects if isinstance(aspects, dict) else {},
+            "community_nlp_score": nlp_score,
+            "evidence_count": evidence_count,
+        }
+
+    @classmethod
     def _collect_review_profiles(
+        cls,
         laptops: list[dict[str, Any]],
     ) -> dict[str, dict[str, Any]]:
         """Map every matched canonical id to its chassis NLP review profile."""
         profiles: dict[str, dict[str, Any]] = {}
 
         for item in laptops:
-            profile = item.get("nlp_review_profile") or {}
-            if not isinstance(profile, dict) or not profile:
+            clean_profile = cls._extract_profile_dict(item)
+            if not clean_profile:
                 continue
 
-            clean_profile = dict(profile)
-            p_en, p_ar = align_bilingual_lists(profile.get("pros_en"), profile.get("pros_ar"))
-            c_en, c_ar = align_bilingual_lists(profile.get("cons_en"), profile.get("cons_ar"))
+            p_en, p_ar = align_bilingual_lists(clean_profile.get("pros_en"), clean_profile.get("pros_ar"))
+            c_en, c_ar = align_bilingual_lists(clean_profile.get("cons_en"), clean_profile.get("cons_ar"))
             clean_profile["pros_en"] = p_en
             clean_profile["pros_ar"] = p_ar
             clean_profile["cons_en"] = c_en
             clean_profile["cons_ar"] = c_ar
 
             canonical_ids = list(item.get("matched_canonical_ids") or [])
-            primary_canonical_id = item.get("primary_canonical_id")
-            if primary_canonical_id and primary_canonical_id not in canonical_ids:
-                canonical_ids.append(primary_canonical_id)
+            for fallback_id in (item.get("primary_canonical_id"), item.get("canonical_id")):
+                if fallback_id and fallback_id not in canonical_ids:
+                    canonical_ids.append(fallback_id)
 
             for canonical_id in canonical_ids:
                 if canonical_id:
@@ -253,52 +279,11 @@ class ReviewIntelligenceService:
 
     @staticmethod
     def _to_review_input(laptop: LaptopConfiguration) -> LaptopInputDto:
-        offers = list(laptop.offers or [])
-        product_urls = tuple(
-            dict.fromkeys(
-                offer.product_url.strip() for offer in offers if offer.product_url and offer.product_url.strip()
-            )
-        )
-        retailer_skus = tuple(
-            dict.fromkeys(
-                offer.retailer_sku.strip() for offer in offers if offer.retailer_sku and offer.retailer_sku.strip()
-            )
-        )
-        return LaptopInputDto(
-            laptop_id=str(laptop.id),
-            canonical_id=laptop.canonical_id,
-            title=laptop.title,
-            brand=laptop.brand,
-            laptop_family=laptop.laptop_family,
-            laptop_model=laptop.laptop_model,
-            mpn=laptop.mpn,
-            thumbnail_url=laptop.thumbnail_url,
-            screen_size=(float(laptop.display_size_inches) if laptop.display_size_inches is not None else None),
-            retailer_skus=retailer_skus,
-            product_urls=product_urls,
-        )
+        return to_review_input(laptop)
 
     @staticmethod
     def _to_review_target(target: ResolvedReviewTarget) -> LaptopReviewTarget:
-        return LaptopReviewTarget(
-            laptop_id=target.laptop_id,
-            canonical_id=target.canonical_id,
-            chassis_key=getattr(target, "chassis_key", None),
-            title=target.title,
-            brand=target.brand,
-            laptop_family=target.laptop_family,
-            laptop_model=target.laptop_model,
-            mpn=target.mpn,
-            manufacturer_part_number=target.manufacturer_part_number,
-            retailer_sku=target.retailer_sku,
-            skus=list(target.skus),
-            mpns=list(target.mpns),
-            product_urls=list(target.product_urls),
-            thumbnail_url=target.thumbnail_url,
-            screen_size=target.screen_size,
-            matched_laptop_ids=list(target.matched_laptop_ids),
-            matched_canonical_ids=list(target.matched_canonical_ids),
-        )
+        return to_review_target(target)
 
 
 __all__ = ["ReviewIngestionResult", "ReviewIntelligenceService"]

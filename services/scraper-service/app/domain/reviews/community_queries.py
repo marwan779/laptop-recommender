@@ -1,9 +1,9 @@
-"""Pure domain query generation for community (Reddit, forums) review discovery.
+"""Pure domain query generation for community (editorial, forums) review discovery.
 
 Two strategies coexist here:
 
-* ``build_queries`` produces *aspect-oriented* Boolean queries used by Reddit
-  (thermals, build quality, fan noise/battery, general review).
+* ``build_queries`` produces *aspect-oriented* Boolean queries used across review
+  platforms (thermals, build quality, fan noise/battery, general review).
 * ``build_platform_queries`` produces the tailored, platform-specific queries
   used by editorial and regional community sources. Each platform gets the
   query shape that matches its search engine instead of one generic subject.

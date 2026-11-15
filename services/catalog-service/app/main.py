@@ -1,4 +1,3 @@
-import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -6,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.errors import setup_exception_handlers
-from app.api.middleware import CorrelationIdMiddleware, ResponseCacheMiddleware
+from app.api.middlewares import CorrelationIdMiddleware, ResponseCacheMiddleware
 from app.api.routes.catalog import router as catalog_router
 from app.api.routes.health import router as health_router
 from app.api.routes.recommendations import router as recommendations_router
@@ -17,7 +16,6 @@ from app.common.messaging.rabbitmq import RabbitMQBroker
 from app.core.config import settings
 from app.core.database import engine
 from app.jobs import outbox_relay
-from app.services.chroma_reviews_service import get_chroma_reviews_service
 from app.services.messaging_consumer import CatalogMessageConsumer
 from app.services.price_sync_service import PriceSyncService
 
@@ -30,22 +28,16 @@ logger = get_logger("catalog.main")
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting %s in %s mode", settings.service_name, settings.environment)
 
-    # 0. Pre-warm the singleton ChromaDB review engine (loads the embedding model
-    # once per process so request-time similarity queries stay fast).
-    try:
-        chroma_service = get_chroma_reviews_service()
-        initialized = await asyncio.to_thread(chroma_service.initialize, True)
-        app.state.chroma_reviews = chroma_service
-        if initialized:
-            logger.info("ChromaDB review engine initialized and ready.")
-        else:
-            logger.warning("ChromaDB review engine unavailable; review similarity disabled.")
-    except Exception as exc:
-        app.state.chroma_reviews = None
+    if settings.ai_recommender_url and not settings.ai_recommender_api_key.strip():
         logger.warning(
-            "ChromaDB review engine failed to initialize on startup (%s). "
-            "Recommendations will use base community NLP scores.",
-            exc,
+            "AI_RECOMMENDER_API_KEY is empty; remote semantic recommendations may "
+            "fail authentication until it is populated."
+        )
+
+    if settings.scraper_service_url and not settings.scraper_api_key.strip():
+        logger.warning(
+            "SCRAPER_API_KEY is empty; HTTP triggers to scraper-service may "
+            "fail authentication until it is populated."
         )
 
     # 1. Initialize Cache Provider (Redis with graceful fallback to In-Memory)
@@ -65,6 +57,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     consumer = CatalogMessageConsumer(
         broker=broker,
         price_sync_service=PriceSyncService(cache=app.state.cache),
+        cache=app.state.cache,
     )
     app.state.broker = broker
     app.state.consumer = consumer

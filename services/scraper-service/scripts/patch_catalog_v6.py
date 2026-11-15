@@ -5,7 +5,7 @@
 2. Fixes the 11 misparsed/missing power_adapter_w values.
 3. Fixes the 4 single-record spec discrepancies (Acer Nitro DDR4, Dell Pro i7-1355U, Zenbook non-touch, Vivobook boost clock).
 4. Caps defaulted GPU TGP on low-wattage chassis (120W/135W/150W adapters).
-5. Populates all 34 missing laptop_family fields and clarifies generic laptop_model names for YouTube/Reddit review lookup.
+5. Populates all 34 missing laptop_family fields and clarifies generic laptop_model names for YouTube/community review lookup.
 """
 
 from __future__ import annotations

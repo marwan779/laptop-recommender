@@ -233,11 +233,7 @@ async def test_ingest_reviews_dict_with_commit_false_defers_transaction(db_sessi
         {"laptops": [_build_sample_catalog_item(cid, mpn=f"MPN-DEF-{uuid.uuid4().hex[:6]}")]}
     )
 
-    class _FakeChroma:
-        def upsert_chassis_reviews(self, laptops):
-            return len(laptops)
-
-    service = ReviewIntelligenceService(chroma_service=_FakeChroma())
+    service = ReviewIntelligenceService()
     payload = {
         "laptops": [
             {
@@ -298,3 +294,109 @@ def test_topsis_result_carries_review_pros_and_cons():
     assert winner.reviews_evidence_count == 27
     assert winner.aspect_scores["thermals_score"] == 78.9
     assert winner.aspect_scores["real_battery_and_reliability_score"] == 79.6
+
+
+@pytest.mark.asyncio
+async def test_ingest_reviews_dict_supports_format_b2_chassis_reviews(db_session: AsyncSession):
+    cid = f"review-b2-{uuid.uuid4().hex[:8]}"
+    await CatalogSeederRepository(db_session).upsert_catalog(
+        {"laptops": [_build_sample_catalog_item(cid, mpn=f"MPN-B2-{uuid.uuid4().hex[:6]}")]}
+    )
+
+    service = ReviewIntelligenceService()
+    payload = {
+        "chassis_reviews": [
+            {
+                "chassis_key": "asus:vivobook:15",
+                "primary_canonical_id": cid,
+                "matched_canonical_ids": [cid],
+                "community_nlp_score": 84.5,
+                "aspect_scores": {
+                    "thermals_score": 81.0,
+                    "acoustics_score": 83.0,
+                    "build_and_hinges_score": 80.0,
+                    "keyboard_and_trackpad_score": 85.0,
+                    "real_battery_and_reliability_score": 86.0,
+                },
+                "clean_profile_lists": {
+                    "pros_en": ["Quiet fans", "Crisp keyboard"],
+                    "pros_ar": ["مراوح هادئة", "لوحة مفاتيح مريحة"],
+                    "cons_en": ["Plastic lid"],
+                    "cons_ar": ["غطاء بلاستيكي"],
+                },
+                "deduplicated_chunks": [
+                    {"text": "Great thermals"},
+                    {"text": "Solid keyboard feel"},
+                    {"text": "Mild flex on plastic lid"},
+                ],
+            }
+        ]
+    }
+
+    result = await service.ingest_reviews_dict(db_session, payload, commit=True)
+    assert result.status == "SUCCESS"
+    assert result.chassis_processed == 1
+    assert result.chroma_documents_upserted == 0
+    assert result.sql_laptops_updated == 1
+
+    stmt = (
+        select(LaptopConfiguration)
+        .where(LaptopConfiguration.canonical_id == cid)
+        .options(selectinload(LaptopConfiguration.metrics))
+    )
+    laptop = (await db_session.execute(stmt)).scalar_one()
+    assert laptop.has_reviews is True
+    assert laptop.reviews_evidence_count == 3
+    assert laptop.pros_en == ["Quiet fans", "Crisp keyboard"]
+    assert laptop.cons_ar == ["غطاء بلاستيكي"]
+    assert laptop.metrics is not None
+    assert float(laptop.metrics.community_nlp_score) == 84.5
+    assert float(laptop.metrics.acoustics_score) == 83.0
+
+
+def test_collect_review_profiles_uses_canonical_id_fallback():
+    profiles = ReviewIntelligenceService._collect_review_profiles(
+        [
+            {
+                "canonical_id": "laptop-fallback-id",
+                "community_nlp_score": 80.0,
+                "aspect_scores": {"thermals_score": 79.0},
+                "clean_profile_lists": {"pros_en": ["Cool"], "pros_ar": ["بارد"]},
+            }
+        ]
+    )
+    assert "laptop-fallback-id" in profiles
+    assert profiles["laptop-fallback-id"]["pros_en"] == ["Cool"]
+    assert profiles["laptop-fallback-id"]["community_nlp_score"] == 80.0
+
+
+@pytest.mark.asyncio
+async def test_update_review_intelligence_creates_metrics_when_missing(db_session: AsyncSession):
+    from sqlalchemy import delete
+
+    cid = f"review-no-metrics-{uuid.uuid4().hex[:8]}"
+    await CatalogSeederRepository(db_session).upsert_catalog(
+        {"laptops": [_build_sample_catalog_item(cid, mpn=f"MPN-NOM-{uuid.uuid4().hex[:6]}")]}
+    )
+    stmt = select(LaptopConfiguration).where(LaptopConfiguration.canonical_id == cid)
+    laptop = (await db_session.execute(stmt)).scalar_one()
+    await db_session.execute(delete(LaptopMetrics).where(LaptopMetrics.laptop_id == laptop.id))
+    db_session.expire_all()
+
+    updated = await LaptopRepository(db_session).update_review_intelligence_by_canonical_ids(
+        {cid: _community_reviews()}
+    )
+    assert updated == 1
+
+    db_session.expire_all()
+    refreshed = (
+        await db_session.execute(
+            select(LaptopConfiguration)
+            .where(LaptopConfiguration.canonical_id == cid)
+            .options(selectinload(LaptopConfiguration.metrics))
+        )
+    ).scalar_one()
+    assert refreshed.metrics is not None
+    assert float(refreshed.metrics.community_nlp_score) == 82.4
+    assert float(refreshed.metrics.thermals_score) == 78.9
+    assert float(refreshed.metrics.real_battery_and_reliability_score) == 79.6
