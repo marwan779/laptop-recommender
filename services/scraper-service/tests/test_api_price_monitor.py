@@ -1,6 +1,9 @@
 from unittest.mock import AsyncMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 
+from app.core.security_config import SecuritySettings, get_security_settings
 from app.main import app
 from app.price_monitor.models import (
     PriceChangeType,
@@ -8,10 +11,18 @@ from app.price_monitor.models import (
     PriceCheckItemResult,
 )
 
-client = TestClient(app)
+
+@pytest.fixture
+def client():
+    """TestClient with API-key enforcement disabled for endpoint behaviour tests."""
+    app.dependency_overrides[get_security_settings] = lambda: SecuritySettings(
+        require_api_key=False
+    )
+    yield TestClient(app)
+    app.dependency_overrides.clear()
 
 
-def test_price_monitor_check_endpoint():
+def test_price_monitor_check_endpoint(client: TestClient):
     mock_response = PriceCheckBatchResponse(
         batch_id="test-batch-123",
         store_key="compumarts",
