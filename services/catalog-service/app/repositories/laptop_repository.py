@@ -287,6 +287,12 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         result = await self.session.execute(stmt)
         return result.scalars().first()
 
+    async def get_metrics_by_laptop_id(self, laptop_id: uuid.UUID) -> LaptopMetrics | None:
+        """Fetch the 1:1 hardware metrics row for a canonical laptop configuration."""
+        stmt = select(LaptopMetrics).where(LaptopMetrics.laptop_id == laptop_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def get_by_canonical_id(self, canonical_id: str) -> LaptopConfiguration | None:
         stmt = (
             select(LaptopConfiguration)

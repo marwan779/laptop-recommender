@@ -99,8 +99,27 @@ class PriceMonitorService:
 
                 # 2. Extract price & stock via store extractor
                 new_price, new_in_stock = extractor.extract_price_and_stock(resp.text, item.product_url)
+                has_stock_change = new_in_stock != item.current_in_stock
 
                 if new_price is None:
+                    if has_stock_change:
+                        change_type = PriceChangeType.RESTOCKED if new_in_stock else PriceChangeType.OUT_OF_STOCK
+                        return PriceCheckItemResult(
+                            offer_id=item.offer_id,
+                            laptop_id=item.laptop_id,
+                            product_url=item.product_url,
+                            old_price_egp=item.current_price_egp,
+                            new_price_egp=None,
+                            old_in_stock=item.current_in_stock,
+                            new_in_stock=new_in_stock,
+                            has_changed=True,
+                            change_type=change_type,
+                            price_delta_egp=0.0,
+                            http_status=http_status,
+                            error_message=None,
+                            checked_at=start_time,
+                        )
+
                     return PriceCheckItemResult(
                         offer_id=item.offer_id,
                         laptop_id=item.laptop_id,
@@ -117,16 +136,15 @@ class PriceMonitorService:
                         checked_at=start_time,
                     )
 
-                # 3. Classify price transition
+                # 3. Classify transition (stock state transitions take precedence over simultaneous price shifts)
                 delta = round(new_price - item.current_price_egp, 2)
                 has_price_change = abs(delta) >= 1.0  # Ignore negligible rounding discrepancies
-                has_stock_change = new_in_stock != item.current_in_stock
 
-                if has_price_change:
-                    change_type = PriceChangeType.PRICE_DROP if delta < 0 else PriceChangeType.PRICE_HIKE
-                    has_changed = True
-                elif has_stock_change:
+                if has_stock_change:
                     change_type = PriceChangeType.RESTOCKED if new_in_stock else PriceChangeType.OUT_OF_STOCK
+                    has_changed = True
+                elif has_price_change:
+                    change_type = PriceChangeType.PRICE_DROP if delta < 0 else PriceChangeType.PRICE_HIKE
                     has_changed = True
                 else:
                     change_type = PriceChangeType.UNCHANGED
