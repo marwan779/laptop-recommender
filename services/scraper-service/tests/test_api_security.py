@@ -85,9 +85,7 @@ def test_protected_routes_reject_missing_or_wrong_key(
 
 
 @pytest.mark.parametrize("path", ["/docs", "/redoc", "/openapi.json"])
-def test_openapi_docs_routes_require_api_key(
-    client: TestClient, path: str
-) -> None:
+def test_openapi_docs_routes_require_api_key(client: TestClient, path: str) -> None:
     _use_security(SecuritySettings(scraper_api_key="secret", require_api_key=True))
 
     response = client.get(path)
@@ -111,9 +109,7 @@ def test_protected_route_accepts_matching_key(
     client: TestClient,
     configured_key: str,
 ) -> None:
-    _use_security(
-        SecuritySettings(scraper_api_key=configured_key, require_api_key=True)
-    )
+    _use_security(SecuritySettings(scraper_api_key=configured_key, require_api_key=True))
     _use_fake_orchestrator()
 
     response = client.post(
@@ -234,6 +230,4 @@ def test_standalone_generic_middleware_protects_routes_without_per_route_depends
     assert mini_client.get("/health").status_code == 200
     assert mini_client.get("/health/").status_code == 200
     assert mini_client.get("/custom").status_code == 401
-    assert mini_client.get("/custom", headers={"X-API-Key": "top-secret"}).json() == {
-        "ok": "yes"
-    }
+    assert mini_client.get("/custom", headers={"X-API-Key": "top-secret"}).json() == {"ok": "yes"}

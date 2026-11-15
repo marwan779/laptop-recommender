@@ -42,9 +42,7 @@ def _iter_json_ld_products(soup: BeautifulSoup) -> list[dict[str, Any]]:
             if not isinstance(item, dict):
                 continue
             item_type = item.get("@type")
-            is_product = item_type == "Product" or (
-                isinstance(item_type, list) and "Product" in item_type
-            )
+            is_product = item_type == "Product" or (isinstance(item_type, list) and "Product" in item_type)
             if is_product:
                 products.append(item)
     return products
@@ -342,8 +340,7 @@ class CompumartsPriceExtractor(BasePriceExtractor):
                 if add_btn is not None:
                     btn_text = add_btn.get_text(" ", strip=True).lower()
                     is_disabled = (
-                        add_btn.has_attr("disabled")
-                        or str(add_btn.get("aria-disabled", "")).lower() == "true"
+                        add_btn.has_attr("disabled") or str(add_btn.get("aria-disabled", "")).lower() == "true"
                     )
                     if is_disabled or "sold out" in btn_text or "out of stock" in btn_text:
                         in_stock = False

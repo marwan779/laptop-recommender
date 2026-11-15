@@ -36,9 +36,7 @@ def validate_api_key(
         )
 
     candidate = (provided_key or "").strip()
-    if not candidate or not hmac.compare_digest(
-        candidate.encode("utf-8"), expected.encode("utf-8")
-    ):
+    if not candidate or not hmac.compare_digest(candidate.encode("utf-8"), expected.encode("utf-8")):
         logger.warning("Rejected request with a missing or invalid X-API-Key.")
         raise HTTPException(
             status_code=401,

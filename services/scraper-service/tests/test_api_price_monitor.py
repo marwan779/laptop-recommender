@@ -15,9 +15,7 @@ from app.price_monitor.models import (
 @pytest.fixture
 def client():
     """TestClient with API-key enforcement disabled for endpoint behaviour tests."""
-    app.dependency_overrides[get_security_settings] = lambda: SecuritySettings(
-        require_api_key=False
-    )
+    app.dependency_overrides[get_security_settings] = lambda: SecuritySettings(require_api_key=False)
     yield TestClient(app)
     app.dependency_overrides.clear()
 
