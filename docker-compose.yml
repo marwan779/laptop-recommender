@@ -35,15 +35,72 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    env_file:
+      - path: ./services/catalog-service/.env
+        required: false
     environment:
       - SERVICE_NAME=catalog-service
       - ENVIRONMENT=development
-      - DATABASE_URL=postgresql+asyncpg://postgres:123321123%40Pp@host.docker.internal:5432/laptop_recommender_catalog
+      - DATABASE_URL=${CATALOG_DATABASE_URL:-postgresql+asyncpg://postgres:123321123%40Pp@host.docker.internal:5432/laptop_recommender_catalog}
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - REDIS_URL=redis://redis:6379/0
+      - SCRAPER_SERVICE_URL=http://scraper-service:8000
+      - AI_RECOMMENDER_URL=http://ai-recommender-service:8000
       - STORAGE_PROVIDER=s3
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      scraper-service:
+        condition: service_started
+      ai-recommender-service:
+        condition: service_started
+    networks:
+      - laptop-network
+
+  scraper-service:
+    build:
+      context: ./services/scraper-service
+      dockerfile: Dockerfile
+    container_name: laptop-recommender-scraper
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    env_file:
+      - path: ./services/scraper-service/.env
+        required: false
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_PROVIDER=s3
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - laptop-network
+
+  ai-recommender-service:
+    build:
+      context: ./services/ai-recommender-service
+      dockerfile: Dockerfile
+    container_name: laptop-recommender-ai
+    restart: unless-stopped
+    ports:
+      - "8002:8000"
+    env_file:
+      - path: ./services/ai-recommender-service/.env
+        required: false
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_PROVIDER=s3
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
     depends_on:
       rabbitmq:
         condition: service_healthy

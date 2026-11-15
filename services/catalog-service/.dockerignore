@@ -8,5 +8,6 @@ __pycache__/
 .coverage
 htmlcov/
 tests/
+data/chroma_reviews_db/
 .env
 

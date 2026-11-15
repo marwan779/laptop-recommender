@@ -7,6 +7,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 COPY app ./app
+COPY data ./data
+COPY scripts ./scripts
 COPY alembic ./alembic
 COPY alembic.ini .
 
