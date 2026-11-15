@@ -51,37 +51,85 @@ def _install_pydantic_settings_stub() -> None:
     except Exception:
         pass
 
+    from pydantic import BaseModel, ConfigDict
+    from pydantic_core import PydanticUndefined
+
     def SettingsConfigDict(**kwargs):  # noqa: N802 - mirrors pydantic-settings API
-        return dict(kwargs)
+        # Only the config keys that affect the lightweight fallback are retained.
+        return ConfigDict(extra=kwargs.get("extra", "ignore"))
 
-    class BaseSettings:
-        """Import-only stand-in supporting field defaults, env lookup and kwargs."""
+    class BaseSettings(BaseModel):
+        """Import-only pydantic-backed stand-in supporting defaults, env and kwargs."""
 
-        model_config: dict = {}
+        model_config = ConfigDict(extra="ignore")
 
         def __init__(self, **kwargs):
-            annotations = {}
-            for klass in reversed(type(self).__mro__):
-                annotations.update(getattr(klass, "__annotations__", {}))
+            values: dict = {}
+            for field_name, field_info in type(self).model_fields.items():
+                if field_info.default is not PydanticUndefined:
+                    values[field_name] = field_info.default
+                elif field_info.default_factory is not None:
+                    values[field_name] = field_info.default_factory()
 
-            for field_name in annotations:
-                if field_name == "model_config":
-                    continue
                 env_value = os.environ.get(field_name.upper())
                 if env_value is None:
                     env_value = os.environ.get(field_name)
                 if env_value is not None:
-                    setattr(self, field_name, env_value)
-                elif hasattr(type(self), field_name):
-                    setattr(self, field_name, getattr(type(self), field_name))
+                    values[field_name] = env_value
 
-            for key, value in kwargs.items():
-                setattr(self, key, value)
+            values.update(kwargs)
+            super().__init__(**values)
 
     module = types.ModuleType("pydantic_settings")
     module.BaseSettings = BaseSettings
     module.SettingsConfigDict = SettingsConfigDict
     sys.modules.setdefault("pydantic_settings", module)
+
+
+def _install_redis_stub() -> None:
+    """Minimal redis.asyncio fallback used only when redis-py is unavailable."""
+    try:
+        import redis  # noqa: F401
+        import redis.asyncio  # noqa: F401
+        import redis.exceptions  # noqa: F401
+
+        return
+    except Exception:
+        pass
+
+    exceptions = types.ModuleType("redis.exceptions")
+
+    class RedisError(Exception):
+        pass
+
+    exceptions.RedisError = RedisError
+
+    asyncio_module = types.ModuleType("redis.asyncio")
+
+    class Redis:
+        def __init__(self, url: str | None = None, **kwargs):
+            self.url = url
+            self.kwargs = kwargs
+
+        @classmethod
+        def from_url(cls, url: str, **kwargs):
+            return cls(url=url, **kwargs)
+
+        async def ping(self) -> bool:  # pragma: no cover - only without injection
+            return True
+
+        async def aclose(self) -> None:  # pragma: no cover - only without injection
+            return None
+
+    asyncio_module.Redis = Redis
+
+    redis_module = types.ModuleType("redis")
+    redis_module.asyncio = asyncio_module
+    redis_module.exceptions = exceptions
+
+    sys.modules.setdefault("redis", redis_module)
+    sys.modules.setdefault("redis.asyncio", asyncio_module)
+    sys.modules.setdefault("redis.exceptions", exceptions)
 
 
 def _install_boto_stubs() -> None:
@@ -151,3 +199,4 @@ def _install_boto_stubs() -> None:
 _install_chromadb_stub()
 _install_pydantic_settings_stub()
 _install_boto_stubs()
+_install_redis_stub()
