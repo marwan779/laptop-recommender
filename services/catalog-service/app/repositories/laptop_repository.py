@@ -509,10 +509,13 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         )
 
     async def list_all_with_offers(self) -> Sequence[LaptopConfiguration]:
-        """Fetch every configuration with eager-loaded offers for review dispatching."""
+        """Fetch every configuration with eager-loaded offers and metrics for review dispatching."""
         stmt = (
             select(LaptopConfiguration)
-            .options(selectinload(LaptopConfiguration.offers))
+            .options(
+                selectinload(LaptopConfiguration.offers),
+                selectinload(LaptopConfiguration.metrics),
+            )
             .order_by(LaptopConfiguration.laptop_added_at.asc())
         )
         result = await self.session.execute(stmt)
@@ -546,12 +549,15 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
     async def get_unreviewed_laptops(self) -> Sequence[LaptopConfiguration]:
         """Fetch laptop configurations that have not had community reviews collected.
 
-        Offers are eagerly loaded so the caller can aggregate every store product
-        URL for a chassis without triggering lazy-load I/O outside the session.
+        Offers and metrics are eagerly loaded so callers can aggregate store
+        product URLs and attach the hardware specs envelope without lazy-load I/O.
         """
         stmt = (
             select(LaptopConfiguration)
-            .options(selectinload(LaptopConfiguration.offers))
+            .options(
+                selectinload(LaptopConfiguration.offers),
+                selectinload(LaptopConfiguration.metrics),
+            )
             .where(LaptopConfiguration.has_reviews.is_(False))
             .order_by(LaptopConfiguration.laptop_added_at.asc())
         )

@@ -264,3 +264,78 @@ def test_to_review_input_and_target_carry_screen_size():
 
     target = CatalogIngestionService._to_review_target(resolved)
     assert target.screen_size == 15.6
+
+
+def test_review_target_mapper_builds_specs_and_battery_estimate_envelope():
+    from types import SimpleNamespace
+
+    from app.services.review_intelligence_service import ReviewIntelligenceService
+    from app.services.review_target_mapper import build_review_specs_envelope
+
+    laptop = SimpleNamespace(
+        id="lap-spec-1",
+        canonical_id="asus-tuf-f16-fx608",
+        title="ASUS TUF Gaming F16 FX608",
+        brand="ASUS",
+        laptop_family="TUF Gaming",
+        laptop_model="FX608JMR-RV057W",
+        mpn="90NR0NB1-M00J30",
+        thumbnail_url=None,
+        market_positioning="Gaming",
+        cpu_full_name="Intel Core i7-14650HX",
+        cpu_model="i7-14650HX",
+        cpu_base_power_w=55,
+        gpu_model="GeForce RTX 5060",
+        gpu_tdp_w=115,
+        gpu_integrated=False,
+        ram_capacity_gb=16,
+        ram_is_soldered=False,
+        ram_max_supported_gb=64,
+        storage_capacity_gb=1024,
+        storage_slot_count=2,
+        display_size_inches=16.0,
+        display_panel_type="IPS",
+        display_refresh_rate_hz=165,
+        display_brightness_nits=300,
+        display_color_gamut="100% sRGB",
+        battery_capacity_wh=90.0,
+        weight_kg=2.2,
+        metrics=SimpleNamespace(
+            estimated_battery_hours=6.1,
+            display_tier="100% sRGB IPS",
+        ),
+        offers=[],
+    )
+
+    envelope = build_review_specs_envelope(laptop)
+    assert envelope is not None
+    assert envelope["cpu"] == {"raw": "Intel Core i7-14650HX", "model": "i7-14650HX", "base_power_w": 55}
+    assert envelope["gpu"] == {"raw": "GeForce RTX 5060", "model": "GeForce RTX 5060", "tgp_watts": 115, "integrated": False}
+    assert envelope["display"]["srgb_percent"] == 100.0
+    assert envelope["derived_metrics"]["mobility"]["battery_hours_estimate"] == 6.1
+
+    dto = ReviewIntelligenceService._to_review_input(laptop)
+    assert dto.specs == envelope
+    target = ReviewIntelligenceService._to_review_target(
+        SimpleNamespace(
+            laptop_id=dto.laptop_id,
+            canonical_id=dto.canonical_id,
+            chassis_key="asus:tuf-gaming:FX608JMR",
+            title=dto.title,
+            brand=dto.brand,
+            laptop_family=dto.laptop_family,
+            laptop_model=dto.laptop_model,
+            mpn=dto.mpn,
+            manufacturer_part_number=dto.mpn,
+            retailer_sku=None,
+            skus=(),
+            mpns=(),
+            product_urls=(),
+            thumbnail_url=None,
+            screen_size=dto.screen_size,
+            matched_laptop_ids=(dto.laptop_id,),
+            matched_canonical_ids=(dto.canonical_id,),
+            specs=dto.specs,
+        )
+    )
+    assert target.specs == envelope

@@ -42,6 +42,7 @@ from app.services.chroma_reviews_service import (
     ChromaReviewsService,
     get_chroma_reviews_service,
 )
+from app.services.review_target_mapper import to_review_input, to_review_target
 
 logger = logging.getLogger("catalog.services.review_intelligence")
 
@@ -253,52 +254,11 @@ class ReviewIntelligenceService:
 
     @staticmethod
     def _to_review_input(laptop: LaptopConfiguration) -> LaptopInputDto:
-        offers = list(laptop.offers or [])
-        product_urls = tuple(
-            dict.fromkeys(
-                offer.product_url.strip() for offer in offers if offer.product_url and offer.product_url.strip()
-            )
-        )
-        retailer_skus = tuple(
-            dict.fromkeys(
-                offer.retailer_sku.strip() for offer in offers if offer.retailer_sku and offer.retailer_sku.strip()
-            )
-        )
-        return LaptopInputDto(
-            laptop_id=str(laptop.id),
-            canonical_id=laptop.canonical_id,
-            title=laptop.title,
-            brand=laptop.brand,
-            laptop_family=laptop.laptop_family,
-            laptop_model=laptop.laptop_model,
-            mpn=laptop.mpn,
-            thumbnail_url=laptop.thumbnail_url,
-            screen_size=(float(laptop.display_size_inches) if laptop.display_size_inches is not None else None),
-            retailer_skus=retailer_skus,
-            product_urls=product_urls,
-        )
+        return to_review_input(laptop)
 
     @staticmethod
     def _to_review_target(target: ResolvedReviewTarget) -> LaptopReviewTarget:
-        return LaptopReviewTarget(
-            laptop_id=target.laptop_id,
-            canonical_id=target.canonical_id,
-            chassis_key=getattr(target, "chassis_key", None),
-            title=target.title,
-            brand=target.brand,
-            laptop_family=target.laptop_family,
-            laptop_model=target.laptop_model,
-            mpn=target.mpn,
-            manufacturer_part_number=target.manufacturer_part_number,
-            retailer_sku=target.retailer_sku,
-            skus=list(target.skus),
-            mpns=list(target.mpns),
-            product_urls=list(target.product_urls),
-            thumbnail_url=target.thumbnail_url,
-            screen_size=target.screen_size,
-            matched_laptop_ids=list(target.matched_laptop_ids),
-            matched_canonical_ids=list(target.matched_canonical_ids),
-        )
+        return to_review_target(target)
 
 
 __all__ = ["ReviewIngestionResult", "ReviewIntelligenceService"]

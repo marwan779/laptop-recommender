@@ -16,6 +16,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 import re
+from typing import Any
 
 # ─── Domain DTOs ────────────────────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ class LaptopInputDto:
     screen_size: float | None = None
     retailer_skus: tuple[str, ...] = ()
     product_urls: tuple[str, ...] = ()
+    specs: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,6 +71,7 @@ class ResolvedReviewTarget:
     screen_size: float | None = None
     matched_laptop_ids: tuple[str, ...] = ()
     matched_canonical_ids: tuple[str, ...] = ()
+    specs: dict[str, Any] | None = None
 
 
 # ─── Chassis code extraction ────────────────────────────────────────────────
@@ -470,6 +473,7 @@ class ChassisTargetResolver:
             screen_size=self._resolve_screen_size(members),
             matched_laptop_ids=tuple(member.laptop_id for member in members),
             matched_canonical_ids=tuple(member.canonical_id for member in members),
+            specs=representative.specs,
         )
 
     @staticmethod

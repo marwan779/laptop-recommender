@@ -12,6 +12,7 @@ database or network dependencies and can be validated in isolation.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -183,6 +184,7 @@ class LaptopChassisReviewItem(BaseModel):
     matched_laptop_ids: list[str] = Field(default_factory=list)
     matched_canonical_ids: list[str] = Field(default_factory=list)
     identity: ChassisIdentity = Field(default_factory=ChassisIdentity)
+    specs: dict[str, Any] | None = None
     youtube: YouTubeReviewData = Field(default_factory=YouTubeReviewData)
     communities: CommunitiesData = Field(default_factory=CommunitiesData)
 

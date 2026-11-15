@@ -260,6 +260,7 @@ class ReviewCollectorService:
                 aggregated_mpns=list(target.mpns),
                 aggregated_skus=list(target.skus),
             ),
+            specs=target.specs,
             youtube=youtube_map.get(chassis_key, YouTubeReviewData()),
             communities=communities_map.get(chassis_key, CommunitiesData()),
         )

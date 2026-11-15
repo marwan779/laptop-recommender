@@ -223,6 +223,10 @@ class LaptopReviewTarget(BaseModel):
         default_factory=list,
         description="All canonical slugs belonging to this chassis group",
     )
+    specs: dict[str, Any] | None = Field(
+        default=None,
+        description="Optional sealed hardware specs envelope for downstream review enrichment",
+    )
 
 
 class ScrapeReviewsPayload(BaseModel):

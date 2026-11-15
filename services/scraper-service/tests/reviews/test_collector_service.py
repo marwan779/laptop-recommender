@@ -240,3 +240,44 @@ async def test_process_reviews_batch_consolidates_colliding_chassis_keys(tmp_pat
     assert len(parsed.laptops) == 1
     assert parsed.laptops[0].chassis_key == "hp:victus:15-FA"
     assert parsed.laptops[0].matched_laptop_ids == ["lap-1", "lap-2"]
+
+
+@pytest.mark.anyio
+async def test_process_reviews_batch_preserves_specs_envelope_in_format_a(tmp_path):
+    import json
+
+    specs = {
+        "cpu": {"raw": "Intel Core i7-13650HX", "base_power_w": 55},
+        "gpu": {"model": "RTX 4060", "tgp_watts": 115, "integrated": False},
+        "derived_metrics": {"mobility": {"battery_hours_estimate": 5.2}},
+    }
+    target = LaptopReviewTarget(
+        laptop_id="lap-loq",
+        canonical_id="lenovo-loq-15irx9",
+        chassis_key="lenovo:loq:15IRX9",
+        brand="Lenovo",
+        laptop_family="LOQ",
+        laptop_model="15IRX9",
+        specs=specs,
+    )
+    cmd = ScrapeReviewsCommand(payload=ScrapeReviewsPayload(job_id="job-specs-pass", targets=[target]))
+
+    yt_mock = MagicMock()
+    yt_mock.collect_for_targets = AsyncMock(return_value={})
+    comm_mock = MagicMock()
+    comm_mock.collect_for_targets = AsyncMock(return_value={})
+
+    service = ReviewCollectorService(
+        storage_service=MagicMock(),
+        broker=AsyncMock(),
+        youtube_collector=yt_mock,
+        communities_collector=comm_mock,
+        upload_to_s3=False,
+        local_output_dir=tmp_path,
+    )
+
+    await service.process_reviews_batch(cmd)
+
+    saved = json.loads((tmp_path / "raw_chassis_reviews_job-specs-pass.json").read_text(encoding="utf-8"))
+    parsed = RawChassisReviewsFile.model_validate(saved)
+    assert parsed.laptops[0].specs == specs

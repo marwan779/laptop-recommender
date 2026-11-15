@@ -567,3 +567,33 @@ def test_family_inference_recovers_generic_and_polluted_db_families():
         "lenovo:flex:14IAU7",
         "asus:zenbook:UX3407QA",
     }
+
+
+def test_specs_envelope_propagates_to_resolved_target():
+    specs = {"cpu": {"raw": "Core i7-13650HX", "base_power_w": 55}, "gpu": {"tgp_watts": 115}}
+    resolver = ChassisTargetResolver()
+
+    targets = resolver.resolve(
+        [
+            LaptopInputDto(
+                laptop_id="lap-1",
+                canonical_id="lenovo-loq-15irx9-16",
+                brand="Lenovo",
+                laptop_family="LOQ",
+                laptop_model="LOQ 15IRX9",
+                mpn="83DV01HSED",
+                specs=specs,
+            ),
+            LaptopInputDto(
+                laptop_id="lap-2",
+                canonical_id="lenovo-loq-15irx9-32",
+                brand="Lenovo",
+                laptop_family="LOQ",
+                laptop_model="LOQ 15IRX9",
+                mpn="83DV01HTED",
+            ),
+        ]
+    )
+
+    assert len(targets) == 1
+    assert targets[0].specs == specs
