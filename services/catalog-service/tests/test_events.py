@@ -15,6 +15,8 @@ from app.schemas.events import (
     LaptopReviewTarget,
     PricesCheckedEvent,
     PricesCheckedPayload,
+    ReviewsEnrichedEvent,
+    ReviewsEnrichedPayload,
     ReviewsReadyEvent,
     ReviewsReadyPayload,
     ScrapeCatalogCommand,
@@ -178,3 +180,21 @@ def test_reviews_command_and_ready_event_serialization():
     assert evt.event_type == EventType.REVIEWS_READY_EVENT
     assert len(evt.payload.results[0].snippets) == 2
     assert evt.payload.results[0].snippets[0].score_or_upvotes == 45
+
+
+def test_reviews_enriched_event_serialization():
+    evt = ReviewsEnrichedEvent(
+        payload=ReviewsEnrichedPayload(
+            job_id="job-enrich-42",
+            s3_key="reviews/enriched/job-enrich-42.json",
+            s3_bucket="catalog-artifacts",
+            total_chassis=12,
+            total_laptops=29,
+        )
+    )
+    dumped = evt.model_dump(mode="json")
+    restored = ReviewsEnrichedEvent.model_validate(dumped)
+    assert restored.event_type == EventType.REVIEWS_ENRICHED_EVENT
+    assert restored.payload.s3_key == "reviews/enriched/job-enrich-42.json"
+    assert restored.payload.total_chassis == 12
+    assert restored.payload.total_laptops == 29

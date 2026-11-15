@@ -4,9 +4,7 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir --prefix=/install \
-    --extra-index-url https://download.pytorch.org/whl/cpu \
-    torch -r requirements.txt
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 COPY app ./app
 COPY alembic ./alembic

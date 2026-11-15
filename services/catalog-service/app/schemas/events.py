@@ -31,9 +31,10 @@ class EventType(StrEnum):
     PRICES_CHECK_COMMAND = "prices.check.command"
     PRICES_CHECKED_EVENT = "prices.checked.event"
 
-    # Flow 3: Community Reviews Scraping (Phase 2)
+    # Flow 3: Community Reviews Scraping & Enrichment (Phase 2)
     REVIEWS_SCRAPE_COMMAND = "reviews.scrape.command"
     REVIEWS_READY_EVENT = "reviews.ready.event"
+    REVIEWS_ENRICHED_EVENT = "reviews.enriched.event"
 
 
 # ─── Standard Message Envelope ──────────────────────────────────────────────
@@ -292,3 +293,23 @@ class ReviewsReadyEvent(BaseEvent):
 
     event_type: str = EventType.REVIEWS_READY_EVENT
     payload: ReviewsReadyPayload
+
+
+class ReviewsEnrichedPayload(BaseModel):
+    """Payload emitted by ai-recommender-service after enriching raw reviews into S3."""
+
+    job_id: str = Field(description="Review enrichment job ID")
+    s3_key: str = Field(description="Object storage key for the enriched Format B1/B2 reviews JSON")
+    s3_bucket: str | None = Field(
+        default=None,
+        description="Optional S3 bucket name if overridden",
+    )
+    total_chassis: int = Field(default=0, description="Number of chassis processed")
+    total_laptops: int = Field(default=0, description="Number of matched catalog laptops")
+
+
+class ReviewsEnrichedEvent(BaseEvent):
+    """Event emitted when ai-recommender-service finishes review enrichment & ChromaDB indexing."""
+
+    event_type: str = EventType.REVIEWS_ENRICHED_EVENT
+    payload: ReviewsEnrichedPayload

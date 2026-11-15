@@ -27,7 +27,7 @@ from app.schemas.events import (
     CatalogScrapeFailedEvent,
     EventType,
     PricesCheckedEvent,
-    ReviewsReadyEvent,
+    ReviewsEnrichedEvent,
 )
 from app.services.catalog_ingestion_service import CatalogIngestionService
 from app.services.price_sync_service import PriceSyncService
@@ -107,11 +107,11 @@ class CatalogMessageConsumer:
             prefetch_count=5,
         )
 
-        # 4. Reviews Ready Event (Phase 2 -> prefetch 2)
+        # 4. Reviews Enriched Event (Phase 2 -> prefetch 2)
         await self.broker.subscribe(
-            queue_name="catalog.reviews.ready.jobs",
-            routing_key=EventType.REVIEWS_READY_EVENT,
-            handler=self.handle_reviews_ready_event,
+            queue_name="catalog.reviews.enriched.jobs",
+            routing_key=EventType.REVIEWS_ENRICHED_EVENT,
+            handler=self.handle_reviews_enriched_event,
             prefetch_count=2,
         )
 
@@ -232,28 +232,28 @@ class CatalogMessageConsumer:
                     summary.affected_laptop_ids,
                 )
 
-    async def handle_reviews_ready_event(self, raw_data: dict[str, Any]) -> None:
-        """Persist completed community review intelligence into ChromaDB and PostgreSQL."""
-        event = ReviewsReadyEvent.model_validate(raw_data)
+    async def handle_reviews_enriched_event(self, raw_data: dict[str, Any]) -> None:
+        """Persist enriched community review intelligence into PostgreSQL."""
+        event = ReviewsEnrichedEvent.model_validate(raw_data)
         payload = event.payload
         logger.info(
-            "Processing ReviewsReadyEvent [job_id=%s, laptops=%d, snippets=%d, s3_key=%s]",
+            "Processing ReviewsEnrichedEvent [job_id=%s, chassis=%d, laptops=%d, s3_key=%s]",
             payload.job_id,
+            payload.total_chassis,
             payload.total_laptops,
-            payload.total_snippets,
             payload.s3_key,
         )
 
         if not payload.s3_key:
             logger.info(
-                "ReviewsReadyEvent [%s] has no s3_key; nothing to ingest into the NLP stores.",
+                "ReviewsEnrichedEvent [%s] has no s3_key; nothing to ingest into PostgreSQL.",
                 payload.job_id,
             )
             return
 
         async with self._session_factory() as session:
             async with session.begin():
-                if not await self._claim_inbox(session, event, "handle_reviews_ready_event"):
+                if not await self._claim_inbox(session, event, "handle_reviews_enriched_event"):
                     return
 
                 result = await self._resolve_review_intelligence_service().ingest_from_s3(
@@ -263,10 +263,9 @@ class CatalogMessageConsumer:
                 )
 
         logger.info(
-            "ReviewsReadyEvent [%s] ingested: status=%s, chassis=%d, chroma_docs=%d, sql_laptops=%d",
+            "ReviewsEnrichedEvent [%s] ingested: status=%s, chassis=%d, sql_laptops=%d",
             payload.job_id,
             result.status,
             result.chassis_processed,
-            result.chroma_documents_upserted,
             result.sql_laptops_updated,
         )

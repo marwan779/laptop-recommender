@@ -15,8 +15,8 @@ from app.schemas.events import (
     CatalogScrapeFailedPayload,
     PricesCheckedEvent,
     PricesCheckedPayload,
-    ReviewsReadyEvent,
-    ReviewsReadyPayload,
+    ReviewsEnrichedEvent,
+    ReviewsEnrichedPayload,
 )
 from app.schemas.price_sync import PriceSyncSummary
 from app.services.messaging_consumer import CatalogMessageConsumer
@@ -130,7 +130,7 @@ async def test_duplicate_catalog_scrape_failed_event_skips_batch_log_update(monk
 
 
 @pytest.mark.asyncio
-async def test_duplicate_reviews_ready_event_skips_review_ingestion():
+async def test_duplicate_reviews_enriched_event_skips_review_ingestion():
     session = AsyncMock()
     session.execute.return_value = _duplicate_result()
     review_service = AsyncMock()
@@ -141,16 +141,16 @@ async def test_duplicate_reviews_ready_event_skips_review_ingestion():
         review_intelligence_service=review_service,
     )
 
-    event = ReviewsReadyEvent(
-        payload=ReviewsReadyPayload(
+    event = ReviewsEnrichedEvent(
+        payload=ReviewsEnrichedPayload(
             job_id="job-dup",
+            total_chassis=1,
             total_laptops=1,
-            total_snippets=10,
             s3_key="reviews/enriched.json",
         )
     )
 
-    await consumer.handle_reviews_ready_event(event.model_dump())
+    await consumer.handle_reviews_enriched_event(event.model_dump())
 
     review_service.ingest_from_s3.assert_not_called()
     session.execute.assert_awaited_once()

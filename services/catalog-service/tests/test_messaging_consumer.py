@@ -13,8 +13,8 @@ from app.schemas.events import (
     EventType,
     PricesCheckedEvent,
     PricesCheckedPayload,
-    ReviewsReadyEvent,
-    ReviewsReadyPayload,
+    ReviewsEnrichedEvent,
+    ReviewsEnrichedPayload,
 )
 from app.schemas.price_sync import PriceChangeType, PriceCheckItemResult, PriceSyncSummary
 from app.services.catalog_ingestion_service import IngestionResult
@@ -70,7 +70,7 @@ async def test_consumer_start_listening():
     assert subscriptions["catalog.ready.jobs"] == EventType.CATALOG_READY_EVENT
     assert subscriptions["catalog.scrape.failed.jobs"] == EventType.CATALOG_SCRAPE_FAILED_EVENT
     assert subscriptions["catalog.prices.checked.jobs"] == EventType.PRICES_CHECKED_EVENT
-    assert subscriptions["catalog.reviews.ready.jobs"] == EventType.REVIEWS_READY_EVENT
+    assert subscriptions["catalog.reviews.enriched.jobs"] == EventType.REVIEWS_ENRICHED_EVENT
 
 
 @pytest.mark.asyncio
@@ -313,25 +313,25 @@ async def test_handle_prices_checked_event_invalidates_cache_after_commit(
 
 
 @pytest.mark.asyncio
-async def test_handle_reviews_ready_event():
+async def test_handle_reviews_enriched_event():
     mock_broker = AsyncMock()
     consumer = CatalogMessageConsumer(broker=mock_broker)
 
-    event = ReviewsReadyEvent(
-        payload=ReviewsReadyPayload(
+    event = ReviewsEnrichedEvent(
+        payload=ReviewsEnrichedPayload(
             job_id="job-rec-1",
+            total_chassis=1,
             total_laptops=1,
-            total_snippets=0,
-            results=[],
+            s3_key="",
         )
     )
 
-    # Should not raise
-    await consumer.handle_reviews_ready_event(event.model_dump())
+    # Should not raise when s3_key is empty
+    await consumer.handle_reviews_enriched_event(event.model_dump())
 
 
 @pytest.mark.asyncio
-async def test_handle_reviews_ready_event_defers_commit_to_outer_transaction(
+async def test_handle_reviews_enriched_event_defers_commit_to_outer_transaction(
     mock_session,
     mock_session_factory,
 ):
@@ -344,16 +344,16 @@ async def test_handle_reviews_ready_event_defers_commit_to_outer_transaction(
         review_intelligence_service=mock_review_service,
     )
 
-    event = ReviewsReadyEvent(
-        payload=ReviewsReadyPayload(
+    event = ReviewsEnrichedEvent(
+        payload=ReviewsEnrichedPayload(
             job_id="job-rec-2",
+            total_chassis=1,
             total_laptops=1,
-            total_snippets=5,
             s3_key="reviews/batch_1.json",
         )
     )
 
-    await consumer.handle_reviews_ready_event(event.model_dump())
+    await consumer.handle_reviews_enriched_event(event.model_dump())
 
     mock_review_service.ingest_from_s3.assert_awaited_once_with(
         session=mock_session,

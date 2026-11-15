@@ -6,7 +6,7 @@ module contains no SQL statements or transaction management.
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -128,21 +128,19 @@ async def trigger_reviews_scraping(
     "/reviews/ingest",
     response_model=ReviewsIngestResponse,
     status_code=status.HTTP_200_OK,
-    summary="Ingest enriched reviews into ChromaDB and PostgreSQL",
+    summary="Ingest enriched reviews into PostgreSQL",
     description=(
-        "Loads an enriched chassis reviews artifact from local disk or S3, embeds bilingual "
-        "pro/con/context vectors into ChromaDB, and persists `community_nlp_score`, the 5 aspect "
-        "scores, evidence counts, bilingual pros/cons, and reviewed flags into PostgreSQL."
+        "Loads an enriched chassis reviews artifact from local disk or S3 and persists "
+        "`community_nlp_score`, the 5 aspect scores, evidence counts, bilingual pros/cons, "
+        "and reviewed flags into PostgreSQL."
     ),
 )
 async def ingest_reviews(
     request: ReviewsIngestRequest,
-    http_request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> ReviewsIngestResponse:
     """Run Stage 2 review intelligence ingestion."""
-    chroma_service = getattr(http_request.app.state, "chroma_reviews", None)
-    service = ReviewIntelligenceService(chroma_service=chroma_service)
+    service = ReviewIntelligenceService()
 
     try:
         if request.from_s3:
