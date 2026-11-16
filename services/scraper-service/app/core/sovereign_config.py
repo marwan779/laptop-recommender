@@ -9,12 +9,17 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+_SERVICE_ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 
 DEFAULT_BASE_URL = "https://backend.sovereigneg.com/v1"
 DEFAULT_PRIMARY_MODEL = "claude-haiku-5.5"
 DEFAULT_FALLBACK_MODEL = "gpt-oss-120b"
-DEFAULT_BATCH_THRESHOLD = 60
-DEFAULT_MICRO_BATCH_SIZE = 2
+DEFAULT_BATCH_THRESHOLD = 80
+DEFAULT_MICRO_BATCH_SIZE = 1
 DEFAULT_MAX_CONCURRENCY = 4
 
 
@@ -55,6 +60,8 @@ class SovereignConfig:
     @classmethod
     def from_env(cls) -> SovereignConfig:
         """Build a configuration from environment variables with safe defaults."""
+        if _SERVICE_ENV_FILE.is_file():
+            load_dotenv(_SERVICE_ENV_FILE, override=False)
         base_url = _env_str("ENRICHER_LLM_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
         return cls(
             base_url=base_url,

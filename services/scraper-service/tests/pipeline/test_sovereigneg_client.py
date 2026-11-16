@@ -103,6 +103,11 @@ def test_falls_back_to_gpt_oss_when_haiku_fails_on_both_keys() -> None:
     assert parsed == {"build_security": {"has_backlit_keyboard": True}}
     assert tel.model_used == "gpt-oss-120b"
     assert tel.model_attempts == ["claude-haiku-5.5", "gpt-oss-120b"]
+    # Invalid model JSON is a model-output failure, not key exhaustion: must NOT retry fallback key on haiku
+    assert calls == [
+        ("Bearer sk-primary", "claude-haiku-5.5"),
+        ("Bearer sk-primary", "gpt-oss-120b"),
+    ]
 
 
 def test_transient_503_retries_before_switching_without_exhausting_primary() -> None:

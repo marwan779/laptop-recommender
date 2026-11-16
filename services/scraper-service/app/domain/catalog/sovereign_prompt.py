@@ -7,6 +7,7 @@ and spec normalization can be unit-tested without network access.
 
 from __future__ import annotations
 
+import re
 from copy import deepcopy
 from typing import Any
 
@@ -168,9 +169,12 @@ def build_dual_source_payload(laptop: Any, icecat_specs: dict[str, Any] | None) 
             identity[key] = value
 
     store_specs = raw_context.get("source_table") or {}
+    raw_desc = str(raw_context.get("raw_description") or "").strip()
+    if len(raw_desc) > 2500:
+        raw_desc = raw_desc[:2500]
     store_context = {
         "source_table": store_specs if isinstance(store_specs, dict) else {},
-        "raw_description": str(raw_context.get("raw_description") or ""),
+        "raw_description": raw_desc,
         "store_slot_count": raw_context.get("store_slot_count"),
     }
 
@@ -184,11 +188,19 @@ def build_dual_source_payload(laptop: Any, icecat_specs: dict[str, Any] | None) 
             if cleaned:
                 icecat_context[category] = cleaned
 
+    compact_det: dict[str, Any] = {}
+    det_specs = lap.get("specs") or {}
+    if isinstance(det_specs, dict):
+        for category in CATEGORY_ORDER:
+            cleaned_det = _clean_icecat_section(det_specs.get(category))
+            if cleaned_det:
+                compact_det[category] = cleaned_det
+
     return {
         "identity": identity,
         "store_raw_specs": store_context,
         "icecat_context": icecat_context,
-        "deterministic_specs": lap.get("specs") or {},
+        "deterministic_specs": compact_det,
     }
 
 
@@ -208,6 +220,12 @@ def build_system_prompt() -> str:
         "     Count EVERY distinct M.2 slot explicitly listed (e.g. '1 x M.2 2280 + 1 x M.2 2230'\n"
         "     or 'One M.2 2242 + One M.2 2280' => slot_count=2).\n"
         "   - connectivity: exact USB4 / Thunderbolt / USB 3.2 Gen 1/2 counts and connector types.\n"
+        "     Set connectivity.ethernet=true (boolean) when RJ-45 / LAN / Ethernet port is listed,\n"
+        "     false only if explicitly stated absent, null if unknown. connectivity.ports must list\n"
+        "     ONLY physical I/O ports/connectors (exclude Wi-Fi, Bluetooth, and display refresh rates).\n"
+        "   - identity.is_bundle: true when title or store lists bundled accessories (e.g. 'Mouse + BAG',\n"
+        "     'Backpack', 'Carrying Case', 'Bundle').\n"
+        "   - audio_webcam.microphone: descriptive string or true when store or Icecat confirms a mic.\n"
         "   - physical height: convert cm to mm when stated in cm\n"
         "     (e.g. '1.49 ~ 1.69 cm' => height_front_mm=14.9, height_rear_mm=16.9).\n"
         "   - build_security.has_backlit_keyboard must be true when the store mentions\n"
@@ -217,19 +235,26 @@ def build_system_prompt() -> str:
         "2. SECONDARY TRUTH - Icecat (`icecat_context`).\n"
         "   Fill fields the Egyptian store omitted ONLY when Icecat does not contradict the store:\n"
         "   battery_capacity_wh, power_adapter_w, battery_cells, gpu.tdp_w, width_mm, depth_mm,\n"
-        "   weight_kg, speaker_count, webcam_resolution, wifi, bluetooth, security_features.\n\n"
+        "   weight_kg, speaker_count, microphone, webcam_resolution, wifi, bluetooth, security_features.\n\n"
         "NO HALLUCINATION\n"
         "- Never invent values that appear in neither source; return null for unknown fields.\n"
         "- Never copy an Icecat value into a field the store explicitly states differently.\n\n"
-        "STRICT SCHEMA\n"
-        "Return a single JSON object with exactly these top-level categories:\n"
+        "STRICT COMPACT JSON OUTPUT\n"
+        "Return a single compact JSON object using only these top-level categories as needed:\n"
         "identity, cpu, gpu, memory, storage, display, power_battery, physical, build_security,\n"
         "audio_webcam, connectivity, operating_system.\n"
-        "Each category must use the canonical field names and value types from the provided\n"
-        "`deterministic_specs` skeleton. Preserve non-null deterministic values when the sources\n"
-        "are silent or agree. You may add a top-level `conflicts_resolved` array of short strings\n"
-        "describing any store-vs-Icecat conflict you resolved. Output JSON only, no markdown\n"
-        "fences, no commentary."
+        "To keep output concise and prevent truncation:\n"
+        "- OMIT fields that are both null/unknown in both sources and null/empty in `deterministic_specs`.\n"
+        "- If `deterministic_specs` contains an incorrect or misplaced value (e.g., refresh rate inside\n"
+        "  `ports`, 'White' inferred from 'White Backlit' as `identity.color`, or 'No fingerprint reader'\n"
+        "  inside `security_features`) and there is no valid replacement, explicitly output null\n"
+        "  (or [] for list fields) for that key so the bogus value is cleared.\n"
+        "- OMIT fields that are already identical and accurate in `deterministic_specs`, or include\n"
+        "  only the non-null verified/corrected fields using exact field names & value types.\n"
+        "- Always include any category where you corrected an Icecat/deterministic contradiction or\n"
+        "  filled a missing value from the store or Icecat.\n"
+        "- Optionally add a top-level `conflicts_resolved` array of short strings describing any\n"
+        "  store-vs-Icecat conflict you resolved. Output raw JSON only, no markdown fences, no commentary."
     )
 
 
@@ -307,18 +332,55 @@ def extract_batch_results(parsed: dict[str, Any] | None, expected_ids: list[str]
     return direct
 
 
-def _coerce_like(base: Any, value: Any) -> Any:
+_ETHERNET_POS_RE = re.compile(
+    r"\b(?:rj[- ]?45|gigabit\s+ethernet|ethernet(?:\s+port)?|lan\s+port|gbe|100/1000m?)\b",
+    re.IGNORECASE,
+)
+_ETHERNET_NEG_RE = re.compile(
+    r"\b(?:no|without)\s+(?:ethernet|lan|rj[- ]?45)\b",
+    re.IGNORECASE,
+)
+_BUNDLE_RE = re.compile(
+    r"\b(?:bundle|first light geforce|carrying\s+case|backpack)\b|\bmouse\s*[+&]\s*bag\b|\bwith\s+(?:mouse|bag|backpack)\b",
+    re.IGNORECASE,
+)
+_NON_PORT_NOISE_RE = re.compile(
+    r"\b(?:wi-?fi|wlan|bluetooth|802\.11|refresh\s*rate|supports?\s+a:)\b",
+    re.IGNORECASE,
+)
+_PHYSICAL_PORT_RE = re.compile(
+    r"\b(?:usb|thunderbolt|hdmi|rj[- ]?45|ethernet|jack|card\s*reader|microsd|sd\s+card|displayport|dc-in|vga|lan|slot|connector)\b",
+    re.IGNORECASE,
+)
+_MIC_POS_RE = re.compile(r"\b(?:microphone|array\s+mic)\b", re.IGNORECASE)
+_MIC_NOISE_RE = re.compile(
+    r"\b(?:combo\s+jack|headphone\s*/\s*microphone|microphone\s*/\s*headphone|no\s+mic|without\s+mic)\b",
+    re.IGNORECASE,
+)
+
+
+def _coerce_bool_field(field_path: str, value: Any) -> bool | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)) and value in (0, 1):
+        return bool(value)
+    text = str(value).strip().lower()
+    if text in ("true", "yes", "1"):
+        return True
+    if text in ("false", "no", "0", "none", "n/a", "without lan", "no ethernet", "no rj45", "no rj-45"):
+        return False
+    if field_path == "connectivity.ethernet" and _ETHERNET_POS_RE.search(text) and not _ETHERNET_NEG_RE.search(text):
+        return True
+    return None
+
+
+def _coerce_like(base: Any, value: Any, field_path: str = "") -> Any:
     if value is None:
         return None
     if isinstance(base, bool):
-        if isinstance(value, bool):
-            return value
-        text = str(value).strip().lower()
-        if text in ("true", "yes", "1"):
-            return True
-        if text in ("false", "no", "0"):
-            return False
-        return base
+        return _coerce_bool_field(field_path, value)
     if isinstance(base, int) and not isinstance(base, bool):
         try:
             return int(float(value))
@@ -361,21 +423,24 @@ def _canonicalize_silicon(specs: dict[str, Any], title: str, store_text: list[st
 def _coerce_typed_field(field_path: str, base: Any, value: Any) -> Any:
     if value is None:
         return None
-    if field_path in _EXPLICIT_BOOL_FIELDS or isinstance(base, bool):
-        return _coerce_like(False, value)
+    if field_path in _EXPLICIT_BOOL_FIELDS:
+        return _coerce_bool_field(field_path, value)
+    if isinstance(base, bool):
+        return value if isinstance(value, str) else _coerce_bool_field(field_path, value)
     if field_path in _EXPLICIT_INT_FIELDS or (isinstance(base, int) and not isinstance(base, bool)):
-        return _coerce_like(0, value)
+        return _coerce_like(0, value, field_path)
     if field_path in _EXPLICIT_FLOAT_FIELDS or isinstance(base, float):
-        return _coerce_like(0.0, value)
-    return _coerce_like(base, value)
+        return _coerce_like(0.0, value, field_path)
+    return _coerce_like(base, value, field_path)
 
 
 def _validate_category(
     category: str,
     merged: dict[str, Any],
     deterministic: dict[str, Any],
+    schema_category: dict[str, Any],
 ) -> None:
-    for field_name, base_value in merged.items():
+    for field_name, empty_value in schema_category.items():
         if field_name == "raw_spec":
             continue
         field_path = f"{category}.{field_name}"
@@ -384,10 +449,87 @@ def _validate_category(
             continue
         ok, normalized, _reason = PhysicalValidator.validate_field(field_path, raw_value)
         if ok:
-            merged[field_name] = _coerce_typed_field(field_path, base_value, normalized)
+            is_strict_bool = field_path in _EXPLICIT_BOOL_FIELDS or isinstance(empty_value, bool)
+            if is_strict_bool:
+                merged[field_name] = _coerce_bool_field(field_path, normalized)
+            elif field_path in _EXPLICIT_INT_FIELDS:
+                merged[field_name] = _coerce_like(0, normalized, field_path)
+            elif field_path in _EXPLICIT_FLOAT_FIELDS:
+                merged[field_name] = _coerce_like(0.0, normalized, field_path)
+            else:
+                merged[field_name] = normalized
         else:
             fallback = deterministic.get(field_name)
-            merged[field_name] = deepcopy(fallback) if fallback is not None else None
+            if fallback is None:
+                merged[field_name] = None
+            elif field_path in _EXPLICIT_BOOL_FIELDS or isinstance(empty_value, bool):
+                merged[field_name] = _coerce_bool_field(field_path, fallback)
+            else:
+                merged[field_name] = deepcopy(fallback)
+
+
+def _polish_extracted_specs(
+    merged_specs: dict[str, Any],
+    title: str,
+    det_ethernet: Any = None,
+) -> None:
+    """Apply deterministic post-validation hygiene across connectivity, audio, bundle, and security."""
+    conn = merged_specs.get("connectivity") or {}
+    raw_ports = conn.get("ports")
+    if isinstance(raw_ports, list):
+        cleaned_ports: list[str] = []
+        for entry in raw_ports:
+            text = str(entry).strip()
+            if not text:
+                continue
+            if _NON_PORT_NOISE_RE.search(text) and not _PHYSICAL_PORT_RE.search(text):
+                continue
+            cleaned_ports.append(text)
+        conn["ports"] = cleaned_ports
+
+    ports_joined = " ".join(str(p) for p in (conn.get("ports") or []))
+    conn_probe = f"{ports_joined} {conn.get('raw_spec') or ''}"
+    det_eth_text = det_ethernet if isinstance(det_ethernet, str) else ""
+    full_eth_probe = f"{conn_probe} {det_eth_text}".strip()
+    if (
+        conn.get("ethernet") is not True
+        and _ETHERNET_POS_RE.search(conn_probe)
+        and not _ETHERNET_NEG_RE.search(conn_probe)
+    ):
+        conn["ethernet"] = True
+    if conn.get("ethernet") is True and conn.get("ethernet_speed") is None:
+        probe_low = full_eth_probe.lower()
+        if "2.5" in probe_low:
+            conn["ethernet_speed"] = "2.5 Gbps"
+        elif any(tok in probe_low for tok in ("1000", "gigabit", "gbe", "rj-45", "rj45")):
+            conn["ethernet_speed"] = "1 Gbps"
+
+    aw = merged_specs.get("audio_webcam") or {}
+    if aw.get("microphone") in (None, False):
+        aw_raw = str(aw.get("raw_spec") or "")
+        if _MIC_POS_RE.search(aw_raw) and not _MIC_NOISE_RE.search(aw_raw):
+            aw["microphone"] = "Built-in microphone"
+
+    ident = merged_specs.get("identity") or {}
+    ident_text = f"{title} {ident.get('raw_spec') or ''}"
+    if not ident.get("is_bundle") and _BUNDLE_RE.search(ident_text):
+        ident["is_bundle"] = True
+
+    if str(ident.get("color") or "").strip().lower() == "white":
+        ident_raw_low = str(ident.get("raw_spec") or "").lower()
+        if "white backlit" in (title or "").lower() and "color:" not in ident_raw_low:
+            ident["color"] = None
+
+    bs = merged_specs.get("build_security") or {}
+    sec = bs.get("security_features")
+    if isinstance(sec, list):
+        bs["security_features"] = [
+            item
+            for item in sec
+            if str(item).strip()
+            and str(item).strip().lower() not in ("none", "n/a")
+            and not re.match(r"^(?:no|without)\b", str(item).strip(), re.IGNORECASE)
+        ]
 
 
 def validate_and_normalize_extracted_specs(
@@ -398,9 +540,10 @@ def validate_and_normalize_extracted_specs(
 ) -> dict[str, Any]:
     """Validate, normalize, and anchor an LLM extraction against the canonical schema.
 
-    ``deterministic_specs`` supplies verified fallbacks for null or invalid
-    fields. ``icecat_specs`` is only used for CPU/GPU grounding context, never
-    for blindly overwriting a store-conflicting field.
+    ``deterministic_specs`` supplies verified fallbacks for omitted fields;
+    explicit ``null`` / ``[]`` in ``extracted`` clears noisy deterministic
+    values instead of restoring them. ``icecat_specs`` is only used for CPU/GPU
+    grounding context, never for blindly overwriting a store-conflicting field.
     """
     skeleton = empty_laptop_specifications()
     deterministic = deterministic_specs if isinstance(deterministic_specs, dict) else {}
@@ -420,33 +563,33 @@ def validate_and_normalize_extracted_specs(
         merged_category: dict[str, Any] = {}
         for field_name, empty_value in skeleton[category].items():
             det_value = base_category.get(field_name)
-            raw_value = candidate_category.get(field_name)
-            chosen = raw_value if raw_value not in (None, "", [], {}) else det_value
-            merged_category[field_name] = _coerce_typed_field(
-                f"{category}.{field_name}",
-                det_value if det_value is not None else empty_value,
-                chosen,
-            )
+            if field_name in candidate_category:
+                raw_value = candidate_category.get(field_name)
+                if raw_value in (None, ""):
+                    chosen = [] if isinstance(empty_value, list) else None
+                else:
+                    chosen = raw_value
+            else:
+                chosen = det_value
+
+            field_path = f"{category}.{field_name}"
+            base_hint = det_value if det_value is not None else empty_value
+            if isinstance(empty_value, bool) or field_path in _EXPLICIT_BOOL_FIELDS:
+                base_hint = False
+            merged_category[field_name] = _coerce_typed_field(field_path, base_hint, chosen)
         merged_specs[category] = merged_category
 
         raw_text = base_category.get("raw_spec")
         if isinstance(raw_text, str) and raw_text.strip():
             store_text.append(raw_text)
 
-    _validate_category("memory", merged_specs["memory"], deterministic.get("memory") or {})
-    _validate_category("storage", merged_specs["storage"], deterministic.get("storage") or {})
-    _validate_category("display", merged_specs["display"], deterministic.get("display") or {})
-    _validate_category("power_battery", merged_specs["power_battery"], deterministic.get("power_battery") or {})
-    _validate_category("physical", merged_specs["physical"], deterministic.get("physical") or {})
-    _validate_category("build_security", merged_specs["build_security"], deterministic.get("build_security") or {})
-    _validate_category("audio_webcam", merged_specs["audio_webcam"], deterministic.get("audio_webcam") or {})
-    _validate_category("connectivity", merged_specs["connectivity"], deterministic.get("connectivity") or {})
-    _validate_category("cpu", merged_specs["cpu"], deterministic.get("cpu") or {})
-    _validate_category("gpu", merged_specs["gpu"], deterministic.get("gpu") or {})
-    _validate_category("identity", merged_specs["identity"], deterministic.get("identity") or {})
-    _validate_category(
-        "operating_system", merged_specs["operating_system"], deterministic.get("operating_system") or {}
-    )
+    for category in CATEGORY_ORDER:
+        _validate_category(
+            category,
+            merged_specs[category],
+            deterministic.get(category) or {},
+            skeleton[category],
+        )
 
     if isinstance(icecat_specs, dict):
         ice_title = icecat_specs.get("identity") or {}
@@ -455,6 +598,10 @@ def validate_and_normalize_extracted_specs(
                 if isinstance(value, str) and value.strip():
                     store_text.append(value)
 
+    det_ethernet = (
+        (deterministic.get("connectivity") or {}).get("ethernet") if isinstance(deterministic, dict) else None
+    )
+    _polish_extracted_specs(merged_specs, title, det_ethernet=det_ethernet)
     _canonicalize_silicon(merged_specs, title, store_text)
 
     conflicts = payload.get("conflicts_resolved")

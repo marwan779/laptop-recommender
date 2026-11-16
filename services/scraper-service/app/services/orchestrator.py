@@ -135,15 +135,16 @@ class ScrapeOrchestrator:
             )
 
         use_sovereign = False
-        sovereign_pipeline: SovereignSmallBatchPipeline | None = None
         has_custom_scrape_store = "_scrape_store" in self.__dict__
+        precombined_unified: Any = None
+        out_dir = Path(request.output_dir) if request.output_dir else Path("scraping results")
 
         if store_tasks and request.level == 2 and not has_custom_scrape_store:
-            # Phase 1: Crawl Level 1 across ALL requested stores first so we know total batch size.
-            staged_stores: list[tuple[str, Any, list[Any], float]] = []
+            # Phase 1: Scrape Level 2 PDPs + run lightweight pre-combiner extraction (ZERO ONNX loaded).
+            staged_stores: list[tuple[str, Any, list[Any], ScrapeTargetResult, float]] = []
             for _, key in store_tasks:
                 store_start = time.perf_counter()
-                scraper, l1_products, err_result = self._crawl_store_level1(key, request)
+                scraper, products, err_result = self._crawl_store_for_level2(key, request)
                 if err_result is not None:
                     results.append(err_result)
                     self._persist_and_notify_target(
@@ -155,58 +156,109 @@ class ScrapeOrchestrator:
                         should_upload_to_bucket=should_upload_to_bucket,
                         should_send_email=should_send_email,
                     )
-                else:
-                    staged_stores.append((key, scraper, l1_products, store_start))
+                    continue
 
-            total_level1_count = sum(len(l1) for _, _, l1, _ in staged_stores)
+                lightweight_res = self._run_store_pipeline_and_build_result(
+                    key=key,
+                    store_scraper=scraper,
+                    products=products,
+                    req=request,
+                    use_ai_fallback=False,
+                    save_output=False,
+                )
+                staged_stores.append((key, scraper, products, lightweight_res, store_start))
+
+            # Phase 2: Run CatalogCombiner FIRST so overlapping multi-store listings deduplicate
+            # before evaluating the batch-size threshold.
+            from app.matching.combiner import CatalogCombiner
+
+            lightweight_targets = [res for _, _, _, res, _ in staged_stores if res.store_result is not None]
+            lightweight_catalogs = self._collect_store_catalogs(lightweight_targets, out_dir)
+            precombined_unified = (
+                CatalogCombiner().combine_catalogs(lightweight_catalogs) if lightweight_catalogs else None
+            )
+            combined_unique_count = precombined_unified.total_unique_laptops if precombined_unified is not None else 0
+
             cfg = self.sovereign_config or SovereignConfig.from_env()
             effective_mode = "legacy" if (self.no_audit and request.pipeline_mode == "auto") else request.pipeline_mode
             use_sovereign = should_use_sovereign_pipeline(
-                level1_count=total_level1_count,
+                level1_count=combined_unique_count,
                 threshold=cfg.batch_threshold,
                 has_key=cfg.has_configured_key(),
                 mode=effective_mode,
             )
 
             logger.info(
-                "[Orchestrator] Post-Level-1 routing decision: level1_total=%d, threshold=%d, mode=%s, selected=%s",
-                total_level1_count,
+                "[Orchestrator] Post-Combiner routing decision: combined_unique=%d, threshold=%d, mode=%s, selected=%s",
+                combined_unique_count,
                 cfg.batch_threshold,
                 effective_mode,
                 "PIPELINE_B_SOVEREIGN" if use_sovereign else "PIPELINE_A_LEGACY",
             )
 
             if use_sovereign:
-                out_dir = Path(request.output_dir) if request.output_dir else Path("scraping results")
-                sovereign_pipeline = (
-                    self.sovereign_pipeline_factory(cfg, out_dir)
-                    if self.sovereign_pipeline_factory is not None
-                    else SovereignSmallBatchPipeline(
-                        config=cfg,
-                        cache_path=out_dir / "sovereign_extract_cache.json",
+                # Pipeline B keeps lightweight sanitized store outputs (no ONNX ever loaded)
+                for key, _, _, res, store_start in staged_stores:
+                    output_file = self._output_path(request, f"store_{key}.json")
+                    if output_file and res.store_result is not None:
+                        self._save_json(res.store_result, output_file)
+                    results.append(res)
+                    self._persist_and_notify_target(
+                        res,
+                        "store",
+                        key,
+                        request,
+                        time.perf_counter() - store_start,
+                        should_upload_to_bucket=should_upload_to_bucket,
+                        should_send_email=should_send_email,
                     )
-                )
-
-            # Phase 2: Hydrate Level 2 PDPs & run either Pipeline B (lightweight) or Pipeline A (8-layer)
-            for key, scraper, l1_products, store_start in staged_stores:
-                result = self._process_hydrated_store(
-                    key=key,
-                    store_scraper=scraper,
-                    l1_products=l1_products,
-                    req=request,
-                    sovereign_pipeline=sovereign_pipeline if use_sovereign else None,
-                )
-                elapsed_time = time.perf_counter() - store_start
-                results.append(result)
-                self._persist_and_notify_target(
-                    result,
-                    "store",
-                    key,
-                    request,
-                    elapsed_time,
-                    should_upload_to_bucket=should_upload_to_bucket,
-                    should_send_email=should_send_email,
-                )
+            else:
+                # Pipeline A: upgrade staged stores with ONNX/AI fallback (when enabled) using
+                # already-fetched PDP products (zero redundant store HTTP requests).
+                if self.ai_type != "none" and any(prods for _, _, prods, _, _ in staged_stores):
+                    upgraded_stores: list[ScrapeTargetResult] = []
+                    for key, scraper, products, _, store_start in staged_stores:
+                        full_res = self._run_store_pipeline_and_build_result(
+                            key=key,
+                            store_scraper=scraper,
+                            products=products,
+                            req=request,
+                            use_ai_fallback=True,
+                            save_output=True,
+                        )
+                        upgraded_stores.append(full_res)
+                        results.append(full_res)
+                        self._persist_and_notify_target(
+                            full_res,
+                            "store",
+                            key,
+                            request,
+                            time.perf_counter() - store_start,
+                            should_upload_to_bucket=should_upload_to_bucket,
+                            should_send_email=should_send_email,
+                        )
+                    upgraded_catalogs = self._collect_store_catalogs(
+                        [r for r in upgraded_stores if r.store_result is not None],
+                        out_dir,
+                    )
+                    precombined_unified = (
+                        CatalogCombiner().combine_catalogs(upgraded_catalogs) if upgraded_catalogs else None
+                    )
+                else:
+                    for key, _, _, res, store_start in staged_stores:
+                        output_file = self._output_path(request, f"store_{key}.json")
+                        if output_file and res.store_result is not None:
+                            self._save_json(res.store_result, output_file)
+                        results.append(res)
+                        self._persist_and_notify_target(
+                            res,
+                            "store",
+                            key,
+                            request,
+                            time.perf_counter() - store_start,
+                            should_upload_to_bucket=should_upload_to_bucket,
+                            should_send_email=should_send_email,
+                        )
         else:
             for _, key in store_tasks:
                 start_time = time.perf_counter()
@@ -223,20 +275,18 @@ class ScrapeOrchestrator:
                     should_send_email=should_send_email,
                 )
 
-        # Stage 2, 3 & 4: Dynamic Multi-Store Catalog Consolidation + Enrichment
+        # Stage 2, 3 & 4: Multi-Store Unified Enrichment (Pipeline B vs Pipeline A)
         uploaded_key: str | None = None
         uploaded_bucket: str | None = None
         unified_total_laptops: int | None = None
         unified_error: str | None = None
         store_targets = [r for r in results if r.target_type == "store" and r.store_result is not None]
         if store_targets and request.level == 2:
-            out_dir = Path(request.output_dir) if request.output_dir else Path("scraping results")
             store_catalogs = self._collect_store_catalogs(store_targets, out_dir)
 
-            if len(store_catalogs) >= 1:
+            if len(store_catalogs) >= 1 or precombined_unified is not None:
                 logger.info(
-                    "[Orchestrator] All store scrapers finished (%d active store catalogs collected). Running Combiner + %s...",
-                    len(store_catalogs),
+                    "[Orchestrator] Running Stage 3/4 (%s)...",
                     "SovereignEG Dual-Source Pipeline B" if use_sovereign else "Icecat Enrichment (Pipeline A)",
                 )
                 with resilient_boundary(
@@ -247,11 +297,20 @@ class ScrapeOrchestrator:
                     from app.matching.combiner import CatalogCombiner
                     from app.pipeline.icecat.enricher import IcecatCatalogEnricher
 
-                    if use_sovereign and sovereign_pipeline is not None:
-                        unified_catalog = sovereign_pipeline.run(store_catalogs, out_dir=out_dir)
+                    unified_catalog = precombined_unified or CatalogCombiner().combine_catalogs(store_catalogs)
+
+                    if use_sovereign:
+                        cfg = self.sovereign_config or SovereignConfig.from_env()
+                        sovereign_pipeline = (
+                            self.sovereign_pipeline_factory(cfg, out_dir)
+                            if self.sovereign_pipeline_factory is not None
+                            else SovereignSmallBatchPipeline(
+                                config=cfg,
+                                cache_path=out_dir / "sovereign_extract_cache.json",
+                            )
+                        )
+                        unified_catalog = sovereign_pipeline.enrich_unified_catalog(unified_catalog, out_dir=out_dir)
                     else:
-                        combiner = CatalogCombiner()
-                        unified_catalog = combiner.combine_catalogs(store_catalogs)
                         enricher = IcecatCatalogEnricher(
                             cache_path=out_dir / "icecat_specs_cache.json",
                             match_report_path=out_dir / "icecat_match_report.json",
@@ -492,12 +551,12 @@ class ScrapeOrchestrator:
                             logger.warning("[Orchestrator] Failed to load cached store '%s': %s", cand_path, disk_exc)
         return store_catalogs
 
-    def _crawl_store_level1(
+    def _crawl_store_for_level2(
         self,
         key: str,
         req: ScrapeRequest,
     ) -> tuple[Any, list[Any], ScrapeTargetResult | None]:
-        """Execute Phase 1 fast Level-1 crawl for one store target."""
+        """Execute store-level Level-2 PDP crawl for one store target before post-combiner routing."""
         try:
             store_scraper = get_store_scraper(key, self.engine)
         except ValueError as exc:
@@ -516,7 +575,7 @@ class ScrapeOrchestrator:
 
         try:
             products = store_scraper.scrape_catalog(
-                level=1,
+                level=2,
                 until_model=req.until_model,
                 max_pages=req.max_pages,
                 limit=req.limit,
@@ -536,71 +595,15 @@ class ScrapeOrchestrator:
                 ),
             )
 
-    @staticmethod
-    def _hydrate_store_level2(
-        store_scraper: Any,
-        l1_products: list[Any],
-        req: ScrapeRequest,
-    ) -> list[Any]:
-        """Hydrate Level 1 products with Level 2 PDP specs without re-crawling collection pages."""
-        if not l1_products:
-            return []
-
-        hydrate_fn = getattr(store_scraper, "hydrate_products_level2", None)
-        if callable(hydrate_fn):
-            hydrated = hydrate_fn(l1_products)
-            if isinstance(hydrated, list):
-                return hydrated
-
-        # Safe fallback for mocks or custom scrapers lacking a list-returning hydrator
-        if all(getattr(p, "specs", None) for p in l1_products):
-            return l1_products
-
-        return list(
-            store_scraper.scrape_catalog(
-                level=2,
-                until_model=req.until_model,
-                max_pages=req.max_pages,
-                limit=req.limit,
-            )
-            or []
-        )
-
-    def _process_hydrated_store(
-        self,
-        key: str,
-        store_scraper: Any,
-        l1_products: list[Any],
-        req: ScrapeRequest,
-        sovereign_pipeline: SovereignSmallBatchPipeline | None = None,
-    ) -> ScrapeTargetResult:
-        """Hydrate PDPs and route store items through Pipeline B (lightweight) or Pipeline A (8-layer)."""
-        try:
-            products = self._hydrate_store_level2(store_scraper, l1_products, req)
-        except Exception as exc:
-            return ScrapeTargetResult(
-                target_type="store",
-                target_key=key,
-                target_name=getattr(store_scraper, "store_name", key),
-                level=req.level,
-                items_scraped=0,
-                error=str(exc),
-            )
-        return self._run_store_pipeline_and_build_result(
-            key=key,
-            store_scraper=store_scraper,
-            products=products,
-            req=req,
-            sovereign_pipeline=sovereign_pipeline,
-        )
-
     def _run_store_pipeline_and_build_result(
         self,
         key: str,
         store_scraper: Any,
         products: list[Any],
         req: ScrapeRequest,
-        sovereign_pipeline: SovereignSmallBatchPipeline | None = None,
+        *,
+        use_ai_fallback: bool = True,
+        save_output: bool = True,
     ) -> ScrapeTargetResult:
         output_file = self._output_path(req, f"store_{key}.json")
         checkpoint_file = self._output_path(req, f"store_{key}.checkpoint.jsonl") if req.output_dir else None
@@ -610,17 +613,13 @@ class ScrapeOrchestrator:
         quarantined_count = 0
 
         if req.level == 2 and products:
-            if sovereign_pipeline is not None:
+            if not use_ai_fallback:
                 logger.info(
-                    "[Orchestrator] Running lightweight pre-combiner sanitizer (Pipeline B) on %d products from '%s'...",
+                    "[Orchestrator] Running lightweight pre-combiner sanitizer (no ONNX) on %d products from '%s'...",
                     len(products),
                     key,
                 )
-                structured_products, generic_pipeline = sovereign_pipeline.run_lightweight_store_pipeline(
-                    products=products,
-                    store_key=key,
-                    checkpoint_file=checkpoint_file,
-                )
+                ai_backend = None
             else:
                 logger.info(
                     "[Orchestrator] Running generic 8-layer hardware pipeline on %d products from '%s'...",
@@ -628,17 +627,18 @@ class ScrapeOrchestrator:
                     key,
                 )
                 ai_backend = setup_ai_fallback(self.ai_type, use_onnx=self.use_onnx)
-                generic_pipeline = GenericCatalogPipeline(
-                    ai_fallback=ai_backend,
-                    no_audit=True,  # Cloud LLM audit runs post-combiner & post-Icecat in Stage 4
-                    audit_batch_size=self.audit_batch_size,
-                    core_only_ai=True,
-                )
-                structured_products = generic_pipeline.process_catalog(
-                    products=products,
-                    store_key=key,
-                    checkpoint_file=checkpoint_file,
-                )
+
+            generic_pipeline = GenericCatalogPipeline(
+                ai_fallback=ai_backend,
+                no_audit=True,  # Cloud LLM audit runs post-combiner & post-Icecat in Stage 4
+                audit_batch_size=self.audit_batch_size,
+                core_only_ai=True,
+            )
+            structured_products = generic_pipeline.process_catalog(
+                products=products,
+                store_key=key,
+                checkpoint_file=checkpoint_file,
+            )
 
             quarantine_file = generic_pipeline.last_quarantine_file
             if generic_pipeline.last_quarantine:
@@ -679,7 +679,7 @@ class ScrapeOrchestrator:
             skipped_laptops=skipped_list,
         )
 
-        if output_file:
+        if output_file and save_output:
             self._save_json(store_catalog, output_file)
 
         return ScrapeTargetResult(
@@ -688,7 +688,7 @@ class ScrapeOrchestrator:
             target_name=store_scraper.store_name,
             level=req.level,
             items_scraped=len(structured_products) if is_level2 else len(products),
-            output_file=str(output_file) if output_file else None,
+            output_file=str(output_file) if (output_file and save_output) else None,
             quarantine_file=quarantine_file,
             errors_count=quarantined_count,
             store_result=store_catalog,
@@ -730,7 +730,8 @@ class ScrapeOrchestrator:
             store_scraper=store_scraper,
             products=products,
             req=req,
-            sovereign_pipeline=None,
+            use_ai_fallback=True,
+            save_output=True,
         )
 
     def _should_upload(self, req: ScrapeRequest) -> bool:

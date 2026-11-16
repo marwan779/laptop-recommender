@@ -139,7 +139,7 @@ class SovereignEGClient:
         self,
         messages: list[dict[str, str]],
         temperature: float = 0.0,
-        max_tokens: int = 4096,
+        max_tokens: int = 6000,
     ) -> tuple[dict[str, Any] | None, CallTelemetry]:
         """Run the model failover chain and return ``(parsed_json, telemetry)``."""
         telemetry = CallTelemetry()
@@ -159,7 +159,11 @@ class SovereignEGClient:
                 telemetry.primary_key_exhausted = primary
                 telemetry.fallback_key_exhausted = fallback
                 return parsed, telemetry
-            logger.warning("[SovereignEG] Model '%s' failed; trying next model if available.", model)
+            logger.warning(
+                "[SovereignEG] Model '%s' failed (%s); trying next model if available.",
+                model,
+                telemetry.error,
+            )
 
         telemetry.latency_sec = round(time.perf_counter() - started, 3)
         primary, fallback = self.key_manager.snapshot()
@@ -197,9 +201,12 @@ class SovereignEGClient:
             if parsed is not None:
                 telemetry.key_slot_used = slot
                 return parsed, telemetry
-            if slot not in {s for s, _ in self.key_manager.available_keys()}:
-                # Key was marked exhausted; move on to the next slot immediately.
-                continue
+            err = telemetry.error or ""
+            # Only rotate API keys on credit/quota/auth exhaustion or transient network/5xx/429 errors.
+            # JSON formatting / model output errors are model-level, so fail over to the next model
+            # immediately without burning the fallback key on the same model.
+            if err in ("invalid_model_json", "invalid_response_json") or err.endswith(":fatal"):
+                break
 
         return None, telemetry
 
@@ -213,12 +220,16 @@ class SovereignEGClient:
         max_tokens: int,
         telemetry: CallTelemetry,
     ) -> tuple[dict[str, Any] | None, CallTelemetry]:
-        body = {
+        body: dict[str, Any] = {
             "model": model,
             "messages": messages,
-            "temperature": temperature,
             "max_tokens": max_tokens,
         }
+        m_low = model.lower()
+        if "claude" not in m_low:
+            body["temperature"] = temperature
+        if "gpt-oss" in m_low:
+            body["reasoning_effort"] = "low"
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",

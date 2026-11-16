@@ -1516,7 +1516,11 @@ class DeterministicExtractor:
 
         is_bundle = False
 
-        if re.search(r"\b(?:bundle|first light geforce)\b", title, re.IGNORECASE):
+        if re.search(
+            r"\b(?:bundle|first light geforce|carrying\s+case|backpack)\b|\bmouse\s*[+&]\s*bag\b|\bwith\s+(?:mouse|bag|backpack)\b",
+            title,
+            re.IGNORECASE,
+        ):
             is_bundle = True
 
         for k, v in table.items():
@@ -1604,7 +1608,13 @@ class DeterministicExtractor:
 
             if trailing_parts:
                 for part in reversed(trailing_parts):
-                    m_col = re.search(color_pat, part, re.IGNORECASE)
+                    clean_part = re.sub(
+                        r"\b(?:white|blue|rgb|single\s+color)\s+backlit(?:\s+keyboard)?\b",
+                        "",
+                        part,
+                        flags=re.IGNORECASE,
+                    )
+                    m_col = re.search(color_pat, clean_part, re.IGNORECASE)
 
                     if m_col:
                         found_col = m_col.group(1).title()
@@ -3380,9 +3390,15 @@ class DeterministicExtractor:
                 specs["identity"]["color"] = c_clean
 
         if not specs["identity"]["color"] and title:
+            clean_title_for_color = re.sub(
+                r"\b(?:white|blue|rgb|single\s+color)\s+backlit(?:\s+keyboard)?\b",
+                "",
+                title,
+                flags=re.IGNORECASE,
+            )
             m_col = re.search(
                 r"\b(Luna Grey|Mica Silver|Eclipse Gray|Phantom Black|Platinum Silver|Storm Grey|Dark Shadow Gray|Carbon Black|Abyssal Black|Mecha Gray|Natural Silver|Platinum|Black|Silver|Gray|Grey|White|Blue)\b",
-                title,
+                clean_title_for_color,
                 re.IGNORECASE,
             )
 
@@ -3558,6 +3574,16 @@ class DeterministicExtractor:
                             "supported ssd",
                             "support list",
                         ]
+                    ):
+                        continue
+
+                    # Reject wireless specs or display refresh rates leaking into ports
+                    if re.search(
+                        r"\b(?:wi-?fi|wlan|bluetooth|802\.11|refresh\s*rate)\b", p_clean, re.IGNORECASE
+                    ) and not re.search(
+                        r"\b(?:usb|thunderbolt|hdmi|rj[- ]?45|ethernet|jack|card\s*reader|microsd|sd\s+card|displayport|dc-in|vga|lan)\b",
+                        p_clean,
+                        re.IGNORECASE,
                     ):
                         continue
 
@@ -3990,7 +4016,11 @@ class DeterministicExtractor:
         for _, vs in sec_rows:
             clean_sec = re.sub(r"[®™©\u200e\u200f\u200b\xa0]", " ", vs).strip()
 
-            if clean_sec and not any(bad in clean_sec.lower() for bad in ["none", "n/a"]):
+            if (
+                clean_sec
+                and not any(bad in clean_sec.lower() for bad in ["none", "n/a"])
+                and not re.match(r"^(?:no|without)\b", clean_sec.strip().lower())
+            ):
                 sec_list.append(clean_sec)
 
         if sec_list:

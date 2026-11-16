@@ -47,32 +47,30 @@ def test_branching_predicate_rules() -> None:
     assert should_use_sovereign_pipeline(5, threshold=60, has_key=True, mode="legacy") is False
 
 
-def test_orchestrator_routes_small_batch_to_pipeline_b_without_onnx(tmp_path) -> None:
-    l1_item = RetailerProduct(
-        store_name="Compumarts",
-        store_key="compumarts",
-        store_domain="compumarts.com",
-        title="Lenovo IdeaPad Slim 3 15IRH10",
-        product_url="https://compumarts.com/products/83k101ered",
-        price_egp=29000.0,
-        in_stock=True,
-        mpn="83K101ERED",
-    )
-    hydrated_item = _sample_product(1)
+def test_orchestrator_routes_small_batch_after_combiner_without_onnx(tmp_path) -> None:
+    # Two overlapping store listings combine into 1 unique laptop -> <= threshold (1) selects Pipeline B!
+    comp_item = _sample_product(1, store_key="compumarts")
+    sigma_item = _sample_product(1, store_key="sigma")
 
-    mock_scraper = MagicMock()
-    mock_scraper.store_name = "Compumarts"
-    mock_scraper.store_key = "compumarts"
-    mock_scraper.base_domain = "compumarts.com"
-    mock_scraper.scrape_catalog.return_value = [l1_item]
-    mock_scraper.hydrate_products_level2.return_value = [hydrated_item]
-    mock_scraper.skipped_laptops = []
+    mock_comp = MagicMock()
+    mock_comp.store_name = "Compumarts"
+    mock_comp.store_key = "compumarts"
+    mock_comp.base_domain = "compumarts.com"
+    mock_comp.scrape_catalog.return_value = [comp_item]
+    mock_comp.skipped_laptops = []
+
+    mock_sigma = MagicMock()
+    mock_sigma.store_name = "Sigma Computer"
+    mock_sigma.store_key = "sigma"
+    mock_sigma.base_domain = "sigma-computer.com"
+    mock_sigma.scrape_catalog.return_value = [sigma_item]
+    mock_sigma.skipped_laptops = []
 
     cfg = SovereignConfig(
         base_url="https://backend.sovereigneg.com/v1",
         primary_api_key="key-1",
         fallback_api_key="key-2",
-        batch_threshold=60,
+        batch_threshold=1,  # Raw count is 2 (>1), combined unique count is 1 (<=1) -> Pipeline B wins!
         micro_batch_size=2,
         max_concurrency=2,
     )
@@ -110,23 +108,25 @@ def test_orchestrator_routes_small_batch_to_pipeline_b_without_onnx(tmp_path) ->
 
     req = ScrapeRequest(
         target_type="store",
-        targets=["compumarts"],
+        targets=["compumarts", "sigma"],
         level=2,
         output_dir=str(out_dir),
         upload_to_bucket=False,
         send_email=False,
     )
 
+    def _get_store(k, _eng):
+        return mock_comp if k == "compumarts" else mock_sigma
+
     with (
-        patch("app.services.orchestrator.get_store_scraper", return_value=mock_scraper),
+        patch("app.services.orchestrator.get_store_scraper", side_effect=_get_store),
         patch("app.services.orchestrator.setup_ai_fallback") as mock_onnx_setup,
     ):
         res = orchestrator.execute(req)
 
-    # Phase 1 crawled Level 1 once; Phase 2 hydrated via hydrate_products_level2 and skipped ONNX
-    mock_scraper.scrape_catalog.assert_called_once()
-    assert mock_scraper.scrape_catalog.call_args.kwargs["level"] == 1
-    mock_scraper.hydrate_products_level2.assert_called_once_with([l1_item])
+    # Combined unique count is 1 (<= threshold 1), even though raw count was 2 -> ONNX never loaded!
+    assert mock_comp.scrape_catalog.call_args.kwargs["level"] == 2
+    assert mock_sigma.scrape_catalog.call_args.kwargs["level"] == 2
     mock_onnx_setup.assert_not_called()
     assert mock_client.complete_json.call_count == 1
     assert res.unified_total_laptops == 1

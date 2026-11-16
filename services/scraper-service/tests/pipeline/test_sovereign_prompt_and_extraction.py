@@ -105,3 +105,51 @@ def test_micro_batch_prompt_and_extraction_roundtrip() -> None:
     extracted = extract_batch_results(parsed, ["cid_1", "cid_2"])
     assert set(extracted.keys()) == {"cid_1", "cid_2"}
     assert extracted["cid_1"]["memory"]["capacity_gb"] == 16
+
+
+def test_validate_fixes_ethernet_microphone_clear_contract_bundle_and_noise() -> None:
+    det = empty_laptop_specifications()
+    det["identity"]["color"] = "White"
+    det["identity"]["is_bundle"] = False
+    det["connectivity"]["ethernet"] = "Gigabit Ethernet (RJ-45, 10/100/1000 Mbps)"
+    det["connectivity"]["ports"] = [
+        "120 Hz refresh rate",
+        "Wi-Fi 7(802.11be) (Triple band)2*2 Wireless Card",
+        "Bluetooth 5.4",
+        "1x RJ-45 Ethernet Port",
+    ]
+    det["audio_webcam"]["raw_spec"] = "Audio: Built-in Stereo Speakers and Array Microphone"
+    det["build_security"]["security_features"] = ["TPM 2.0", "No fingerprint reader"]
+
+    llm_output = {
+        "identity": {"color": None},
+        "connectivity": {"ports": ["1x RJ-45 Ethernet Port", "120 Hz refresh rate", "Bluetooth 5.4"]},
+        "audio_webcam": {"microphone": True},
+    }
+
+    normalized = validate_and_normalize_extracted_specs(
+        llm_output,
+        deterministic_specs=det,
+        title="LENOVO IdeaPad Slim 3 - White Backlit - Dos - Mouse + BAG",
+    )
+
+    assert normalized["connectivity"]["ethernet"] is True
+    assert normalized["connectivity"]["ethernet_speed"] == "1 Gbps"
+    assert normalized["connectivity"]["ports"] == ["1x RJ-45 Ethernet Port"]
+    assert normalized["audio_webcam"]["microphone"] == "Built-in microphone"
+    assert normalized["identity"]["is_bundle"] is True
+    assert normalized["identity"]["color"] is None
+    assert normalized["build_security"]["security_features"] == ["TPM 2.0"]
+
+
+def test_explicit_empty_ports_clears_bad_deterministic_ports() -> None:
+    det = empty_laptop_specifications()
+    det["connectivity"]["ports"] = ["120 Hz refresh rate"]
+
+    normalized = validate_and_normalize_extracted_specs(
+        {"connectivity": {"ports": []}},
+        deterministic_specs=det,
+        title="Dell Alienware 16 Aurora AC16250",
+    )
+
+    assert normalized["connectivity"]["ports"] == []
