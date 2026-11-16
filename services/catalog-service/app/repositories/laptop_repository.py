@@ -14,6 +14,7 @@ from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
 from app.repositories.base import BaseRepository
+from app.repositories.review_source_persistence import build_review_sources
 
 
 @dataclass(frozen=True, slots=True)
@@ -270,6 +271,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         stmt = select(LaptopConfiguration).options(
             selectinload(LaptopConfiguration.offers),
             selectinload(LaptopConfiguration.metrics),
+            selectinload(LaptopConfiguration.review_sources),
         )
 
         if parsed_uuid:
@@ -300,6 +302,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             .options(
                 selectinload(LaptopConfiguration.offers),
                 selectinload(LaptopConfiguration.metrics),
+                selectinload(LaptopConfiguration.review_sources),
             )
         )
         result = await self.session.execute(stmt)
@@ -312,6 +315,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             .options(
                 selectinload(LaptopConfiguration.offers),
                 selectinload(LaptopConfiguration.metrics),
+                selectinload(LaptopConfiguration.review_sources),
             )
         )
         result = await self.session.execute(stmt)
@@ -616,7 +620,10 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         stmt = (
             select(LaptopConfiguration)
             .where(LaptopConfiguration.canonical_id.in_(list(results.keys())))
-            .options(selectinload(LaptopConfiguration.metrics))
+            .options(
+                selectinload(LaptopConfiguration.metrics),
+                selectinload(LaptopConfiguration.review_sources),
+            )
         )
         laptops = (await self.session.execute(stmt)).scalars().unique().all()
 
@@ -687,6 +694,16 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
 
             metrics.updated_at = reviewed_at
             updated_count += 1
+
+            if "review_sources" in payload:
+                # Replace the collection idempotently: delete existing rows and
+                # flush before inserting so the (configuration, url) unique
+                # constraint can never observe both generations in one flush.
+                laptop.review_sources.clear()
+                await self.session.flush()
+                laptop.review_sources.extend(
+                    build_review_sources(laptop.id, payload.get("review_sources"))
+                )
 
         await self.session.flush()
         return updated_count

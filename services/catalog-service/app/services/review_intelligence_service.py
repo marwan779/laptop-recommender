@@ -26,7 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.review_text import align_bilingual_lists
 from app.common.storage import IObjectStorageService, get_storage_service
-from app.domain.reviews import ChassisTargetResolver, LaptopInputDto, ResolvedReviewTarget
+from app.domain.reviews import ChassisTargetResolver, LaptopInputDto, ResolvedReviewTarget, extract_review_sources
 from app.models.laptop import LaptopConfiguration
 from app.repositories.laptop_repository import LaptopRepository
 from app.repositories.outbox_repository import OutboxRepository
@@ -229,9 +229,13 @@ class ReviewIntelligenceService:
     @staticmethod
     def _extract_profile_dict(item: dict[str, Any]) -> dict[str, Any] | None:
         """Normalize Format B1 (`nlp_review_profile`) or Format B2 (`chassis_reviews`) into one profile."""
+        review_sources = [src.to_dict() for src in extract_review_sources(item)]
+
         profile = item.get("nlp_review_profile")
         if isinstance(profile, dict) and profile:
-            return dict(profile)
+            normalized = dict(profile)
+            normalized["review_sources"] = review_sources
+            return normalized
 
         lists = item.get("clean_profile_lists") if isinstance(item.get("clean_profile_lists"), dict) else {}
         aspects = item.get("aspect_scores")
@@ -253,6 +257,7 @@ class ReviewIntelligenceService:
             "aspect_scores": aspects if isinstance(aspects, dict) else {},
             "community_nlp_score": nlp_score,
             "evidence_count": evidence_count,
+            "review_sources": review_sources,
         }
 
     @classmethod
