@@ -703,10 +703,33 @@ def audit_and_deduplicate_payload(
         if isinstance(first.get("specs"), dict):
             entry["specs"] = first["specs"]
         if first_prof:
-            if first_prof.get("community_nlp_score") is not None:
-                entry["community_nlp_score"] = first_prof["community_nlp_score"]
-            if isinstance(first_prof.get("aspect_scores"), dict) and first_prof["aspect_scores"]:
-                entry["aspect_scores"] = dict(first_prof["aspect_scores"])
+            if first_prof.get("has_real_evidence") is False or (
+                scraped_doc_count == 0 and first_prof.get("evidence_count") == 0
+            ):
+                entry["evidence_count"] = 0
+                entry["has_real_evidence"] = False
+                entry["community_nlp_score"] = 75.0
+                entry["aspect_scores"] = {
+                    k: 75.0 for k in (first_prof.get("aspect_scores") or {}).keys()
+                }
+                entry["clean_profile_lists"] = {
+                    "pros_en": [],
+                    "pros_ar": [],
+                    "cons_en": [],
+                    "cons_ar": [],
+                }
+            else:
+                if first_prof.get("community_nlp_score") is not None:
+                    entry["community_nlp_score"] = first_prof["community_nlp_score"]
+                if isinstance(first_prof.get("aspect_scores"), dict) and first_prof["aspect_scores"]:
+                    entry["aspect_scores"] = dict(first_prof["aspect_scores"])
+                prof_ev = first_prof.get("evidence_count")
+                if prof_ev is not None:
+                    entry["evidence_count"] = max(int(prof_ev), int(scraped_doc_count))
+                elif scraped_doc_count > 0:
+                    entry["evidence_count"] = int(scraped_doc_count)
+        else:
+            entry["evidence_count"] = int(scraped_doc_count)
 
         dedup_chassis_list.append(entry)
 

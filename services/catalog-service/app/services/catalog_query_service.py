@@ -928,6 +928,7 @@ class CatalogQueryService:
                 ports=list(laptop.ports or []),
             ),
             metrics=metrics_detail,
+            has_reviews=bool(laptop.has_reviews),
             reviews_evidence_count=laptop.reviews_evidence_count or 0,
             pros_en=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[0],
             pros_ar=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[1],
@@ -1185,6 +1186,16 @@ class CatalogQueryService:
                 ports=list(con.get("ports") or []),
             ),
             metrics=metrics_detail,
+            has_reviews=bool(
+                lap.get(
+                    "has_reviews",
+                    bool(
+                        community_reviews.get("evidence_count")
+                        or community_reviews.get("pros_en")
+                        or community_reviews.get("review_sources")
+                    ),
+                )
+            ),
             reviews_evidence_count=_safe_int(community_reviews.get("evidence_count"), 0) or 0,
             pros_en=align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))[0],
             pros_ar=align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))[1],

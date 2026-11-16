@@ -355,6 +355,7 @@ class FullLaptopDetailResponse(BaseModel):
     metrics: HardwareMetricsDetail | None = None
 
     # Community Review Intelligence
+    has_reviews: bool = False
     reviews_evidence_count: int = 0
     pros_en: list[str] = Field(default_factory=list)
     pros_ar: list[str] = Field(default_factory=list)

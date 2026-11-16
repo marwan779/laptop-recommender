@@ -296,21 +296,55 @@ class ReviewIntelligenceService:
     # ─── Mappers ────────────────────────────────────────────────────────────
 
     @staticmethod
-    def _extract_profile_dict(item: dict[str, Any]) -> dict[str, Any] | None:
+    def _unreviewed_ingest_profile() -> dict[str, Any]:
+        return {
+            "pros_en": [],
+            "pros_ar": [],
+            "cons_en": [],
+            "cons_ar": [],
+            "aspect_scores": {},
+            "community_nlp_score": 75.0,
+            "evidence_count": 0,
+            "review_sources": [],
+            "has_real_evidence": False,
+        }
+
+    @classmethod
+    def _extract_profile_dict(cls, item: dict[str, Any]) -> dict[str, Any] | None:
         """Normalize Format B1 (`nlp_review_profile`) or Format B2 (`chassis_reviews`) into one profile."""
         review_sources = [src.to_dict() for src in extract_review_sources(item)]
+        has_raw_buckets = "youtube" in item or "communities" in item
 
         profile = item.get("nlp_review_profile")
         if isinstance(profile, dict) and profile:
+            if (
+                profile.get("has_real_evidence") is False
+                or (profile.get("evidence_count") == 0 and not review_sources)
+                or (has_raw_buckets and not review_sources)
+            ):
+                return cls._unreviewed_ingest_profile()
             normalized = dict(profile)
             normalized["review_sources"] = review_sources
+            normalized["has_real_evidence"] = True
             return normalized
+
+        audit_metrics = item.get("audit_metrics") if isinstance(item.get("audit_metrics"), dict) else {}
+        scraped_docs = audit_metrics.get("scraped_doc_count")
+
+        if (
+            item.get("has_real_evidence") is False
+            or (scraped_docs == 0 and not review_sources and item.get("evidence_count") in (None, 0))
+            or (item.get("evidence_count") == 0 and not review_sources)
+        ):
+            return cls._unreviewed_ingest_profile()
 
         lists = item.get("clean_profile_lists") if isinstance(item.get("clean_profile_lists"), dict) else {}
         aspects = item.get("aspect_scores")
         nlp_score = item.get("community_nlp_score")
         has_bilingual = any(item.get(k) for k in ("pros_en", "pros_ar", "cons_en", "cons_ar"))
         if not lists and not isinstance(aspects, dict) and nlp_score is None and not has_bilingual:
+            if review_sources:
+                return cls._unreviewed_ingest_profile()
             return None
 
         chunks = item.get("deduplicated_chunks") or []
@@ -327,6 +361,7 @@ class ReviewIntelligenceService:
             "community_nlp_score": nlp_score,
             "evidence_count": evidence_count,
             "review_sources": review_sources,
+            "has_real_evidence": True,
         }
 
     @classmethod

@@ -29,6 +29,7 @@ from app.domain.enrichment.models import (
 from app.domain.enrichment.scoring import (
     _build_llm_messages,
     _finalize_profile_with_recalibration,
+    build_unreviewed_profile,
     is_valid_nlp_profile,
     validate_enriched_profile,
 )
@@ -63,6 +64,27 @@ class ReviewsEnrichmentService:
         self.delta_cache_repository = delta_cache_repository or JsonDeltaCacheRepository()
         self.catalog_provider = catalog_provider or JsonCatalogSpecsProvider()
 
+    @staticmethod
+    def _has_real_evidence(evidence_pack: Dict[str, Any]) -> bool:
+        return bool(evidence_pack.get("snippets")) or int(evidence_pack.get("doc_count") or 0) > 0
+
+    @staticmethod
+    def _skipped_no_evidence_result(start_ts: float) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        return build_unreviewed_profile(), {
+            "model_used": None,
+            "path_taken": "skipped_no_evidence",
+            "fallback_triggered": False,
+            "raw_aspect_scores": {k: 75.0 for k in ASPECT_KEYS},
+            "latency_sec": round(time.perf_counter() - start_ts, 4),
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "reasoning_tokens": 0,
+            "total_tokens": 0,
+            "estimated_cost_egp": 0.0,
+            "valid": False,
+            "validation_errors": ["no_scraped_evidence"],
+        }
+
     # ------------------------------------------------------------------
     # Mode A: Zero-LLM grounded enrichment (offline fallback)
     # ------------------------------------------------------------------
@@ -81,6 +103,9 @@ class ReviewsEnrichmentService:
         t0 = time.perf_counter()
         if evidence_pack is None:
             evidence_pack = self.scorer.extract_hardware_sentences_jina(item, cat_map=cat_map)
+
+        if not self._has_real_evidence(evidence_pack):
+            return self._skipped_no_evidence_result(t0)
 
         specs = evidence_pack.get("specs_summary") or _format_catalog_specs_summary(item, cat_map)
         snippets = evidence_pack.get("snippets") or []
@@ -212,6 +237,9 @@ class ReviewsEnrichmentService:
         """
         if evidence_pack is None:
             evidence_pack = self.scorer.extract_hardware_sentences_jina(item, cat_map=cat_map)
+
+        if not self._has_real_evidence(evidence_pack):
+            return self._skipped_no_evidence_result(time.perf_counter())
 
         if mode == "zero_llm":
             return self.enrich_chassis_zero_llm(
@@ -430,7 +458,7 @@ class ReviewsEnrichmentService:
             total_cost_egp += float(tel.get("estimated_cost_egp") or 0.0)
             total_prompt_tokens += int(tel.get("prompt_tokens") or 0)
             total_completion_tokens += int(tel.get("completion_tokens") or 0)
-            if mode == "zero_llm" or ptaken in ("primary", "fallback"):
+            if ptaken != "skipped_no_evidence" and (mode == "zero_llm" or ptaken in ("primary", "fallback")):
                 entries[ckey] = {
                     "delta_hash": j_hash,
                     "model_used": tel.get("model_used"),

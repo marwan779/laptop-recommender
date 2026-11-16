@@ -714,3 +714,72 @@ async def test_seeder_sets_chassis_key_and_pre_dispatch_clones_reviewed_siblings
     assert (
         await db_session.execute(select(OutboxMessage).where(OutboxMessage.correlation_id == cloned_only_resp.job_id))
     ).scalar_one_or_none() is None
+
+
+@pytest.mark.asyncio
+async def test_zero_evidence_ingestion_keeps_has_reviews_false_and_enforces_cooldown(
+    db_session: AsyncSession,
+    tmp_path: Path,
+):
+    from datetime import timedelta
+
+    unique = uuid.uuid4().hex[:6]
+    cid = f"zero-ev-{unique}"
+    await CatalogSeederRepository(db_session).upsert_catalog(
+        {"laptops": [_build_sample_catalog_item(cid, mpn=f"MPN-ZEV-{unique}")]}
+    )
+
+    reviews_file = tmp_path / "zero_evidence_reviews.json"
+    reviews_file.write_text(
+        json.dumps(
+            {
+                "chassis_reviews": [
+                    {
+                        "chassis_key": f"test:zero:{unique}",
+                        "primary_canonical_id": cid,
+                        "matched_canonical_ids": [cid],
+                        "has_real_evidence": False,
+                        "evidence_count": 0,
+                        "audit_metrics": {"scraped_doc_count": 0},
+                        "clean_profile_lists": {"pros_en": [], "pros_ar": [], "cons_en": [], "cons_ar": []},
+                        "review_sources": [],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    res = await ReviewIntelligenceService().ingest_from_file(db_session, source_path=reviews_file, commit=False)
+    assert res.sql_laptops_updated == 1
+
+    db_session.expire_all()
+    laptop = (
+        await db_session.execute(
+            select(LaptopConfiguration)
+            .where(LaptopConfiguration.canonical_id == cid)
+            .options(selectinload(LaptopConfiguration.metrics), selectinload(LaptopConfiguration.review_sources))
+        )
+    ).scalar_one()
+
+    assert laptop.has_reviews is False
+    assert laptop.reviews_checked_at is not None
+    assert laptop.reviews_evidence_count == 0
+    assert laptop.pros_en == []
+    assert laptop.cons_en == []
+    assert laptop.review_sources == []
+    assert float(laptop.metrics.community_nlp_score) == 75.0
+    assert float(laptop.metrics.thermals_score) == 75.0
+
+    detail = await CatalogQueryService(session=db_session).get_laptop_detail(cid)
+    assert detail.has_reviews is False
+    assert detail.reviews_evidence_count == 0
+
+    repo = LaptopRepository(db_session)
+    recent_eligible = {r.canonical_id for r in await repo.get_unreviewed_laptops(retry_cooldown_days=7)}
+    assert cid not in recent_eligible
+
+    laptop.reviews_checked_at = datetime.now(UTC) - timedelta(days=8)
+    await db_session.flush()
+    expired_eligible = {r.canonical_id for r in await repo.get_unreviewed_laptops(retry_cooldown_days=7)}
+    assert cid in expired_eligible

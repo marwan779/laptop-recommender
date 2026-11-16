@@ -266,6 +266,13 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
   const reviewSources = (detail?.review_sources || []).filter((src) => Boolean(safeHttpUrl(src.url)))
   const showAllSources = expandedSourcesForId === laptop.canonical_id
   const visibleReviewSources = showAllSources ? reviewSources : reviewSources.slice(0, 6)
+  const hasVerifiedReviews = Boolean(
+    detail?.has_reviews ||
+      (detail?.reviews_evidence_count ?? 0) > 0 ||
+      pros.length > 0 ||
+      cons.length > 0 ||
+      reviewSources.length > 0
+  )
 
   // Operational Tiers with Human Mappings
   const siliconTier = getSiliconTierInfo(detail?.metrics?.silicon_tier, isAr)
@@ -1059,6 +1066,30 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                     ))}
                   </ul>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Honest empty state when zero verified community reviews exist yet */}
+          {detail && !loading && !hasVerifiedReviews && (
+            <div className="tile-block">
+              <div className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-raised)] px-4 py-3.5 space-y-1.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[var(--text-primary)]">
+                    <MessageSquare className="w-3.5 h-3.5 text-[var(--text-secondary)]" strokeWidth={1.8} />
+                    <span>
+                      {isAr ? 'بانتظار مراجعات المستخدمين الموثقة' : 'Pending Verified Community Reviews'}
+                    </span>
+                  </div>
+                  <span className="ai-chip tabular-nums">
+                    {isAr ? 'خط أساس محايد • 75.0' : 'Neutral Baseline • 75.0'}
+                  </span>
+                </div>
+                <p dir="auto" className="text-[12.5px] leading-[1.6] text-[var(--text-secondary)]">
+                  {isAr
+                    ? 'لم يتم العثور على مراجعات يوتيوب أو منتديات موثوقة لهذا الشاسيه حتى الآن. يتم التقييم مؤقتاً على خط أساس محايد (75.0) دون توليد مميزات أو عيوب مصطنعة حتى تتوفر تجارب حقيقية.'
+                    : 'No verified YouTube, forum, or editorial reviews have been collected for this chassis yet. Scoring uses a neutral 75.0 baseline without fabricated pros or cons until real owner evidence is available.'}
+                </p>
               </div>
             </div>
           )}

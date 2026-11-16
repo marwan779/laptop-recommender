@@ -1,7 +1,7 @@
 import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from sqlalchemy import func, or_, select, update
@@ -544,11 +544,11 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         result = await self.session.execute(stmt)
         return result.scalars().unique().all()
 
-    async def get_unreviewed_laptops(self) -> Sequence[LaptopConfiguration]:
-        """Fetch laptop configurations that have not had community reviews collected.
+    async def get_unreviewed_laptops(self, *, retry_cooldown_days: int = 7) -> Sequence[LaptopConfiguration]:
+        """Fetch unreviewed laptops eligible for scraping (respecting recent 0-evidence cooldown).
 
-        Offers and metrics are eagerly loaded so callers can aggregate store
-        product URLs and attach the hardware specs envelope without lazy-load I/O.
+        Offers, metrics, and review sources are eagerly loaded so callers can
+        resolve chassis keys, aggregate store URLs, or clone siblings cleanly.
         """
         stmt = (
             select(LaptopConfiguration)
@@ -558,8 +558,16 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
                 selectinload(LaptopConfiguration.review_sources),
             )
             .where(LaptopConfiguration.has_reviews.is_(False))
-            .order_by(LaptopConfiguration.laptop_added_at.asc())
         )
+        if retry_cooldown_days > 0:
+            cutoff = utcnow() - timedelta(days=retry_cooldown_days)
+            stmt = stmt.where(
+                or_(
+                    LaptopConfiguration.reviews_checked_at.is_(None),
+                    LaptopConfiguration.reviews_checked_at <= cutoff,
+                )
+            )
+        stmt = stmt.order_by(LaptopConfiguration.laptop_added_at.asc())
         result = await self.session.execute(stmt)
         return result.scalars().unique().all()
 
@@ -636,13 +644,27 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         reviewed_at: datetime,
         has_sources: bool,
         raw_sources: Any,
+        has_real_evidence: bool = True,
     ) -> None:
         """Apply bilingual pros/cons, NLP aspect scores, and review sources onto one laptop row."""
-        laptop.pros_en, laptop.pros_ar = align_bilingual_lists(pros_en, pros_ar)
-        laptop.cons_en, laptop.cons_ar = align_bilingual_lists(cons_en, cons_ar)
-        laptop.reviews_evidence_count = evidence_count
-        laptop.has_reviews = True
-        laptop.reviews_checked_at = reviewed_at
+        clean_pros_en, clean_pros_ar = align_bilingual_lists(pros_en, pros_ar)
+        clean_cons_en, clean_cons_ar = align_bilingual_lists(cons_en, cons_ar)
+        is_unreviewed = (not has_real_evidence) or (
+            evidence_count <= 0 and not clean_pros_en and not clean_cons_en and not raw_sources
+        )
+
+        if is_unreviewed:
+            laptop.pros_en, laptop.pros_ar = [], []
+            laptop.cons_en, laptop.cons_ar = [], []
+            laptop.reviews_evidence_count = 0
+            laptop.has_reviews = False
+            laptop.reviews_checked_at = reviewed_at
+        else:
+            laptop.pros_en, laptop.pros_ar = clean_pros_en, clean_pros_ar
+            laptop.cons_en, laptop.cons_ar = clean_cons_en, clean_cons_ar
+            laptop.reviews_evidence_count = evidence_count
+            laptop.has_reviews = True
+            laptop.reviews_checked_at = reviewed_at
 
         metrics = laptop.metrics
         if metrics is None:
@@ -682,17 +704,25 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             laptop.metrics = metrics
             self.session.add(metrics)
 
-        if community_nlp_score is not None:
-            metrics.community_nlp_score = community_nlp_score
+        if is_unreviewed:
+            metrics.community_nlp_score = 75.0
+            for key in _REVIEW_ASPECT_KEYS:
+                setattr(metrics, key, 75.0)
+        else:
+            if community_nlp_score is not None:
+                metrics.community_nlp_score = community_nlp_score
 
-        for key in _REVIEW_ASPECT_KEYS:
-            score = _coerce_optional_float(aspect_scores.get(key))
-            if score is not None:
-                setattr(metrics, key, score)
+            for key in _REVIEW_ASPECT_KEYS:
+                score = _coerce_optional_float(aspect_scores.get(key))
+                if score is not None:
+                    setattr(metrics, key, score)
 
         metrics.updated_at = reviewed_at
 
-        if has_sources:
+        if is_unreviewed:
+            laptop.review_sources.clear()
+            await self.session.flush()
+        elif has_sources:
             # Replace the collection idempotently: delete existing rows and
             # flush before inserting so the (configuration, url) unique
             # constraint can never observe both generations in one flush.
@@ -797,6 +827,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
                 reviewed_at=reviewed_at,
                 has_sources="review_sources" in payload,
                 raw_sources=payload.get("review_sources"),
+                has_real_evidence=payload.get("has_real_evidence") is not False,
             )
             updated_count += 1
 
