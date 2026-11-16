@@ -94,7 +94,7 @@ class LaptopMagPlatformScraper(ICommunityPlatformScraper):
                 review_urls = self._extract_review_urls(search_html, laptop_target)[: self.max_results]
                 reviews: list[EditorialReview] = []
                 for review_url in review_urls:
-                    review_html = await get_text(client, review_url)
+                    review_html = await get_text(client, review_url, persistent=True)
                     if not review_html:
                         continue
                     parsed = self._parse_review(review_html, review_url, laptop_target=laptop_target)

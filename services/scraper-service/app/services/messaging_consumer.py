@@ -15,6 +15,7 @@ from typing import Any
 
 from app.common.messaging.contract import IMessageBroker
 from app.common.messaging.inbox import RedisInboxDeduplicator
+from app.common.cache import ICacheProvider
 from app.price_monitor.models import PriceCheckBatchRequest
 from app.price_monitor.service import PriceMonitorService
 from app.schemas.events import (
@@ -48,11 +49,16 @@ class ScraperMessageConsumer:
         price_monitor: PriceMonitorService | None = None,
         review_collector: ReviewCollectorService | None = None,
         inbox: RedisInboxDeduplicator | None = None,
+        cache_provider: ICacheProvider | None = None,
     ) -> None:
         self.broker = broker
         self.orchestrator = orchestrator or ScrapeOrchestrator()
         self.price_monitor = price_monitor or PriceMonitorService()
-        self.review_collector = review_collector or ReviewCollectorService(broker=self.broker)
+        resolved_cache = cache_provider if cache_provider is not None else getattr(inbox, "cache", None)
+        self.review_collector = review_collector or ReviewCollectorService(
+            broker=self.broker,
+            cache_provider=resolved_cache,
+        )
         self.inbox = inbox
 
     async def _claim(self, event_id: str, event_type: str) -> bool:

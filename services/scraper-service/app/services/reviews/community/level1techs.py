@@ -118,7 +118,7 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
         """Fetch un-truncated post body from Discourse post endpoint."""
         try:
             url = f"{LEVEL1TECHS_BASE_URL}/posts/{post_id}.json"
-            data = await get_json(client, url)
+            data = await get_json(client, url, persistent=True)
             if isinstance(data, dict):
                 raw = str(data.get("raw") or "").strip()
                 if raw:

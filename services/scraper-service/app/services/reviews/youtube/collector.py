@@ -18,10 +18,13 @@ import asyncio
 import logging
 from typing import Any
 
+from app.common.cache import ICacheProvider
+from app.core.cache_config import get_cache_settings
 from app.domain.reviews.queries import YouTubeQueryBuilder
 from app.domain.reviews.relevance import matches_target_text
 from app.schemas.events import LaptopReviewTarget
-from app.schemas.reviews_s3 import YouTubeComment, YouTubeReviewData, YouTubeVideo
+from app.schemas.reviews_s3 import TranscriptSegment, YouTubeComment, YouTubeReviewData, YouTubeVideo
+from app.services.reviews.cache import ReviewsPersistentCache
 from app.services.reviews.chassis_key import build_chassis_key
 from app.services.reviews.contracts import IYouTubeReviewsCollector
 from app.services.reviews.youtube.search import YouTubeSearchService
@@ -41,17 +44,39 @@ class YouTubeReviewsCollector(IYouTubeReviewsCollector):
         query_builder: YouTubeQueryBuilder | None = None,
         search_service: YouTubeSearchService | None = None,
         transcript_service: YouTubeTranscriptService | None = None,
+        cache_provider: ICacheProvider | None = None,
+        cache_ttl_seconds: int | None = None,
     ) -> None:
         self.query_builder = query_builder or YouTubeQueryBuilder()
         self.search_service = search_service or YouTubeSearchService()
         self.transcript_service = transcript_service or YouTubeTranscriptService()
 
+        # L2 cache shared across batches; None keeps the collector uncached.
+        self._persistent_cache: ReviewsPersistentCache | None = None
+        if cache_provider is not None:
+            ttl = (
+                cache_ttl_seconds
+                if cache_ttl_seconds is not None
+                else get_cache_settings().review_youtube_cache_ttl_seconds
+            )
+            self._persistent_cache = ReviewsPersistentCache(
+                cache_provider,
+                youtube_ttl_seconds=ttl,
+            )
+
         # Batch-level single-flight caches & per-key locks so neither identical
         # search queries nor shared video IDs are scraped twice in one batch.
+        # Search results stay process-local so every batch discovers new videos.
         self._search_cache: dict[str, list[dict[str, Any]]] = {}
         self._search_locks: dict[str, asyncio.Lock] = {}
         self._video_cache: dict[str, YouTubeVideo] = {}
         self._video_locks: dict[str, asyncio.Lock] = {}
+
+    def cache_stats(self) -> dict[str, int]:
+        """Return persistent-cache telemetry (empty when caching is disabled)."""
+        if self._persistent_cache is None:
+            return {}
+        return self._persistent_cache.stats_summary()
 
     async def collect_for_targets(
         self,
@@ -199,6 +224,19 @@ class YouTubeReviewsCollector(IYouTubeReviewsCollector):
         video_url = str(video.get("video_url") or f"https://www.youtube.com/watch?v={video_id}")
 
         needs_comments = bool(video.get("comments_deferred")) or ("top_comments" not in video)
+
+        if self._persistent_cache is not None and video_id:
+            cached_payload = await self._persistent_cache.get_youtube_video(video_id)
+            if cached_payload is not None:
+                cached_model = self._reconstruct_cached_video(
+                    video_id,
+                    video,
+                    video_url,
+                    payload=cached_payload,
+                )
+                if cached_model is not None:
+                    return cached_model
+
         can_fetch_comments = needs_comments and callable(getattr(self.search_service, "fetch_top_comments", None))
 
         if can_fetch_comments:
@@ -217,7 +255,7 @@ class YouTubeReviewsCollector(IYouTubeReviewsCollector):
 
         transcript_text, segments, language, is_auto = transcript_res
 
-        return YouTubeVideo(
+        model = YouTubeVideo(
             video_id=video_id,
             title=str(video.get("title") or ""),
             channel_name=video.get("channel_name"),
@@ -232,6 +270,50 @@ class YouTubeReviewsCollector(IYouTubeReviewsCollector):
             transcript_segments=segments,
             top_comments=top_comments,
         )
+
+        if self._persistent_cache is not None and video_id:
+            await self._persistent_cache.set_youtube_video(video_id, model)
+
+        return model
+
+    def _reconstruct_cached_video(
+        self,
+        video_id: str,
+        video: dict[str, Any],
+        video_url: str,
+        *,
+        payload: dict[str, Any],
+    ) -> YouTubeVideo | None:
+        """Rebuild a ``YouTubeVideo`` from cached evidence plus fresh search metadata."""
+        try:
+            segments = [
+                TranscriptSegment.model_validate(segment) for segment in (payload.get("transcript_segments") or [])
+            ]
+            cached_comments = [
+                YouTubeComment.model_validate(comment) for comment in (payload.get("top_comments") or [])
+            ]
+
+            provided_comments = list(video.get("top_comments") or [])
+            top_comments = provided_comments if len(provided_comments) > len(cached_comments) else cached_comments
+
+            return YouTubeVideo(
+                video_id=video_id,
+                title=str(video.get("title") or ""),
+                channel_name=video.get("channel_name"),
+                channel_url=video.get("channel_url"),
+                video_url=video_url,
+                published_at=video.get("published_at"),
+                duration_seconds=video.get("duration_seconds"),
+                view_count=video.get("view_count"),
+                language=str(payload.get("language") or "en"),
+                is_auto_generated_captions=bool(payload.get("is_auto_generated_captions", False)),
+                transcript_text=str(payload.get("transcript_text") or ""),
+                transcript_segments=segments,
+                top_comments=top_comments,
+            )
+        except Exception as exc:  # noqa: BLE001 - corrupted entries fall back to live fetch
+            logger.warning("Discarding unusable cached YouTube payload for '%s': %s", video_id, exc)
+            return None
 
 
 __all__ = ["YouTubeReviewsCollector"]

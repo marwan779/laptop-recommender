@@ -113,7 +113,7 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
     async def _fetch_full_article(client: Any, url: str) -> str | None:
         """Fetch un-truncated article or review body from Arabhardware."""
         try:
-            html = await get_text(client, url)
+            html = await get_text(client, url, persistent=True)
             if not html:
                 return None
             from bs4 import BeautifulSoup  # noqa: PLC0415
