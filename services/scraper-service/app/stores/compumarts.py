@@ -3,6 +3,7 @@ import json
 import re
 import sys
 import time
+from typing import Any
 from urllib.parse import quote_plus, urljoin
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -323,58 +324,11 @@ class CompumartsStoreScraper(BaseStoreScraper):
 
         seen_urls.add(full_url)
 
-        # ---------------------------------------------------------------------
-        # Level 1 vs Level 2 Branching
-        # ---------------------------------------------------------------------
+        # Level 2 hydration happens once in _apply_level2_specs so that
+        # scrape_catalog(level=2) and hydrate_products_level2 share one path.
         specs: dict[str, str] = {}
         raw_desc: str | None = None
         pdp_sku: str | None = None
-        has_text_specs: bool = True
-        specs_extraction_source: str = "dom"
-        specs_fallback_reason: str | None = None
-        has_specs_image: bool = False
-        specs_image_url: str | None = None
-        pattern_learned: bool = False
-        learned_pattern_type: str | None = None
-
-        if level == 2:
-            # Level 2: Deep Product Detail Page (PDP) Extraction
-            spec_res = self._extract_product_specs(full_url, title=title)
-            if isinstance(spec_res, tuple) and not hasattr(spec_res, "specs"):
-                specs = spec_res[0] if len(spec_res) > 0 else {}
-                raw_desc = spec_res[1] if len(spec_res) > 1 else None
-                pdp_price_val = spec_res[2] if len(spec_res) > 2 else None
-                pdp_price_str = spec_res[3] if len(spec_res) > 3 else None
-                pdp_sku = spec_res[4] if len(spec_res) > 4 else None
-                pdp_in_stock = spec_res[5] if len(spec_res) > 5 else None
-                has_text_specs = bool(specs)
-                specs_extraction_source = "dom"
-                specs_fallback_reason = None
-                has_specs_image = False
-                specs_image_url = None
-            else:
-                specs = spec_res.specs
-                raw_desc = spec_res.raw_description
-                pdp_price_val = spec_res.price_val
-                pdp_price_str = spec_res.price_str
-                pdp_sku = spec_res.sku
-                pdp_in_stock = spec_res.in_stock
-                has_text_specs = spec_res.has_text_specs
-                specs_extraction_source = spec_res.specs_extraction_source
-                specs_fallback_reason = spec_res.specs_fallback_reason
-                has_specs_image = spec_res.has_specs_image
-                specs_image_url = spec_res.specs_image_url
-                pattern_learned = getattr(spec_res, "pattern_learned", False)
-                learned_pattern_type = getattr(spec_res, "learned_pattern_type", None)
-
-            # Gate 2: Deep PDP validation
-            if self.should_skip_pdp(title=title, specs=specs, url=full_url, description=raw_desc):
-                return None
-
-            if pdp_price_val is not None:
-                price_val, price_str = pdp_price_val, pdp_price_str
-            if pdp_in_stock is not None:
-                in_stock = pdp_in_stock
 
         # Normalization and model token extraction
         combined_text = f"{title} {pdp_sku or ''} {' '.join(specs.values())}"
@@ -384,7 +338,7 @@ class CompumartsStoreScraper(BaseStoreScraper):
         mpn = pdp_sku or tokens.get("mpn")
         model_code = tokens.get("full_sku") or tokens.get("base_model")
 
-        return RetailerProduct(
+        product = RetailerProduct(
             store_name=self.store_name,
             store_key=self.store_key,
             store_domain=self.base_domain,
@@ -402,13 +356,121 @@ class CompumartsStoreScraper(BaseStoreScraper):
             thumbnail_url=thumbnail_url,
             specs=specs,
             raw_description=raw_desc,
-            has_text_specs=has_text_specs,
-            specs_extraction_source=specs_extraction_source,
-            specs_fallback_reason=specs_fallback_reason,
-            has_specs_image=has_specs_image,
-            specs_image_url=specs_image_url,
-            pattern_learned=pattern_learned,
-            learned_pattern_type=learned_pattern_type,
+            has_text_specs=True,
+            specs_extraction_source="dom",
+            specs_fallback_reason=None,
+            has_specs_image=False,
+            specs_image_url=None,
+            pattern_learned=False,
+            learned_pattern_type=None,
+        )
+
+        if level == 2:
+            return self._apply_level2_specs(product)
+        return product
+
+    def hydrate_products_level2(self, products: list[RetailerProduct]) -> list[RetailerProduct]:
+        """Hydrate already-discovered Level 1 products with Level 2 PDP specs."""
+        hydrated: list[RetailerProduct] = []
+        for product in products:
+            with resilient_boundary(
+                category=ErrorCategory.DOM_PARSING,
+                source_component="store.compumarts.hydrate",
+                context={"url": product.product_url, "title": product.title},
+                suppress=True,
+            ) as boundary_ctx:
+                enriched = self._apply_level2_specs(product)
+            if boundary_ctx.has_error or enriched is None:
+                # Fail-open: keep the valid Level 1 product instead of losing it.
+                hydrated.append(product)
+                continue
+            hydrated.append(enriched)
+        return hydrated
+
+    @staticmethod
+    def _unpack_spec_result(spec_res: Any) -> dict[str, Any]:
+        """Normalize CompumartsSpecResult or legacy tuple into a plain mapping."""
+        if isinstance(spec_res, tuple) and not hasattr(spec_res, "specs"):
+            specs = spec_res[0] if len(spec_res) > 0 else {}
+            return {
+                "specs": specs,
+                "raw_description": spec_res[1] if len(spec_res) > 1 else None,
+                "price_val": spec_res[2] if len(spec_res) > 2 else None,
+                "price_str": spec_res[3] if len(spec_res) > 3 else None,
+                "sku": spec_res[4] if len(spec_res) > 4 else None,
+                "in_stock": spec_res[5] if len(spec_res) > 5 else None,
+                "has_text_specs": bool(specs),
+                "specs_extraction_source": "dom",
+                "specs_fallback_reason": None,
+                "has_specs_image": False,
+                "specs_image_url": None,
+                "pattern_learned": False,
+                "learned_pattern_type": None,
+            }
+        return {
+            "specs": getattr(spec_res, "specs", {}) or {},
+            "raw_description": getattr(spec_res, "raw_description", None),
+            "price_val": getattr(spec_res, "price_val", None),
+            "price_str": getattr(spec_res, "price_str", None),
+            "sku": getattr(spec_res, "sku", None),
+            "in_stock": getattr(spec_res, "in_stock", None),
+            "has_text_specs": getattr(spec_res, "has_text_specs", True),
+            "specs_extraction_source": getattr(spec_res, "specs_extraction_source", "dom"),
+            "specs_fallback_reason": getattr(spec_res, "specs_fallback_reason", None),
+            "has_specs_image": getattr(spec_res, "has_specs_image", False),
+            "specs_image_url": getattr(spec_res, "specs_image_url", None),
+            "pattern_learned": getattr(spec_res, "pattern_learned", False),
+            "learned_pattern_type": getattr(spec_res, "learned_pattern_type", None),
+        }
+
+    def _apply_level2_specs(self, product: RetailerProduct) -> RetailerProduct | None:
+        """Fetch and merge the PDP specs into an existing Level 1 product.
+
+        Shared by ``scrape_catalog(level=2)`` and ``hydrate_products_level2`` so
+        there is exactly one PDP parsing path per store. Returns ``None`` when
+        Gate 2 rejects the product.
+        """
+        full_url = product.product_url
+        title = product.title
+        spec_res = self._extract_product_specs(full_url, title=title)
+        unpacked = self._unpack_spec_result(spec_res)
+
+        specs: dict[str, str] = unpacked["specs"] or {}
+        raw_desc = unpacked["raw_description"]
+        pdp_sku = unpacked["sku"]
+        pdp_in_stock = unpacked["in_stock"]
+
+        if self.should_skip_pdp(title=title, specs=specs, url=full_url, description=raw_desc):
+            return None
+
+        price_val, price_str = product.price_egp, product.price_str
+        if unpacked["price_val"] is not None:
+            price_val, price_str = unpacked["price_val"], unpacked["price_str"]
+        in_stock = product.in_stock if pdp_in_stock is None else bool(pdp_in_stock)
+
+        combined_text = f"{title} {pdp_sku or ''} {' '.join(specs.values())}"
+        tokens = ModelNormalizer.extract_model_tokens(combined_text)
+
+        return product.model_copy(
+            update={
+                "retailer_sku": pdp_sku or product.retailer_sku,
+                "mpn": pdp_sku or tokens.get("mpn"),
+                "model_code": tokens.get("full_sku") or tokens.get("base_model"),
+                "sub_model": tokens.get("sub_model"),
+                "base_model": tokens.get("base_model"),
+                "price_egp": price_val,
+                "price_str": price_str,
+                "in_stock": in_stock,
+                "specs": specs,
+                "raw_description": raw_desc,
+                "has_text_specs": unpacked["has_text_specs"],
+                "specs_extraction_source": unpacked["specs_extraction_source"],
+                "specs_fallback_reason": unpacked["specs_fallback_reason"],
+                "has_specs_image": unpacked["has_specs_image"],
+                "specs_image_url": unpacked["specs_image_url"],
+                "pattern_learned": unpacked["pattern_learned"],
+                "learned_pattern_type": unpacked["learned_pattern_type"],
+            }
         )
 
     def _extract_product_specs(self, product_url: str, title: str = "") -> CompumartsSpecResult:
