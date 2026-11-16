@@ -9,6 +9,7 @@ from app.domain.reviews.chassis import (
     ChassisTargetResolver,
     LaptopInputDto,
     ResolvedReviewTarget,
+    is_clonable_chassis_key,
 )
 from app.domain.reviews.sources import (
     ReviewSourceItem,
@@ -23,6 +24,7 @@ __all__ = [
     "ChassisTargetResolver",
     "LaptopInputDto",
     "ResolvedReviewTarget",
+    "is_clonable_chassis_key",
     "ReviewSourceItem",
     "clean_http_url",
     "extract_review_sources",

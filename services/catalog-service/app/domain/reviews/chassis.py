@@ -13,7 +13,7 @@ variant's MPN.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 import re
 from typing import Any
@@ -276,6 +276,37 @@ class ChassisKeyExtractor:
         return f"{brand}:{family}"
 
     @classmethod
+    def from_catalog_item(cls, item: Mapping[str, Any]) -> str:
+        """Compute canonical chassis key directly from a raw catalog JSON item."""
+        specs = item.get("specs") if isinstance(item.get("specs"), Mapping) else {}
+        ident = specs.get("identity") if isinstance(specs.get("identity"), Mapping) else {}
+        disp = specs.get("display") if isinstance(specs.get("display"), Mapping) else {}
+
+        canonical_id = str(item.get("canonical_id") or "")
+        brand = ident.get("brand") or item.get("brand")
+        family = ident.get("laptop_family") or item.get("laptop_family")
+        model = ident.get("laptop_model") or item.get("laptop_model") or item.get("title")
+        title = item.get("title") or model
+        mpn = item.get("mpn") or ident.get("manufacturer_part_number")
+        raw_size = disp.get("size_inches")
+        try:
+            screen_size = float(raw_size) if raw_size is not None else None
+        except (TypeError, ValueError):
+            screen_size = None
+
+        dto = LaptopInputDto(
+            laptop_id=canonical_id,
+            canonical_id=canonical_id,
+            title=str(title) if title is not None else None,
+            brand=str(brand) if brand is not None else None,
+            laptop_family=str(family) if family is not None else None,
+            laptop_model=str(model) if model is not None else None,
+            mpn=str(mpn) if mpn is not None else None,
+            screen_size=screen_size,
+        )
+        return cls.extract(dto)
+
+    @classmethod
     def extract_sub_model(cls, laptop: LaptopInputDto) -> str | None:
         """Extract the chassis/sub-model code, or ``None`` when unavailable."""
         brand_lower = (laptop.brand or "").strip().lower()
@@ -506,9 +537,20 @@ class ChassisTargetResolver:
             target.append(cleaned)
 
 
+def is_clonable_chassis_key(chassis_key: str | None) -> bool:
+    """Return True only when a chassis key is specific enough for safe sibling cloning."""
+    if not chassis_key:
+        return False
+    parts = [part.strip().lower() for part in str(chassis_key).split(":") if part.strip()]
+    if len(parts) < 3:
+        return False
+    return not any(token in {"generic", "unknown"} for token in parts)
+
+
 __all__ = [
     "ChassisKeyExtractor",
     "ChassisTargetResolver",
     "LaptopInputDto",
     "ResolvedReviewTarget",
+    "is_clonable_chassis_key",
 ]

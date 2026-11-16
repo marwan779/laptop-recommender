@@ -114,6 +114,7 @@ class ReviewsCronCliRunner(BaseCliJobRunner[ReviewsCliOptions, ReviewsTriggerRes
         print(f"Status:           {result.status}", file=self._stdout)
         print(f"Chassis Queued:   {result.chassis_targets_queued}", file=self._stdout)
         print(f"Laptops Matched:  {result.laptops_matched}", file=self._stdout)
+        print(f"Laptops Cloned:   {result.laptops_cloned}", file=self._stdout)
         print(f"Upload To S3:     {options.upload_to_s3}", file=self._stdout)
         print(f"Message:          {result.message}", file=self._stdout)
         print("=" * 60 + "\n", file=self._stdout)

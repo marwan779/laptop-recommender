@@ -26,7 +26,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.review_text import align_bilingual_lists
 from app.common.storage import IObjectStorageService, get_storage_service
-from app.domain.reviews import ChassisTargetResolver, LaptopInputDto, ResolvedReviewTarget, extract_review_sources
+from app.domain.reviews import (
+    ChassisKeyExtractor,
+    ChassisTargetResolver,
+    LaptopInputDto,
+    ResolvedReviewTarget,
+    extract_review_sources,
+    is_clonable_chassis_key,
+)
 from app.models.laptop import LaptopConfiguration
 from app.repositories.laptop_repository import LaptopRepository
 from app.repositories.outbox_repository import OutboxRepository
@@ -100,17 +107,73 @@ class ReviewIntelligenceService:
                 status="NO_UNREVIEWED_LAPTOPS",
                 chassis_targets_queued=0,
                 laptops_matched=0,
+                laptops_cloned=0,
                 message="No laptops require community review collection.",
             )
 
-        inputs = [self._to_review_input(laptop) for laptop in laptops]
+        cloned_count = 0
+        pending_laptops = list(laptops)
+        if not force_all:
+            keyed_laptops: list[tuple[LaptopConfiguration, str]] = []
+            for laptop in pending_laptops:
+                key = laptop.chassis_key or ChassisKeyExtractor.extract(self._to_review_input(laptop))
+                if not laptop.chassis_key and key:
+                    laptop.chassis_key = key[:255]
+                keyed_laptops.append((laptop, key))
+
+            clonable_keys = [k for _, k in keyed_laptops if is_clonable_chassis_key(k)]
+            donors_by_key = await laptop_repo.get_reviewed_donors_by_chassis_keys(clonable_keys)
+
+            clone_pairs: list[tuple[LaptopConfiguration, LaptopConfiguration]] = []
+            remaining: list[LaptopConfiguration] = []
+            for laptop, key in keyed_laptops:
+                donor = donors_by_key.get(key) if is_clonable_chassis_key(key) else None
+                if donor is not None:
+                    clone_pairs.append((laptop, donor))
+                else:
+                    remaining.append(laptop)
+
+            if clone_pairs:
+                cloned_count = await laptop_repo.clone_reviews_from_donors(clone_pairs)
+                logger.info(
+                    "Cloned existing chassis reviews for %d/%d unreviewed laptops [%s].",
+                    cloned_count,
+                    len(pending_laptops),
+                    job_id,
+                )
+            pending_laptops = remaining
+
+            if not pending_laptops:
+                if commit:
+                    await session.commit()
+                else:
+                    await session.flush()
+                return ReviewsTriggerResponse(
+                    job_id=job_id,
+                    status="CLONED_EXISTING",
+                    chassis_targets_queued=0,
+                    laptops_matched=0,
+                    laptops_cloned=cloned_count,
+                    message=(
+                        f"Cloned existing chassis reviews for {cloned_count} unreviewed laptops; "
+                        "no new chassis require scraping."
+                    ),
+                )
+
+        inputs = [self._to_review_input(laptop) for laptop in pending_laptops]
         targets = self.review_resolver.resolve(inputs)
         if not targets:
+            if cloned_count > 0:
+                if commit:
+                    await session.commit()
+                else:
+                    await session.flush()
             return ReviewsTriggerResponse(
                 job_id=job_id,
                 status="NO_TARGETS",
                 chassis_targets_queued=0,
-                laptops_matched=len(laptops),
+                laptops_matched=len(pending_laptops),
+                laptops_cloned=cloned_count,
                 message="Chassis resolution produced no review targets.",
             )
 
@@ -139,20 +202,26 @@ class ReviewIntelligenceService:
             await session.flush()
 
         logger.info(
-            "Queued review scrape command [%s]: %d laptops collapsed into %d chassis targets (upload_to_s3=%s).",
+            "Queued review scrape command [%s]: %d laptops collapsed into %d chassis targets (cloned=%d, upload_to_s3=%s).",
             job_id,
             matched_laptop_count,
             len(targets),
+            cloned_count,
             upload_to_s3,
+        )
+        msg = (
+            f"Cloned {cloned_count} laptops from reviewed chassis siblings and queued "
+            f"{len(targets)} new chassis targets ({matched_laptop_count} laptops) for review scraping."
+            if cloned_count > 0
+            else f"Queued {len(targets)} chassis targets from {matched_laptop_count} laptops for community review scraping."
         )
         return ReviewsTriggerResponse(
             job_id=job_id,
             status="QUEUED",
             chassis_targets_queued=len(targets),
             laptops_matched=matched_laptop_count,
-            message=(
-                f"Queued {len(targets)} chassis targets from {matched_laptop_count} laptops for community review scraping."
-            ),
+            laptops_cloned=cloned_count,
+            message=msg,
         )
 
     # ─── Ingestion ──────────────────────────────────────────────────────────

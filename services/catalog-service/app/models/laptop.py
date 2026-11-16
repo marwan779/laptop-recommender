@@ -23,6 +23,7 @@ class LaptopConfiguration(Base):
     __tablename__ = "laptop_configuration"
     __table_args__ = (
         Index("ix_laptop_cursor_price_id", "min_price_egp", "id"),
+        Index("ix_laptop_chassis_reviewed", "chassis_key", "has_reviews"),
     )
 
     # Identity & Presentation
@@ -147,6 +148,7 @@ class LaptopConfiguration(Base):
     price_checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
 
     # Community Reviews Lifecycle
+    chassis_key: Mapped[str | None] = mapped_column(String(255), index=True, default=None)
     has_reviews: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     reviews_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
     reviews_evidence_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
