@@ -95,6 +95,62 @@ _ROUNDUP_TITLE_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Desktop motherboard chipsets / build-only vocabulary. These are only vetoed
+# when the surrounding text lacks an explicit laptop-chassis context.
+_DESKTOP_BUILD_PATTERN = re.compile(
+    r"\b(?:b550|b650e?|x570|x670e?|z890|z790|b760|b860|x870e?|a620|h610)[a-z0-9-]*\b|"
+    r"\b(?:bios\s+raid|vfio|pcie\s+passthrough|iommu\s+passthrough)\b|"
+    r"\b(?:motherboard|mainboard|mobo)\b",
+    re.IGNORECASE,
+)
+
+# Handheld consoles and wearables that are never laptop reviews.
+_HANDHELD_OR_WEARABLE_PATTERN = re.compile(
+    r"\b(?:legion\s+go(\s+s)?|rog\s+ally(\s+x)?|steam\s+deck|smart\s+glasses|ar\s+glasses|vr\s+headset)\b|"
+    r"(نظارات)",
+    re.IGNORECASE,
+)
+
+# Arabic promo/giveaway/launch wording, only vetoed when the sample is not a
+# clear laptop review.
+_ARABIC_PROMO_PATTERN = re.compile(r"(مسابقة|اربح|معرض|تسريب|نظارات|شاشة)")
+_POSITIVE_REVIEW_SIGNAL_PATTERN = re.compile(
+    r"(?:#\s*review|hands-on\s+review|\btesting\b|pros\s+and\s+cons|مراجعة|تجربة|تقييم|اختبار)",
+    re.IGNORECASE,
+)
+
+# Buying-advice and troubleshooting threads are discussion noise, not reviews.
+_SUPPORT_OR_ADVICE_PATTERN = re.compile(
+    r"\b(?:looking\s+for\s+(?:a\s+)?new\s+laptop|need\s+(?:a\s+)?new\s+laptop|"
+    r"which\s+laptop\s+should\s+i\s+get|should\s+i\s+buy|advice\s+for\s+buying|"
+    r"in\s+the\s+market\s+for|recommend\s+me|please\s+help|pls\s+help|"
+    r"compatible\s+ram|ram\s+upgrade|fatal\s+trackpad\s+issue|tpm\s+bios\s+problem|"
+    r"freezes\s+on\s+linux|kernel\s+panic|how\s+to\s+limit\s+charging|"
+    r"display\s+upgrade|external\s+gpu\s+for|wmic|lspci|dual\s+boot)\b",
+    re.IGNORECASE,
+)
+_TITLE_REVIEW_WORD_RE = re.compile(r"\breview\b", re.IGNORECASE)
+_TITLE_HELP_OR_ADVICE_RE = re.compile(r"\b(?:looking\s+for|which\s+laptop|advice|help)\b", re.IGNORECASE)
+
+
+def is_support_or_buying_advice_text(title: str, body: str = "") -> bool:
+    """Return ``True`` for buying-advice or troubleshooting-help threads.
+
+    Positive review signals win so genuine reviews that happen to mention a
+    troubleshooting keyword or advise readers while testing are preserved. A
+    title that explicitly says ``review`` also wins unless it is itself asking
+    for help or buying advice (e.g. "Lenovo LOQ 15 Review - Should I Buy?").
+    """
+    title_str = title or ""
+    sample = f"{title_str}\n{body or ''}".strip()
+    if not sample:
+        return False
+    if _TITLE_REVIEW_WORD_RE.search(title_str) and not _TITLE_HELP_OR_ADVICE_RE.search(title_str):
+        return False
+    if _POSITIVE_REVIEW_SIGNAL_PATTERN.search(sample):
+        return False
+    return bool(_SUPPORT_OR_ADVICE_PATTERN.search(sample))
+
 
 def is_non_laptop_device_text(title: str, text: str = "") -> bool:
     """Return ``True`` if title/text refers to a non-laptop device, component, or accessory."""
@@ -105,6 +161,24 @@ def is_non_laptop_device_text(title: str, text: str = "") -> bool:
         return False
 
     has_laptop_context = bool(LAPTOP_CONTEXT_PATTERN.search(sample))
+
+    if title_str and _HANDHELD_OR_WEARABLE_PATTERN.search(title_str):
+        return True
+    if body_prefix and _HANDHELD_OR_WEARABLE_PATTERN.search(body_prefix[:180]) and not has_laptop_context:
+        return True
+
+    if _DESKTOP_BUILD_PATTERN.search(sample) and not has_laptop_context:
+        return True
+
+    if _HPE_COLLISION_RE.search(sample) and not has_laptop_context:
+        return True
+
+    if title_str and _THREE_D_PRINTING_RE.search(title_str):
+        return True
+
+    if title_str and _ARABIC_PROMO_PATTERN.search(title_str):
+        if not (has_laptop_context and _POSITIVE_REVIEW_SIGNAL_PATTERN.search(sample)):
+            return True
 
     # Standalone accessory check against headline first (prevents "charging" / "backlit keyboard"
     # mentions in laptop review paragraphs from triggering false vetoes).
@@ -280,6 +354,13 @@ _HARDWARE_SPEC_CODE_RE = re.compile(
     r"^(?:RTX\d+|GTX\d+|DDR\d[A-Z]*|LPDDR\d[A-Z]*|GEN\d+|WIN\d+|USB\d+|WIFI\d+|I[3579]|R[3579]|M[1-4]|U[579])$"
 )
 _CODE_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9\-]{2,}")
+_CHASSIS_ROOT_RE = re.compile(r"^([A-Za-z]+\d+)")
+_CPU_SUFFIX_CODE_RE = re.compile(r"(?<![a-z0-9])(\d{3,4})(?:hx?|u|v|k)(?![a-z0-9])")
+_HPE_COLLISION_RE = re.compile(r"\bhpe\b|\bisocell\s+hp\d+\b", re.IGNORECASE)
+_THREE_D_PRINTING_RE = re.compile(
+    r"\b(?:3d\s*print(?:ing|er|ed)?|garolite|fr4|filament|resin\s*print(?:ing)?)\b",
+    re.IGNORECASE,
+)
 _SIZE_IN_MODEL_RE = re.compile(r"(?<![a-z0-9])([gsx]?)(1[1-8])(?![0-9])", re.IGNORECASE)
 _TITLE_SIZE_CLASS_RE = re.compile(
     r"(?<![a-z0-9])(?:[gsmx])?(1[1-8])(?:\.\d)?(?=(?:\s*(?:inch|in|\"|”|-inch|x\b))|(?:\s+(?:review|laptop|gaming|gen|oled|edition|flip|pro|slim|plus|go|ai|hdr|max|ultra|touch|202\d))|$)|"
@@ -324,6 +405,59 @@ def extract_code_tokens(values: Sequence[str | None]) -> set[str]:
                     ):
                         tokens.add(part)
     return tokens
+
+
+def _chassis_root_prefix(code: str) -> str:
+    """Return the leading alphanumeric chassis root of a model code, if any.
+
+    Sibling GPU configurations share one chassis and screen size but differ in
+    their trailing configuration suffix (``G614FR`` vs ``G614PR``,
+    ``FA608WV`` vs ``FA608PM``, ``UX3405MA`` vs ``UX3405CA``). The root is the
+    leading letters-plus-digits run of at least four characters.
+    """
+    match = _CHASSIS_ROOT_RE.match((code or "").strip().upper())
+    if not match:
+        return ""
+    root = match.group(1)
+    return root if len(root) >= 4 else ""
+
+
+def _numeric_family_tokens(target: LaptopReviewTarget) -> set[str]:
+    tokens: set[str] = set()
+    for value in (target.laptop_family, target.laptop_model):
+        for token in normalize_lookup(value).split():
+            match = re.fullmatch(r"(\d{3,4})(?:[a-z]{0,3})?", token)
+            if match:
+                tokens.add(match.group(1))
+    return tokens
+
+
+def _has_numeric_or_short_token_collision(target: LaptopReviewTarget, sample_norm: str) -> bool:
+    """Guard numeric families and short brand/token collisions.
+
+    ``HP 255`` must not match an ``Ultra 7 255H`` CPU suffix, ``HPE`` or an
+    ``ISOCELL HP5`` camera sensor must not match the ``HP`` brand, and a 3D
+    printing ``G10`` material must not match ``HP 255R G10``.
+    """
+    if not sample_norm:
+        return False
+
+    if _canonical_brand(target.brand) == "hp" and _HPE_COLLISION_RE.search(sample_norm):
+        return True
+
+    target_words = set(
+        normalize_lookup(" ".join(part for part in (target.laptop_family, target.laptop_model) if part)).split()
+    )
+    if "g10" in target_words and _THREE_D_PRINTING_RE.search(sample_norm):
+        return True
+
+    numeric_tokens = _numeric_family_tokens(target)
+    standalone_numeric = {numeric for numeric in numeric_tokens if contains_word_boundary(sample_norm, numeric)}
+    for match in _CPU_SUFFIX_CODE_RE.finditer(sample_norm):
+        if match.group(1) in numeric_tokens and match.group(1) not in standalone_numeric:
+            return True
+
+    return False
 
 
 def _canonical_brand(brand: str | None) -> str:
@@ -415,6 +549,10 @@ def _has_conflicting_code_in_headline(
         # Ignore short CPU/generation tags or display tags like "G1A", "U7", "2026"
         if any(h_code in t_code or t_code in h_code for t_code in strong_target_codes):
             return False
+        # Sibling GPU configs on the same chassis (G614FR vs G614PR) are allowed.
+        headline_root = _chassis_root_prefix(h_code)
+        if headline_root and any(_chassis_root_prefix(t_code) == headline_root for t_code in strong_target_codes):
+            return False
         # Ignore generic GPU/CPU/display prefixes caught as alnum (already mostly filtered, guard G14..G18)
         if re.fullmatch(r"[AGMSX]?1[1-8][A-Z]?", h_code):
             continue
@@ -467,10 +605,15 @@ def matches_target_text(
     if is_non_laptop_device_text(title_str, body_str):
         return False
 
+    if is_support_or_buying_advice_text(title_str, body_str):
+        return False
+
     norm_title = normalize_lookup(title_str)
     norm_body = normalize_lookup(body_str)
     norm_url = normalize_lookup(url_slug)
     combined_norm = " ".join(part for part in (norm_title, norm_url, norm_body) if part)
+    if _has_numeric_or_short_token_collision(target, combined_norm):
+        return False
     headline_norm = " ".join(part for part in (norm_title, norm_url) if part) or norm_body
     match_scope = headline_norm if require_headline_match else combined_norm
     target_text_norm = normalize_lookup(
@@ -662,5 +805,6 @@ __all__ = [
     "contains_word_boundary",
     "extract_code_tokens",
     "is_non_laptop_device_text",
+    "is_support_or_buying_advice_text",
     "matches_target_text",
 ]

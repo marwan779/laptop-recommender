@@ -14,6 +14,7 @@ Fail-open: transport, HTTP, or JSON failures return an empty list.
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 from urllib.parse import quote_plus
 
@@ -26,6 +27,7 @@ from app.services.reviews.community.filters import (
     is_deal_listing,
     is_non_laptop_device,
     is_substantive,
+    is_support_or_buying_advice,
 )
 from app.services.reviews.community.http import DEFAULT_USER_AGENT, HttpClientContext, get_json
 
@@ -90,7 +92,11 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
                     # Hydrate full un-truncated post body from Discourse post API
                     full_body = await self._fetch_full_post(client, mapped.post_id)
                     if full_body:
-                        if is_non_laptop_device(mapped.post_title, full_body) or is_deal_listing(full_body):
+                        if (
+                            is_non_laptop_device(mapped.post_title, full_body)
+                            or is_deal_listing(full_body)
+                            or is_support_or_buying_advice(mapped.post_title, full_body)
+                        ):
                             continue
                         mapped = CommunityPost(
                             platform=mapped.platform,
@@ -134,12 +140,29 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
 
     # ── Relevance gate ─────────────────────────────────────────────────────
 
+    @staticmethod
+    def _url_post_number(url: str) -> int | None:
+        """Return the ``/<topic_id>/<post_number>`` suffix from a Discourse URL."""
+        match = re.search(r"/t/[^/]+/\d+/(\d+)/?$", url or "")
+        if not match:
+            return None
+        try:
+            return int(match.group(1))
+        except ValueError:
+            return None
+
     def _passes_gate(
         self,
         post: CommunityPost,
         target: LaptopReviewTarget,
     ) -> bool:
         haystack = f"{post.post_title} {post.post_body}"
+
+        # OP-only: replies (post_number > 1) are never review evidence, even
+        # when the search payload omits post_number but the URL identifies one.
+        url_post_number = self._url_post_number(post.post_url)
+        if url_post_number is not None and url_post_number > 1:
+            return False
 
         # L1: strict word-boundary headline/URL + brand + series/code relevance.
         has_domain_match = matches_target_text(
@@ -153,8 +176,10 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
         if not has_domain_match:
             return False
 
-        # L1b: reject non-laptop devices & accessories.
+        # L1b: reject non-laptop devices, accessories, and support/advice threads.
         if is_non_laptop_device(post.post_title, post.post_body):
+            return False
+        if is_support_or_buying_advice(post.post_title, post.post_body):
             return False
 
         # L2: reject deal/sale threads.
@@ -175,10 +200,14 @@ class Level1TechsPlatformScraper(ICommunityPlatformScraper):
         if not post_id:
             return None
 
+        post_number = post.get("post_number")
+        # OP-only: a present post_number other than 1 is always a reply.
+        if post_number is not None and str(post_number).strip() != "1":
+            return None
+
         topic = topics.get(str(post.get("topic_id"))) or {}
         slug = str(topic.get("slug") or "topic")
         topic_id = str(post.get("topic_id") or topic.get("id") or "")
-        post_number = post.get("post_number")
         post_url = (
             f"{LEVEL1TECHS_BASE_URL}/t/{slug}/{topic_id}/{post_number}"
             if topic_id and post_number

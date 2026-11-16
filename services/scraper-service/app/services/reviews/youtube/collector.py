@@ -137,7 +137,14 @@ class YouTubeReviewsCollector(IYouTubeReviewsCollector):
             title = str(raw.get("title") or "")
             channel = str(raw.get("channel_name") or "")
             url = str(raw.get("video_url") or "")
-            if not matches_target_text(target, title, channel, url, require_brand=True):
+            if not matches_target_text(
+                target,
+                title,
+                channel,
+                url,
+                require_brand=True,
+                require_headline_match=True,
+            ):
                 continue
             if vid:
                 seen_ids.add(vid)

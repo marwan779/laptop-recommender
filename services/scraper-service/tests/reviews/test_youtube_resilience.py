@@ -237,3 +237,17 @@ async def test_youtube_collector_deduplicates_queries_comments_and_filters_irrel
         assert [v.video_id for v in data.videos] == ["vid-loq"]
         assert data.videos[0].top_comments[0].comment_id == "c1"
         assert " | " in data.query_used
+
+
+def test_youtube_rejects_title_with_brand_only_in_channel_name():
+    target = _target("LOQ 15IRX9", "canon-channel-brand")
+    candidates = [
+        {
+            "video_id": "vid-channel-only",
+            "title": "15IRX9 Review - Thermals, Display and Battery",
+            "channel_name": "Lenovo",
+            "video_url": "https://www.youtube.com/watch?v=vid-channel-only",
+        }
+    ]
+
+    assert YouTubeReviewsCollector._filter_for_target(target, candidates) == []

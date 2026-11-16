@@ -165,7 +165,9 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
             parsed = urlparse(absolute)
             if parsed.netloc and "arabhardware.net" not in parsed.netloc:
                 continue
-            if "/news/" in parsed.path.lower():
+            # Strictly editorial reviews: drop /news/, /articles/, /videos/,
+            # /deals/, forum threads, and every other non-review path.
+            if "/reviews/" not in parsed.path.lower():
                 continue
             if absolute in seen_urls:
                 continue

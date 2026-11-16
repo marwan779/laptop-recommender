@@ -11,6 +11,13 @@ import re
 from collections import Counter, defaultdict
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from app.domain.reviews.source_filter import (
+    is_relevant_community_post,
+    is_relevant_editorial_review,
+    is_relevant_review_source_entry,
+    is_relevant_youtube_video,
+)
+
 ASPECT_KEYWORDS: Dict[str, List[str]] = {
     "thermals": [
         "thermal", "thermals", "cooling", "cool", "heat", "heatpipe", "fan", "fans",
@@ -218,8 +225,11 @@ def _canonical_dict_key(value: Dict[str, Any]) -> str:
 def _collect_item_chunks(
     items: List[Dict[str, Any]],
     totals: Dict[str, int],
+    identity: Optional[Dict[str, Any]] = None,
+    screen_size: Optional[float] = None,
 ) -> Tuple[List[Dict[str, Any]], int, int, int, int]:
     """Gather raw scraped + synthesized profile chunks across grouped chassis entries."""
+    ident = identity if isinstance(identity, dict) else {}
     raw_chunks: List[Dict[str, Any]] = []
     seen_ed_urls: Set[str] = set()
     seen_disc_keys: Set[str] = set()
@@ -233,6 +243,8 @@ def _collect_item_chunks(
         comm = it.get("communities") if isinstance(it.get("communities"), dict) else {}
         for ed in comm.get("editorial") or []:
             if not isinstance(ed, dict):
+                continue
+            if not is_relevant_editorial_review(ed, ident, screen_size=screen_size)[0]:
                 continue
             ekey = str(ed.get("review_url") or _canonical_dict_key(ed))
             if ekey in seen_ed_urls:
@@ -274,6 +286,8 @@ def _collect_item_chunks(
         for disc in comm.get("discussions") or []:
             if not isinstance(disc, dict):
                 continue
+            if not is_relevant_community_post(disc, ident, screen_size=screen_size)[0]:
+                continue
             dkey = str(disc.get("post_url") or f"{disc.get('platform')}:{disc.get('post_id')}")
             if dkey in seen_disc_keys:
                 continue
@@ -296,16 +310,19 @@ def _collect_item_chunks(
         for vid in yt.get("videos") or []:
             if not isinstance(vid, dict):
                 continue
+            tsrc = vid.get("transcript_source")
+            ttext = str(vid.get("transcript_text") or "").strip()
+            if tsrc == "AI_CHASSIS_SYNTHESIS_FALLBACK" or ttext.startswith("[Synthesized from"):
+                totals["synthesized_yt_fallbacks_stripped"] += 1
+                continue
+            if not is_relevant_youtube_video(vid, ident, screen_size=screen_size)[0]:
+                continue
             vid_id = str(vid.get("video_id") or vid.get("video_url") or vid.get("title") or "")
             if vid_id and vid_id in seen_yt_ids:
                 continue
             if vid_id:
                 seen_yt_ids.add(vid_id)
-            tsrc = vid.get("transcript_source")
-            ttext = str(vid.get("transcript_text") or "").strip()
-            if tsrc == "AI_CHASSIS_SYNTHESIS_FALLBACK" or ttext.startswith("[Synthesized from"):
-                totals["synthesized_yt_fallbacks_stripped"] += 1
-            elif ttext and tsrc != "TRANSCRIPT_UNAVAILABLE":
+            if ttext and tsrc != "TRANSCRIPT_UNAVAILABLE":
                 unique_real_yt_count += 1
                 for sent in select_transcript_chunks(ttext, max_chunks=20):
                     pol, is_exp = infer_review_polarity(sent)
@@ -384,8 +401,13 @@ def _coerce_optional_float(raw: Any) -> Optional[float]:
         return None
 
 
-def _extract_compact_review_sources(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _extract_compact_review_sources(
+    items: List[Dict[str, Any]],
+    identity: Optional[Dict[str, Any]] = None,
+    screen_size: Optional[float] = None,
+) -> List[Dict[str, Any]]:
     """Extract deduplicated review URLs and metadata without heavy transcripts or bodies."""
+    ident = identity if isinstance(identity, dict) else {}
     sources_by_url: Dict[str, Dict[str, Any]] = {}
 
     def _register(entry: Dict[str, Any]) -> None:
@@ -398,7 +420,9 @@ def _extract_compact_review_sources(items: List[Dict[str, Any]]) -> List[Dict[st
 
     for it in items:
         for existing in it.get("review_sources") or []:
-            if isinstance(existing, dict):
+            if isinstance(existing, dict) and is_relevant_review_source_entry(
+                existing, ident, screen_size=screen_size
+            )[0]:
                 _register(
                     {
                         "source_type": str(existing.get("source_type") or "community"),
@@ -416,6 +440,8 @@ def _extract_compact_review_sources(items: List[Dict[str, Any]]) -> List[Dict[st
         comm = it.get("communities") if isinstance(it.get("communities"), dict) else {}
         for ed in comm.get("editorial") or []:
             if not isinstance(ed, dict):
+                continue
+            if not is_relevant_editorial_review(ed, ident, screen_size=screen_size)[0]:
                 continue
             source_name = str(ed.get("source") or "editorial").strip()
             title = str(ed.get("verdict") or f"{source_name} Review").strip()
@@ -437,6 +463,8 @@ def _extract_compact_review_sources(items: List[Dict[str, Any]]) -> List[Dict[st
         for vid in yt.get("videos") or []:
             if not isinstance(vid, dict):
                 continue
+            if not is_relevant_youtube_video(vid, ident, screen_size=screen_size)[0]:
+                continue
             channel_name = str(vid.get("channel_name") or "").strip() or None
             _register(
                 {
@@ -455,6 +483,8 @@ def _extract_compact_review_sources(items: List[Dict[str, Any]]) -> List[Dict[st
         for bucket in ("discussions", "reddit", "facebook"):
             for post in comm.get(bucket) or []:
                 if not isinstance(post, dict):
+                    continue
+                if not is_relevant_community_post(post, ident, screen_size=screen_size)[0]:
                     continue
                 platform = str(post.get("platform") or (bucket if bucket != "discussions" else "community")).strip()
                 _register(
@@ -590,13 +620,30 @@ def audit_and_deduplicate_payload(
         if not cids_ordered:
             cids_ordered = list(dict.fromkeys(all_item_cids))
 
+        screen_size: Optional[float] = None
+        for cid in cids_ordered:
+            cat_entry = cat_by_cid.get(cid) or {}
+            raw_size = cat_entry.get("screen_size")
+            if raw_size is None:
+                display = (cat_entry.get("specs") or {}).get("display") or {}
+                raw_size = display.get("size_inches")
+            if raw_size is None:
+                display = cat_entry.get("display") if isinstance(cat_entry.get("display"), dict) else {}
+                raw_size = display.get("size_inches")
+            if raw_size is not None:
+                try:
+                    screen_size = float(raw_size)
+                    break
+                except (TypeError, ValueError):
+                    screen_size = None
+
         (
             raw_chunks,
             unique_ed_cnt,
             unique_disc_cnt,
             unique_yt_cnt,
             yt_comment_count,
-        ) = _collect_item_chunks(items, totals)
+        ) = _collect_item_chunks(items, totals, ident, screen_size)
 
         totals["input_chunks_considered"] += len(raw_chunks)
         kept_chunks, exact_rem, near_rem = dedup_chunks_cosine(raw_chunks, threshold=threshold)
@@ -660,7 +707,7 @@ def audit_and_deduplicate_payload(
             {},
         )
         primary_cid = first.get("primary_canonical_id") or (cids_ordered[0] if cids_ordered else None)
-        compact_sources = _extract_compact_review_sources(items)
+        compact_sources = _extract_compact_review_sources(items, ident, screen_size)
         entry: Dict[str, Any] = {
             "chassis_key": ckey,
             "primary_canonical_id": primary_cid,

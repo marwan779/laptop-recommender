@@ -20,6 +20,11 @@ from app.domain.enrichment.models import (
     ENRICHER_SCHEMA_VERSION,
 )
 from app.domain.enrichment.scoring import is_valid_nlp_profile
+from app.domain.reviews.source_filter import (
+    is_relevant_community_post,
+    is_relevant_editorial_review,
+    is_relevant_youtube_video,
+)
 
 
 def _clean_text(text: str) -> str:
@@ -82,7 +87,10 @@ def _is_noisy_or_offtopic(chunk: str, post_title: str = "", ident: Optional[Dict
     return False
 
 
-def _gather_raw_candidate_chunks(item: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], int]:
+def _gather_raw_candidate_chunks(
+    item: Dict[str, Any],
+    screen_size: Optional[float] = None,
+) -> Tuple[List[Dict[str, Any]], int]:
     """
     Extract cleaned candidate chunks from YouTube transcripts, top comments, and community posts.
     Returns `(candidates, raw_evidence_doc_count)`.
@@ -94,6 +102,8 @@ def _gather_raw_candidate_chunks(item: Dict[str, Any]) -> Tuple[List[Dict[str, A
     yt = item.get("youtube") or {}
     for vid in yt.get("videos", []):
         if not isinstance(vid, dict):
+            continue
+        if not is_relevant_youtube_video(vid, ident, screen_size=screen_size)[0]:
             continue
         src_tag = str(vid.get("transcript_source") or vid.get("status") or "").strip()
         transcript = str(vid.get("transcript_text") or "").strip()
@@ -148,6 +158,8 @@ def _gather_raw_candidate_chunks(item: Dict[str, Any]) -> Tuple[List[Dict[str, A
                 key in post for key in ("verdict", "pros", "cons", "review_url")
             )
             if is_editorial:
+                if not is_relevant_editorial_review(post, ident, screen_size=screen_size)[0]:
+                    continue
                 ed_title = str(post.get("source") or post.get("post_title") or "Editorial").strip()
                 ed_parts: List[str] = []
                 for p in post.get("pros") or []:
@@ -176,6 +188,9 @@ def _gather_raw_candidate_chunks(item: Dict[str, Any]) -> Tuple[List[Dict[str, A
                                 "source_weight": 1.1,
                             }
                         )
+                continue
+
+            if not is_relevant_community_post(post, ident, screen_size=screen_size)[0]:
                 continue
 
             ptitle = str(post.get("post_title") or post.get("title") or post.get("headline") or "").strip()
