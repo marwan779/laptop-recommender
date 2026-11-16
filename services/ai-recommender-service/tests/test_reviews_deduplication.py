@@ -157,3 +157,94 @@ def test_jina_embedder_passes_lowercase_prompt_name(monkeypatch: Any) -> None:
     encode_kwargs = fake_model.encode.call_args.kwargs
     assert encode_kwargs["prompt_name"] == "retrieval.passage"
     assert "Prompt_name" not in encode_kwargs
+
+
+def test_audit_and_dedup_preserves_compact_review_sources() -> None:
+    reviews_data = {
+        "laptops": [
+            {
+                "chassis_key": "asus:tuf:a16",
+                "primary_canonical_id": "cid-a16",
+                "matched_canonical_ids": ["cid-a16"],
+                "identity": {"brand": "ASUS", "laptop_family": "TUF", "laptop_model": "TUF A16"},
+                "youtube": {
+                    "videos": [
+                        {
+                            "video_id": "v1",
+                            "title": "ASUS TUF A16 Full Review",
+                            "channel_name": "Crimson Tech",
+                            "channel_url": "https://www.youtube.com/@crimsontechyt",
+                            "video_url": "https://www.youtube.com/watch?v=A0Qui0XNn7Q",
+                            "view_count": 306267,
+                            "published_at": "2025-05-01T10:00:00Z",
+                            "transcript_text": "Cool gaming laptop with great thermals.",
+                            "top_comments": [{"comment_text": "Solid laptop overall for the price!"}],
+                        },
+                        {
+                            "video_id": "v1-dup",
+                            "title": "Duplicate URL",
+                            "video_url": "https://www.youtube.com/watch?v=A0Qui0XNn7Q/",
+                            "view_count": 100,
+                        },
+                        {
+                            "video_id": "v-bad",
+                            "title": "Invalid scheme",
+                            "video_url": "javascript:alert(1)",
+                        },
+                    ]
+                },
+                "communities": {
+                    "editorial": [
+                        {
+                            "source": "Notebookcheck",
+                            "review_url": "https://www.notebookcheck.net/asus-tuf-a16-review.1234.0.html",
+                            "rating": 86.5,
+                            "verdict": "Well balanced mid-range gaming notebook.",
+                            "pros": ["Low fan noise"],
+                            "cons": ["Average speakers"],
+                        }
+                    ],
+                    "discussions": [
+                        {
+                            "platform": "level1techs",
+                            "post_id": "3947688",
+                            "author": "letio",
+                            "post_title": "Battery charge limit question",
+                            "post_url": "https://forum.level1techs.com/t/tuf-a16/226768/1",
+                            "post_body": "Full discussion body that should not bloat review_sources.",
+                            "score": 14,
+                            "published_at": "2025-02-28T22:44:18Z",
+                        }
+                    ],
+                },
+                "nlp_review_profile": {
+                    "community_nlp_score": 81.2,
+                    "pros_en": ["Quiet fans"],
+                    "pros_ar": ["مراوح هادئة"],
+                    "cons_en": ["Average speakers"],
+                    "cons_ar": ["سماعات متوسطة"],
+                },
+            }
+        ]
+    }
+
+    out = audit_and_deduplicate_payload(
+        reviews_data=reviews_data,
+        catalog_data={"laptops": [{"canonical_id": "cid-a16", "brand": "ASUS", "laptop_model": "TUF A16"}]},
+        include_unmatched_catalog=False,
+    )
+
+    assert len(out["chassis_reviews"]) == 1
+    sources = out["chassis_reviews"][0]["review_sources"]
+    assert [s["source_type"] for s in sources] == ["editorial", "youtube", "community"]
+
+    assert sources[0]["platform"] == "notebookcheck"
+    assert sources[0]["rating"] == 86.5
+    assert sources[1]["title"] == "ASUS TUF A16 Full Review"
+    assert sources[1]["author_or_channel"] == "Crimson Tech"
+    assert sources[1]["channel_url"] == "https://www.youtube.com/@crimsontechyt"
+    assert sources[1]["score_or_views"] == 306267
+    assert "transcript_text" not in sources[1]
+    assert sources[2]["platform"] == "level1techs"
+    assert sources[2]["score_or_views"] == 14
+    assert "post_body" not in sources[2]

@@ -352,6 +352,136 @@ def _collect_item_chunks(
     return raw_chunks, unique_editorial_count, unique_discussion_count, unique_real_yt_count, yt_comment_count
 
 
+def _clean_http_url(raw: Any) -> Optional[str]:
+    """Return a normalized HTTP(S) URL or None for empty/unsafe values."""
+    if not isinstance(raw, str):
+        return None
+    cleaned = raw.strip()
+    if not cleaned:
+        return None
+    low = cleaned.lower()
+    if low.startswith("http://") or low.startswith("https://"):
+        return cleaned
+    return None
+
+
+def _coerce_optional_int(raw: Any) -> Optional[int]:
+    if raw is None or isinstance(raw, bool):
+        return None
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return None
+
+
+def _coerce_optional_float(raw: Any) -> Optional[float]:
+    if raw is None or isinstance(raw, bool):
+        return None
+    try:
+        val = float(raw)
+        return val if math.isfinite(val) else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _extract_compact_review_sources(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Extract deduplicated review URLs and metadata without heavy transcripts or bodies."""
+    sources_by_url: Dict[str, Dict[str, Any]] = {}
+
+    def _register(entry: Dict[str, Any]) -> None:
+        url = _clean_http_url(entry.get("url"))
+        if not url:
+            return
+        dedup_key = url.rstrip("/").lower()
+        if dedup_key not in sources_by_url:
+            sources_by_url[dedup_key] = {**entry, "url": url}
+
+    for it in items:
+        for existing in it.get("review_sources") or []:
+            if isinstance(existing, dict):
+                _register(
+                    {
+                        "source_type": str(existing.get("source_type") or "community"),
+                        "platform": str(existing.get("platform") or "community"),
+                        "title": str(existing.get("title") or existing.get("platform") or "Review").strip(),
+                        "url": existing.get("url"),
+                        "author_or_channel": existing.get("author_or_channel"),
+                        "channel_url": _clean_http_url(existing.get("channel_url")),
+                        "rating": _coerce_optional_float(existing.get("rating")),
+                        "score_or_views": _coerce_optional_int(existing.get("score_or_views")),
+                        "published_at": existing.get("published_at"),
+                    }
+                )
+
+        comm = it.get("communities") if isinstance(it.get("communities"), dict) else {}
+        for ed in comm.get("editorial") or []:
+            if not isinstance(ed, dict):
+                continue
+            source_name = str(ed.get("source") or "editorial").strip()
+            title = str(ed.get("verdict") or f"{source_name} Review").strip()
+            _register(
+                {
+                    "source_type": "editorial",
+                    "platform": source_name.lower(),
+                    "title": title,
+                    "url": ed.get("review_url"),
+                    "author_or_channel": source_name,
+                    "channel_url": None,
+                    "rating": _coerce_optional_float(ed.get("rating")),
+                    "score_or_views": None,
+                    "published_at": None,
+                }
+            )
+
+        yt = it.get("youtube") if isinstance(it.get("youtube"), dict) else {}
+        for vid in yt.get("videos") or []:
+            if not isinstance(vid, dict):
+                continue
+            channel_name = str(vid.get("channel_name") or "").strip() or None
+            _register(
+                {
+                    "source_type": "youtube",
+                    "platform": "youtube",
+                    "title": str(vid.get("title") or channel_name or "YouTube Review").strip(),
+                    "url": vid.get("video_url"),
+                    "author_or_channel": channel_name,
+                    "channel_url": _clean_http_url(vid.get("channel_url")),
+                    "rating": None,
+                    "score_or_views": _coerce_optional_int(vid.get("view_count")),
+                    "published_at": vid.get("published_at"),
+                }
+            )
+
+        for bucket in ("discussions", "reddit", "facebook"):
+            for post in comm.get(bucket) or []:
+                if not isinstance(post, dict):
+                    continue
+                platform = str(post.get("platform") or (bucket if bucket != "discussions" else "community")).strip()
+                _register(
+                    {
+                        "source_type": "community",
+                        "platform": platform.lower(),
+                        "title": str(post.get("post_title") or post.get("title") or f"{platform} Discussion").strip(),
+                        "url": post.get("post_url") or post.get("url"),
+                        "author_or_channel": (str(post.get("author")).strip() if post.get("author") else None),
+                        "channel_url": None,
+                        "rating": None,
+                        "score_or_views": _coerce_optional_int(post.get("score")),
+                        "published_at": post.get("published_at"),
+                    }
+                )
+
+    type_rank = {"editorial": 0, "youtube": 1, "community": 2}
+    return sorted(
+        sources_by_url.values(),
+        key=lambda s: (
+            type_rank.get(str(s.get("source_type")), 3),
+            -(s.get("score_or_views") or 0),
+            str(s.get("title") or ""),
+        ),
+    )
+
+
 def _build_balance_gaps(
     scraped_doc_count: int,
     scraped_pro_cnt: int,
@@ -530,6 +660,7 @@ def audit_and_deduplicate_payload(
             {},
         )
         primary_cid = first.get("primary_canonical_id") or (cids_ordered[0] if cids_ordered else None)
+        compact_sources = _extract_compact_review_sources(items)
         entry: Dict[str, Any] = {
             "chassis_key": ckey,
             "primary_canonical_id": primary_cid,
@@ -540,6 +671,7 @@ def audit_and_deduplicate_payload(
             },
             "sku_count_in_catalog": len(cids_ordered),
             "matched_canonical_ids": cids_ordered,
+            "review_sources": compact_sources,
             "audit_metrics": {
                 "scraped_doc_count": scraped_doc_count,
                 "unique_editorial_count": unique_ed_cnt,
