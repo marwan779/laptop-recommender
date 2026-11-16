@@ -25,6 +25,7 @@ sys.path.insert(0, str(SERVICE_ROOT))
 
 from app.common.logger import configure_logging, get_logger  # noqa: E402
 from app.jobs.base_cli import BaseCliJobOptions, BaseCliJobRunner  # noqa: E402
+from app.jobs.batch_watcher import wait_for_catalog_batch  # noqa: E402
 from app.jobs.scraping_cron import ScrapingCronJob  # noqa: E402
 from app.schemas.scraping import ScrapeTriggerResponse  # noqa: E402
 from app.services.scraper_client import ScraperClientService  # noqa: E402
@@ -41,6 +42,9 @@ class ScrapingCliOptions(BaseCliJobOptions):
     force_full: bool = False
     level: int | None = None
     send_email: bool | None = None
+    upload_to_bucket: bool = True
+    wait: bool = False
+    timeout_seconds: float = 600.0
 
 
 class ScrapingCronCliRunner(BaseCliJobRunner[ScrapingCliOptions, ScrapeTriggerResponse]):
@@ -81,6 +85,25 @@ class ScrapingCronCliRunner(BaseCliJobRunner[ScrapingCliOptions, ScrapeTriggerRe
             action="store_false",
             help="Do not send the completion email report",
         )
+        parser.add_argument(
+            "--no-upload-to-s3",
+            dest="upload_to_bucket",
+            action="store_false",
+            default=True,
+            help="Skip S3 upload, save JSON locally on disk, and emit catalog.ready.event with s3_key=None",
+        )
+        parser.add_argument(
+            "--wait",
+            action="store_true",
+            default=False,
+            help="Wait for scraper/catalog consumer completion and print results in CLI (requires --commit)",
+        )
+        parser.add_argument(
+            "--timeout",
+            type=float,
+            default=600.0,
+            help="Max seconds to wait when --wait is enabled (default: 600)",
+        )
 
     def build_options(self, parsed_args: argparse.Namespace) -> ScrapingCliOptions:
         return ScrapingCliOptions(
@@ -90,6 +113,9 @@ class ScrapingCronCliRunner(BaseCliJobRunner[ScrapingCliOptions, ScrapeTriggerRe
             force_full=parsed_args.force_full,
             level=parsed_args.level,
             send_email=parsed_args.send_email,
+            upload_to_bucket=parsed_args.upload_to_bucket,
+            wait=parsed_args.wait,
+            timeout_seconds=parsed_args.timeout,
         )
 
     async def execute_job(self, session, options: ScrapingCliOptions) -> ScrapeTriggerResponse:
@@ -100,6 +126,7 @@ class ScrapingCronCliRunner(BaseCliJobRunner[ScrapingCliOptions, ScrapeTriggerRe
             session=session,
             level=options.level,
             send_email=options.send_email,
+            upload_to_bucket=options.upload_to_bucket,
         )
 
     def render_summary(self, result: ScrapeTriggerResponse, options: ScrapingCliOptions) -> None:
@@ -113,7 +140,18 @@ class ScrapingCronCliRunner(BaseCliJobRunner[ScrapingCliOptions, ScrapeTriggerRe
         print(f"Message:         {result.message}", file=self._stdout)
         print(f"Stores Targeted: {', '.join(result.stores_targeted)}", file=self._stdout)
         print(f"Watermarks Sent: {len(result.pointers_used)} stores with pointers", file=self._stdout)
+        print(f"Upload To S3:    {options.upload_to_bucket}", file=self._stdout)
         print("=" * 60 + "\n", file=self._stdout)
+
+    async def after_commit(self, result: ScrapeTriggerResponse, options: ScrapingCliOptions) -> int | None:
+        if not options.wait:
+            return None
+        return await wait_for_catalog_batch(
+            session_factory=self._session_factory,
+            batch_id=result.job_id,
+            stdout=self._stdout,
+            timeout_seconds=options.timeout_seconds,
+        )
 
 
 # Convenience alias for callers that prefer the shorter job-runner name.

@@ -125,6 +125,7 @@ class ScraperMessageConsumer:
             targets=payload.targets,
             level=payload.level,
             until_model=None if payload.force_full_crawl else payload.until_models,
+            output_dir=None if payload.upload_to_bucket else "scraping results",
             upload_to_bucket=payload.upload_to_bucket,
             send_email=payload.send_email,
         )
@@ -164,16 +165,20 @@ class ScraperMessageConsumer:
                 if target_errors:
                     err_detail = f"{err_detail} (target_errors={'; '.join(target_errors)})"
                 raise RuntimeError(err_detail)
-            if not response.unified_storage_key:
+            if payload.upload_to_bucket and not response.unified_storage_key:
                 err_detail = "Catalog scraping did not produce a unified S3 artifact."
                 if target_errors:
                     err_detail = f"{err_detail} Target errors: {'; '.join(target_errors)}"
                 raise RuntimeError(err_detail)
 
-            s3_key = response.unified_storage_key
-            s3_bucket = response.unified_storage_bucket or getattr(
-                self.orchestrator.storage_service, "bucket_name", "laptop-recommender-raw-catalog"
-            )
+            if payload.upload_to_bucket:
+                s3_key = response.unified_storage_key
+                s3_bucket = response.unified_storage_bucket or getattr(
+                    self.orchestrator.storage_service, "bucket_name", "laptop-recommender-raw-catalog"
+                )
+            else:
+                s3_key = None
+                s3_bucket = None
             total_laptops = (
                 response.unified_total_laptops
                 if response.unified_total_laptops is not None

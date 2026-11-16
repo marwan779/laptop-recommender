@@ -667,3 +667,108 @@ def test_catalog_combiner_preserves_latest_pointers_per_store():
 
     # Also verify store_pointers property alias
     assert unified.store_pointers == unified.latest_pointers
+
+
+def test_combiner_deep_copies_store_specs_isolation():
+    """Mutating CanonicalLaptop.specs (e.g. Icecat enrichment) must NOT mutate raw_store_context['store_specs']."""
+    combiner = CatalogCombiner()
+    unified = combiner.combine_products(
+        {
+            "sigma": [
+                {
+                    "title": "ASUS Zenbook 14 UX3405CA-SU157W",
+                    "price_egp": 55000.0,
+                    "mpn": "14-UX3405CA-SU157W",
+                    "specs": {
+                        "identity": {"brand": "ASUS"},
+                        "display": {"resolution": "2880x1800", "refresh_rate_hz": 120, "panel_type": "OLED"},
+                        "physical": {"weight_kg": 1.20},
+                    },
+                }
+            ]
+        }
+    )
+    lap = unified.laptops[0]
+    lap.specs["display"]["resolution"] = "1920x1200"
+    lap.specs["physical"]["weight_kg"] = 1.22
+
+    store_specs = lap.raw_store_context["store_specs"]
+    assert store_specs["display"]["resolution"] == "2880x1800"
+    assert store_specs["physical"]["weight_kg"] == 1.20
+
+
+def test_combiner_vetoes_same_store_distinct_skus_and_panel_mismatches():
+    """Distinct SKUs on the same store or mismatched resolution/OLED/touchscreen must stay separate."""
+    combiner = CatalogCombiner()
+    unified = combiner.combine_products(
+        {
+            "sigma": [
+                {
+                    "title": "ASUS TUF F16 FX608JPR-RV084 Core i7 14650HX RTX 5070 16GB 1TB 16 FHD+ 165Hz",
+                    "price_egp": 74000.0,
+                    "mpn": "FX608JPR-RV084",
+                    "specs": {
+                        "identity": {"brand": "ASUS"},
+                        "cpu": {"model": "Intel Core i7-14650HX"},
+                        "gpu": {"model": "NVIDIA GeForce RTX 5070"},
+                        "memory": {"capacity_gb": 16},
+                        "storage": {"capacity_gb": 1024},
+                        "display": {"resolution": "1920x1200", "refresh_rate_hz": 165, "panel_type": "IPS"},
+                    },
+                },
+                {
+                    "title": "ASUS TUF F16 FX608JPR-RV027W Core i7 14650HX RTX 5070 16GB 1TB 16 WQXGA 165Hz",
+                    "price_egp": 76000.0,
+                    "mpn": "FX608JPR-RV027W",
+                    "specs": {
+                        "identity": {"brand": "ASUS"},
+                        "cpu": {"model": "Intel Core i7-14650HX"},
+                        "gpu": {"model": "NVIDIA GeForce RTX 5070"},
+                        "memory": {"capacity_gb": 16},
+                        "storage": {"capacity_gb": 1024},
+                        "display": {"resolution": "2560x1600", "refresh_rate_hz": 165, "panel_type": "IPS"},
+                    },
+                },
+            ],
+            "elbadr": [
+                {
+                    "title": "ASUS Vivobook S14 Flip TP5408QA-SG155W Snapdragon X 16GB 512GB 14 OLED Touch",
+                    "price_egp": 46000.0,
+                    "mpn": "TP5408QA-SG155W",
+                    "specs": {
+                        "identity": {"brand": "ASUS"},
+                        "cpu": {"model": "Snapdragon X X1-26-100"},
+                        "memory": {"capacity_gb": 16},
+                        "storage": {"capacity_gb": 512},
+                        "display": {
+                            "resolution": "1920x1200",
+                            "refresh_rate_hz": 60,
+                            "panel_type": "OLED",
+                            "touchscreen": True,
+                        },
+                    },
+                }
+            ],
+            "compumarts": [
+                {
+                    "title": "ASUS Vivobook S14 S5408QA-TM1552W Snapdragon X 16GB 512GB 14 IPS",
+                    "price_egp": 42000.0,
+                    "mpn": "S5408QA-TM1552W",
+                    "specs": {
+                        "identity": {"brand": "ASUS"},
+                        "cpu": {"model": "Snapdragon X X1-26-100"},
+                        "memory": {"capacity_gb": 16},
+                        "storage": {"capacity_gb": 512},
+                        "display": {
+                            "resolution": "1920x1200",
+                            "refresh_rate_hz": 60,
+                            "panel_type": "IPS",
+                            "touchscreen": False,
+                        },
+                    },
+                }
+            ],
+        }
+    )
+
+    assert len(unified.laptops) == 4

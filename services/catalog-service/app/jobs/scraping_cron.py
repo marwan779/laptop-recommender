@@ -32,6 +32,7 @@ class ScrapingCronJob:
         session: AsyncSession | None = None,
         level: int | None = None,
         send_email: bool | None = None,
+        upload_to_bucket: bool = True,
         commit: bool = False,
         dry_run: bool = False,
     ) -> ScrapeTriggerResponse:
@@ -43,6 +44,7 @@ class ScrapingCronJob:
             store_key=store_key,
             level=level if level is not None else settings.scraping_cron_level,
             force_full_crawl=force_full_crawl,
+            upload_to_bucket=upload_to_bucket,
             send_email=send_email if send_email is not None else settings.scraping_cron_send_email,
         )
 

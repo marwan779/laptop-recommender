@@ -141,7 +141,8 @@ class ReviewCollectorService:
         local_path = build_local_path(job_id, self.local_output_dir)
         self._write_local_artifact(artifact_data, local_path)
 
-        if self.upload_to_s3:
+        effective_upload = self.upload_to_s3 and command.payload.upload_to_s3
+        if effective_upload:
             s3_key = build_s3_key(job_id)
             self.storage_service.upload_json(
                 data=artifact_data,

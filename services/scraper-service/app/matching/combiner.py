@@ -11,6 +11,7 @@ Includes explicit guards against edge cases:
 
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 from typing import Any
@@ -157,6 +158,9 @@ class CatalogCombiner:
 
                     disp = specs.get("display") or {}
                     refresh_hz = int(disp.get("refresh_rate_hz") or 0)
+                    resolution = str(disp.get("resolution") or "").strip()
+                    panel_type = str(disp.get("panel_type") or "").strip().lower()
+                    touchscreen = disp.get("touchscreen")
 
                     cpu_info = specs.get("cpu") or {}
                     cpu_model = cpu_info.get("model") or cpu_info.get("full_name") or ""
@@ -186,6 +190,9 @@ class CatalogCombiner:
                         "storage_gb": storage_gb,
                         "vram_gb": vram_gb,
                         "refresh_hz": refresh_hz,
+                        "resolution": resolution,
+                        "panel_type": panel_type,
+                        "touchscreen": touchscreen,
                         "cpu_model": cpu_model,
                         "gpu_model": gpu_model,
                     }
@@ -276,7 +283,7 @@ class CatalogCombiner:
                 "raw_description": "\n\n".join(raw_descriptions),
                 "primary_url": listings[0].get("product_url") or "",
                 "store_slot_count": (fused_specs.get("storage") or {}).get("slot_count"),
-                "store_specs": fused_specs,
+                "store_specs": copy.deepcopy(fused_specs),
             }
 
             # Build Offers list

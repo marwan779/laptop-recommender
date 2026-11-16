@@ -101,11 +101,17 @@ class ScrapeCatalogCommand(BaseEvent):
 
 
 class CatalogReadyPayload(BaseModel):
-    """Payload emitted when scraper finishes discovery and uploads catalog to S3."""
+    """Payload emitted when scraper finishes discovery and optionally uploads catalog to S3."""
 
     batch_id: str = Field(description="Associated batch log UUID")
-    s3_bucket: str = Field(description="S3 bucket containing the combined catalog artifact")
-    s3_key: str = Field(description="S3 object key pointing to the catalog.json file")
+    s3_bucket: str | None = Field(
+        default=None,
+        description="S3 bucket containing the combined catalog artifact (None when S3 upload is disabled)",
+    )
+    s3_key: str | None = Field(
+        default=None,
+        description="S3 object key pointing to the catalog.json file (None when S3 upload is disabled)",
+    )
     total_laptops: int = Field(description="Total number of consolidated laptops in the catalog")
     pointers_found: dict[str, list[str]] = Field(
         default_factory=dict,
@@ -240,6 +246,10 @@ class ScrapeReviewsPayload(BaseModel):
     job_id: str = Field(description="User recommendation session / Phase 2 job ID")
     targets: list[LaptopReviewTarget] = Field(
         description="Full batch of resolved chassis targets to scrape reviews for",
+    )
+    upload_to_s3: bool = Field(
+        default=True,
+        description="Whether scraper-service should upload the raw reviews artifact to S3",
     )
 
 

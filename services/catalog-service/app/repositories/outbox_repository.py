@@ -100,9 +100,7 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
         """
         resolved_batch_size = batch_size if batch_size is not None else settings.outbox_batch_size
         resolved_lease_minutes = (
-            lease_duration_minutes
-            if lease_duration_minutes is not None
-            else settings.outbox_lease_duration_minutes
+            lease_duration_minutes if lease_duration_minutes is not None else settings.outbox_lease_duration_minutes
         )
 
         now = datetime.now(UTC)
@@ -131,13 +129,9 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
         messages = result.scalars().all()
 
         for msg in messages:
-            if msg.status == OutboxStatus.PUBLISHING and (
-                msg.leased_at is None or msg.leased_at < stale_threshold
-            ):
+            if msg.status == OutboxStatus.PUBLISHING and (msg.leased_at is None or msg.leased_at < stale_threshold):
                 msg.retry_count += 1
-                msg.last_error = (
-                    f"Reclaimed zombie message after lease expired ({resolved_lease_minutes}m)"
-                )
+                msg.last_error = f"Reclaimed zombie message after lease expired ({resolved_lease_minutes}m)"
             msg.status = OutboxStatus.PUBLISHING
             msg.leased_at = now
 
@@ -189,3 +183,23 @@ class OutboxRepository(BaseRepository[OutboxMessage]):
 
         await self.session.flush()
         return msg
+
+    async def list_by_ids(self, message_ids: Sequence[uuid.UUID]) -> Sequence[OutboxMessage]:
+        """Fetch outbox messages matching the given UUIDs."""
+        ids = list(message_ids)
+        if not ids:
+            return []
+        stmt = select(OutboxMessage).where(OutboxMessage.id.in_(ids))
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def get_by_correlation_id(self, correlation_id: str) -> OutboxMessage | None:
+        """Fetch the latest outbox message matching ``correlation_id``."""
+        stmt = (
+            select(OutboxMessage)
+            .where(OutboxMessage.correlation_id == correlation_id)
+            .order_by(OutboxMessage.created_at.desc())
+            .limit(1)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()

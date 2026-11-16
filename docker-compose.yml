@@ -76,6 +76,8 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - REDIS_URL=redis://redis:6379/0
       - STORAGE_PROVIDER=s3
+    volumes:
+      - "./services/scraper-service/scraping results:/app/scraping results"
     depends_on:
       rabbitmq:
         condition: service_healthy

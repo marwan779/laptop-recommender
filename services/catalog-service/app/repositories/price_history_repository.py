@@ -11,7 +11,8 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.offer import OfferPriceHistory
+from app.models.laptop import LaptopConfiguration
+from app.models.offer import LaptopOffer, OfferPriceHistory
 from app.repositories.base import BaseRepository
 
 
@@ -87,6 +88,39 @@ class PriceHistoryRepository(BaseRepository[OfferPriceHistory]):
         )
         self.session.add(entry)
         return entry
+
+    async def list_changes_since(
+        self,
+        since: datetime,
+        store_key: str | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, object]]:
+        """Fetch recorded price/stock transitions since ``since`` joined with offer and laptop context."""
+        stmt = (
+            select(OfferPriceHistory, LaptopOffer, LaptopConfiguration.title, LaptopConfiguration.canonical_id)
+            .join(LaptopOffer, LaptopOffer.id == OfferPriceHistory.offer_id)
+            .join(LaptopConfiguration, LaptopConfiguration.id == OfferPriceHistory.laptop_configuration_id)
+            .where(OfferPriceHistory.recorded_at >= since)
+            .order_by(OfferPriceHistory.recorded_at.desc())
+            .limit(limit)
+        )
+        if store_key:
+            stmt = stmt.where(OfferPriceHistory.store_key == store_key.lower().strip())
+
+        rows = (await self.session.execute(stmt)).all()
+        return [
+            {
+                "store_key": history.store_key,
+                "canonical_id": canonical_id,
+                "title": title,
+                "product_url": offer.product_url,
+                "previous_price_egp": float(offer.previous_price_egp) if offer.previous_price_egp is not None else None,
+                "price_egp": float(history.price_egp),
+                "in_stock": bool(history.in_stock),
+                "recorded_at": history.recorded_at,
+            }
+            for history, offer, title, canonical_id in rows
+        ]
 
 
 __all__ = ["PriceHistoryRepository"]

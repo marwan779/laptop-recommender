@@ -76,6 +76,13 @@ class BaseCliJobRunner[OptionsT: BaseCliJobOptions, ResultT](abc.ABC):
         mode = "COMMITTED" if options.commit else "DRY-RUN (rolled back)"
         print(f"Transaction mode: {mode}", file=self._stdout)
 
+    async def after_commit(self, result: ResultT, options: OptionsT) -> int | None:
+        """Optional async hook invoked after commit & summary (e.g. --wait watchers).
+
+        Returning an int overrides the exit code; returning None keeps exit code 0.
+        """
+        return None
+
     # ─── Template method ────────────────────────────────────────────────────
 
     def build_parser(self) -> argparse.ArgumentParser:
@@ -115,6 +122,10 @@ class BaseCliJobRunner[OptionsT: BaseCliJobOptions, ResultT](abc.ABC):
                 await session.rollback()
 
             self.render_summary(result, options)
+            if options.commit:
+                hook_code = await self.after_commit(result, options)
+                if hook_code is not None:
+                    return hook_code
             return 0
         except SystemExit:
             # argparse already emitted usage and selected the conventional

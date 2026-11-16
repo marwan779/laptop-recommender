@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 import sys
 
@@ -25,6 +26,7 @@ sys.path.insert(0, str(SERVICE_ROOT))
 
 from app.common.logger import configure_logging, get_logger  # noqa: E402
 from app.jobs.base_cli import BaseCliJobOptions, BaseCliJobRunner  # noqa: E402
+from app.jobs.batch_watcher import wait_for_price_sync_batches  # noqa: E402
 from app.jobs.price_sync_cron import PriceSyncCronJob  # noqa: E402
 
 configure_logging()
@@ -38,6 +40,8 @@ class PriceSyncCliOptions(BaseCliJobOptions):
     store: str | None = None
     limit: int | None = None
     no_limit: bool = False
+    wait: bool = False
+    timeout_seconds: float = 300.0
 
 
 @dataclass
@@ -46,6 +50,7 @@ class PriceSyncCliResult:
 
     store: str | None = None
     message_ids: list[str] = field(default_factory=list)
+    started_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 class PriceSyncCronCliRunner(BaseCliJobRunner[PriceSyncCliOptions, PriceSyncCliResult]):
@@ -72,6 +77,18 @@ class PriceSyncCronCliRunner(BaseCliJobRunner[PriceSyncCliOptions, PriceSyncCliR
             default=False,
             help="Fetch and sync all stale offers without any limit",
         )
+        parser.add_argument(
+            "--wait",
+            action="store_true",
+            default=False,
+            help="Wait for price check batches to complete and print live diffs in CLI (requires --commit)",
+        )
+        parser.add_argument(
+            "--timeout",
+            type=float,
+            default=300.0,
+            help="Max seconds to wait when --wait is enabled (default: 300)",
+        )
 
     def build_options(self, parsed_args: argparse.Namespace) -> PriceSyncCliOptions:
         return PriceSyncCliOptions(
@@ -80,9 +97,12 @@ class PriceSyncCronCliRunner(BaseCliJobRunner[PriceSyncCliOptions, PriceSyncCliR
             store=parsed_args.store,
             limit=parsed_args.limit,
             no_limit=parsed_args.no_limit,
+            wait=parsed_args.wait,
+            timeout_seconds=parsed_args.timeout,
         )
 
     async def execute_job(self, session, options: PriceSyncCliOptions) -> PriceSyncCliResult:
+        started_at = datetime.now(UTC)
         job = PriceSyncCronJob()
         effective_limit = 0 if options.no_limit else options.limit
 
@@ -101,6 +121,7 @@ class PriceSyncCronCliRunner(BaseCliJobRunner[PriceSyncCliOptions, PriceSyncCliR
         return PriceSyncCliResult(
             store=options.store,
             message_ids=message_ids,
+            started_at=started_at,
         )
 
     def render_summary(self, result: PriceSyncCliResult, options: PriceSyncCliOptions) -> None:
@@ -124,6 +145,18 @@ class PriceSyncCronCliRunner(BaseCliJobRunner[PriceSyncCliOptions, PriceSyncCliR
                 file=self._stdout,
             )
         print("=" * 60 + "\n", file=self._stdout)
+
+    async def after_commit(self, result: PriceSyncCliResult, options: PriceSyncCliOptions) -> int | None:
+        if not options.wait or not result.message_ids:
+            return None
+        return await wait_for_price_sync_batches(
+            session_factory=self._session_factory,
+            message_ids=result.message_ids,
+            started_at=result.started_at,
+            store_key=options.store,
+            stdout=self._stdout,
+            timeout_seconds=options.timeout_seconds,
+        )
 
 
 # Convenience alias for callers that prefer the shorter job-runner name.
