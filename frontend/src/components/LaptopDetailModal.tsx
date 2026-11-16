@@ -23,8 +23,16 @@ import {
   SlidersHorizontal,
   ChevronDown,
   ChevronUp,
+  Video,
+  MessageSquare,
+  FileText,
 } from 'lucide-react'
-import type { FullLaptopDetailResponse, RankedLaptop, CatalogListItem } from '../types/api'
+import type {
+  FullLaptopDetailResponse,
+  RankedLaptop,
+  CatalogListItem,
+  ReviewSourceDetail,
+} from '../types/api'
 import { fetchLaptopDetail } from '../services/api'
 import { PriceHistoryChart } from './PriceHistoryChart'
 
@@ -57,6 +65,60 @@ function formatVerificationTime(isoStr: string | null | undefined, isAr: boolean
   } catch {
     return isAr ? 'غير محدد' : 'Unverified'
   }
+}
+
+function safeHttpUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  const trimmed = raw.trim()
+  const low = trimmed.toLowerCase()
+  if (low.startsWith('https://') || low.startsWith('http://')) {
+    return trimmed
+  }
+  return null
+}
+
+function formatCompactCount(val: number): string {
+  if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`
+  if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`
+  return String(val)
+}
+
+function formatPlatformLabel(platform: string, sourceType: string): string {
+  const normalized = (platform || sourceType || 'review').trim().toLowerCase()
+  const labels: Record<string, string> = {
+    youtube: 'YouTube',
+    reddit: 'Reddit',
+    level1techs: 'Level1Techs',
+    arabhardware: 'ArabHardware',
+    laptopmag: 'LaptopMag',
+    notebookcheck: 'Notebookcheck',
+  }
+  return labels[normalized] || platform.trim()
+}
+
+function formatSourceMetric(src: ReviewSourceDetail, isAr: boolean): string | null {
+  if (src.source_type === 'editorial' && src.rating != null) {
+    return `${Number(src.rating).toFixed(1)}/100`
+  }
+  if (src.source_type === 'youtube' && src.score_or_views != null && src.score_or_views > 0) {
+    const formatted = formatCompactCount(src.score_or_views)
+    return isAr ? `${formatted} مشاهدة` : `${formatted} views`
+  }
+  if (src.score_or_views != null && src.score_or_views > 0) {
+    const formatted = formatCompactCount(src.score_or_views)
+    return isAr ? `${formatted} تفاعل` : `${formatted} pts`
+  }
+  return null
+}
+
+function getSourceIcon(sourceType: string): React.ReactNode {
+  if (sourceType === 'youtube') {
+    return <Video className="w-3.5 h-3.5 shrink-0" strokeWidth={1.8} />
+  }
+  if (sourceType === 'editorial') {
+    return <FileText className="w-3.5 h-3.5 shrink-0" strokeWidth={1.8} />
+  }
+  return <MessageSquare className="w-3.5 h-3.5 shrink-0" strokeWidth={1.8} />
 }
 
 function getSiliconTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
@@ -164,6 +226,7 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
   const [detail, setDetail] = useState<FullLaptopDetailResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [showAllScores, setShowAllScores] = useState(false)
+  const [expandedSourcesForId, setExpandedSourcesForId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!laptop) return
@@ -200,6 +263,9 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
 
   const pros = isAr ? detail?.pros_ar || (laptop as any).pros_ar || [] : detail?.pros_en || (laptop as any).pros_en || []
   const cons = isAr ? detail?.cons_ar || (laptop as any).cons_ar || [] : detail?.cons_en || (laptop as any).cons_en || []
+  const reviewSources = (detail?.review_sources || []).filter((src) => Boolean(safeHttpUrl(src.url)))
+  const showAllSources = expandedSourcesForId === laptop.canonical_id
+  const visibleReviewSources = showAllSources ? reviewSources : reviewSources.slice(0, 6)
 
   // Operational Tiers with Human Mappings
   const siliconTier = getSiliconTierInfo(detail?.metrics?.silicon_tier, isAr)
@@ -994,6 +1060,110 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                   </ul>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Verified External Review Sources */}
+          {reviewSources.length > 0 && (
+            <div className="tile-block space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="label flex items-center gap-1.5">
+                  <Video className="w-3.5 h-3.5 text-[var(--text-secondary)]" strokeWidth={1.8} />
+                  <span>
+                    {isAr ? 'مصادر المراجعات والفيديوهات' : 'Verified Review Sources'}
+                  </span>
+                </h4>
+                <span className="ai-chip tabular-nums">
+                  {isAr
+                    ? `NLP • ${reviewSources.length} مصادر`
+                    : `NLP • ${reviewSources.length} sources`}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {visibleReviewSources.map((src, idx) => {
+                  const href = safeHttpUrl(src.url)
+                  if (!href) return null
+                  const metricLabel = formatSourceMetric(src, isAr)
+                  return (
+                    <a
+                      key={`${src.url}-${idx}`}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex flex-col justify-between gap-2 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-raised)] px-3.5 py-3 transition-colors hover:border-[var(--gold)] hover:bg-[var(--gold-dim)]"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">
+                          {getSourceIcon(src.source_type)}
+                          <span>{formatPlatformLabel(src.platform, src.source_type)}</span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {metricLabel && (
+                            <span
+                              className="text-[11px] font-medium text-[var(--text-muted)] tabular-nums"
+                              style={{ fontFamily: 'var(--font-mono)' }}
+                            >
+                              {metricLabel}
+                            </span>
+                          )}
+                          <ExternalLink
+                            className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--gold-bright)]"
+                            strokeWidth={1.8}
+                          />
+                        </div>
+                      </div>
+
+                      <div
+                        dir="auto"
+                        className="text-[13px] font-medium leading-[1.45] text-[var(--text-primary)] line-clamp-2"
+                      >
+                        {src.title}
+                      </div>
+
+                      {src.author_or_channel && (
+                        <div
+                          dir="auto"
+                          className="text-[11.5px] text-[var(--text-muted)] truncate"
+                        >
+                          {src.author_or_channel}
+                        </div>
+                      )}
+                    </a>
+                  )
+                })}
+              </div>
+
+              {reviewSources.length > 6 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExpandedSourcesForId(showAllSources ? null : laptop.canonical_id)
+                  }
+                  className="collapse-toggle"
+                  aria-expanded={showAllSources}
+                >
+                  <span className="ct-left">
+                    <MessageSquare className="w-3.5 h-3.5" strokeWidth={1.8} />
+                    <span>
+                      {showAllSources
+                        ? isAr
+                          ? 'عرض مصادر أقل'
+                          : 'Show fewer review sources'
+                        : isAr
+                        ? `عرض كل المصادر (${reviewSources.length})`
+                        : `Show all ${reviewSources.length} review sources`}
+                    </span>
+                  </span>
+                  <span className="ct-state">
+                    {showAllSources ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
+                  </span>
+                </button>
+              )}
             </div>
           )}
         </div>
