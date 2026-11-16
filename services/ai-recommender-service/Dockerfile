@@ -4,8 +4,7 @@ WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    HF_HOME=/app/.cache/huggingface \
+    HF_HOME=/opt/hf-cache \
     PYTHONPATH=/install/lib/python3.12/site-packages \
     PATH="/install/bin:${PATH}"
 
@@ -14,7 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --prefix=/install -r requirements.txt
 
 # Pre-download and cache jinaai/jina-embeddings-v3 (Variant B: float32, 512d Matryoshka) during image build
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('jinaai/jina-embeddings-v3', trust_remote_code=True, truncate_dim=512)"
@@ -29,7 +29,7 @@ FROM python:3.12-slim AS runner
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    HF_HOME=/app/.cache/huggingface \
+    HF_HOME=/opt/hf-cache \
     HF_HUB_OFFLINE=1 \
     TRANSFORMERS_OFFLINE=1
 
@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 COPY --from=builder /install /usr/local
+COPY --chown=app:app --from=builder /opt/hf-cache /opt/hf-cache
 COPY --chown=app:app --from=builder /app ./
 
 USER app
