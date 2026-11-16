@@ -25,6 +25,7 @@ from pathlib import Path
 from app.common.messaging.contract import IMessageBroker
 from app.common.storage.base import IObjectStorageService
 from app.common.storage.factory import get_storage_service
+from app.common.cache import ICacheProvider
 from app.domain.reviews.relevance import consolidate_targets_by_chassis
 from app.schemas.events import (
     EventType,
@@ -83,11 +84,13 @@ class ReviewCollectorService:
         communities_collector: ICommunitiesReviewsCollector | None = None,
         upload_to_s3: bool = True,
         local_output_dir: Path | None = None,
+        cache_provider: ICacheProvider | None = None,
     ) -> None:
         self.storage_service = storage_service or get_storage_service()
         self.broker = broker
-        self.youtube_collector = youtube_collector or YouTubeReviewsCollector()
-        self.communities_collector = communities_collector or CommunitiesReviewsCollector()
+        self.cache_provider = cache_provider
+        self.youtube_collector = youtube_collector or YouTubeReviewsCollector(cache_provider=cache_provider)
+        self.communities_collector = communities_collector or CommunitiesReviewsCollector(cache_provider=cache_provider)
         self.upload_to_s3 = upload_to_s3
         self.local_output_dir = Path(local_output_dir) if local_output_dir else LOCAL_REVIEWS_DIR
 
@@ -118,6 +121,10 @@ class ReviewCollectorService:
 
         # 1. Run the platform collectors independently, in parallel.
         youtube_map, communities_map = await self._collect_platforms(targets)
+
+        cache_stats = self._cache_stats_summary()
+        if cache_stats:
+            logger.info("Review batch [%s] cache summary: %s", job_id, cache_stats)
 
         # 2. Merge platform outputs with chassis identity.
         items = [self._assemble_item(target, youtube_map, communities_map) for target in targets]
@@ -197,6 +204,25 @@ class ReviewCollectorService:
         with open(local_path, "w", encoding="utf-8") as handle:
             json.dump(artifact_data, handle, indent=2, ensure_ascii=False, default=str)
         logger.info("Saved local reviews artifact to '%s'.", local_path)
+
+    def _cache_stats_summary(self) -> dict[str, dict[str, int]]:
+        """Collect persistent-cache telemetry from both platform collectors."""
+        summary: dict[str, dict[str, int]] = {}
+        for label, collector in (
+            ("youtube", self.youtube_collector),
+            ("communities", self.communities_collector),
+        ):
+            stats_fn = getattr(collector, "cache_stats", None)
+            if not callable(stats_fn):
+                continue
+            try:
+                stats = stats_fn()
+            except Exception as exc:  # noqa: BLE001 - telemetry must not break the batch
+                logger.warning("Could not read %s cache stats: %s", label, exc)
+                continue
+            if isinstance(stats, dict) and stats:
+                summary[label] = stats
+        return summary
 
     async def _collect_platforms(
         self,

@@ -78,6 +78,7 @@ class ReviewsTriggerResponse(BaseModel):
     status: str
     chassis_targets_queued: int = 0
     laptops_matched: int = 0
+    laptops_cloned: int = 0
     message: str
 
 

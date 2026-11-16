@@ -7,7 +7,10 @@ from unittest.mock import AsyncMock
 import pytest
 from app.schemas.events import LaptopReviewTarget
 from app.services.reviews.chassis_key import build_chassis_key
-from app.services.reviews.community.filters import is_non_laptop_device
+from app.services.reviews.community.filters import (
+    is_non_laptop_device,
+    is_support_or_buying_advice,
+)
 from app.services.reviews.youtube.collector import YouTubeReviewsCollector
 
 
@@ -21,6 +24,10 @@ from app.services.reviews.youtube.collector import YouTubeReviewsCollector
         "ASUS TUF Gaming GeForce RTX 5070 OC 12GB Review",
         "ASUS ROG Strix GeForce RTX 5080 OC Edition Review",
         "Lenovo Legion Go S Handheld Console",
+        "ASUS TUF GAMING B550-PLUS WIFI Motherboard Review",
+        "ASUS ROG Strix B650E-F Gaming WiFi Motherboard",
+        "ASUS Prime Z890-P Motherboard Review",
+        "RayNeo X3 Pro Smart Glasses Review",
     ],
 )
 def test_rejects_non_laptop_devices(title: str):
@@ -56,6 +63,30 @@ def test_rejects_devices_in_body_text(title: str):
     assert is_non_laptop_device("Hands-on impressions", title) is True
 
 
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Compatible ram?",
+        "TPM bios problem",
+        "How to limit charging percentage",
+        "Looking for new laptop",
+    ],
+)
+def test_rejects_support_and_buying_advice_threads(title: str):
+    assert is_support_or_buying_advice(title) is True
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Notes on the Asus ProArt P16 Testing",
+        "# Review",
+    ],
+)
+def test_keeps_review_positive_signals(title: str):
+    assert is_support_or_buying_advice(title) is False
+
+
 def test_accepts_internal_laptop_display_and_gpu_wording():
     assert (
         is_non_laptop_device(
@@ -80,7 +111,7 @@ def _target(model: str, canonical_id: str) -> LaptopReviewTarget:
 async def test_youtube_collector_deduplicates_video_across_targets():
     shared_video = {
         "video_id": "vid123",
-        "title": "Lenovo LOQ 15IRX10 In-Depth Review",
+        "title": "Lenovo LOQ 15IRX9 & 15IRX10 In-Depth Review",
         "channel_name": "Reviewer",
         "channel_url": "https://youtube.com/@reviewer",
         "video_url": "https://www.youtube.com/watch?v=vid123",

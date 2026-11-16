@@ -14,6 +14,10 @@ from contextvars import ContextVar
 import logging
 from typing import Any
 
+from app.common.cache import ICacheProvider
+from app.core.cache_config import get_cache_settings
+from app.services.reviews.cache import ReviewsPersistentCache
+
 logger = logging.getLogger("scraper.services.reviews.community.http")
 
 DEFAULT_USER_AGENT = "laptop-recommender/1.0 (community review collector; contact: ops@laptop-recommender.local)"
@@ -25,10 +29,11 @@ _BATCH_CACHE_VAR: ContextVar[_BatchResponseCache | None] = ContextVar("community
 class _BatchResponseCache:
     """Single-flight async cache for GET text/json responses inside one batch."""
 
-    def __init__(self) -> None:
+    def __init__(self, persistent_cache: ReviewsPersistentCache | None = None) -> None:
         self._text_cache: dict[str, str | None] = {}
         self._json_cache: dict[str, Any] = {}
         self._locks: dict[str, asyncio.Lock] = {}
+        self.persistent_cache = persistent_cache
 
     def lock_for(self, kind: str, url: str) -> asyncio.Lock:
         return self._locks.setdefault(f"{kind}:{url}", asyncio.Lock())
@@ -53,7 +58,11 @@ class _BatchResponseCache:
 
 
 @asynccontextmanager
-async def shared_community_session(user_agent: str = DEFAULT_USER_AGENT):
+async def shared_community_session(
+    user_agent: str = DEFAULT_USER_AGENT,
+    cache_provider: ICacheProvider | None = None,
+    cache_ttl_seconds: int | None = None,
+):
     """Provide one pooled ``httpx.AsyncClient`` and URL cache for a batch."""
     import httpx  # noqa: PLC0415 - optional at import time
 
@@ -63,7 +72,15 @@ async def shared_community_session(user_agent: str = DEFAULT_USER_AGENT):
         limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
         headers={"User-Agent": user_agent},
     )
-    cache = _BatchResponseCache()
+    persistent: ReviewsPersistentCache | None = None
+    if cache_provider is not None:
+        ttl = (
+            cache_ttl_seconds
+            if cache_ttl_seconds is not None
+            else get_cache_settings().review_community_cache_ttl_seconds
+        )
+        persistent = ReviewsPersistentCache(cache_provider, community_ttl_seconds=ttl)
+    cache = _BatchResponseCache(persistent_cache=persistent)
     client_token = _BATCH_CLIENT_VAR.set(client)
     cache_token = _BATCH_CACHE_VAR.set(cache)
     try:
@@ -109,19 +126,10 @@ class HttpClientContext:
         return False
 
 
-async def get_text(client: Any, url: str) -> str | None:
-    """GET a URL and return its body text (cached per batch), or ``None`` on failure."""
-    cache = _BATCH_CACHE_VAR.get()
-    if cache is not None:
-        if cache.has_text(url):
-            return cache.get_text(url)
-        async with cache.lock_for("text", url):
-            if cache.has_text(url):
-                return cache.get_text(url)
-            value = await _fetch_text_uncached(client, url)
-            cache.set_text(url, value)
-            return value
-    return await _fetch_text_uncached(client, url)
+async def get_text(client: Any, url: str, *, persistent: bool = False) -> str | None:
+    """GET a URL and return its body text (L1 batch cache, optional L2), or ``None``."""
+    value = await _cached_get(client, url, kind="text", persistent=persistent)
+    return value if isinstance(value, str) else None
 
 
 async def _fetch_text_uncached(client: Any, url: str) -> str | None:
@@ -143,19 +151,47 @@ async def _fetch_text_uncached(client: Any, url: str) -> str | None:
         return None
 
 
-async def get_json(client: Any, url: str) -> Any:
-    """GET a JSON payload (cached per batch), or ``None`` on failure."""
+async def get_json(client: Any, url: str, *, persistent: bool = False) -> Any:
+    """GET a JSON payload (L1 batch cache, optional L2), or ``None`` on failure."""
+    return await _cached_get(client, url, kind="json", persistent=persistent)
+
+
+async def _cached_get(client: Any, url: str, *, kind: str, persistent: bool) -> Any:
+    """Shared L1 -> L2 -> live fetch flow for text and JSON GETs."""
     cache = _BATCH_CACHE_VAR.get()
-    if cache is not None:
-        if cache.has_json(url):
-            return cache.get_json(url)
-        async with cache.lock_for("json", url):
-            if cache.has_json(url):
-                return cache.get_json(url)
-            value = await _fetch_json_uncached(client, url)
-            cache.set_json(url, value)
-            return value
-    return await _fetch_json_uncached(client, url)
+    if cache is None:
+        return await (_fetch_text_uncached if kind == "text" else _fetch_json_uncached)(client, url)
+
+    has_cached = cache.has_text if kind == "text" else cache.has_json
+    read_cached = cache.get_text if kind == "text" else cache.get_json
+    store_cached = cache.set_text if kind == "text" else cache.set_json
+    fetch_live = _fetch_text_uncached if kind == "text" else _fetch_json_uncached
+
+    if has_cached(url):
+        return read_cached(url)
+
+    async with cache.lock_for(kind, url):
+        if has_cached(url):
+            return read_cached(url)
+
+        if persistent and cache.persistent_cache is not None:
+            if kind == "text":
+                cached = await cache.persistent_cache.get_text(url)
+            else:
+                cached = await cache.persistent_cache.get_json(url)
+            if cached is not None:
+                store_cached(url, cached)
+                return cached
+
+        value = await fetch_live(client, url)
+        store_cached(url, value)
+
+        if persistent and cache.persistent_cache is not None:
+            if kind == "text":
+                await cache.persistent_cache.set_text(url, value)
+            else:
+                await cache.persistent_cache.set_json(url, value)
+        return value
 
 
 async def _fetch_json_uncached(client: Any, url: str) -> Any:

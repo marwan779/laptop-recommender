@@ -22,6 +22,11 @@ class CacheSettings(BaseSettings):
     redis_health_check_interval_seconds: int = 30
     redis_scan_count: int = 100
 
+    # Cross-batch review evidence caches. Set either TTL to 0 to disable that
+    # cache entirely; negative values are treated the same as 0.
+    review_youtube_cache_ttl_seconds: int = 14 * 86400
+    review_community_cache_ttl_seconds: int = 7 * 86400
+
     @model_validator(mode="before")
     @classmethod
     def empty_str_to_default(cls, data: Any) -> Any:

@@ -53,7 +53,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     logger.info("Initializing RabbitMQ event broker and command consumers...")
     broker = RabbitMQBroker()
-    consumer = ScraperMessageConsumer(broker=broker, inbox=app.state.inbox)
+    consumer = ScraperMessageConsumer(broker=broker, inbox=app.state.inbox, cache_provider=app.state.cache)
     app.state.broker = broker
     app.state.consumer = consumer
 

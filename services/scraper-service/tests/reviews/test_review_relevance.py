@@ -7,6 +7,7 @@ from app.domain.reviews.relevance import (
     consolidate_targets_by_chassis,
     contains_word_boundary,
     is_non_laptop_device_text,
+    is_support_or_buying_advice_text,
     matches_target_text,
 )
 from app.domain.reviews.vocabulary import normalize_lookup
@@ -138,6 +139,49 @@ def test_consolidate_targets_by_chassis_merges_collisions_and_honors_explicit_ke
     assert item.mpns == ["MPN-1", "MPN-2"]
     assert item.product_urls == ["https://store.example/1", "https://store.example/2"]
     assert item.screen_size == 15.6
+
+
+def test_same_chassis_sibling_codes_are_allowed_but_different_chassis_are_blocked():
+    g614 = _target(brand="ASUS", family="ROG Strix", model="G614PR", screen_size=16.0)
+    assert matches_target_text(g614, "ASUS ROG Strix G16 G614FR Review", require_headline_match=True) is True
+    assert matches_target_text(g614, "ASUS ROG Strix G835LX Review", require_headline_match=True) is False
+
+    fa608 = _target(brand="ASUS", family="TUF Gaming", model="FA608PM", screen_size=16.0)
+    assert matches_target_text(fa608, "ASUS TUF Gaming A16 FA608WV Review", require_headline_match=True) is True
+
+    ux3405 = _target(brand="ASUS", family="Zenbook", model="UX3405CA", screen_size=14.0)
+    assert matches_target_text(ux3405, "ASUS Zenbook 14 UX3405MA Review", require_headline_match=True) is True
+
+
+def test_numeric_and_short_token_collisions_do_not_match_hp_255():
+    hp255 = _target(brand="HP", family="255", model="255 G10", screen_size=15.6)
+    assert matches_target_text(hp255, "HP 255 G10 Review") is True
+
+    for title in (
+        "HP Ultra 7 255H Laptop Review",
+        "HPE ProLiant DL380 Server Review",
+        "Samsung ISOCELL HP5 Camera Sensor Review",
+        "Garolite G10 vs FR4 for 3D Printing",
+    ):
+        assert matches_target_text(hp255, title, require_headline_match=True) is False
+
+
+def test_support_and_buying_advice_threads_are_not_reviews():
+    proart = _target(brand="ASUS", family="ProArt", model="ProArt P16", screen_size=16.0)
+    for title in (
+        "Compatible ram?",
+        "TPM bios problem",
+        "How to limit charging percentage",
+        "Looking for new laptop",
+    ):
+        assert matches_target_text(proart, title, require_headline_match=True) is False
+
+    assert matches_target_text(proart, "Notes on the Asus ProArt P16 Testing", require_headline_match=True) is True
+
+
+def test_editorial_review_title_with_buying_question_is_not_vetoed():
+    assert is_support_or_buying_advice_text("Lenovo LOQ 15 Review - Should I Buy?") is False
+    assert is_support_or_buying_advice_text("Compatible ram?") is True
 
 
 def test_community_relevance_rejects_sibling_series_conflicting_codes_and_body_only_hits():

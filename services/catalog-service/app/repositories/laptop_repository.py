@@ -1,7 +1,7 @@
 import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from sqlalchemy import func, or_, select, update
@@ -419,11 +419,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
                 has_metric_gate = True
                 filters.append(column >= threshold)
 
-        metrics_join = (
-            (LaptopMetrics, LaptopMetrics.laptop_id == LaptopConfiguration.id)
-            if has_metric_gate
-            else None
-        )
+        metrics_join = (LaptopMetrics, LaptopMetrics.laptop_id == LaptopConfiguration.id) if has_metric_gate else None
 
         count_stmt = select(func.count()).select_from(LaptopConfiguration)
         if metrics_join is not None:
@@ -437,25 +433,17 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             try:
                 cursor_id = uuid.UUID(boundary.item_id)
             except (ValueError, AttributeError) as exc:
-                raise InvalidCursorError(
-                    "Pagination cursor identifier is not a valid UUID."
-                ) from exc
+                raise InvalidCursorError("Pagination cursor identifier is not a valid UUID.") from exc
 
             if direction == "next":
                 cursor_predicate = or_(
                     LaptopConfiguration.min_price_egp > boundary.price,
-                    (
-                        (LaptopConfiguration.min_price_egp == boundary.price)
-                        & (LaptopConfiguration.id > cursor_id)
-                    ),
+                    ((LaptopConfiguration.min_price_egp == boundary.price) & (LaptopConfiguration.id > cursor_id)),
                 )
             else:
                 cursor_predicate = or_(
                     LaptopConfiguration.min_price_egp < boundary.price,
-                    (
-                        (LaptopConfiguration.min_price_egp == boundary.price)
-                        & (LaptopConfiguration.id < cursor_id)
-                    ),
+                    ((LaptopConfiguration.min_price_egp == boundary.price) & (LaptopConfiguration.id < cursor_id)),
                 )
 
         stmt = select(LaptopConfiguration).options(
@@ -556,21 +544,30 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         result = await self.session.execute(stmt)
         return result.scalars().unique().all()
 
-    async def get_unreviewed_laptops(self) -> Sequence[LaptopConfiguration]:
-        """Fetch laptop configurations that have not had community reviews collected.
+    async def get_unreviewed_laptops(self, *, retry_cooldown_days: int = 7) -> Sequence[LaptopConfiguration]:
+        """Fetch unreviewed laptops eligible for scraping (respecting recent 0-evidence cooldown).
 
-        Offers and metrics are eagerly loaded so callers can aggregate store
-        product URLs and attach the hardware specs envelope without lazy-load I/O.
+        Offers, metrics, and review sources are eagerly loaded so callers can
+        resolve chassis keys, aggregate store URLs, or clone siblings cleanly.
         """
         stmt = (
             select(LaptopConfiguration)
             .options(
                 selectinload(LaptopConfiguration.offers),
                 selectinload(LaptopConfiguration.metrics),
+                selectinload(LaptopConfiguration.review_sources),
             )
             .where(LaptopConfiguration.has_reviews.is_(False))
-            .order_by(LaptopConfiguration.laptop_added_at.asc())
         )
+        if retry_cooldown_days > 0:
+            cutoff = utcnow() - timedelta(days=retry_cooldown_days)
+            stmt = stmt.where(
+                or_(
+                    LaptopConfiguration.reviews_checked_at.is_(None),
+                    LaptopConfiguration.reviews_checked_at <= cutoff,
+                )
+            )
+        stmt = stmt.order_by(LaptopConfiguration.laptop_added_at.asc())
         result = await self.session.execute(stmt)
         return result.scalars().unique().all()
 
@@ -598,6 +595,183 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
         result = await self.session.execute(stmt)
         await self.session.flush()
         return result.rowcount or 0
+
+    async def get_reviewed_donors_by_chassis_keys(
+        self,
+        chassis_keys: Sequence[str],
+    ) -> dict[str, LaptopConfiguration]:
+        """Return the richest already-reviewed sibling configuration per ``chassis_key``."""
+        unique_keys = list(dict.fromkeys(str(k) for k in chassis_keys if k))
+        if not unique_keys:
+            return {}
+
+        stmt = (
+            select(LaptopConfiguration)
+            .options(
+                selectinload(LaptopConfiguration.metrics),
+                selectinload(LaptopConfiguration.review_sources),
+            )
+            .where(LaptopConfiguration.has_reviews.is_(True))
+            .where(LaptopConfiguration.chassis_key.in_(unique_keys))
+            .order_by(
+                LaptopConfiguration.reviews_evidence_count.desc(),
+                LaptopConfiguration.reviews_checked_at.desc(),
+            )
+        )
+        rows = (await self.session.execute(stmt)).scalars().unique().all()
+
+        donors: dict[str, LaptopConfiguration] = {}
+        for row in rows:
+            key = row.chassis_key
+            if not key:
+                continue
+            existing = donors.get(key)
+            if existing is None or (not existing.review_sources and row.review_sources):
+                donors[key] = row
+        return donors
+
+    async def _apply_review_profile(
+        self,
+        laptop: LaptopConfiguration,
+        *,
+        pros_en: Any,
+        pros_ar: Any,
+        cons_en: Any,
+        cons_ar: Any,
+        evidence_count: int,
+        community_nlp_score: float | None,
+        aspect_scores: Mapping[str, Any],
+        reviewed_at: datetime,
+        has_sources: bool,
+        raw_sources: Any,
+        has_real_evidence: bool = True,
+    ) -> None:
+        """Apply bilingual pros/cons, NLP aspect scores, and review sources onto one laptop row."""
+        clean_pros_en, clean_pros_ar = align_bilingual_lists(pros_en, pros_ar)
+        clean_cons_en, clean_cons_ar = align_bilingual_lists(cons_en, cons_ar)
+        is_unreviewed = (not has_real_evidence) or (
+            evidence_count <= 0 and not clean_pros_en and not clean_cons_en and not raw_sources
+        )
+
+        if is_unreviewed:
+            laptop.pros_en, laptop.pros_ar = [], []
+            laptop.cons_en, laptop.cons_ar = [], []
+            laptop.reviews_evidence_count = 0
+            laptop.has_reviews = False
+            laptop.reviews_checked_at = reviewed_at
+        else:
+            laptop.pros_en, laptop.pros_ar = clean_pros_en, clean_pros_ar
+            laptop.cons_en, laptop.cons_ar = clean_cons_en, clean_cons_ar
+            laptop.reviews_evidence_count = evidence_count
+            laptop.has_reviews = True
+            laptop.reviews_checked_at = reviewed_at
+
+        metrics = laptop.metrics
+        if metrics is None:
+            metrics = LaptopMetrics(
+                laptop_id=laptop.id,
+                cpu_score=0.0,
+                gpu_score=0.0,
+                silicon_index=0.0,
+                power_therm_score=0.0,
+                display_score=0.0,
+                mobility_score=0.0,
+                longevity_score=0.0,
+                ergonomics_score=0.0,
+                connectivity_score=0.0,
+                community_nlp_score=75.0,
+                value_score=0.0,
+                thermals_score=75.0,
+                acoustics_score=75.0,
+                build_and_hinges_score=75.0,
+                keyboard_and_trackpad_score=75.0,
+                real_battery_and_reliability_score=75.0,
+                effective_price_egp=0.0,
+                is_recommendable_price=True,
+                in_stock_active=True,
+                delta_p_watts=0.0,
+                simultaneous_load_w=0.0,
+                electrical_status="UNKNOWN",
+                estimated_battery_hours=0.0,
+                silicon_tier="STANDARD",
+                display_tier="STANDARD",
+                portability_tier="BALANCED",
+                upgradeability_tier="MODERATE",
+                is_copilot_plus_pc=False,
+                pricing_status="IN_STOCK_ACTIVE",
+                updated_at=reviewed_at,
+            )
+            laptop.metrics = metrics
+            self.session.add(metrics)
+
+        if is_unreviewed:
+            metrics.community_nlp_score = 75.0
+            for key in _REVIEW_ASPECT_KEYS:
+                setattr(metrics, key, 75.0)
+        else:
+            if community_nlp_score is not None:
+                metrics.community_nlp_score = community_nlp_score
+
+            for key in _REVIEW_ASPECT_KEYS:
+                score = _coerce_optional_float(aspect_scores.get(key))
+                if score is not None:
+                    setattr(metrics, key, score)
+
+        metrics.updated_at = reviewed_at
+
+        if is_unreviewed:
+            laptop.review_sources.clear()
+            await self.session.flush()
+        elif has_sources:
+            # Replace the collection idempotently: delete existing rows and
+            # flush before inserting so the (configuration, url) unique
+            # constraint can never observe both generations in one flush.
+            laptop.review_sources.clear()
+            await self.session.flush()
+            laptop.review_sources.extend(build_review_sources(laptop.id, raw_sources))
+
+    async def clone_reviews_from_donors(
+        self,
+        pairs: Sequence[tuple[LaptopConfiguration, LaptopConfiguration]],
+        timestamp: datetime | None = None,
+    ) -> int:
+        """Clone review intelligence and source links from reviewed chassis siblings."""
+        if not pairs:
+            return 0
+
+        cloned_count = 0
+        fallback_now = timestamp or utcnow()
+        for target, donor in pairs:
+            donor_aspects = (
+                {
+                    key: getattr(donor.metrics, key, None)
+                    for key in _REVIEW_ASPECT_KEYS
+                    if getattr(donor.metrics, key, None) is not None
+                }
+                if donor.metrics is not None
+                else {}
+            )
+            donor_nlp = _coerce_optional_float(donor.metrics.community_nlp_score) if donor.metrics is not None else None
+            if donor.chassis_key and not target.chassis_key:
+                target.chassis_key = donor.chassis_key
+
+            await self._apply_review_profile(
+                target,
+                pros_en=donor.pros_en,
+                pros_ar=donor.pros_ar,
+                cons_en=donor.cons_en,
+                cons_ar=donor.cons_ar,
+                evidence_count=donor.reviews_evidence_count or 0,
+                community_nlp_score=donor_nlp,
+                aspect_scores=donor_aspects,
+                reviewed_at=donor.reviews_checked_at or fallback_now,
+                has_sources=True,
+                raw_sources=donor.review_sources,
+            )
+            cloned_count += 1
+
+        await self.session.flush()
+        return cloned_count
 
     async def update_review_intelligence_by_canonical_ids(
         self,
@@ -636,74 +810,26 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
                 continue
 
             aspects = payload.get("aspect_scores")
-            if not isinstance(aspects, Mapping):
-                aspects = {}
-
-            laptop.pros_en, laptop.pros_ar = align_bilingual_lists(payload.get("pros_en"), payload.get("pros_ar"))
-            laptop.cons_en, laptop.cons_ar = align_bilingual_lists(payload.get("cons_en"), payload.get("cons_ar"))
-            laptop.reviews_evidence_count = _coerce_optional_int(payload.get("evidence_count")) or 0
-            laptop.has_reviews = True
-            laptop.reviews_checked_at = reviewed_at
-
-            metrics = laptop.metrics
-            if metrics is None:
-                metrics = LaptopMetrics(
-                    laptop_id=laptop.id,
-                    cpu_score=0.0,
-                    gpu_score=0.0,
-                    silicon_index=0.0,
-                    power_therm_score=0.0,
-                    display_score=0.0,
-                    mobility_score=0.0,
-                    longevity_score=0.0,
-                    ergonomics_score=0.0,
-                    connectivity_score=0.0,
-                    community_nlp_score=75.0,
-                    value_score=0.0,
-                    thermals_score=75.0,
-                    acoustics_score=75.0,
-                    build_and_hinges_score=75.0,
-                    keyboard_and_trackpad_score=75.0,
-                    real_battery_and_reliability_score=75.0,
-                    effective_price_egp=0.0,
-                    is_recommendable_price=True,
-                    in_stock_active=True,
-                    delta_p_watts=0.0,
-                    simultaneous_load_w=0.0,
-                    electrical_status="UNKNOWN",
-                    estimated_battery_hours=0.0,
-                    silicon_tier="STANDARD",
-                    display_tier="STANDARD",
-                    portability_tier="BALANCED",
-                    upgradeability_tier="MODERATE",
-                    is_copilot_plus_pc=False,
-                    pricing_status="IN_STOCK_ACTIVE",
-                    updated_at=reviewed_at,
-                )
-                laptop.metrics = metrics
-                self.session.add(metrics)
-
-            nlp_score = _coerce_optional_float(payload.get("community_nlp_score"))
-            if nlp_score is not None:
-                metrics.community_nlp_score = nlp_score
-
+            aspect_map: dict[str, Any] = dict(aspects) if isinstance(aspects, Mapping) else {}
             for key in _REVIEW_ASPECT_KEYS:
-                score = _coerce_optional_float(aspects.get(key, payload.get(key)))
-                if score is not None:
-                    setattr(metrics, key, score)
+                if key not in aspect_map and key in payload:
+                    aspect_map[key] = payload[key]
 
-            metrics.updated_at = reviewed_at
+            await self._apply_review_profile(
+                laptop,
+                pros_en=payload.get("pros_en"),
+                pros_ar=payload.get("pros_ar"),
+                cons_en=payload.get("cons_en"),
+                cons_ar=payload.get("cons_ar"),
+                evidence_count=_coerce_optional_int(payload.get("evidence_count")) or 0,
+                community_nlp_score=_coerce_optional_float(payload.get("community_nlp_score")),
+                aspect_scores=aspect_map,
+                reviewed_at=reviewed_at,
+                has_sources="review_sources" in payload,
+                raw_sources=payload.get("review_sources"),
+                has_real_evidence=payload.get("has_real_evidence") is not False,
+            )
             updated_count += 1
-
-            if "review_sources" in payload:
-                # Replace the collection idempotently: delete existing rows and
-                # flush before inserting so the (configuration, url) unique
-                # constraint can never observe both generations in one flush.
-                laptop.review_sources.clear()
-                await self.session.flush()
-                laptop.review_sources.extend(
-                    build_review_sources(laptop.id, payload.get("review_sources"))
-                )
 
         await self.session.flush()
         return updated_count

@@ -572,3 +572,214 @@ async def test_ingest_from_file_persists_review_sources_and_exposes_detail_idemp
     assert detail.review_sources[0].author_or_channel == "Hardware Lab"
     assert detail.review_sources[0].score_or_views == 75000
     assert detail.review_sources[1].platform == "level1techs"
+
+
+@pytest.mark.asyncio
+async def test_seeder_sets_chassis_key_and_pre_dispatch_clones_reviewed_siblings(
+    db_session: AsyncSession,
+):
+    from app.models.outbox import OutboxMessage
+    from app.repositories.review_source_persistence import build_review_sources
+
+    unique = uuid.uuid4().hex[:6].upper()
+    shared_model = f"LOQ 15CLN{unique[:2]}"
+    donor_cid = f"donor-twin-{unique.lower()}"
+    twin_cid = f"new-twin-{unique.lower()}"
+    brand_new_cid = f"brand-new-{unique.lower()}"
+
+    await CatalogSeederRepository(db_session).upsert_catalog(
+        {
+            "laptops": [
+                _build_sample_catalog_item(donor_cid, mpn=f"83ZZ001{unique[:3]}"),
+                _build_sample_catalog_item(twin_cid, mpn=f"83ZZ002{unique[:3]}"),
+                _build_sample_catalog_item(brand_new_cid, mpn=f"90XX001{unique[:3]}"),
+            ]
+        }
+    )
+
+    stmt = (
+        select(LaptopConfiguration)
+        .where(LaptopConfiguration.canonical_id.in_([donor_cid, twin_cid, brand_new_cid]))
+        .options(selectinload(LaptopConfiguration.metrics), selectinload(LaptopConfiguration.review_sources))
+    )
+    by_cid = {row.canonical_id: row for row in (await db_session.execute(stmt)).scalars().unique().all()}
+    assert by_cid[donor_cid].chassis_key is not None
+    assert by_cid[twin_cid].chassis_key is not None
+
+    # Force identical clonable chassis_key on donor & twin, distinct on brand_new
+    shared_key = f"lenovo:loq:15T{unique}"
+    by_cid[donor_cid].chassis_key = shared_key
+    by_cid[twin_cid].chassis_key = shared_key
+    by_cid[brand_new_cid].chassis_key = f"asus:zephyrus:G16{unique}"
+    await db_session.flush()
+
+    await LaptopRepository(db_session).update_review_intelligence_by_canonical_ids(
+        {
+            donor_cid: {
+                **_community_reviews(),
+                "review_sources": [
+                    {
+                        "source_type": "youtube",
+                        "platform": "youtube",
+                        "title": "Donor Chassis Review",
+                        "url": f"https://www.youtube.com/watch?v={unique.lower()}",
+                        "author_or_channel": "Jarrod",
+                        "score_or_views": 50000,
+                    }
+                ],
+            }
+        }
+    )
+    assert len(build_review_sources(by_cid[donor_cid].id, by_cid[donor_cid].review_sources)) == 1
+
+    response = await ReviewIntelligenceService().dispatch_review_scraping(
+        session=db_session,
+        force_all=False,
+        commit=False,
+    )
+
+    assert response.laptops_cloned >= 1
+    assert response.status == "QUEUED"
+
+    db_session.expire_all()
+    refreshed = {
+        row.canonical_id: row
+        for row in (
+            await db_session.execute(
+                select(LaptopConfiguration)
+                .where(LaptopConfiguration.canonical_id.in_([twin_cid, brand_new_cid]))
+                .options(selectinload(LaptopConfiguration.metrics), selectinload(LaptopConfiguration.review_sources))
+            )
+        )
+        .scalars()
+        .unique()
+        .all()
+    }
+    twin = refreshed[twin_cid]
+    assert twin.has_reviews is True
+    assert twin.pros_en == ["Strong cooling", "Easy upgrades"]
+    assert twin.reviews_evidence_count == 27
+    assert twin.metrics is not None
+    assert float(twin.metrics.thermals_score) == 78.9
+    assert [s.url for s in twin.review_sources] == [f"https://www.youtube.com/watch?v={unique.lower()}"]
+
+    outbox = (
+        await db_session.execute(select(OutboxMessage).where(OutboxMessage.correlation_id == response.job_id))
+    ).scalar_one()
+    payload_targets = json.loads(outbox.payload_json)["payload"]["targets"]
+    queued_cids = {
+        cid for t in payload_targets for cid in ([t["canonical_id"]] + (t.get("matched_canonical_ids") or []))
+    }
+    assert brand_new_cid in queued_cids
+    assert twin_cid not in queued_cids
+
+    # Add another unreviewed twin of the same donor and stub unreviewed list -> CLONED_EXISTING with 0 outbox rows
+    twin2_cid = f"only-twin-{unique.lower()}"
+    await CatalogSeederRepository(db_session).upsert_catalog(
+        {"laptops": [_build_sample_catalog_item(twin2_cid, mpn=f"83ZZ003{unique[:3]}")]}
+    )
+    twin2 = (
+        await db_session.execute(
+            select(LaptopConfiguration)
+            .where(LaptopConfiguration.canonical_id == twin2_cid)
+            .options(
+                selectinload(LaptopConfiguration.offers),
+                selectinload(LaptopConfiguration.metrics),
+                selectinload(LaptopConfiguration.review_sources),
+            )
+        )
+    ).scalar_one()
+    twin2.chassis_key = shared_key
+    await db_session.flush()
+
+    orig_get_unreviewed = LaptopRepository.get_unreviewed_laptops
+
+    async def _only_twin2(self):
+        return [twin2]
+
+    try:
+        LaptopRepository.get_unreviewed_laptops = _only_twin2  # type: ignore[method-assign]
+        cloned_only_resp = await ReviewIntelligenceService().dispatch_review_scraping(
+            session=db_session,
+            force_all=False,
+            commit=False,
+        )
+    finally:
+        LaptopRepository.get_unreviewed_laptops = orig_get_unreviewed  # type: ignore[method-assign]
+
+    assert cloned_only_resp.status == "CLONED_EXISTING"
+    assert cloned_only_resp.chassis_targets_queued == 0
+    assert cloned_only_resp.laptops_cloned == 1
+    assert twin2.has_reviews is True
+    assert (
+        await db_session.execute(select(OutboxMessage).where(OutboxMessage.correlation_id == cloned_only_resp.job_id))
+    ).scalar_one_or_none() is None
+
+
+@pytest.mark.asyncio
+async def test_zero_evidence_ingestion_keeps_has_reviews_false_and_enforces_cooldown(
+    db_session: AsyncSession,
+    tmp_path: Path,
+):
+    from datetime import timedelta
+
+    unique = uuid.uuid4().hex[:6]
+    cid = f"zero-ev-{unique}"
+    await CatalogSeederRepository(db_session).upsert_catalog(
+        {"laptops": [_build_sample_catalog_item(cid, mpn=f"MPN-ZEV-{unique}")]}
+    )
+
+    reviews_file = tmp_path / "zero_evidence_reviews.json"
+    reviews_file.write_text(
+        json.dumps(
+            {
+                "chassis_reviews": [
+                    {
+                        "chassis_key": f"test:zero:{unique}",
+                        "primary_canonical_id": cid,
+                        "matched_canonical_ids": [cid],
+                        "has_real_evidence": False,
+                        "evidence_count": 0,
+                        "audit_metrics": {"scraped_doc_count": 0},
+                        "clean_profile_lists": {"pros_en": [], "pros_ar": [], "cons_en": [], "cons_ar": []},
+                        "review_sources": [],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    res = await ReviewIntelligenceService().ingest_from_file(db_session, source_path=reviews_file, commit=False)
+    assert res.sql_laptops_updated == 1
+
+    db_session.expire_all()
+    laptop = (
+        await db_session.execute(
+            select(LaptopConfiguration)
+            .where(LaptopConfiguration.canonical_id == cid)
+            .options(selectinload(LaptopConfiguration.metrics), selectinload(LaptopConfiguration.review_sources))
+        )
+    ).scalar_one()
+
+    assert laptop.has_reviews is False
+    assert laptop.reviews_checked_at is not None
+    assert laptop.reviews_evidence_count == 0
+    assert laptop.pros_en == []
+    assert laptop.cons_en == []
+    assert laptop.review_sources == []
+    assert float(laptop.metrics.community_nlp_score) == 75.0
+    assert float(laptop.metrics.thermals_score) == 75.0
+
+    detail = await CatalogQueryService(session=db_session).get_laptop_detail(cid)
+    assert detail.has_reviews is False
+    assert detail.reviews_evidence_count == 0
+
+    repo = LaptopRepository(db_session)
+    recent_eligible = {r.canonical_id for r in await repo.get_unreviewed_laptops(retry_cooldown_days=7)}
+    assert cid not in recent_eligible
+
+    laptop.reviews_checked_at = datetime.now(UTC) - timedelta(days=8)
+    await db_session.flush()
+    expired_eligible = {r.canonical_id for r in await repo.get_unreviewed_laptops(retry_cooldown_days=7)}
+    assert cid in expired_eligible

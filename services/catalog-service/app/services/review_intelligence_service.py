@@ -26,7 +26,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.review_text import align_bilingual_lists
 from app.common.storage import IObjectStorageService, get_storage_service
-from app.domain.reviews import ChassisTargetResolver, LaptopInputDto, ResolvedReviewTarget, extract_review_sources
+from app.domain.reviews import (
+    ChassisKeyExtractor,
+    ChassisTargetResolver,
+    LaptopInputDto,
+    ResolvedReviewTarget,
+    extract_review_sources,
+    is_clonable_chassis_key,
+)
 from app.models.laptop import LaptopConfiguration
 from app.repositories.laptop_repository import LaptopRepository
 from app.repositories.outbox_repository import OutboxRepository
@@ -100,17 +107,73 @@ class ReviewIntelligenceService:
                 status="NO_UNREVIEWED_LAPTOPS",
                 chassis_targets_queued=0,
                 laptops_matched=0,
+                laptops_cloned=0,
                 message="No laptops require community review collection.",
             )
 
-        inputs = [self._to_review_input(laptop) for laptop in laptops]
+        cloned_count = 0
+        pending_laptops = list(laptops)
+        if not force_all:
+            keyed_laptops: list[tuple[LaptopConfiguration, str]] = []
+            for laptop in pending_laptops:
+                key = laptop.chassis_key or ChassisKeyExtractor.extract(self._to_review_input(laptop))
+                if not laptop.chassis_key and key:
+                    laptop.chassis_key = key[:255]
+                keyed_laptops.append((laptop, key))
+
+            clonable_keys = [k for _, k in keyed_laptops if is_clonable_chassis_key(k)]
+            donors_by_key = await laptop_repo.get_reviewed_donors_by_chassis_keys(clonable_keys)
+
+            clone_pairs: list[tuple[LaptopConfiguration, LaptopConfiguration]] = []
+            remaining: list[LaptopConfiguration] = []
+            for laptop, key in keyed_laptops:
+                donor = donors_by_key.get(key) if is_clonable_chassis_key(key) else None
+                if donor is not None:
+                    clone_pairs.append((laptop, donor))
+                else:
+                    remaining.append(laptop)
+
+            if clone_pairs:
+                cloned_count = await laptop_repo.clone_reviews_from_donors(clone_pairs)
+                logger.info(
+                    "Cloned existing chassis reviews for %d/%d unreviewed laptops [%s].",
+                    cloned_count,
+                    len(pending_laptops),
+                    job_id,
+                )
+            pending_laptops = remaining
+
+            if not pending_laptops:
+                if commit:
+                    await session.commit()
+                else:
+                    await session.flush()
+                return ReviewsTriggerResponse(
+                    job_id=job_id,
+                    status="CLONED_EXISTING",
+                    chassis_targets_queued=0,
+                    laptops_matched=0,
+                    laptops_cloned=cloned_count,
+                    message=(
+                        f"Cloned existing chassis reviews for {cloned_count} unreviewed laptops; "
+                        "no new chassis require scraping."
+                    ),
+                )
+
+        inputs = [self._to_review_input(laptop) for laptop in pending_laptops]
         targets = self.review_resolver.resolve(inputs)
         if not targets:
+            if cloned_count > 0:
+                if commit:
+                    await session.commit()
+                else:
+                    await session.flush()
             return ReviewsTriggerResponse(
                 job_id=job_id,
                 status="NO_TARGETS",
                 chassis_targets_queued=0,
-                laptops_matched=len(laptops),
+                laptops_matched=len(pending_laptops),
+                laptops_cloned=cloned_count,
                 message="Chassis resolution produced no review targets.",
             )
 
@@ -139,20 +202,26 @@ class ReviewIntelligenceService:
             await session.flush()
 
         logger.info(
-            "Queued review scrape command [%s]: %d laptops collapsed into %d chassis targets (upload_to_s3=%s).",
+            "Queued review scrape command [%s]: %d laptops collapsed into %d chassis targets (cloned=%d, upload_to_s3=%s).",
             job_id,
             matched_laptop_count,
             len(targets),
+            cloned_count,
             upload_to_s3,
+        )
+        msg = (
+            f"Cloned {cloned_count} laptops from reviewed chassis siblings and queued "
+            f"{len(targets)} new chassis targets ({matched_laptop_count} laptops) for review scraping."
+            if cloned_count > 0
+            else f"Queued {len(targets)} chassis targets from {matched_laptop_count} laptops for community review scraping."
         )
         return ReviewsTriggerResponse(
             job_id=job_id,
             status="QUEUED",
             chassis_targets_queued=len(targets),
             laptops_matched=matched_laptop_count,
-            message=(
-                f"Queued {len(targets)} chassis targets from {matched_laptop_count} laptops for community review scraping."
-            ),
+            laptops_cloned=cloned_count,
+            message=msg,
         )
 
     # ─── Ingestion ──────────────────────────────────────────────────────────
@@ -227,21 +296,55 @@ class ReviewIntelligenceService:
     # ─── Mappers ────────────────────────────────────────────────────────────
 
     @staticmethod
-    def _extract_profile_dict(item: dict[str, Any]) -> dict[str, Any] | None:
+    def _unreviewed_ingest_profile() -> dict[str, Any]:
+        return {
+            "pros_en": [],
+            "pros_ar": [],
+            "cons_en": [],
+            "cons_ar": [],
+            "aspect_scores": {},
+            "community_nlp_score": 75.0,
+            "evidence_count": 0,
+            "review_sources": [],
+            "has_real_evidence": False,
+        }
+
+    @classmethod
+    def _extract_profile_dict(cls, item: dict[str, Any]) -> dict[str, Any] | None:
         """Normalize Format B1 (`nlp_review_profile`) or Format B2 (`chassis_reviews`) into one profile."""
         review_sources = [src.to_dict() for src in extract_review_sources(item)]
+        has_raw_buckets = "youtube" in item or "communities" in item
 
         profile = item.get("nlp_review_profile")
         if isinstance(profile, dict) and profile:
+            if (
+                profile.get("has_real_evidence") is False
+                or (profile.get("evidence_count") == 0 and not review_sources)
+                or (has_raw_buckets and not review_sources)
+            ):
+                return cls._unreviewed_ingest_profile()
             normalized = dict(profile)
             normalized["review_sources"] = review_sources
+            normalized["has_real_evidence"] = True
             return normalized
+
+        audit_metrics = item.get("audit_metrics") if isinstance(item.get("audit_metrics"), dict) else {}
+        scraped_docs = audit_metrics.get("scraped_doc_count")
+
+        if (
+            item.get("has_real_evidence") is False
+            or (scraped_docs == 0 and not review_sources and item.get("evidence_count") in (None, 0))
+            or (item.get("evidence_count") == 0 and not review_sources)
+        ):
+            return cls._unreviewed_ingest_profile()
 
         lists = item.get("clean_profile_lists") if isinstance(item.get("clean_profile_lists"), dict) else {}
         aspects = item.get("aspect_scores")
         nlp_score = item.get("community_nlp_score")
         has_bilingual = any(item.get(k) for k in ("pros_en", "pros_ar", "cons_en", "cons_ar"))
         if not lists and not isinstance(aspects, dict) and nlp_score is None and not has_bilingual:
+            if review_sources:
+                return cls._unreviewed_ingest_profile()
             return None
 
         chunks = item.get("deduplicated_chunks") or []
@@ -258,6 +361,7 @@ class ReviewIntelligenceService:
             "community_nlp_score": nlp_score,
             "evidence_count": evidence_count,
             "review_sources": review_sources,
+            "has_real_evidence": True,
         }
 
     @classmethod

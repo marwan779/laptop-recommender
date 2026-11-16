@@ -218,6 +218,75 @@ async def test_level1techs_hydrates_full_post_body():
     )
 
 
+@pytest.mark.anyio
+async def test_level1techs_rejects_replies_support_threads_and_keeps_op_review():
+    support_titles = [
+        "Lenovo LOQ 15IRX9 TPM bios problem",
+        "Lenovo LOQ 15IRX9 Compatible ram?",
+        "Lenovo LOQ 15IRX9 How to limit charging percentage",
+    ]
+    topics = [
+        {"id": index, "slug": f"loq-support-{index}", "title": title}
+        for index, title in enumerate(support_titles, start=200)
+    ]
+    topics.append({"id": 500, "slug": "lenovo-loq-review", "title": "Lenovo LOQ 15IRX9 # Review"})
+    posts = [
+        {
+            "id": 2200 + index,
+            "topic_id": index,
+            "post_number": 1,
+            "username": "owner",
+            "blurb": "Lenovo LOQ 15IRX9 detailed user report about thermals and fan noise under load.",
+        }
+        for index in range(200, 203)
+    ]
+    posts.append(
+        {
+            "id": 2500,
+            "topic_id": 500,
+            "post_number": 1,
+            "username": "reviewer",
+            "blurb": ("Full detailed review of Lenovo LOQ 15IRX9 thermals, display, keyboard and battery life."),
+        }
+    )
+    payload = {"topics": topics, "posts": posts}
+    client = FakeClient(routes={"/search.json": FakeResponse(json_data=payload)})
+    scraper = Level1TechsPlatformScraper(http_client=client)
+
+    results = await scraper.scrape_for_target(_target(), [])
+
+    assert [post.post_id for post in results] == ["2500"]
+
+
+@pytest.mark.anyio
+async def test_level1techs_rejects_reply_urls_even_without_post_number():
+    payload = {
+        "topics": [
+            {
+                "id": 244005,
+                "slug": "lenovo-loq-experience",
+                "title": "Lenovo LOQ 15IRX9 experience",
+            }
+        ],
+        "posts": [
+            {
+                "id": 7001,
+                "topic_id": 244005,
+                "url": "https://forum.level1techs.com/t/lenovo-loq-experience/244005/27",
+                "username": "reply",
+                "blurb": "Lenovo LOQ 15IRX9 thermals are fine in my long-term usage report.",
+            }
+        ],
+    }
+    client = FakeClient(routes={"/search.json": FakeResponse(json_data=payload)})
+    scraper = Level1TechsPlatformScraper(http_client=client)
+
+    results = await scraper.scrape_for_target(_target(), [])
+
+    assert results == []
+    assert scraper._to_community_post({"id": "r1", "topic_id": 42, "post_number": 2}, {}) is None
+
+
 # ─── Arabhardware ──────────────────────────────────────────────────────────
 
 _ARABHARDWARE_SEARCH_HTML = """
@@ -241,14 +310,46 @@ async def test_arabhardware_extracts_discussion_snippets():
 
     posts = await scraper.scrape_for_target(_target(), ["aspect query"])
 
-    assert len(posts) == 2
+    assert len(posts) == 1
     assert all(isinstance(post, CommunityPost) for post in posts)
     assert posts[0].platform == "arabhardware"
     assert posts[0].post_title == "مراجعة لابتوب Lenovo LOQ"
     assert posts[0].post_url == "https://arabhardware.net/reviews/lenovo-loq-15irx9"
     assert posts[0].post_body == "تجربة استخدام كاملة مع قياس درجات الحرارة والأداء."
-    assert posts[1].post_url == "https://forum.arabhardware.net/threads/loq"
-    assert posts[1].post_id
+
+
+@pytest.mark.anyio
+async def test_arabhardware_only_keeps_reviews_paths():
+    search_html = """
+    <html><body>
+      <article>
+        <h2><a href="/articles/lenovo-loq-15-article">Lenovo LOQ 15 article</a></h2>
+        <p>Lenovo LOQ 15IRX9 article body.</p>
+      </article>
+      <article>
+        <h2><a href="/videos/lenovo-loq-15-video">Lenovo LOQ 15 video</a></h2>
+        <p>Lenovo LOQ 15IRX9 video body.</p>
+      </article>
+      <article>
+        <h2><a href="/news/lenovo-loq-15-news">Lenovo LOQ 15 news</a></h2>
+        <p>Lenovo LOQ 15IRX9 news body.</p>
+      </article>
+      <article>
+        <h2><a href="/deals/lenovo-loq-15-deal">Lenovo LOQ 15 deal</a></h2>
+        <p>Lenovo LOQ 15IRX9 deal body.</p>
+      </article>
+      <article>
+        <h2><a href="/reviews/lenovo-loq-15-review">Lenovo LOQ 15 review</a></h2>
+        <p>Lenovo LOQ 15IRX9 review body with thermals and battery details.</p>
+      </article>
+    </body></html>
+    """
+    client = FakeClient(routes={"/search?s=": FakeResponse(text=search_html)})
+    scraper = ArabhardwarePlatformScraper(http_client=client)
+
+    posts = await scraper.scrape_for_target(_target(), [])
+
+    assert [post.post_url for post in posts] == ["https://arabhardware.net/reviews/lenovo-loq-15-review"]
 
 
 @pytest.mark.anyio
@@ -277,7 +378,7 @@ async def test_arabhardware_hydrates_full_article_body():
 
     posts = await scraper.scrape_for_target(_target(), [])
 
-    assert len(posts) == 2
+    assert len(posts) == 1
     assert "الفقرة الأولى التفصيلية" in posts[0].post_body
     assert "الفقرة الثانية التفصيلية" in posts[0].post_body
 

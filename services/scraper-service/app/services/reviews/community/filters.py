@@ -11,6 +11,7 @@ import re
 from app.domain.reviews.relevance import (
     extract_code_tokens,
     is_non_laptop_device_text,
+    is_support_or_buying_advice_text,
 )
 
 # Keywords indicating a deal/sale listing rather than a discussion.
@@ -59,6 +60,11 @@ def code_tokens(values: list[str] | tuple[str, ...]) -> set[str]:
     return extract_code_tokens(values)
 
 
+def is_support_or_buying_advice(title: str, body: str = "") -> bool:
+    """Delegate buying-advice and troubleshooting-help detection to domain logic."""
+    return is_support_or_buying_advice_text(title, body)
+
+
 __all__ = [
     "MIN_DISCUSSION_LENGTH",
     "NEGATIVE_PATTERNS",
@@ -66,4 +72,5 @@ __all__ = [
     "is_deal_listing",
     "is_non_laptop_device",
     "is_substantive",
+    "is_support_or_buying_advice",
 ]

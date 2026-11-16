@@ -248,3 +248,42 @@ def test_audit_and_dedup_preserves_compact_review_sources() -> None:
     assert sources[2]["platform"] == "level1techs"
     assert sources[2]["score_or_views"] == 14
     assert "post_body" not in sources[2]
+    assert out["chassis_reviews"][0]["evidence_count"] >= 2
+
+
+def test_audit_and_dedup_preserves_unreviewed_zero_evidence_state() -> None:
+    reviews_data = {
+        "laptops": [
+            {
+                "chassis_key": "hp:victus:new2026",
+                "primary_canonical_id": "cid-new",
+                "matched_canonical_ids": ["cid-new"],
+                "identity": {"brand": "HP", "laptop_family": "Victus", "laptop_model": "Victus 16"},
+                "youtube": {"videos": []},
+                "communities": {"editorial": [], "discussions": []},
+                "nlp_review_profile": {
+                    "community_nlp_score": 75.0,
+                    "evidence_count": 0,
+                    "has_real_evidence": False,
+                    "aspect_scores": {"thermals_score": 75.0},
+                    "pros_en": [],
+                    "pros_ar": [],
+                    "cons_en": [],
+                    "cons_ar": [],
+                },
+            }
+        ]
+    }
+    out = audit_and_deduplicate_payload(
+        reviews_data=reviews_data,
+        catalog_data={"laptops": [{"canonical_id": "cid-new", "brand": "HP", "laptop_model": "Victus 16"}]},
+        include_unmatched_catalog=False,
+    )
+    assert out["chassis_reviews"][0]["evidence_count"] == 0
+    assert out["chassis_reviews"][0]["has_real_evidence"] is False
+    assert out["chassis_reviews"][0]["clean_profile_lists"] == {
+        "pros_en": [],
+        "pros_ar": [],
+        "cons_en": [],
+        "cons_ar": [],
+    }

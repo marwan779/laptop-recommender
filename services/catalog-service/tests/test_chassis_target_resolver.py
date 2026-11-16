@@ -597,3 +597,27 @@ def test_specs_envelope_propagates_to_resolved_target():
 
     assert len(targets) == 1
     assert targets[0].specs == specs
+
+
+def test_from_catalog_item_and_is_clonable_chassis_key():
+    from app.domain.reviews import ChassisKeyExtractor, is_clonable_chassis_key
+
+    item = {
+        "canonical_id": "laptop_lenovo_loq_83dv01hsed",
+        "brand": "Lenovo",
+        "laptop_family": "LOQ",
+        "laptop_model": "LOQ 15IRX9",
+        "mpn": "83DV01HSED",
+        "title": "Lenovo LOQ 15IRX9 Core i7 13650HX",
+        "specs": {
+            "identity": {"brand": "Lenovo", "laptop_family": "LOQ", "laptop_model": "LOQ 15IRX9"},
+            "display": {"size_inches": 15.6},
+        },
+    }
+    key = ChassisKeyExtractor.from_catalog_item(item)
+    assert key == "lenovo:loq:15IRX9"
+    assert is_clonable_chassis_key(key) is True
+    assert is_clonable_chassis_key("lenovo:loq") is False
+    assert is_clonable_chassis_key("generic:loq:15IRX9") is False
+    assert is_clonable_chassis_key("lenovo:unknown:15IRX9") is False
+    assert is_clonable_chassis_key(None) is False

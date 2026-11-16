@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.common.review_text import align_bilingual_lists
+from app.domain.reviews import ChassisKeyExtractor
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
@@ -476,6 +477,7 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         laptop.warranty = _safe_str(ident.get("warranty"), max_length=100)
         laptop.warranty_years = _safe_int(ident.get("warranty_years"))
         laptop.is_bundle = _safe_bool(ident.get("is_bundle"), False)
+        laptop.chassis_key = _safe_str(ChassisKeyExtractor.from_catalog_item(item), max_length=255)
 
         # CPU
         laptop.cpu_manufacturer = _safe_str(cpu.get("manufacturer"), "Unknown", max_length=50) or "Unknown"

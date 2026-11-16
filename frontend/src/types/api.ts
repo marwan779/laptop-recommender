@@ -367,6 +367,7 @@ export interface FullLaptopDetailResponse {
   metrics?: HardwareMetricsDetail;
 
   // Community Review Intelligence & Explainability
+  has_reviews?: boolean;
   reviews_evidence_count: number;
   pros_en: string[];
   pros_ar: string[];

@@ -4,7 +4,8 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --prefix=/install -r requirements.txt
 
 COPY app ./app
 
@@ -21,12 +22,15 @@ RUN addgroup --gid 10001 app \
 WORKDIR /app
 
 COPY --from=builder /install /usr/local
-COPY --chown=app:app --from=builder /app/app ./app
 
+# Install Chromium before copying app code so Python edits never re-download the browser binary
 RUN patchright install --with-deps chromium \
     && chmod -R 755 /ms-playwright \
-    && mkdir -p "/app/scraping results" /app/quarantine \
-    && chown -R app:app /app
+    && mkdir -p "/app/scraping results" /app/quarantine
+
+COPY --chown=app:app --from=builder /app/app ./app
+
+RUN chown -R app:app /app
 
 USER app
 

@@ -26,6 +26,7 @@ import {
   Video,
   MessageSquare,
   FileText,
+  Play,
 } from 'lucide-react'
 import type {
   FullLaptopDetailResponse,
@@ -96,6 +97,45 @@ function formatPlatformLabel(platform: string, sourceType: string): string {
   return labels[normalized] || platform.trim()
 }
 
+function extractYouTubeVideoId(rawUrl: string): string | null {
+  try {
+    const url = new URL(rawUrl)
+    const host = url.hostname.toLowerCase()
+    let candidate: string | null = null
+
+    if (host === 'youtu.be') {
+      const segment = url.pathname.split('/').filter(Boolean)[0] ?? ''
+      candidate = segment || null
+    } else if (host.endsWith('youtube.com') || host.endsWith('youtube-nocookie.com')) {
+      candidate = url.searchParams.get('v')
+      if (!candidate) {
+        const match = url.pathname.match(/^\/(?:shorts|embed|live)\/([^/?#]+)/)
+        candidate = match ? match[1] : null
+      }
+    }
+
+    if (!candidate) return null
+    return /^[A-Za-z0-9_-]{11}$/.test(candidate) ? candidate : null
+  } catch {
+    return null
+  }
+}
+
+function getYouTubeThumbnailUrl(rawUrl: string): string | null {
+  const videoId = extractYouTubeVideoId(rawUrl)
+  // mqdefault is a native 320x180 (16:9) frame, so no black letterbox bars.
+  return videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : null
+}
+
+function extractDisplayHost(rawUrl: string): string | null {
+  try {
+    const host = new URL(rawUrl).hostname.toLowerCase()
+    return host.replace(/^www\./, '') || null
+  } catch {
+    return null
+  }
+}
+
 function formatSourceMetric(src: ReviewSourceDetail, isAr: boolean): string | null {
   if (src.source_type === 'editorial' && src.rating != null) {
     return `${Number(src.rating).toFixed(1)}/100`
@@ -119,6 +159,111 @@ function getSourceIcon(sourceType: string): React.ReactNode {
     return <FileText className="w-3.5 h-3.5 shrink-0" strokeWidth={1.8} />
   }
   return <MessageSquare className="w-3.5 h-3.5 shrink-0" strokeWidth={1.8} />
+}
+
+interface ReviewSourceCardProps {
+  src: ReviewSourceDetail
+  href: string
+  isAr: boolean
+}
+
+function ReviewSourceCard({ src, href, isAr }: ReviewSourceCardProps) {
+  const thumbUrl = src.source_type === 'youtube' ? getYouTubeThumbnailUrl(href) : null
+  const [thumbFailed, setThumbFailed] = useState(false)
+
+  useEffect(() => {
+    setThumbFailed(false)
+  }, [thumbUrl])
+
+  const showThumbnail = Boolean(thumbUrl && !thumbFailed)
+  const metricLabel = formatSourceMetric(src, isAr)
+  const hostLabel = extractDisplayHost(href)
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-stretch gap-3 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-raised)] p-2.5 transition-colors hover:border-[var(--gold)] hover:bg-[var(--gold-dim)]"
+    >
+      {/* Media slot: compact 16:9 thumbnail or an identical-height icon fallback */}
+      <div className="w-[112px] aspect-video shrink-0 rounded-[6px] overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-input)] relative flex items-center justify-center">
+        {showThumbnail ? (
+          <>
+            <img
+              src={thumbUrl!}
+              alt={src.title}
+              loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              onError={() => setThumbFailed(true)}
+              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+            />
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#0A0E13]/25">
+              <span className="w-7 h-7 rounded-full bg-[#0A0E13]/80 border border-white/15 flex items-center justify-center text-[var(--text-primary)] group-hover:border-[var(--gold)] group-hover:text-[var(--gold-bright)]">
+                <Play className="w-3.5 h-3.5 fill-current ms-0.5" />
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-1 px-1.5 text-center">
+            <span className="text-[var(--text-secondary)] group-hover:text-[var(--gold-bright)]">
+              {getSourceIcon(src.source_type)}
+            </span>
+            {hostLabel && (
+              <span
+                dir="ltr"
+                className="text-[10px] text-[var(--text-muted)] truncate max-w-full px-1.5"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                {hostLabel}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Text column */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between gap-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 min-w-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">
+            {getSourceIcon(src.source_type)}
+            <span className="truncate">{formatPlatformLabel(src.platform, src.source_type)}</span>
+          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            {metricLabel && (
+              <span
+                className="text-[11px] font-medium text-[var(--text-muted)] tabular-nums"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                {metricLabel}
+              </span>
+            )}
+            <ExternalLink
+              className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--gold-bright)]"
+              strokeWidth={1.8}
+            />
+          </div>
+        </div>
+
+        <div
+          dir="auto"
+          className="text-[13px] font-medium leading-[1.4] text-[var(--text-primary)] line-clamp-2"
+        >
+          {src.title}
+        </div>
+
+        {src.author_or_channel && (
+          <div
+            dir="auto"
+            className="text-[11px] text-[var(--text-muted)] truncate"
+          >
+            {src.author_or_channel}
+          </div>
+        )}
+      </div>
+    </a>
+  )
 }
 
 function getSiliconTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
@@ -266,6 +411,13 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
   const reviewSources = (detail?.review_sources || []).filter((src) => Boolean(safeHttpUrl(src.url)))
   const showAllSources = expandedSourcesForId === laptop.canonical_id
   const visibleReviewSources = showAllSources ? reviewSources : reviewSources.slice(0, 6)
+  const hasVerifiedReviews = Boolean(
+    detail?.has_reviews ||
+      (detail?.reviews_evidence_count ?? 0) > 0 ||
+      pros.length > 0 ||
+      cons.length > 0 ||
+      reviewSources.length > 0
+  )
 
   // Operational Tiers with Human Mappings
   const siliconTier = getSiliconTierInfo(detail?.metrics?.silicon_tier, isAr)
@@ -1063,6 +1215,30 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
             </div>
           )}
 
+          {/* Honest empty state when zero verified community reviews exist yet */}
+          {detail && !loading && !hasVerifiedReviews && (
+            <div className="tile-block">
+              <div className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-raised)] px-4 py-3.5 space-y-1.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[var(--text-primary)]">
+                    <MessageSquare className="w-3.5 h-3.5 text-[var(--text-secondary)]" strokeWidth={1.8} />
+                    <span>
+                      {isAr ? 'بانتظار مراجعات المستخدمين الموثقة' : 'Pending Verified Community Reviews'}
+                    </span>
+                  </div>
+                  <span className="ai-chip tabular-nums">
+                    {isAr ? 'خط أساس محايد • 75.0' : 'Neutral Baseline • 75.0'}
+                  </span>
+                </div>
+                <p dir="auto" className="text-[12.5px] leading-[1.6] text-[var(--text-secondary)]">
+                  {isAr
+                    ? 'لم يتم العثور على مراجعات يوتيوب أو منتديات موثوقة لهذا الشاسيه حتى الآن. يتم التقييم مؤقتاً على خط أساس محايد (75.0) دون توليد مميزات أو عيوب مصطنعة حتى تتوفر تجارب حقيقية.'
+                    : 'No verified YouTube, forum, or editorial reviews have been collected for this chassis yet. Scoring uses a neutral 75.0 baseline without fabricated pros or cons until real owner evidence is available.'}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Verified External Review Sources */}
           {reviewSources.length > 0 && (
             <div className="tile-block space-y-3">
@@ -1084,52 +1260,8 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                 {visibleReviewSources.map((src, idx) => {
                   const href = safeHttpUrl(src.url)
                   if (!href) return null
-                  const metricLabel = formatSourceMetric(src, isAr)
                   return (
-                    <a
-                      key={`${src.url}-${idx}`}
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex flex-col justify-between gap-2 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-raised)] px-3.5 py-3 transition-colors hover:border-[var(--gold)] hover:bg-[var(--gold-dim)]"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">
-                          {getSourceIcon(src.source_type)}
-                          <span>{formatPlatformLabel(src.platform, src.source_type)}</span>
-                        </span>
-                        <div className="flex items-center gap-2">
-                          {metricLabel && (
-                            <span
-                              className="text-[11px] font-medium text-[var(--text-muted)] tabular-nums"
-                              style={{ fontFamily: 'var(--font-mono)' }}
-                            >
-                              {metricLabel}
-                            </span>
-                          )}
-                          <ExternalLink
-                            className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--gold-bright)]"
-                            strokeWidth={1.8}
-                          />
-                        </div>
-                      </div>
-
-                      <div
-                        dir="auto"
-                        className="text-[13px] font-medium leading-[1.45] text-[var(--text-primary)] line-clamp-2"
-                      >
-                        {src.title}
-                      </div>
-
-                      {src.author_or_channel && (
-                        <div
-                          dir="auto"
-                          className="text-[11.5px] text-[var(--text-muted)] truncate"
-                        >
-                          {src.author_or_channel}
-                        </div>
-                      )}
-                    </a>
+                    <ReviewSourceCard key={`${href}-${idx}`} src={src} href={href} isAr={isAr} />
                   )
                 })}
               </div>

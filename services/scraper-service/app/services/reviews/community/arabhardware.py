@@ -113,7 +113,7 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
     async def _fetch_full_article(client: Any, url: str) -> str | None:
         """Fetch un-truncated article or review body from Arabhardware."""
         try:
-            html = await get_text(client, url)
+            html = await get_text(client, url, persistent=True)
             if not html:
                 return None
             from bs4 import BeautifulSoup  # noqa: PLC0415
@@ -165,7 +165,9 @@ class ArabhardwarePlatformScraper(ICommunityPlatformScraper):
             parsed = urlparse(absolute)
             if parsed.netloc and "arabhardware.net" not in parsed.netloc:
                 continue
-            if "/news/" in parsed.path.lower():
+            # Strictly editorial reviews: drop /news/, /articles/, /videos/,
+            # /deals/, forum threads, and every other non-review path.
+            if "/reviews/" not in parsed.path.lower():
                 continue
             if absolute in seen_urls:
                 continue

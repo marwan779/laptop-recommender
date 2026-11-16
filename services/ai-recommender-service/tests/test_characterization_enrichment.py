@@ -732,3 +732,34 @@ def test_finalize_profile_recalibrates_with_item_specs_even_without_cat_map() ->
     assert prof["aspect_scores"]["acoustics_score"] == 72.5
     assert prof["aspect_scores"]["real_battery_and_reliability_score"] == 48.8
     assert "Intel Core i9-14900HX" in prof["synthesized_review_en"]
+
+
+def test_zero_evidence_skips_llm_and_synthesizes_no_fake_reviews() -> None:
+    empty_pack = {
+        "doc_count": 0,
+        "candidate_count": 0,
+        "snippets": [],
+        "jina_aspect_scores_raw": dict(BASE),
+        "specs_summary": _evidence_pack()["specs_summary"],
+    }
+    calls: List[str] = []
+    for mode in ("primary_with_fallback", "zero_llm"):
+        prof, tel = rre.enrich_chassis_with_fallback(
+            item=_item(),
+            cat_map=None,
+            evidence_pack=empty_pack,
+            primary_model="primary-model",
+            fallback_model="fallback-model",
+            mode=mode,
+            llm_caller=_fake_caller_factory([_valid_profile()], calls),
+        )
+        assert calls == []
+        assert tel["path_taken"] == "skipped_no_evidence"
+        assert prof["evidence_count"] == 0
+        assert prof["has_real_evidence"] is False
+        assert prof["community_nlp_score"] == 75.0
+        assert all(v == 75.0 for v in prof["aspect_scores"].values())
+        assert prof["pros_en"] == []
+        assert prof["pros_ar"] == []
+        assert prof["cons_en"] == []
+        assert prof["cons_ar"] == []

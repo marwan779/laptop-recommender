@@ -446,7 +446,7 @@ def _finalize_profile_with_recalibration(
 
     return {
         "community_nlp_score": float(final_score),
-        "evidence_count": int(max(1, evidence_count)),
+        "evidence_count": int(max(0, evidence_count)),
         "aspect_scores": final_aspects,
         "pros_en": pros_en,
         "pros_ar": pros_ar,
@@ -454,6 +454,22 @@ def _finalize_profile_with_recalibration(
         "cons_ar": cons_ar,
         "synthesized_review_en": syn_en,
         "synthesized_review_ar": syn_ar,
+    }
+
+
+def build_unreviewed_profile() -> Dict[str, Any]:
+    """Return a neutral placeholder profile when zero scraped review evidence exists."""
+    return {
+        "community_nlp_score": 75.0,
+        "evidence_count": 0,
+        "aspect_scores": {k: 75.0 for k in ASPECT_KEYS},
+        "pros_en": [],
+        "pros_ar": [],
+        "cons_en": [],
+        "cons_ar": [],
+        "synthesized_review_en": "",
+        "synthesized_review_ar": "",
+        "has_real_evidence": False,
     }
 
 

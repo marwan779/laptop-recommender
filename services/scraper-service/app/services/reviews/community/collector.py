@@ -15,9 +15,12 @@ import asyncio
 import logging
 from typing import Any
 
+from app.common.cache import ICacheProvider
+from app.core.cache_config import get_cache_settings
 from app.domain.reviews.community_queries import CommunityQueryBuilder
 from app.schemas.events import LaptopReviewTarget
 from app.schemas.reviews_s3 import CommunitiesData, CommunityPost, EditorialReview
+from app.services.reviews.cache import ReviewsPersistentCache
 from app.services.reviews.chassis_key import build_chassis_key
 from app.services.reviews.community.arabhardware import ArabhardwarePlatformScraper
 from app.services.reviews.community.contracts import ICommunityPlatformScraper
@@ -36,8 +39,23 @@ class CommunitiesReviewsCollector(ICommunitiesReviewsCollector):
         self,
         query_builder: CommunityQueryBuilder | None = None,
         scrapers: list[ICommunityPlatformScraper] | None = None,
+        cache_provider: ICacheProvider | None = None,
+        cache_ttl_seconds: int | None = None,
     ) -> None:
         self.query_builder = query_builder or CommunityQueryBuilder()
+        self.cache_provider = cache_provider
+        self.cache_ttl_seconds = cache_ttl_seconds
+        self._persistent_cache: ReviewsPersistentCache | None = None
+        if cache_provider is not None:
+            ttl = (
+                cache_ttl_seconds
+                if cache_ttl_seconds is not None
+                else get_cache_settings().review_community_cache_ttl_seconds
+            )
+            self._persistent_cache = ReviewsPersistentCache(
+                cache_provider,
+                community_ttl_seconds=ttl,
+            )
         self.scrapers = (
             scrapers
             if scrapers is not None
@@ -70,9 +88,18 @@ class CommunitiesReviewsCollector(ICommunitiesReviewsCollector):
                     )
                     return chassis_key, CommunitiesData()
 
-        async with shared_community_session():
+        async with shared_community_session(
+            cache_provider=self.cache_provider,
+            cache_ttl_seconds=self.cache_ttl_seconds,
+        ):
             collected = await asyncio.gather(*[_collect(target) for target in targets])
         return dict(collected)
+
+    def cache_stats(self) -> dict[str, int]:
+        """Return persistent-cache telemetry (empty when caching is disabled)."""
+        if self._persistent_cache is None:
+            return {}
+        return self._persistent_cache.stats_summary()
 
     async def _collect_for_target(self, target: LaptopReviewTarget) -> CommunitiesData:
         """Query every registered platform and merge results into one model."""
