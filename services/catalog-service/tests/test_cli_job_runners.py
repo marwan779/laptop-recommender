@@ -113,9 +113,7 @@ class ObservingScrapingCliRunner(ScrapingCronCliRunner):
                 )
             ).scalar_one()
         )
-        self.observed_outbox_rows = await _count_outbox(
-            session, EventType.CATALOG_SCRAPE_COMMAND
-        )
+        self.observed_outbox_rows = await _count_outbox(session, EventType.CATALOG_SCRAPE_COMMAND)
         return result
 
 
@@ -162,9 +160,7 @@ async def test_scraping_cli_dry_run_stages_then_rolls_back(db_session: AsyncSess
     batch_rows = int(
         (
             await db_session.execute(
-                select(func.count())
-                .select_from(ScrapingBatchLog)
-                .where(ScrapingBatchLog.store_key == store_key)
+                select(func.count()).select_from(ScrapingBatchLog).where(ScrapingBatchLog.store_key == store_key)
             )
         ).scalar_one()
     )
@@ -190,9 +186,7 @@ async def test_scraping_cli_commit_persists_batch_and_outbox(db_session: AsyncSe
     assert exit_code == 0
 
     batch_log = (
-        await db_session.execute(
-            select(ScrapingBatchLog).where(ScrapingBatchLog.store_key == store_key)
-        )
+        await db_session.execute(select(ScrapingBatchLog).where(ScrapingBatchLog.store_key == store_key))
     ).scalar_one()
     assert batch_log.status == "QUEUED"
 
@@ -222,9 +216,7 @@ async def test_price_sync_cli_outbox_dry_run_rolls_back(db_session: AsyncSession
         stdout=io.StringIO(),
     )
 
-    exit_code = await runner.run(
-        ["--dry-run", "--store", store_key, "--limit", "5"]
-    )
+    exit_code = await runner.run(["--dry-run", "--store", store_key, "--limit", "5"])
 
     assert exit_code == 0
     assert await _count_outbox(db_session, EventType.PRICES_CHECK_COMMAND) == outbox_before
@@ -245,20 +237,22 @@ async def test_price_sync_cli_outbox_commit_persists_check_prices_commands(
         stdout=io.StringIO(),
     )
 
-    exit_code = await runner.run(
-        ["--commit", "--store", store_key, "--limit", "5"]
-    )
+    exit_code = await runner.run(["--commit", "--store", store_key, "--limit", "5"])
 
     assert exit_code == 0
 
     outbox_rows = (
-        await db_session.execute(
-            select(OutboxMessage).where(
-                OutboxMessage.event_type == EventType.PRICES_CHECK_COMMAND,
-                OutboxMessage.payload_json.like(f"%{store_key}%"),
+        (
+            await db_session.execute(
+                select(OutboxMessage).where(
+                    OutboxMessage.event_type == EventType.PRICES_CHECK_COMMAND,
+                    OutboxMessage.payload_json.like(f"%{store_key}%"),
+                )
             )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     assert len(outbox_rows) >= 1
     assert all(row.routing_key == EventType.PRICES_CHECK_COMMAND for row in outbox_rows)
     engine.dispose.assert_awaited_once()
@@ -328,12 +322,104 @@ async def test_base_runner_is_open_for_extension_with_custom_flags(db_session: A
         stdout=io.StringIO(),
     )
 
-    exit_code = await runner.run(
-        ["--dry-run", "--custom-flag", "--custom-value", "extended"]
-    )
+    exit_code = await runner.run(["--dry-run", "--custom-flag", "--custom-value", "extended"])
 
     assert exit_code == 0
     assert runner.received_options.custom_flag is True
     assert runner.received_options.custom_value == "extended"
     assert runner.received_options.dry_run is True
+    engine.dispose.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_scraping_runner_no_upload_to_s3_flag_sets_payload_false(db_session: AsyncSession):
+    import json
+    from scripts.run_scraping_cron import ScrapingCronCliRunner
+
+    engine = _fake_engine()
+    runner = ScrapingCronCliRunner(
+        session_factory=lambda: db_session,
+        engine=engine,
+        stdout=io.StringIO(),
+    )
+
+    exit_code = await runner.run(["--commit", "--store", "compumarts", "--no-upload-to-s3"])
+
+    assert exit_code == 0
+    row = (
+        (
+            await db_session.execute(
+                select(OutboxMessage)
+                .where(OutboxMessage.event_type == EventType.CATALOG_SCRAPE_COMMAND)
+                .order_by(OutboxMessage.created_at.desc())
+            )
+        )
+        .scalars()
+        .first()
+    )
+    assert row is not None
+    payload = json.loads(row.payload_json)["payload"]
+    assert payload["upload_to_bucket"] is False
+    engine.dispose.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_reviews_runner_limit_and_no_upload_to_s3(db_session: AsyncSession):
+    import json
+    from scripts.run_reviews_cron import ReviewsCronCliRunner
+
+    for idx in range(2):
+        cid = f"reviews-cli-{idx}-{uuid.uuid4().hex[:6]}"
+        db_session.add(
+            LaptopConfiguration(
+                id=uuid.uuid4(),
+                canonical_id=cid,
+                brand="Lenovo",
+                laptop_family="LOQ",
+                laptop_model=f"LOQ 15 {idx}",
+                title=f"Lenovo LOQ 15 {idx}",
+                has_reviews=True,
+                cpu_manufacturer="Intel",
+                cpu_model="i5-13450HX",
+                cpu_cores=10,
+                cpu_threads=16,
+                gpu_manufacturer="NVIDIA",
+                gpu_model="RTX 4050",
+                ram_capacity_gb=16,
+                ram_type="DDR5",
+                storage_capacity_gb=512,
+                display_size_inches=15.6,
+                display_resolution="1920x1080",
+                display_width=1920,
+                display_height=1080,
+                min_price_egp=42000.0,
+            )
+        )
+    await db_session.commit()
+
+    engine = _fake_engine()
+    runner = ReviewsCronCliRunner(
+        session_factory=lambda: db_session,
+        engine=engine,
+        stdout=io.StringIO(),
+    )
+
+    exit_code = await runner.run(["--commit", "--force-all", "--limit", "1", "--no-upload-to-s3"])
+
+    assert exit_code == 0
+    row = (
+        (
+            await db_session.execute(
+                select(OutboxMessage)
+                .where(OutboxMessage.event_type == EventType.REVIEWS_SCRAPE_COMMAND)
+                .order_by(OutboxMessage.created_at.desc())
+            )
+        )
+        .scalars()
+        .first()
+    )
+    assert row is not None
+    payload = json.loads(row.payload_json)["payload"]
+    assert len(payload["targets"]) == 1
+    assert payload["upload_to_s3"] is False
     engine.dispose.assert_awaited_once()

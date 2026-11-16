@@ -223,6 +223,30 @@ class CatalogMessageConsumer:
 
         batch_uuid = uuid.UUID(payload.batch_id)
 
+        if not payload.s3_key:
+            flattened_pointers = [ptr for ptrs in (payload.pointers_found or {}).values() for ptr in ptrs]
+            async with self._session_factory() as session:
+                async with session.begin():
+                    if not await self._claim_inbox(session, event, "handle_catalog_ready_event"):
+                        return
+                    await BatchLogRepository(session).upsert_checkpoint_completion(
+                        batch_uuid,
+                        store_key="catalog_checkpoint",
+                        trigger_type="CATALOG_READY_NO_S3",
+                        items_scraped=payload.total_laptops,
+                        pointers_received=flattened_pointers,
+                        duration_seconds=payload.duration_seconds,
+                        status="CHECKPOINT_OK",
+                    )
+            logger.info(
+                "CatalogReadyEvent [%s] received with no s3_key (%d laptops, %d stores with pointers); "
+                "recorded CHECKPOINT_OK without DB ingestion.",
+                payload.batch_id,
+                payload.total_laptops,
+                len(payload.pointers_found or {}),
+            )
+            return
+
         try:
             async with self._session_factory() as session:
                 async with session.begin():

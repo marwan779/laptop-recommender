@@ -166,6 +166,49 @@ async def test_handle_catalog_ready_event_failure_raises(mock_session_factory):
 
 
 @pytest.mark.asyncio
+async def test_handle_catalog_ready_event_no_s3_records_checkpoint_without_ingestion(
+    mock_session,
+    mock_session_factory,
+):
+    mock_broker = AsyncMock()
+    mock_ingestion = AsyncMock()
+    batch_id = uuid.uuid4()
+
+    # After inbox claim returns scalar string, BatchLogRepository.get_by_id should see None
+    existing_result = MagicMock()
+    existing_result.scalar_one_or_none.return_value = None
+    claim_result = MagicMock()
+    claim_result.scalar_one_or_none.return_value = "claimed-checkpoint-id"
+    mock_session.execute.side_effect = [claim_result, existing_result]
+
+    consumer = CatalogMessageConsumer(
+        broker=mock_broker,
+        session_factory=mock_session_factory,
+        ingestion_service=mock_ingestion,
+    )
+
+    event = CatalogReadyEvent(
+        payload=CatalogReadyPayload(
+            batch_id=str(batch_id),
+            s3_bucket=None,
+            s3_key=None,
+            total_laptops=12,
+            pointers_found={"compumarts": ["IdeaPad Slim 3"]},
+            duration_seconds=4.5,
+        )
+    )
+
+    await consumer.handle_catalog_ready_event(event.model_dump())
+
+    mock_ingestion.ingest_from_s3.assert_not_awaited()
+    added_logs = [c.args[0] for c in mock_session.add.call_args_list if isinstance(c.args[0], ScrapingBatchLog)]
+    assert len(added_logs) == 1
+    assert added_logs[0].status == "CHECKPOINT_OK"
+    assert added_logs[0].items_scraped == 12
+    assert added_logs[0].pointers_received == ["IdeaPad Slim 3"]
+
+
+@pytest.mark.asyncio
 async def test_handle_catalog_scrape_failed(mock_session, mock_session_factory):
     mock_broker = AsyncMock()
     batch_id = uuid.uuid4()
@@ -249,9 +292,7 @@ async def test_handle_prices_checked_event(mock_session_factory):
 
 
 @pytest.mark.asyncio
-async def test_handle_prices_checked_event_invalidates_cache_after_commit(
-    mock_session, mock_session_factory
-):
+async def test_handle_prices_checked_event_invalidates_cache_after_commit(mock_session, mock_session_factory):
     execution_order: list[str] = []
     affected_id = uuid.uuid4()
 

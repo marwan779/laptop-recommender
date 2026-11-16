@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from datetime import UTC, datetime
+import json
+from pathlib import Path
 import uuid
 
 import pytest
@@ -268,9 +272,7 @@ async def test_ingest_reviews_dict_with_commit_false_defers_transaction(db_sessi
     await db_session.rollback()
 
     remaining = (
-        await db_session.execute(
-            select(LaptopConfiguration).where(LaptopConfiguration.canonical_id == cid)
-        )
+        await db_session.execute(select(LaptopConfiguration).where(LaptopConfiguration.canonical_id == cid))
     ).scalar_one_or_none()
     assert remaining is None
 
@@ -400,3 +402,173 @@ async def test_update_review_intelligence_creates_metrics_when_missing(db_sessio
     assert float(refreshed.metrics.community_nlp_score) == 82.4
     assert float(refreshed.metrics.thermals_score) == 78.9
     assert float(refreshed.metrics.real_battery_and_reliability_score) == 79.6
+
+
+def test_collect_review_profiles_extracts_review_sources_from_v6_and_b2():
+    profiles = ReviewIntelligenceService._collect_review_profiles(
+        [
+            {
+                "primary_canonical_id": "cid-v6",
+                "youtube": {
+                    "videos": [
+                        {
+                            "title": "V6 YouTube Review",
+                            "channel_name": "Dave2D",
+                            "channel_url": "https://www.youtube.com/@Dave2D",
+                            "video_url": "https://www.youtube.com/watch?v=d2d1",
+                            "view_count": 90000,
+                        }
+                    ]
+                },
+                "communities": {
+                    "discussions": [
+                        {
+                            "platform": "reddit",
+                            "author": "user1",
+                            "post_title": "Owner Impressions",
+                            "post_url": "https://www.reddit.com/r/GamingLaptops/comments/abc",
+                            "score": 32,
+                        }
+                    ]
+                },
+                "nlp_review_profile": {
+                    "community_nlp_score": 84.0,
+                    "pros_en": ["Fast screen"],
+                    "pros_ar": ["شاشة سريعة"],
+                },
+            },
+            {
+                "canonical_id": "cid-b2",
+                "community_nlp_score": 80.5,
+                "clean_profile_lists": {"pros_en": ["Quiet fans"], "pros_ar": ["مراوح هادئة"]},
+                "review_sources": [
+                    {
+                        "source_type": "editorial",
+                        "platform": "notebookcheck",
+                        "title": "Notebookcheck Review",
+                        "url": "https://www.notebookcheck.net/nb1.html",
+                        "rating": 87.0,
+                    }
+                ],
+            },
+        ]
+    )
+
+    assert len(profiles["cid-v6"]["review_sources"]) == 2
+    assert [s["source_type"] for s in profiles["cid-v6"]["review_sources"]] == ["youtube", "community"]
+    assert profiles["cid-v6"]["review_sources"][0]["url"] == "https://www.youtube.com/watch?v=d2d1"
+    assert len(profiles["cid-b2"]["review_sources"]) == 1
+    assert profiles["cid-b2"]["review_sources"][0]["platform"] == "notebookcheck"
+
+
+def test_query_service_detail_exposes_review_sources_from_dict_and_orm_mocks():
+    from types import SimpleNamespace
+
+    item = _catalog_item_with_reviews("review-dict-src", "MPN-SRC-1")
+    item["derived_metrics"]["community_reviews"]["review_sources"] = [
+        {
+            "source_type": "youtube",
+            "platform": "youtube",
+            "title": "Review Video",
+            "url": "https://www.youtube.com/watch?v=dict1",
+            "author_or_channel": "Reviewer",
+            "score_or_views": 4000,
+        }
+    ]
+    dict_detail = CatalogQueryService(session=None)._dict_to_full_detail(item)
+    assert len(dict_detail.review_sources) == 1
+    assert dict_detail.review_sources[0].url == "https://www.youtube.com/watch?v=dict1"
+
+    mock_orm = SimpleNamespace(
+        review_sources=[
+            SimpleNamespace(
+                source_type="community",
+                platform="reddit",
+                title="Reddit Thread",
+                url="https://www.reddit.com/r/laptops/comments/r1",
+                author_or_channel="op",
+                channel_url=None,
+                rating=None,
+                score_or_views=12,
+                published_at=None,
+            )
+        ]
+    )
+    serialized = CatalogQueryService._serialize_orm_review_sources(mock_orm)
+    assert len(serialized) == 1
+    assert serialized[0].platform == "reddit"
+    assert serialized[0].url == "https://www.reddit.com/r/laptops/comments/r1"
+
+
+@pytest.mark.asyncio
+async def test_ingest_from_file_persists_review_sources_and_exposes_detail_idempotently(
+    db_session: AsyncSession,
+    tmp_path: Path,
+):
+    cid = f"review-e2e-src-{uuid.uuid4().hex[:8]}"
+    await CatalogSeederRepository(db_session).upsert_catalog(
+        {"laptops": [_build_sample_catalog_item(cid, mpn=f"MPN-E2E-{uuid.uuid4().hex[:6]}")]}
+    )
+
+    reviews_file = tmp_path / "enriched_reviews.json"
+    reviews_file.write_text(
+        json.dumps(
+            {
+                "laptops": [
+                    {
+                        "primary_canonical_id": cid,
+                        "matched_canonical_ids": [cid],
+                        "youtube": {
+                            "videos": [
+                                {
+                                    "title": "E2E Video Review",
+                                    "channel_name": "Hardware Lab",
+                                    "channel_url": "https://www.youtube.com/@HardwareLab",
+                                    "video_url": "https://www.youtube.com/watch?v=e2evid1",
+                                    "view_count": 75000,
+                                }
+                            ]
+                        },
+                        "communities": {
+                            "discussions": [
+                                {
+                                    "platform": "level1techs",
+                                    "author": "dev",
+                                    "post_title": "Thermal paste impressions",
+                                    "post_url": "https://forum.level1techs.com/t/e2e/999",
+                                    "score": 11,
+                                }
+                            ]
+                        },
+                        "nlp_review_profile": {
+                            "community_nlp_score": 85.0,
+                            "evidence_count": 12,
+                            "aspect_scores": {"thermals_score": 84.0},
+                            "pros_en": ["Great sustained cooling"],
+                            "pros_ar": ["تبريد مستقر ممتاز"],
+                            "cons_en": ["Loud fans under load"],
+                            "cons_ar": ["مراوح مسموعة تحت الضغط"],
+                        },
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    svc = ReviewIntelligenceService()
+    first = await svc.ingest_from_file(db_session, source_path=reviews_file, commit=False)
+    second = await svc.ingest_from_file(db_session, source_path=reviews_file, commit=False)
+
+    assert first.status == "SUCCESS"
+    assert first.sql_laptops_updated == 1
+    assert second.sql_laptops_updated == 1
+
+    detail = await CatalogQueryService(session=db_session).get_laptop_detail(cid)
+    assert [s.url for s in detail.review_sources] == [
+        "https://www.youtube.com/watch?v=e2evid1",
+        "https://forum.level1techs.com/t/e2e/999",
+    ]
+    assert detail.review_sources[0].author_or_channel == "Hardware Lab"
+    assert detail.review_sources[0].score_or_views == 75000
+    assert detail.review_sources[1].platform == "level1techs"

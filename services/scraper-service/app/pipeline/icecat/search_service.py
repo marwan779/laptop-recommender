@@ -173,16 +173,20 @@ def extract_clean_family(laptop: dict[str, Any]) -> str:
 
 
 def extract_core_cpu_chip(cpu_model: str | None) -> str:
-    """Extract primary chip number (e.g. '12700H', '13620H', '8940HX', '240H', '150U', '350')."""
+    """Extract primary chip number (e.g. '12700H', '13620H', '8940HX', '240H', '150U', 'X2E88100')."""
     if not cpu_model:
         return ""
     s = cpu_model.strip()
+    m_snap = re.search(
+        r"\b(X[12][A-Z]?(?:[-\s]+\d{2}[-\s]+\d{3}|\d{4,6}))\b",
+        s,
+        re.IGNORECASE,
+    )
+    if m_snap:
+        return re.sub(r"\s+", "-", m_snap.group(1).upper())
     m = re.search(r"\b(\d{4,5}[A-Z]{1,2}|\d{3}[A-Z]{1,2})\b", s, re.IGNORECASE)
     if m:
         return m.group(1).upper()
-    m_snap = re.search(r"\b(X1[A-Z]?-\d{2}-\d{3})\b", s, re.IGNORECASE)
-    if m_snap:
-        return m_snap.group(1).upper()
     m_ai = re.search(r"\b(?:AI\s+\d+\s+(?:HX\s+)?|Ryzen\s+\d+\s+)(\d{3})\b", s, re.IGNORECASE)
     if m_ai:
         return m_ai.group(1)
@@ -303,20 +307,46 @@ def evaluate_spec_match(
     else:
         matches["storage"] = True
 
-    # 7. Display Size Consistency
+    # 7. Display Size Consistency (tight tolerance so 15.3" != 15.6" and 15.6" != 16.0")
     size_in = display_spec.get("size_inches")
     if size_in:
-        m_icecat_size = re.search(r"\((\d{2}(?:\.\d)?)\s*(?:\"|''|inch)", all_text)
+        m_icecat_size = re.search(r"(?:\(|(?<![.\d]))(1[1-8](?:\.\d)?)\s*(?:\"|''|″|-?inch)", all_text)
         if m_icecat_size:
             icecat_in = float(m_icecat_size.group(1))
-            matches["display_size"] = abs(float(size_in) - icecat_in) <= 0.5
+            matches["display_size"] = abs(float(size_in) - icecat_in) <= 0.15
         else:
             matches["display_size"] = True
     else:
         matches["display_size"] = True
 
+    # 8. Contradiction Vetoes (OLED vs IPS/TN, DDR5/LPDDR5 vs DDR4/LPDDR4)
+    panel_our = str(display_spec.get("panel_type") or "").strip().lower()
+    if "oled" in panel_our and re.search(r"\b(?:ips|tn)\b", all_text) and "oled" not in all_text:
+        matches["panel"] = False
+    elif panel_our in ("ips", "tn", "va") and "oled" in all_text and not re.search(r"\bips\b", all_text):
+        matches["panel"] = False
+    else:
+        matches["panel"] = True
+
+    mem_type_our = str(mem_spec.get("memory_type") or "").strip().lower()
+    if mem_type_our:
+        if "ddr5" in mem_type_our and re.search(r"\b(?:lp)?ddr4\b", all_text) and "ddr5" not in all_text:
+            matches["memory_type"] = False
+        elif "ddr4" in mem_type_our and re.search(r"\b(?:lp)?ddr5\b", all_text) and "ddr4" not in all_text:
+            matches["memory_type"] = False
+        else:
+            matches["memory_type"] = True
+    else:
+        matches["memory_type"] = True
+
     core_matched = (
-        matches["brand"] and matches["family"] and matches["cpu"] and matches["gpu"] and matches["display_size"]
+        matches["brand"]
+        and matches["family"]
+        and matches["cpu"]
+        and matches["gpu"]
+        and matches["display_size"]
+        and matches["panel"]
+        and matches["memory_type"]
     )
     if core_matched and matches["ram"] and matches["storage"]:
         return "EXACT_MATCH", matches

@@ -286,6 +286,22 @@ class DetailedOfferRead(BaseModel):
     last_checked_at: datetime | str | None = None
 
 
+class ReviewSourceDetail(BaseModel):
+    """Structured external YouTube, community, or editorial review link."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    source_type: str
+    platform: str
+    title: str
+    url: str
+    author_or_channel: str | None = None
+    channel_url: str | None = None
+    rating: float | None = None
+    score_or_views: int | None = None
+    published_at: datetime | str | None = None
+
+
 class FullLaptopDetailResponse(BaseModel):
     """Comprehensive, 35+ dimension laptop detail payload for frontend product pages."""
 
@@ -344,6 +360,7 @@ class FullLaptopDetailResponse(BaseModel):
     pros_ar: list[str] = Field(default_factory=list)
     cons_en: list[str] = Field(default_factory=list)
     cons_ar: list[str] = Field(default_factory=list)
+    review_sources: list[ReviewSourceDetail] = Field(default_factory=list)
 
     # Human-Grade Explainable Badges
     why_recommended_ar: list[str] = Field(default_factory=list)

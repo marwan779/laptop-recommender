@@ -23,6 +23,7 @@ from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
 from app.models.offer import LaptopOffer, OfferPriceHistory
 from app.repositories.base import BaseRepository
+from app.repositories.review_source_persistence import build_review_sources
 
 logger = logging.getLogger("catalog.repositories.seeder")
 
@@ -122,6 +123,17 @@ def _parse_datetime(val: Any) -> datetime | None:
         return None
 
 
+def _extract_review_sources(item: dict[str, Any]) -> tuple[bool, Any]:
+    """Return ``(present, raw_sources)`` for community review source payloads."""
+    derived_metrics = item.get("derived_metrics") or {}
+    if not isinstance(derived_metrics, dict):
+        return False, None
+    community_reviews = derived_metrics.get("community_reviews") or {}
+    if not isinstance(community_reviews, dict) or "review_sources" not in community_reviews:
+        return False, None
+    return True, community_reviews.get("review_sources")
+
+
 class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
     """Repository managing batch identity resolution and relational catalog seeding."""
 
@@ -159,6 +171,7 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         # Deferred history writes: offers must be flushed (IDs assigned and FK
         # rows persisted) before their observations can be inserted.
         pending_history: list[tuple[LaptopOffer, datetime]] = []
+        pending_review_sources: list[tuple[LaptopConfiguration, Any]] = []
 
         # Step 1: Collect canonical IDs and MPNs for batch lookup
         canonical_ids: list[str] = []
@@ -203,6 +216,7 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                 .options(
                     selectinload(LaptopConfiguration.offers),
                     selectinload(LaptopConfiguration.metrics),
+                    selectinload(LaptopConfiguration.review_sources),
                 )
             )
             result = await self.session.execute(stmt)
@@ -263,7 +277,11 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                         )
                     ] = target_laptop
             else:
-                target_laptop = LaptopConfiguration(id=uuid.uuid4(), canonical_id=cid_str)
+                target_laptop = LaptopConfiguration(
+                    id=uuid.uuid4(),
+                    canonical_id=cid_str,
+                    review_sources=[],
+                )
                 self._populate_laptop_fields(target_laptop, item, now)
                 target_laptop.laptop_added_at = now
                 self.session.add(target_laptop)
@@ -277,6 +295,10 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                         )
                     ] = target_laptop
                 new_laptops_count += 1
+
+            has_review_sources, raw_review_sources = _extract_review_sources(item)
+            if has_review_sources:
+                pending_review_sources.append((target_laptop, raw_review_sources))
 
             # Step 4: Upsert offers
             offers_data = item.get("offers", [])
@@ -339,6 +361,16 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
                     created_metrics_count += 1
 
         await self.session.flush()
+
+        # Step 5b: Replace review sources only when the payload supplied them,
+        # deleting first so the (configuration, url) unique constraint holds.
+        if pending_review_sources:
+            for laptop, _ in pending_review_sources:
+                laptop.review_sources.clear()
+            await self.session.flush()
+            for laptop, raw_sources in pending_review_sources:
+                laptop.review_sources.extend(build_review_sources(laptop.id, raw_sources))
+            await self.session.flush()
 
         # Step 6: Persist deferred price-history observations now that every
         # offer row exists in the database.

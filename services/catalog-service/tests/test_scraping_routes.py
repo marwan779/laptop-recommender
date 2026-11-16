@@ -179,6 +179,63 @@ async def test_trigger_reviews_scraping_queues_outbox_command(db_session: AsyncS
 
 
 @pytest.mark.asyncio
+async def test_trigger_reviews_scraping_honors_limit_and_upload_to_s3_false(db_session: AsyncSession):
+    """Checkpoint mode allows limiting chassis targets and disabling S3 upload."""
+    for idx in range(2):
+        db_session.add(
+            LaptopConfiguration(
+                id=uuid.uuid4(),
+                canonical_id=f"limit-chk-{idx}-{uuid.uuid4().hex[:6]}",
+                brand="ASUS",
+                laptop_family="TUF Gaming",
+                laptop_model=f"A16 Test {idx}",
+                title=f"ASUS TUF A16 Test {idx}",
+                has_reviews=True,
+                cpu_manufacturer="AMD",
+                cpu_model="Ryzen 7",
+                cpu_cores=8,
+                cpu_threads=16,
+                gpu_manufacturer="NVIDIA",
+                gpu_model="RTX 4060",
+                ram_capacity_gb=16,
+                ram_type="DDR5",
+                storage_capacity_gb=512,
+                display_size_inches=16.0,
+                display_resolution="1920x1200",
+                display_width=1920,
+                display_height=1200,
+                min_price_egp=52000.0,
+            )
+        )
+    await db_session.commit()
+
+    async def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            resp = await client.post(
+                "/api/v1/scraping/reviews/trigger",
+                json={"force_all": True, "limit": 1, "upload_to_s3": False},
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 202
+    data = resp.json()
+    assert data["status"] == "QUEUED"
+    assert data["chassis_targets_queued"] == 1
+
+    stmt = select(OutboxMessage).where(OutboxMessage.correlation_id == data["job_id"])
+    message = (await db_session.execute(stmt)).scalar_one()
+    payload = json.loads(message.payload_json)["payload"]
+    assert len(payload["targets"]) == 1
+    assert payload["upload_to_s3"] is False
+
+
+@pytest.mark.asyncio
 async def test_ingest_reviews_updates_postgres(
     db_session: AsyncSession,
     tmp_path,

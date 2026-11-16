@@ -11,6 +11,7 @@ from app.models.base import Base, utcnow
 if TYPE_CHECKING:
     from app.models.metrics import LaptopMetrics
     from app.models.offer import LaptopOffer
+    from app.models.review_source import LaptopReviewSource
 
 
 class LaptopConfiguration(Base):
@@ -164,6 +165,11 @@ class LaptopConfiguration(Base):
     )
     offers: Mapped[list["LaptopOffer"]] = relationship(
         "LaptopOffer", back_populates="configuration", cascade="all, delete-orphan"
+    )
+    review_sources: Mapped[list["LaptopReviewSource"]] = relationship(
+        "LaptopReviewSource",
+        back_populates="configuration",
+        cascade="all, delete-orphan",
     )
 
 

@@ -310,6 +310,18 @@ export interface HardwareMetricsDetail {
   upgradeability_tier?: string;
 }
 
+export interface ReviewSourceDetail {
+  source_type: 'youtube' | 'community' | 'editorial' | string;
+  platform: string;
+  title: string;
+  url: string;
+  author_or_channel?: string | null;
+  channel_url?: string | null;
+  rating?: number | null;
+  score_or_views?: number | null;
+  published_at?: string | null;
+}
+
 export interface FullLaptopDetailResponse {
   id: string;
   canonical_id: string;
@@ -360,6 +372,7 @@ export interface FullLaptopDetailResponse {
   pros_ar: string[];
   cons_en: string[];
   cons_ar: string[];
+  review_sources?: ReviewSourceDetail[];
   why_recommended_ar: string[];
   why_recommended_en: string[];
 }

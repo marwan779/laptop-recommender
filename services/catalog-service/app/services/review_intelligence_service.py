@@ -26,7 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.review_text import align_bilingual_lists
 from app.common.storage import IObjectStorageService, get_storage_service
-from app.domain.reviews import ChassisTargetResolver, LaptopInputDto, ResolvedReviewTarget
+from app.domain.reviews import ChassisTargetResolver, LaptopInputDto, ResolvedReviewTarget, extract_review_sources
 from app.models.laptop import LaptopConfiguration
 from app.repositories.laptop_repository import LaptopRepository
 from app.repositories.outbox_repository import OutboxRepository
@@ -84,6 +84,10 @@ class ReviewIntelligenceService:
         self,
         session: AsyncSession,
         force_all: bool = False,
+        *,
+        limit: int | None = None,
+        upload_to_s3: bool = True,
+        commit: bool = True,
     ) -> ReviewsTriggerResponse:
         """Resolve unreviewed (or all) laptops into chassis targets and enqueue scraping."""
         laptop_repo = LaptopRepository(session)
@@ -110,11 +114,17 @@ class ReviewIntelligenceService:
                 message="Chassis resolution produced no review targets.",
             )
 
+        if limit is not None and limit > 0:
+            targets = targets[:limit]
+
+        matched_laptop_count = sum(len(t.matched_laptop_ids) or 1 for t in targets)
+
         command = ScrapeReviewsCommand(
             correlation_id=job_id,
             payload=ScrapeReviewsPayload(
                 job_id=job_id,
                 targets=[self._to_review_target(target) for target in targets],
+                upload_to_s3=upload_to_s3,
             ),
         )
         await OutboxRepository(session).insert_outbox_event(
@@ -123,21 +133,25 @@ class ReviewIntelligenceService:
             payload=command,
             correlation_id=job_id,
         )
-        await session.commit()
+        if commit:
+            await session.commit()
+        else:
+            await session.flush()
 
         logger.info(
-            "Queued review scrape command [%s]: %d laptops collapsed into %d chassis targets.",
+            "Queued review scrape command [%s]: %d laptops collapsed into %d chassis targets (upload_to_s3=%s).",
             job_id,
-            len(laptops),
+            matched_laptop_count,
             len(targets),
+            upload_to_s3,
         )
         return ReviewsTriggerResponse(
             job_id=job_id,
             status="QUEUED",
             chassis_targets_queued=len(targets),
-            laptops_matched=len(laptops),
+            laptops_matched=matched_laptop_count,
             message=(
-                f"Queued {len(targets)} chassis targets from {len(laptops)} laptops for community review scraping."
+                f"Queued {len(targets)} chassis targets from {matched_laptop_count} laptops for community review scraping."
             ),
         )
 
@@ -215,9 +229,13 @@ class ReviewIntelligenceService:
     @staticmethod
     def _extract_profile_dict(item: dict[str, Any]) -> dict[str, Any] | None:
         """Normalize Format B1 (`nlp_review_profile`) or Format B2 (`chassis_reviews`) into one profile."""
+        review_sources = [src.to_dict() for src in extract_review_sources(item)]
+
         profile = item.get("nlp_review_profile")
         if isinstance(profile, dict) and profile:
-            return dict(profile)
+            normalized = dict(profile)
+            normalized["review_sources"] = review_sources
+            return normalized
 
         lists = item.get("clean_profile_lists") if isinstance(item.get("clean_profile_lists"), dict) else {}
         aspects = item.get("aspect_scores")
@@ -239,6 +257,7 @@ class ReviewIntelligenceService:
             "aspect_scores": aspects if isinstance(aspects, dict) else {},
             "community_nlp_score": nlp_score,
             "evidence_count": evidence_count,
+            "review_sources": review_sources,
         }
 
     @classmethod

@@ -397,3 +397,58 @@ def test_orchestrator_skips_s3_upload_and_records_error_when_unified_catalog_emp
     assert res.unified_storage_key is None
     assert res.unified_total_laptops == 0
     assert res.unified_error is not None
+
+
+@pytest.mark.anyio
+async def test_handle_catalog_scrape_command_no_s3_emits_ready_with_null_s3_key(
+    mock_broker,
+    mock_orchestrator,
+):
+    consumer = ScraperMessageConsumer(
+        broker=mock_broker,
+        orchestrator=mock_orchestrator,
+    )
+    mock_target = ScrapeTargetResult(
+        target_type="store",
+        target_key="compumarts",
+        target_name="Compumarts",
+        level=2,
+        items_scraped=5,
+        store_result=StoreCatalogResult(
+            store_key="compumarts",
+            store_name="Compumarts",
+            store_domain="compumarts.com",
+            total_products=5,
+            latest_pointers=["LOQ 15"],
+        ),
+    )
+    mock_orchestrator.execute.return_value = ScrapeResponse(
+        results=[mock_target],
+        total_targets=1,
+        total_items_scraped=5,
+        unified_storage_key=None,
+        unified_storage_bucket=None,
+        unified_total_laptops=5,
+    )
+
+    cmd = ScrapeCatalogCommand(
+        payload=ScrapeCatalogPayload(
+            batch_id="batch-checkpoint-001",
+            targets=["compumarts"],
+            level=2,
+            upload_to_bucket=False,
+        )
+    )
+
+    await consumer.handle_catalog_scrape_command(cmd.model_dump())
+
+    req_sent = mock_orchestrator.execute.call_args.args[0]
+    assert req_sent.upload_to_bucket is False
+    assert req_sent.output_dir == "scraping results"
+    mock_broker.publish.assert_called_once()
+    assert mock_broker.publish.call_args.kwargs["routing_key"] == EventType.CATALOG_READY_EVENT
+    ready_evt: CatalogReadyEvent = mock_broker.publish.call_args.kwargs["message"]
+    assert ready_evt.payload.s3_key is None
+    assert ready_evt.payload.s3_bucket is None
+    assert ready_evt.payload.total_laptops == 5
+    assert ready_evt.payload.pointers_found == {"compumarts": ["LOQ 15"]}

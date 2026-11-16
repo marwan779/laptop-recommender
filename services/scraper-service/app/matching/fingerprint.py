@@ -163,11 +163,42 @@ def are_hardware_compatible(item_a: dict[str, Any], item_b: dict[str, Any]) -> b
     if vram_a and vram_b and vram_a != vram_b:
         return False
 
-    # 4. Display Refresh Rate Veto (Tolerates missing refresh rates, vetos hard conflicts)
+    # 4. Display Refresh Rate, Resolution, Panel, & Touchscreen Veto
     hz_a = item_a.get("refresh_hz")
     hz_b = item_b.get("refresh_hz")
-    same_mpn = bool(item_a.get("mpn") and item_a.get("mpn") == item_b.get("mpn"))
+    mpn_a = item_a.get("mpn")
+    mpn_b = item_b.get("mpn")
+    same_mpn = bool(mpn_a and mpn_a == mpn_b)
+
+    # Distinct OEM SKUs from the same store represent distinct retail variants
+    if (
+        item_a.get("store_key")
+        and item_a.get("store_key") == item_b.get("store_key")
+        and mpn_a
+        and mpn_b
+        and mpn_a != mpn_b
+    ):
+        return False
+
     if not same_mpn and hz_a and hz_b and abs(hz_a - hz_b) > 10:
+        return False
+
+    res_a = (item_a.get("resolution") or "").strip().lower()
+    res_b = (item_b.get("resolution") or "").strip().lower()
+    if not same_mpn and res_a and res_b and res_a != res_b:
+        return False
+
+    panel_a = (item_a.get("panel_type") or "").strip().lower()
+    panel_b = (item_b.get("panel_type") or "").strip().lower()
+    if not same_mpn and panel_a and panel_b:
+        a_oled = "oled" in panel_a
+        b_oled = "oled" in panel_b
+        if a_oled != b_oled:
+            return False
+
+    touch_a = item_a.get("touchscreen")
+    touch_b = item_b.get("touchscreen")
+    if not same_mpn and touch_a is not None and touch_b is not None and touch_a != touch_b:
         return False
 
     # 5. CPU Tier Compatibility Guard

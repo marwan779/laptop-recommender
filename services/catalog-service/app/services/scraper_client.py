@@ -97,7 +97,7 @@ class ScraperClientService:
                 level=request.level,
                 until_models=until_models if until_models else None,
                 force_full_crawl=request.force_full_crawl,
-                upload_to_bucket=True,
+                upload_to_bucket=request.upload_to_bucket,
                 send_email=request.send_email,
             ),
         )
@@ -134,7 +134,7 @@ class ScraperClientService:
             "level": request.level,
             "until_model": until_models if until_models else None,
             "send_email": request.send_email,
-            "upload_to_bucket": True,
+            "upload_to_bucket": request.upload_to_bucket,
         }
 
         # Dispatch non-blocking request to scraper-service
@@ -150,14 +150,10 @@ class ScraperClientService:
         try:
             headers = self._build_headers()
             if client:
-                resp = await client.post(
-                    endpoint, json=scrape_payload, timeout=10.0, headers=headers
-                )
+                resp = await client.post(endpoint, json=scrape_payload, timeout=10.0, headers=headers)
             else:
                 async with httpx.AsyncClient(timeout=10.0) as http_client:
-                    resp = await http_client.post(
-                        endpoint, json=scrape_payload, headers=headers
-                    )
+                    resp = await http_client.post(endpoint, json=scrape_payload, headers=headers)
 
             if resp.status_code in (200, 202):
                 batch_log.status = "DISPATCHED"

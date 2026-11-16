@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ from app.pipeline.icecat.search_service import (
     build_search_queries,
     evaluate_spec_match,
     extract_clean_family,
+    extract_core_cpu_chip,
 )
 from app.pipeline.orchestrator import LaptopExtractionPipeline
 from app.pipeline.schema import RawScrapedProduct
@@ -555,3 +557,176 @@ def test_parse_asus_tuf_a16_extended_icecat_fields() -> None:
     assert "Windows Hello" in parsed["build_security"]["security_features"]
     assert "Face Recognition" in parsed["build_security"]["security_features"]
     assert "Password Protection (BIOS, User)" in parsed["build_security"]["security_features"]
+
+
+def test_search_service_snapdragon_display_panel_ram_vetoes():
+    """evaluate_spec_match must reject Snapdragon vs Ryzen, OLED vs IPS, DDR5 vs DDR4, and >0.15\" size mismatches."""
+    assert extract_core_cpu_chip("Qualcomm Snapdragon X2E88100") == "X2E88100"
+    assert extract_core_cpu_chip("Qualcomm Snapdragon X X1 26 100") == "X1-26-100"
+    assert extract_core_cpu_chip("Snapdragon X1-26-101") == "X1-26-101"
+
+    snapdragon_laptop = {
+        "brand": "ASUS",
+        "laptop_family": "Vivobook S14",
+        "specs": {
+            "cpu": {"model": "Qualcomm Snapdragon X X1-26-100"},
+            "gpu": {"model": "Qualcomm Adreno", "integrated": True},
+            "memory": {"capacity_gb": 16, "memory_type": "LPDDR5X"},
+            "storage": {"capacity_gb": 512},
+            "display": {"size_inches": 14.0, "resolution": "1920x1200", "panel_type": "IPS"},
+        },
+    }
+    wrong_ryzen_candidate = {
+        "title": 'ASUS Vivobook S14 OLED 14" 1920x1200 AMD Ryzen 5 7535HS 16GB DDR5 512GB SSD',
+        "manufacturer_name": "ASUS",
+        "short_summary_description": "",
+        "long_summary_description": "",
+    }
+    status, checks = evaluate_spec_match(snapdragon_laptop, wrong_ryzen_candidate)
+    assert status == "NO_MATCH"
+    assert checks["cpu"] is False
+    assert checks["panel"] is False
+
+    # 15.6" vs 16.0" must fail (> 0.15" tolerance) and DDR5 vs DDR4 must fail
+    vivobook_15 = {
+        "brand": "ASUS",
+        "laptop_family": "Vivobook 15",
+        "specs": {
+            "cpu": {"model": "Intel Core 3 304"},
+            "gpu": {"model": "Intel Graphics", "integrated": True},
+            "memory": {"capacity_gb": 8, "memory_type": "DDR5"},
+            "storage": {"capacity_gb": 512},
+            "display": {"size_inches": 15.6, "resolution": "1920x1080", "panel_type": "IPS"},
+        },
+    }
+    wrong_16_ddr4 = {
+        "title": 'ASUS Vivobook 16" WUXGA Core 3 304 8GB DDR4 512GB SSD',
+        "manufacturer_name": "ASUS",
+        "short_summary_description": "",
+        "long_summary_description": "",
+    }
+    status2, checks2 = evaluate_spec_match(vivobook_15, wrong_16_ddr4)
+    assert status2 == "NO_MATCH"
+    assert checks2["display_size"] is False
+    assert checks2["memory_type"] is False
+
+
+def test_finalize_laptop_specs_store_wins_and_contradiction_guards():
+    """Store truth and contradiction guards must hold across repeated finalize_laptop_specs calls."""
+    store_specs = {
+        "display": {
+            "size_inches": 15.6,
+            "resolution": "1920x1080",
+            "panel_type": "IPS",
+            "refresh_rate_hz": 120,
+            "touchscreen": False,
+            "raw_spec": "Screen Size: 15.6 inches | Resolution: 1920x1080 | Touchscreen: No",
+        },
+        "power_battery": {"battery_capacity_wh": 41.0, "power_adapter_w": 45.0},
+        "memory": {
+            "capacity_gb": 16,
+            "memory_type": "LPDDR5X",
+            "raw_spec": "16GB LPDDR5X on board",
+        },
+        "storage": {
+            "capacity_gb": 512,
+            "storage_type": "SSD",
+            "interface": "NVMe",
+            "raw_spec": "512GB Nvme GEN 4",
+        },
+        "connectivity": {
+            "wifi": "Wi-Fi 6",
+            "ethernet": False,
+            "ports": ["1x RJ-45 Ethernet", "2x USB 3.2 Gen 1 Type-A"],
+        },
+        "physical": {"weight_kg": 1.70, "width_mm": 359.7},
+        "build_security": {"has_fingerprint": False},
+    }
+    contaminated = copy.deepcopy(store_specs)
+    contaminated["display"]["touchscreen"] = True
+    contaminated["display"]["resolution"] = "2560x1600"
+    contaminated["power_battery"]["battery_capacity_wh"] = 54.0
+    contaminated["memory"]["memory_type"] = "DDR4"
+    contaminated["memory"]["slot_count"] = 1
+    contaminated["memory"]["form_factor"] = "SO-DIMM"
+    contaminated["memory"]["is_soldered"] = False
+    contaminated["storage"]["interface"] = "PCIe 3.0 NVMe"
+    contaminated["physical"]["weight_kg"] = 1.95
+
+    laptop = CanonicalLaptop(
+        canonical_id="test_contradiction_guards",
+        title="ASUS Vivobook 15 - FingerPrint",
+        brand="ASUS",
+        laptop_family="Vivobook",
+        laptop_model="15",
+        specs=contaminated,
+        raw_store_context={
+            "store_specs": copy.deepcopy(store_specs),
+            "source_table": {"Finger print": "FingerPrint"},
+        },
+        offers=[],
+    )
+
+    IcecatCatalogEnricher.finalize_laptop_specs(laptop)
+    # Run twice to confirm multi-pass store_specs is still intact during finalize passes
+    IcecatCatalogEnricher.finalize_laptop_specs(laptop)
+
+    assert laptop.specs["display"]["resolution"] == "1920x1080"
+    assert laptop.specs["display"]["touchscreen"] is False
+    assert laptop.specs["power_battery"]["battery_capacity_wh"] == 41.0
+    assert laptop.specs["power_battery"]["power_adapter_w"] == 45.0
+    assert laptop.specs["memory"]["memory_type"] == "LPDDR5X"
+    assert laptop.specs["memory"]["is_soldered"] is True
+    assert laptop.specs["memory"]["form_factor"] == "On-board"
+    assert laptop.specs["memory"]["slot_count"] == 0
+    assert laptop.specs["storage"]["interface"] == "PCIe 4.0 NVMe"
+    assert laptop.specs["connectivity"]["ethernet"] is True
+    assert laptop.specs["connectivity"]["ethernet_speed"] == "1 Gbps"
+    assert laptop.specs["build_security"]["has_fingerprint"] is True
+    assert laptop.specs["physical"]["weight_kg"] == 1.70
+
+    # Negative guards: "Fingerprint: No" and "16GB DDR5 | Memory Slots: One DDR5 slot" must NOT be mangled
+    neg_lap = CanonicalLaptop(
+        canonical_id="test_negative_guards",
+        title="Lenovo IdeaPad Slim 3",
+        brand="Lenovo",
+        laptop_family="IdeaPad Slim",
+        laptop_model="3",
+        specs={
+            "memory": {
+                "capacity_gb": 16,
+                "memory_type": "DDR5",
+                "slot_count": 1,
+                "is_soldered": False,
+                "raw_spec": "16GB DDR5 4800Hz",
+            },
+            "build_security": {"has_fingerprint": False, "raw_spec": "Fingerprint: No"},
+        },
+        raw_store_context={
+            "source_table": {"Memory": "16GB DDR5 4800Hz", "Memory Slots": "One DDR5 slot", "Fingerprint": "No"}
+        },
+        offers=[],
+    )
+    IcecatCatalogEnricher.finalize_laptop_specs(neg_lap)
+    assert neg_lap.specs["build_security"]["has_fingerprint"] is False
+    assert neg_lap.specs["memory"]["slot_count"] == 1
+    assert neg_lap.specs["memory"]["is_soldered"] is False
+
+
+def test_deterministic_extractor_whr_nvme_gen4_and_finger_print():
+    """DeterministicExtractor handles '41Whr', 'Nvme GEN 4', and 'Finger print' table keys."""
+    from app.pipeline.deterministic import DeterministicExtractor
+
+    ext = DeterministicExtractor()
+    specs, _ = ext.extract(
+        "ASUS Vivobook 15-X1504VA-BQC857W",
+        {
+            "Battery": "Integrated 41Whr Battery",
+            "Storage": "512GB Nvme GEN 4",
+            "Finger print": "FingerPrint",
+        },
+        {},
+    )
+    assert specs["power_battery"]["battery_capacity_wh"] == 41.0
+    assert specs["storage"]["interface"] == "PCIe 4.0 NVMe"
+    assert specs["build_security"]["has_fingerprint"] is True

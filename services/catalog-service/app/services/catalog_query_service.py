@@ -25,6 +25,7 @@ from app.domain.pricing import (
     RawPriceEvent,
 )
 from app.domain.recommender.explainer import build_why_recommended
+from app.domain.reviews import extract_review_sources, normalize_review_sources_collection
 from app.models.laptop import LaptopConfiguration
 from app.repositories.laptop_repository import LaptopRepository, to_recommender_dict
 from app.repositories.price_history_repository import PriceHistoryRepository
@@ -46,6 +47,7 @@ from app.schemas.laptop import (
     PhysicalSpecDetail,
     PowerBatterySpecDetail,
     PriceHistoryPointSchema,
+    ReviewSourceDetail,
     StorageSpecDetail,
     StorePriceSeriesSchema,
 )
@@ -231,9 +233,7 @@ class CatalogQueryService:
         brand_key = brand.lower().strip() if brand else None
         search_key = search.lower().strip() if search and search.strip() else None
         active_metric_filters = {
-            key: threshold
-            for key, threshold in (metric_filters or {}).items()
-            if threshold is not None
+            key: threshold for key, threshold in (metric_filters or {}).items() if threshold is not None
         }
         filtered: list[dict[str, Any]] = []
 
@@ -256,9 +256,7 @@ class CatalogQueryService:
                 continue
             if in_stock_only and (not self._dict_in_stock(lap) or price <= 0):
                 continue
-            if active_metric_filters and not self._dict_passes_metric_filters(
-                lap, active_metric_filters
-            ):
+            if active_metric_filters and not self._dict_passes_metric_filters(lap, active_metric_filters):
                 continue
             filtered.append(lap)
 
@@ -276,16 +274,12 @@ class CatalogQueryService:
             boundary_key = (boundary.price, boundary.item_id)
 
             if direction == "next":
-                candidates = [
-                    lap for lap in filtered if self._fallback_sort_key(lap) > boundary_key
-                ]
+                candidates = [lap for lap in filtered if self._fallback_sort_key(lap) > boundary_key]
                 page = candidates[:limit]
                 has_next_page = len(candidates) > limit
                 has_previous_page = bool(page)
             else:
-                candidates = [
-                    lap for lap in filtered if self._fallback_sort_key(lap) < boundary_key
-                ]
+                candidates = [lap for lap in filtered if self._fallback_sort_key(lap) < boundary_key]
                 has_previous_page = len(candidates) > limit
                 # Keep the nearest preceding window, preserving ascending order.
                 page = candidates[-limit:] if len(candidates) > limit else candidates
@@ -297,12 +291,8 @@ class CatalogQueryService:
             page_info=PageInfo(
                 has_next_page=has_next_page,
                 has_previous_page=has_previous_page,
-                start_cursor=(
-                    encode_cursor(*self._fallback_sort_key(page[0])) if page else None
-                ),
-                end_cursor=(
-                    encode_cursor(*self._fallback_sort_key(page[-1])) if page else None
-                ),
+                start_cursor=(encode_cursor(*self._fallback_sort_key(page[0])) if page else None),
+                end_cursor=(encode_cursor(*self._fallback_sort_key(page[-1])) if page else None),
             ),
             items=[self._dict_to_list_item(lap) for lap in page],
         )
@@ -583,9 +573,7 @@ class CatalogQueryService:
                     store_name=offer.store_name or store_key.capitalize(),
                     product_url=offer.product_url or "",
                     price_egp=price,
-                    previous_price_egp=(
-                        float(offer.previous_price_egp) if offer.previous_price_egp else None
-                    ),
+                    previous_price_egp=(float(offer.previous_price_egp) if offer.previous_price_egp else None),
                     in_stock=bool(offer.in_stock),
                     is_cheapest=store_key == cheapest_store_key,
                     created_at=offer.created_at,
@@ -630,17 +618,12 @@ class CatalogQueryService:
                     store_name=str(off.get("store_name") or store_key.capitalize()),
                     product_url=str(off.get("product_url") or ""),
                     price_egp=price,
-                    previous_price_egp=(
-                        float(off["previous_price_egp"]) if off.get("previous_price_egp") else None
-                    ),
+                    previous_price_egp=(float(off["previous_price_egp"]) if off.get("previous_price_egp") else None),
                     in_stock=bool(off.get("in_stock", True)),
                     is_cheapest=store_key == cheapest_store_key,
                     created_at=created_at,
                     price_updated_at=updated_at,
-                    last_checked_at=(
-                        self._parse_optional_datetime(off.get("last_checked_at"))
-                        or updated_at
-                    ),
+                    last_checked_at=(self._parse_optional_datetime(off.get("last_checked_at")) or updated_at),
                 )
             )
 
@@ -723,7 +706,6 @@ class CatalogQueryService:
             return datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
         except (ValueError, TypeError):
             return None
-
 
     def _orm_to_full_detail(self, laptop: LaptopConfiguration) -> FullLaptopDetailResponse:
         """Convert a LaptopConfiguration ORM instance to FullLaptopDetailResponse."""
@@ -951,9 +933,20 @@ class CatalogQueryService:
             pros_ar=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[1],
             cons_en=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[0],
             cons_ar=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[1],
+            review_sources=self._serialize_orm_review_sources(laptop),
             why_recommended_ar=reasons.get("ar", []),
             why_recommended_en=reasons.get("en", []),
         )
+
+    @staticmethod
+    def _serialize_orm_review_sources(laptop: Any) -> list[ReviewSourceDetail]:
+        """Serialize preloaded review sources without triggering lazy loads on unmigrated/partial ORM mocks."""
+        raw_dict = getattr(laptop, "__dict__", {})
+        if "_sa_instance_state" in raw_dict:
+            raw_sources = raw_dict.get("review_sources")
+        else:
+            raw_sources = getattr(laptop, "review_sources", None)
+        return [ReviewSourceDetail(**src.to_dict()) for src in normalize_review_sources_collection(raw_sources)]
 
     def _dict_to_full_detail(self, lap: dict[str, Any]) -> FullLaptopDetailResponse:
         """Convert a raw dictionary (from unified_catalog_latest.json) to FullLaptopDetailResponse."""
@@ -1197,6 +1190,9 @@ class CatalogQueryService:
             pros_ar=align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))[1],
             cons_en=align_bilingual_lists(community_reviews.get("cons_en"), community_reviews.get("cons_ar"))[0],
             cons_ar=align_bilingual_lists(community_reviews.get("cons_en"), community_reviews.get("cons_ar"))[1],
+            review_sources=[
+                ReviewSourceDetail(**src.to_dict()) for src in extract_review_sources({**lap, **community_reviews})
+            ],
             why_recommended_ar=reasons.get("ar", []),
             why_recommended_en=reasons.get("en", []),
         )

@@ -20,6 +20,10 @@ class ScrapeTriggerRequest(BaseModel):
         default=False,
         description="If True, ignores existing watermark pointers and runs a full catalog crawl",
     )
+    upload_to_bucket: bool = Field(
+        default=True,
+        description="Whether scraper-service uploads the consolidated catalog JSON to S3",
+    )
     send_email: bool = Field(
         default=False,
         description="Whether to dispatch summary email notification upon completion",
@@ -55,6 +59,15 @@ class ReviewsTriggerRequest(BaseModel):
     force_all: bool = Field(
         default=False,
         description=("If True, resolves all catalog laptops into chassis targets even if has_reviews is already True."),
+    )
+    limit: int | None = Field(
+        default=None,
+        ge=1,
+        description="Optional cap on resolved chassis targets for incremental or smoke-test runs.",
+    )
+    upload_to_s3: bool = Field(
+        default=True,
+        description="Whether scraper-service uploads raw review JSON to S3 before emitting reviews.ready.event.",
     )
 
 

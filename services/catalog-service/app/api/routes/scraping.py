@@ -121,7 +121,12 @@ async def trigger_reviews_scraping(
 ) -> ReviewsTriggerResponse:
     """Queue chassis review scraping targets for scraper-service."""
     service = ReviewIntelligenceService()
-    return await service.dispatch_review_scraping(session=db, force_all=request.force_all)
+    return await service.dispatch_review_scraping(
+        session=db,
+        force_all=request.force_all,
+        limit=request.limit,
+        upload_to_s3=request.upload_to_s3,
+    )
 
 
 @router.post(
