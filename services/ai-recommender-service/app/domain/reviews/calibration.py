@@ -53,12 +53,12 @@ def _recalibrate_item(
         str(ident.get("laptop_model", ""))
     ).lower()
 
-    if primary_lap:
-        s: Optional[Dict[str, Any]] = primary_lap.get("specs") or {}
-        dm: Optional[Dict[str, Any]] = primary_lap.get("derived_metrics") or {}
-    elif isinstance(item_specs, dict) and item_specs:
+    if isinstance(item_specs, dict) and item_specs:
         s = item_specs
-        dm = item_specs.get("derived_metrics") or {}
+        dm = item_specs.get("derived_metrics") or (primary_lap or {}).get("derived_metrics") or {}
+    elif primary_lap:
+        s = primary_lap.get("specs") or {}
+        dm = primary_lap.get("derived_metrics") or {}
     else:
         s = None
         dm = None

@@ -621,21 +621,33 @@ def audit_and_deduplicate_payload(
             cids_ordered = list(dict.fromkeys(all_item_cids))
 
         screen_size: Optional[float] = None
-        for cid in cids_ordered:
-            cat_entry = cat_by_cid.get(cid) or {}
-            raw_size = cat_entry.get("screen_size")
-            if raw_size is None:
-                display = (cat_entry.get("specs") or {}).get("display") or {}
-                raw_size = display.get("size_inches")
-            if raw_size is None:
-                display = cat_entry.get("display") if isinstance(cat_entry.get("display"), dict) else {}
-                raw_size = display.get("size_inches")
+        for it in items:
+            it_specs = it.get("specs") if isinstance(it.get("specs"), dict) else {}
+            it_disp = it_specs.get("display") if isinstance(it_specs.get("display"), dict) else {}
+            raw_size = it.get("screen_size") if it.get("screen_size") is not None else it_disp.get("size_inches")
             if raw_size is not None:
                 try:
                     screen_size = float(raw_size)
                     break
                 except (TypeError, ValueError):
                     screen_size = None
+
+        if screen_size is None:
+            for cid in cids_ordered:
+                cat_entry = cat_by_cid.get(cid) or {}
+                raw_size = cat_entry.get("screen_size")
+                if raw_size is None:
+                    display = (cat_entry.get("specs") or {}).get("display") or {}
+                    raw_size = display.get("size_inches")
+                if raw_size is None:
+                    display = cat_entry.get("display") if isinstance(cat_entry.get("display"), dict) else {}
+                    raw_size = display.get("size_inches")
+                if raw_size is not None:
+                    try:
+                        screen_size = float(raw_size)
+                        break
+                    except (TypeError, ValueError):
+                        screen_size = None
 
         (
             raw_chunks,

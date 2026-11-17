@@ -256,13 +256,25 @@ def _format_catalog_specs_summary(item: Dict[str, Any], cat_map: Optional[Dict[s
                     break
 
     item_specs = item.get("specs") if isinstance(item.get("specs"), dict) else {}
-    specs = (cat_entry or {}).get("specs") or item_specs
-    dm = (
-        (cat_entry or {}).get("derived_metrics")
-        or (item.get("derived_metrics") if isinstance(item.get("derived_metrics"), dict) else None)
+    cat_specs = (cat_entry or {}).get("specs") or {}
+    if item_specs and isinstance(cat_specs, dict) and cat_specs:
+        specs: Dict[str, Any] = {}
+        for sec in set(cat_specs) | set(item_specs):
+            iv = item_specs.get(sec)
+            cv = cat_specs.get(sec)
+            if isinstance(iv, dict) and isinstance(cv, dict):
+                specs[sec] = {**cv, **{k: v for k, v in iv.items() if v is not None}}
+            else:
+                specs[sec] = iv if iv is not None else cv
+    else:
+        specs = item_specs or (cat_specs if isinstance(cat_specs, dict) else {})
+
+    item_dm = (
+        (item.get("derived_metrics") if isinstance(item.get("derived_metrics"), dict) else None)
         or (item_specs.get("derived_metrics") if isinstance(item_specs.get("derived_metrics"), dict) else None)
-        or {}
     )
+    cat_dm = (cat_entry or {}).get("derived_metrics") if isinstance((cat_entry or {}).get("derived_metrics"), dict) else None
+    dm = item_dm or cat_dm or {}
     cpu = specs.get("cpu") or {}
     gpu = specs.get("gpu") or {}
     mem = specs.get("memory") or {}

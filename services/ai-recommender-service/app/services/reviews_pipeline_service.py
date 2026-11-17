@@ -73,7 +73,7 @@ class ReviewsPipelineService:
         chroma_dir: str = CHROMA_DEFAULT_DIR,
         model_name: str = MODEL_NAME,
         enricher_mode: str = "primary_with_fallback",
-        catalog_path: str = "unified_catalog_topsis_ready_v6.json",
+        catalog_path: Optional[str] = None,
     ) -> None:
         self._storage_service = storage_service
         self._enrichment_service = enrichment_service

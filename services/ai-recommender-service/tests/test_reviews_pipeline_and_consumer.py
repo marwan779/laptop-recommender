@@ -567,3 +567,36 @@ def test_fastapi_lifespan_falls_back_gracefully_without_redis_or_rabbitmq(
             assert isinstance(api_app.app.state.consumer, AIRecommenderMessageConsumer)
 
     asyncio.run(_run())
+
+
+def test_reviews_pipeline_defaults_catalog_path_to_none_and_dedup_ignores_static_v6(
+    tmp_path: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    svc = ReviewsPipelineService()
+    assert svc.catalog_path is None
+
+    monkeypatch.chdir(tmp_path)
+    # Place a stale v6 file in CWD; catalog_path=None must NOT load it.
+    (tmp_path / "unified_catalog_topsis_ready_v6.json").write_text('{"laptops": [{"canonical_id": "stale-cid"}]}')
+
+    dedup = DomainReviewsDeduplicator().deduplicate(
+        {
+            "laptops": [
+                {
+                    "chassis_key": "lenovo:thinkpad:E14",
+                    "primary_canonical_id": "laptop_lenovo_thinkpad_21m7s11y00_16gb_512gb",
+                    "matched_canonical_ids": ["laptop_lenovo_thinkpad_21m7s11y00_16gb_512gb"],
+                    "identity": {"brand": "Lenovo", "laptop_family": "Thinkpad", "laptop_model": "6-21M7S11Y00"},
+                    "specs": {"display": {"size_inches": 14.0}},
+                    "youtube": {"videos": []},
+                    "communities": {"editorial_reviews": [], "discussions": []},
+                    "nlp_review_profile": {},
+                }
+            ]
+        },
+        catalog_path=svc.catalog_path,
+    )
+    assert dedup["audit_metadata"]["source_catalog"] == ""
+    assert dedup["audit_metadata"]["deduplication_summary"]["unmatched_catalog_skus_added"] == 0
+    assert dedup["chassis_reviews"][0]["matched_canonical_ids"] == ["laptop_lenovo_thinkpad_21m7s11y00_16gb_512gb"]
