@@ -54,7 +54,7 @@ class ReviewsAuditService:
     ) -> Dict[str, Any]:
         """Run domain deduplication in memory, loading catalog JSON if present on disk."""
         catalog_data: Dict[str, Any] = {"laptops": []}
-        resolved_catalog = catalog_path or DEFAULT_CATALOG_IN
+        resolved_catalog = catalog_path if catalog_path else None
         has_catalog = bool(resolved_catalog and Path(resolved_catalog).exists())
         if has_catalog:
             with open(resolved_catalog, "r", encoding="utf-8") as f:

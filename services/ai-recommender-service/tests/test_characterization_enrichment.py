@@ -763,3 +763,39 @@ def test_zero_evidence_skips_llm_and_synthesizes_no_fake_reviews() -> None:
         assert prof["pros_ar"] == []
         assert prof["cons_en"] == []
         assert prof["cons_ar"] == []
+
+
+def test_embedded_item_specs_take_precedence_over_stale_catalog_entry() -> None:
+    from app.domain.enrichment.chunking import _format_catalog_specs_summary
+
+    ident = {"brand": "Lenovo", "laptop_family": "Thinkpad", "laptop_model": "6-21M7S11Y00"}
+    live_specs = _format_a_specs_envelope()
+    live_specs["cpu"] = {"raw": "Intel Core Ultra 7 155H", "model": "Core Ultra 7 155H", "base_power_w": 28}
+    live_specs["memory"] = {"capacity_gb": 16, "upgradeable": True, "max_supported_gb": 64}
+    live_specs["display"]["size_inches"] = 14.0
+
+    stale_cat = {
+        "new-unseen-sku": {
+            "specs": {
+                "cpu": {"raw": "Stale CPU", "model": "Stale CPU", "base_power_w": 55},
+                "memory": {"capacity_gb": 8, "upgradeable": False},
+                "display": {"size_inches": 16.0},
+            }
+        }
+    }
+    summary = _format_catalog_specs_summary(
+        {
+            "primary_canonical_id": "new-unseen-sku",
+            "matched_canonical_ids": ["new-unseen-sku"],
+            "identity": ident,
+            "specs": live_specs,
+        },
+        stale_cat,
+    )
+    assert summary["cpu"] == "Intel Core Ultra 7 155H"
+    assert summary["ram_gb"] == 16
+    assert summary["display_size_in"] == 14.0
+
+    recal = cre._recalibrate_item(ident, ["new-unseen-sku"], "new-unseen-sku", dict(BASE), stale_cat, item_specs=live_specs)
+    recal_no_cat = cre._recalibrate_item(ident, ["new-unseen-sku"], "new-unseen-sku", dict(BASE), {}, item_specs=live_specs)
+    assert recal == recal_no_cat

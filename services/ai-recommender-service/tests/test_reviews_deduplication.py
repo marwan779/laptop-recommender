@@ -287,3 +287,43 @@ def test_audit_and_dedup_preserves_unreviewed_zero_evidence_state() -> None:
         "cons_en": [],
         "cons_ar": [],
     }
+
+
+def test_deduplicate_extracts_screen_size_from_embedded_specs_without_catalog_json() -> None:
+    reviews_data = {
+        "laptops": [
+            {
+                "chassis_key": "lenovo:thinkpad:E14",
+                "primary_canonical_id": "laptop_lenovo_thinkpad_21m7s11y00_16gb_512gb",
+                "matched_canonical_ids": ["laptop_lenovo_thinkpad_21m7s11y00_16gb_512gb"],
+                "identity": {"brand": "Lenovo", "laptop_family": "Thinkpad", "laptop_model": "6-21M7S11Y00"},
+                "specs": {"display": {"size_inches": 14.0}},
+                "youtube": {
+                    "videos": [
+                        {
+                            "video_id": "v14",
+                            "title": "Lenovo ThinkPad E14 14 inch Review",
+                            "video_url": "https://www.youtube.com/watch?v=v14",
+                            "transcript_text": "Solid ThinkPad E14 Gen 6 build and keyboard.",
+                        },
+                        {
+                            "video_id": "v16",
+                            "title": "Lenovo ThinkPad E16 16 inch Review",
+                            "video_url": "https://www.youtube.com/watch?v=v16",
+                            "transcript_text": "16 inch model.",
+                        },
+                    ]
+                },
+                "communities": {"editorial_reviews": [], "discussions": []},
+                "nlp_review_profile": {},
+            }
+        ]
+    }
+    out = audit_and_deduplicate_payload(
+        reviews_data=reviews_data,
+        catalog_data=None,
+        include_unmatched_catalog=False,
+    )
+    urls = [s["url"] for s in out["chassis_reviews"][0]["review_sources"]]
+    assert "https://www.youtube.com/watch?v=v14" in urls
+    assert "https://www.youtube.com/watch?v=v16" not in urls

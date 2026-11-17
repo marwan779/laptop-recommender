@@ -342,7 +342,7 @@ class ReviewsEnrichmentService:
     def enrich_reviews_dataset(
         self,
         payload_or_path: Union[str, Path, Dict[str, Any]],
-        catalog_path: str = "unified_catalog_topsis_ready_v6.json",
+        catalog_path: Optional[str] = None,
         delta_cache_path: Optional[str] = "enricher_delta_cache.json",
         primary_model: Optional[str] = None,
         fallback_model: Optional[str] = None,
@@ -575,7 +575,7 @@ def enrich_chassis_with_fallback(
 
 def enrich_reviews_dataset(
     payload_or_path: Union[str, Path, Dict[str, Any]],
-    catalog_path: str = "unified_catalog_topsis_ready_v6.json",
+    catalog_path: Optional[str] = None,
     delta_cache_path: Optional[str] = "enricher_delta_cache.json",
     primary_model: Optional[str] = None,
     fallback_model: Optional[str] = None,
@@ -613,7 +613,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Enrich Format A raw chassis reviews into Format B1.")
     parser.add_argument("--input", default="cleaned_and_enriched_chassis_reviews_v6.json")
     parser.add_argument("--output", default="cleaned_and_enriched_chassis_reviews_v6.json")
-    parser.add_argument("--catalog", default="unified_catalog_topsis_ready_v6.json")
+    parser.add_argument("--catalog", default=None)
     parser.add_argument("--cache", default=DEFAULT_DELTA_CACHE_PATH)
     parser.add_argument(
         "--mode",

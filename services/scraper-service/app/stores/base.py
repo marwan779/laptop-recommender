@@ -235,6 +235,14 @@ class BaseStoreScraper(ABC):
         """Scrape store catalog with Level 1 (fast summaries) or Level 2 (deep specs) and watermark stopping."""
         return self.search_candidates(query="laptop", limit=limit or 20)
 
+    def hydrate_products_level2(self, products: list[RetailerProduct]) -> list[RetailerProduct]:
+        """Hydrate already-discovered Level 1 products with Level 2 PDP specs.
+
+        Store implementations override this to fetch product detail pages only for
+        the URLs collected during Level 1 without re-crawling collection pages.
+        """
+        return list(products)
+
     def collect_store_candidates(
         self,
         queries: Sequence[str],

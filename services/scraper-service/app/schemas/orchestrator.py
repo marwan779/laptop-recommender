@@ -106,6 +106,16 @@ class ScrapeRequest(BaseModel):
         examples=["550e8400-e29b-41d4-a716-446655440000"],
     )
 
+    pipeline_mode: Literal["auto", "legacy", "sovereign"] = Field(
+        default="auto",
+        description=(
+            "Extraction pipeline routing after Level 1: 'auto' branches by "
+            "LLM_FULL_EXTRACT_BATCH_THRESHOLD, 'legacy' forces Pipeline A, "
+            "'sovereign' forces Pipeline B when a SovereignEG key is configured."
+        ),
+        examples=["auto"],
+    )
+
     @field_validator("targets", mode="before")
     @classmethod
     def normalize_targets(cls, v: Any) -> list[str] | Literal["all"]:

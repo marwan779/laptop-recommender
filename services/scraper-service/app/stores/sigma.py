@@ -1,7 +1,7 @@
 import itertools
 import json
 import re
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode, urljoin, urlparse
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
@@ -428,6 +428,43 @@ class SigmaComputerStoreScraper(BaseStoreScraper):
             pattern_learned=pattern_learned,
             learned_pattern_type=learned_pattern_type,
         )
+
+    def hydrate_products_level2(self, products: list[RetailerProduct]) -> list[RetailerProduct]:
+        """Hydrate already-discovered Level 1 products with Level 2 PDP specs."""
+        hydrated: list[RetailerProduct] = []
+        for product in products:
+            slug = product.retailer_product_id
+            if not slug:
+                try:
+                    slug = urlparse(product.product_url).query.split("id=")[-1].split("&")[0] or None
+                except Exception:
+                    slug = None
+            if not slug:
+                hydrated.append(product)
+                continue
+
+            raw = {
+                "slug": slug,
+                "name": product.title,
+                "sku": product.mpn or product.retailer_sku,
+                "price": product.price_egp,
+                "price_str": product.price_str,
+                "is_stock": product.in_stock,
+                "thumbnail": product.thumbnail_url,
+            }
+            with resilient_boundary(
+                category=ErrorCategory.DOM_PARSING,
+                source_component="store.sigma.hydrate",
+                context={"slug": slug, "name": product.title},
+                suppress=True,
+            ) as boundary_ctx:
+                enriched = self._parse_product(raw, level=2)
+            if boundary_ctx.has_error or enriched is None:
+                # Fail-open: keep the valid Level 1 product instead of losing it.
+                hydrated.append(product)
+                continue
+            hydrated.append(enriched)
+        return hydrated
 
     def _extract_product_specs(self, product_url: str, title: str = "") -> SigmaSpecResult:
         """Fetch Sigma Computer PDP to extract structured specifications array and description."""
