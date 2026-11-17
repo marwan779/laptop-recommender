@@ -1,17 +1,35 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light dark" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <title>Smart Laptop Recommender</title>
+    <title>دليل اللابتوب — مقارنة الأسعار والمراجعات في مصر</title>
+    <script>
+      // Pre-paint theme/lang restore: prevents any light/dark or RTL flash.
+      (function () {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var lang = params.get('lang') || localStorage.getItem('lang') || 'ar';
+          if (lang !== 'en' && lang !== 'ar') lang = 'ar';
+          var theme = localStorage.getItem('theme') || 'light';
+          if (theme !== 'light' && theme !== 'dark') theme = 'light';
+          var root = document.documentElement;
+          root.setAttribute('lang', lang);
+          root.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+          root.setAttribute('data-theme', theme);
+        } catch (e) {
+          /* keep the static defaults */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

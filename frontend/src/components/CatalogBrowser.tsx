@@ -9,8 +9,11 @@ import {
   X,
   RotateCcw,
   SlidersHorizontal,
+  Check,
+  Scale,
 } from 'lucide-react'
 import type { CatalogListItem, CatalogListResponse, MetricFilterKey } from '../types/api'
+import type { CompareEntry } from '../types/compare'
 import { fetchCatalog } from '../services/api'
 import {
   EMPTY_METRIC_FILTERS,
@@ -18,19 +21,30 @@ import {
   toMetricQuery,
 } from '../config/metricFilters'
 import { MetricSlider } from './MetricSlider'
+import { formatCardTitle } from '../utils/laptopSummary'
 
 interface CatalogBrowserProps {
   lang: 'ar' | 'en'
   onSelectLaptop?: (item: CatalogListItem) => void
+  compareIds?: string[]
+  compareDisabled?: boolean
+  onToggleCompare?: (entry: CompareEntry) => void
 }
 
 const BRANDS = ['All', 'Lenovo', 'ASUS', 'HP', 'Dell', 'Apple', 'Acer', 'MSI', 'Gigabyte']
 
 
-export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLaptop }) => {
+export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({
+  lang,
+  onSelectLaptop,
+  compareIds = [],
+  compareDisabled = false,
+  onToggleCompare,
+}) => {
   const isAr = lang === 'ar'
   const [data, setData] = useState<CatalogListResponse | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [brand, setBrand] = useState('All')
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -83,6 +97,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
 
   const loadLaptops = () => {
     setLoading(true)
+    setError(null)
     const metricQuery = toMetricQuery(debouncedMetricFilters)
 
     fetchCatalog({
@@ -95,7 +110,10 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
       ...metricQuery,
     })
       .then((res) => setData(res))
-      .catch((err) => console.error(err))
+      .catch((err) => {
+        console.error(err)
+        setError(err instanceof Error ? err.message : 'Failed to load catalog')
+      })
       .finally(() => setLoading(false))
   }
 
@@ -330,6 +348,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
                     <img
                       src={item.thumbnail_url}
                       alt={item.title}
+                      loading="lazy"
                       onError={(e) => {
                         ;(e.target as HTMLElement).style.display = 'none'
                       }}
@@ -338,23 +357,34 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
 
                   <div className="space-y-1.5">
                     <span className="brand-chip !text-[10px] !py-0.5">{item.brand}</span>
-                    <h4 className="cc-title">{item.title}</h4>
+                    <h4 dir="auto" className="cc-title">
+                      {formatCardTitle(item.brand, item.laptop_family, item.laptop_model) || item.title}
+                    </h4>
                   </div>
 
-                  <div className="cc-specs space-y-0.5">
-                    <div className="line-clamp-1">
-                      <span className="k">CPU</span> {item.cpu_model || '-'}
-                    </div>
-                    <div className="line-clamp-1">
-                      <span className="k">GPU</span> {item.gpu_model || '-'}
-                    </div>
-                    <div className="num">
-                      <span className="k">RAM</span>{' '}
-                      {item.ram_capacity_gb ? `${item.ram_capacity_gb}GB` : '-'}
-                      <span className="mx-1.5 text-[var(--border-strong)]">•</span>
-                      <span className="k">SSD</span>{' '}
-                      {item.storage_capacity_gb ? `${item.storage_capacity_gb}GB` : '-'}
-                    </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.cpu_model && (
+                      <span dir="ltr" className="catalog-spec-chip">{item.cpu_model}</span>
+                    )}
+                    {item.gpu_model && (
+                      <span dir="ltr" className="catalog-spec-chip">{item.gpu_model}</span>
+                    )}
+                    {item.ram_capacity_gb > 0 && (
+                      <span className="catalog-spec-chip tabular-nums">{item.ram_capacity_gb}GB RAM</span>
+                    )}
+                    {item.storage_capacity_gb > 0 && (
+                      <span className="catalog-spec-chip tabular-nums">
+                        {item.storage_capacity_gb >= 1024
+                          ? `${item.storage_capacity_gb / 1024}TB`
+                          : `${item.storage_capacity_gb}GB`}{' '}
+                        SSD
+                      </span>
+                    )}
+                    {item.display_size_inches > 0 && (
+                      <span dir="ltr" className="catalog-spec-chip tabular-nums">
+                        {item.display_size_inches}"
+                      </span>
+                    )}
                   </div>
 
                   {activeMetricDefs.length > 0 && (
@@ -379,7 +409,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
                     </span>
                     {hasValidPrice ? (
                       <span className="cc-price num">
-                        {item.min_price_egp.toLocaleString()}{' '}
+                        {item.min_price_egp.toLocaleString('en-US')}{' '}
                         <span className="text-[11px] font-semibold text-[var(--text-muted)]">
                           {isAr ? 'ج.م' : 'EGP'}
                         </span>
@@ -393,13 +423,58 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({ lang, onSelectLa
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="mpn-chip !text-[10px] !py-0.5">{item.cheapest_store}</span>
                     <span className="text-[var(--text-muted)]">
-                      <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} />
+                      <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" strokeWidth={2} />
                     </span>
                   </div>
                 </div>
+
+                {onToggleCompare && (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onToggleCompare({
+                        id: item.canonical_id,
+                        title: `${item.brand} ${formatCardTitle(item.brand, item.laptop_family, item.laptop_model)}`,
+                        brand: item.brand,
+                        thumbnail_url: item.thumbnail_url,
+                        price: item.min_price_egp,
+                      })
+                    }}
+                    disabled={!compareIds.includes(item.canonical_id) && compareDisabled}
+                    aria-pressed={compareIds.includes(item.canonical_id)}
+                    className={`mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-[8px] border px-3 py-2 text-[12px] font-medium transition-colors min-h-[38px] ${
+                      compareIds.includes(item.canonical_id)
+                        ? 'border-[var(--gold)] bg-[var(--gold-dim)] text-[var(--gold-bright)]'
+                        : 'border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]'
+                    }`}
+                  >
+                    {compareIds.includes(item.canonical_id) ? (
+                      <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    ) : (
+                      <Scale className="w-3.5 h-3.5" strokeWidth={2} />
+                    )}
+                    <span>{isAr ? 'قارن' : 'Compare'}</span>
+                  </button>
+                )}
               </div>
             )
           })}
+        </div>
+      ) : error ? (
+        /* Error state */
+        <div className="py-14 px-4 text-center panel space-y-3">
+          <h3 className="text-[15px] font-semibold text-[var(--danger)]">
+            {isAr ? 'تعذّر تحميل الكتالوج حالياً' : 'Could not load catalog right now'}
+          </h3>
+          <p className="text-[12.5px] text-[var(--text-muted)] max-w-md mx-auto">
+            {isAr
+              ? 'تأكد من تشغيل خدمة الكتالوج ثم أعد المحاولة.'
+              : 'Please verify the catalog service is running and try again.'}
+          </p>
+          <button type="button" onClick={loadLaptops} className="btn btn-secondary">
+            {isAr ? 'إعادة المحاولة' : 'Retry'}
+          </button>
         </div>
       ) : (
         /* Empty state */

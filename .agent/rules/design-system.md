@@ -3,6 +3,33 @@
 Every frontend change or UI component in `frontend/` MUST strictly adhere to **The Verified Instrument** design system.
 **Core Rule**: Never alter UX, state management, event handlers, props, or API contracts when performing visual updates unless explicitly requested.
 
+## 0. Dual-Theme & Two-Speed Rules
+
+### 0.1 Themes
+
+`data-theme` on `<html>` selects the palette. Light is the default for the 80% consumer audience; dark is an opt-in "hardware lab" mode for enthusiasts. Both themes use the same semantic tokens below — components must never hardcode hex colors.
+
+- `[data-theme="light"]` — **Editorial Buying Guide**: warm paper canvas `#F7F6F2`, white cards, soft elevation, `--gold: #D99B1E` for text/borders, `--gold-cta: #E9B949` for solid CTAs with `--text-inverse: #121821` ink.
+- `[data-theme="dark"]` — **Hardware Lab Night Mode**: obsidian `#0A0E13` canvas, `#10161D` cards, `#E9B949` gold, `#22D3EE` cyan.
+- Prefer `--gold-cta` for primary button fills so contrast holds in both themes. `--gold-bright` is the hover/score numeral token, not a fill.
+- Never use pure `#000` or `#FFF` for text or large surfaces.
+
+### 0.2 Two-Speed UI
+
+- **Surface** (Finder, LaptopCard, CompareBar/Modal, CatalogBrowser): plain-spoken consumer buying guide. Forbidden vocabulary: "TOPSIS", "Vector TOPSIS", "NLP", "Hardware Gates", "FastAPI", "ChromaDB". Forbidden decoration: `Sparkles` icons on cards or forms.
+- **Deep layer** (`LaptopDetailModal` workbench): full hardware engineering view — 35+ specs, five review aspect bars, clickable YouTube/Reddit/editorial sources, price history telemetry, and a 10-benchmark score breakdown with a plain-language explanation.
+- Cards surface only: price spread/savings, strengths, honest tradeoffs, review-evidence count, and two CTAs. Aspect bars and benchmark tiles belong in the detail workbench, not on cards.
+
+### 0.3 Language, RTL & Numerals
+
+- Default `lang="ar"`, `dir="rtl"`; toggle to `en` / `ltr` by updating `<html>`. Persist in `localStorage` (`lang`, `theme`) and restore pre-paint.
+- Use logical utilities (`ms-*`, `me-*`, `ps-*`, `pe-*`, `start-*`, `end-*`, `text-start`) for directional layout.
+- Western digits with `font-variant-numeric: tabular-nums` on all EGP prices, savings, specs and 0–100 scores.
+
+### 0.4 Mobile First
+
+Design and verify at `390px` first, then scale to `1280px`. Zero horizontal overflow; interactive targets at least 40px tall.
+
 ## 1. Aesthetic Direction & Surface Hierarchy (Dark-First Precision Workbench)
 
 The interface is modeled after high-precision hardware test benches (RTINGS, PCPartPicker, Linear, Vercel): dark obsidian surfaces, hairline `#1E2836` borders, zero decorative neon glows, and strict tabular data alignment.
