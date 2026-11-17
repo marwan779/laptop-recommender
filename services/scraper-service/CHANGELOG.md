@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.8.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.7.0...scraper-service-v1.8.0) (2026-11-17)
+
+
+### Features
+
+* **catalog:** aggregate chassis review targets and emit reviews scrape command via outbox ([af394c4](https://github.com/marwan779/laptop-recommender/commit/af394c4379fb4ef7db525a37fba964120dff2710))
+* **frontend:** display verified review source links in detail modal ([4b806b2](https://github.com/marwan779/laptop-recommender/commit/4b806b258080a76a1d20bd5c0b9d328d2849e549))
+* **messaging,catalog-service:** harden transactional inbox/outbox, retire internal cron loops, and fix stage-2 review & price-cache flows ([dc3d9b0](https://github.com/marwan779/laptop-recommender/commit/dc3d9b0d9f4d4209159d49171f92a842c3c83d73))
+* **messaging:** implement transactional inbox, redis deduplication, and outbox lease recovery ([ac667ac](https://github.com/marwan779/laptop-recommender/commit/ac667ac0c8baa8126f74a70513eab52fcb4a1c34))
+* **pipeline,reviews,frontend:** add review source links end-to-end, checkpoint watchers, and matching guards ([7c848b4](https://github.com/marwan779/laptop-recommender/commit/7c848b49c87d446d1908d76d7362ca0545d56544))
+* **pipeline:** add checkpoint modes, CLI watchers, and matching guards ([2cffee6](https://github.com/marwan779/laptop-recommender/commit/2cffee6ee592c3ff3ee25f1b7c73ca2a582d37d7))
+* **reviews,ai-recommender:** integrate event-driven review enrichment, recommender delegation, and full-stack docker setup ([d53c7c1](https://github.com/marwan779/laptop-recommender/commit/d53c7c1a1fb2fa48ab2127dbac874b9c7c424688))
+* **reviews:** add community reddit review collection and 4-layer relevance gating ([b9728f4](https://github.com/marwan779/laptop-recommender/commit/b9728f4b4473afb259bebc24d7169b2dbe19273a))
+* **reviews:** add e2e test script, local artifact persistence, and update docs ([07f8ae4](https://github.com/marwan779/laptop-recommender/commit/07f8ae40cb6c81eba7ffc5058e4f91fc444f872e))
+* **reviews:** add fail-open persistent evidence cache ([e4e9d6d](https://github.com/marwan779/laptop-recommender/commit/e4e9d6d08eccb02503968decfeae145527c0cea2))
+* **reviews:** add review collector orchestrator with s3 upload and event dispatch ([6782423](https://github.com/marwan779/laptop-recommender/commit/678242315041e77a95aac1936721d27eaffb9558))
+* **reviews:** add screen size to targets and multi-platform community scrapers ([df264d2](https://github.com/marwan779/laptop-recommender/commit/df264d2b0aece23c589b8f4c4ffc459cf9a3a135))
+* **reviews:** carry matched chassis ids in review targets and add s3 reviews schema ([ff17a9b](https://github.com/marwan779/laptop-recommender/commit/ff17a9b669f0c8c6aef5bf5d627a5d73c033e0a2))
+* **reviews:** filter non-laptop devices and dedupe YouTube video fetches ([2d3fb33](https://github.com/marwan779/laptop-recommender/commit/2d3fb334531318b3329e961539af3b71f3769b02))
+* **reviews:** implement review target identity extraction and batching schemas ([44bc93b](https://github.com/marwan779/laptop-recommender/commit/44bc93bd93130d7aee96b918c7af31f1e082dfe3))
+* **reviews:** propagate hardware specs envelope to scraper format a payload ([0b6d954](https://github.com/marwan779/laptop-recommender/commit/0b6d9545e9b7efbb9f52b0be4a1a5c313085cbe7))
+* **reviews:** tighten evidence relevance gating across scraping and enrichment ([a2dee69](https://github.com/marwan779/laptop-recommender/commit/a2dee6964afd3ccf354a3c128e14cf9c61befac4))
+* **scraper-service:** enforce X-API-Key middleware auth ([6bc8ad1](https://github.com/marwan779/laptop-recommender/commit/6bc8ad197db65f6a5084a3d87ee943ddaa363a94))
+* **scraper:** add SovereignEG dual-source LLM pipeline for small Level 2 batches ([f4e23e2](https://github.com/marwan779/laptop-recommender/commit/f4e23e2afd56452004df86767955967cb6d461ce))
+* **scraper:** route small Level 2 batches through SovereignEG dual-source extraction ([7472b52](https://github.com/marwan779/laptop-recommender/commit/7472b52403c48ef56b7ed26e2a5fd30ab9fa242c))
+
+
+### Bug Fixes
+
+* **catalog,scraper:** harden catalog pipeline failure handling and scraper auth ([a7966f2](https://github.com/marwan779/laptop-recommender/commit/a7966f28b7ad206c18b1c1e2148c5bc12ded6276))
+* **pricing:** prioritize stock transitions and harden extraction ([91a5da3](https://github.com/marwan779/laptop-recommender/commit/91a5da3f23059952521ba8646f4b26ca11250d8e))
+* **reviews:** harden chassis grouping, deduplication, relevance filtering, and cookieless youtube scraping ([1e1dfd6](https://github.com/marwan779/laptop-recommender/commit/1e1dfd638549e11037b2ab59ee80c1290f8a201e))
+* **reviews:** harden chassis key grouping, relevance filtering, deduplication, and cookieless scraping ([07efc07](https://github.com/marwan779/laptop-recommender/commit/07efc0739eaf5aa4f0409de5b00de74eef144c4c))
+* **reviews:** repair review collection, enrichment, and metrics persistence flow ([790ff13](https://github.com/marwan779/laptop-recommender/commit/790ff1347bfda03d71b265c228e25a4850dbe4b1))
+* **scraper:** harden SovereignEG pipeline accuracy and batch-size routing ([c891ec3](https://github.com/marwan779/laptop-recommender/commit/c891ec36de40d73fd9ff0252d3d109c6e642cb9e))
+
 ## [1.7.0](https://github.com/marwan779/laptop-recommender/compare/scraper-service-v1.6.1...scraper-service-v1.7.0) (2026-11-05)
 
 
