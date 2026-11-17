@@ -465,9 +465,9 @@ export function App() {
             )}
 
             {recommendations && (
-              <div className="space-y-4">
-                {/* Slim sticky summary bar */}
-                <div className="sticky top-2 z-30 rounded-[12px] border border-[var(--border-subtle)] bg-[var(--bg-overlay)] shadow-[var(--shadow-1)] px-3.5 py-2.5">
+              <div className="space-y-5">
+                {/* Compact search summary bar */}
+                <div className="rounded-[12px] border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-[var(--shadow-1)] px-4 py-3">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2 flex-wrap min-w-0 text-[12.5px]">
                       <span className="font-display font-semibold tabular-nums text-[var(--text-primary)]">
@@ -537,7 +537,7 @@ export function App() {
                 <StatusBanner response={recommendations} lang={lang} />
 
                 {/* Sort strip */}
-                <div className="-mx-4 px-4 overflow-x-auto">
+                <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
                   <div className="flex items-center gap-2 min-w-max pb-1">
                     {SORT_OPTIONS.map((option) => (
                       <button
