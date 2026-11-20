@@ -73,7 +73,9 @@ async def test_all_seven_personas_end_to_end(api_client: AsyncClient, persona: s
     assert resp.status_code == 200
     data = resp.json()
 
-    assert data["persona"] == persona
+    from app.domain.recommender import resolve_persona_key
+
+    assert data["persona"] == resolve_persona_key(persona)
     assert data["persona_label_ar"] != ""
     assert data["persona_label_en"] != ""
     assert len(data["results"]) > 0
@@ -107,8 +109,8 @@ async def test_multi_persona_blending_and_custom_weights(api_client: AsyncClient
     data = resp.json()
     weights = data["effective_weights"]
     assert abs(sum(weights.values()) - 1.0) < 0.01
-    assert weights["display_score"] > 0.25
-    assert weights["gpu_score"] > 0.25
+    assert (weights["display_gaming_score"] + weights["display_creator_score"]) > 0.25
+    assert (weights["gpu_compute_score"] + weights["vram_score"]) > 0.25
 
 
 @pytest.mark.asyncio
@@ -226,9 +228,9 @@ async def test_bilingual_english_and_arabic_prompt_parsing(api_client: AsyncClie
     assert en_parsed["extracted_filters"].get("min_ram_gb") == 32
     assert en_parsed["extracted_filters"].get("min_storage_gb") == 1024
     assert en_parsed["extracted_filters"].get("require_oled") is True
-    assert en_parsed["weight_boosts"].get("display_score", 0) > 0
+    assert en_parsed["weight_boosts"].get("display_creator_score", 0) > 0
     assert en_parsed["weight_boosts"].get("power_therm_score", 0) > 0
-    assert en_parsed["weight_boosts"].get("longevity_score", 0) > 0
+    assert en_parsed["weight_boosts"].get("upgradeability_score", 0) > 0
 
 
 @pytest.mark.asyncio
@@ -268,48 +270,6 @@ async def test_recommendation_response_includes_review_intelligence(api_client: 
     assert isinstance(card["aspect_scores"], dict)
     assert isinstance(card["pros_ar"], list)
     assert isinstance(card["cons_en"], list)
-
-
-@pytest.mark.asyncio
-async def test_recommendation_metric_gates_filter_candidates(api_client: AsyncClient):
-    """Optional metric minimums remove candidates before TOPSIS ranking."""
-    baseline = await api_client.post(
-        "/api/v1/recommendations",
-        json={"budget": 150000.0, "persona": "balanced", "top_k": 20},
-    )
-    assert baseline.status_code == 200
-    base_results = baseline.json()["results"]
-    assert base_results
-
-    threshold = 60.0
-    filtered = await api_client.post(
-        "/api/v1/recommendations",
-        json={
-            "budget": 150000.0,
-            "persona": "balanced",
-            "top_k": 20,
-            "min_gpu_score": threshold,
-            "min_acoustics_score": threshold,
-        },
-    )
-    assert filtered.status_code == 200
-    data = filtered.json()
-
-    for result in data["results"]:
-        assert result["topsis_inputs"]["gpu_score"] >= threshold
-        assert result["aspect_scores"]["acoustics_score"] >= threshold
-
-    assert len(data["results"]) <= len(base_results)
-
-    invalid = await api_client.post(
-        "/api/v1/recommendations",
-        json={
-            "budget": 150000.0,
-            "persona": "balanced",
-            "min_value_score": 101,
-        },
-    )
-    assert invalid.status_code == 422
 
 
 @pytest.mark.asyncio

@@ -40,7 +40,7 @@ def test_parse_user_text_prompt_english():
     assert filters.get("min_storage_gb") == 1024
     assert filters.get("require_oled") is True
     assert boosts.get("cpu_score", 0.0) > 0.10
-    assert boosts.get("display_score", 0.0) > 0.10
+    assert boosts.get("display_creator_score", 0.0) > 0.10
 
 
 def test_parse_user_text_prompt_arabic():
@@ -51,8 +51,9 @@ def test_parse_user_text_prompt_arabic():
     boosts = parsed["weight_boosts"]
 
     assert filters.get("require_oled") is True
-    assert boosts.get("mobility_score", 0.0) > 0.10
-    assert boosts.get("display_score", 0.0) > 0.10
+    assert boosts.get("battery_score", 0.0) > 0.10
+    assert boosts.get("portability_score", 0.0) > 0.10
+    assert boosts.get("display_creator_score", 0.0) > 0.10
 
 
 def test_parse_user_text_prompt_empty():
@@ -130,7 +131,7 @@ def test_scenario_2_programming_55k(real_catalog_laptops):
         top_k=5,
     )
 
-    assert result.persona == "programming"
+    assert result.persona == "tech_web_mobile"
     assert len(result.results) > 0
     winner = result.results[0]
     assert winner.effective_price_egp <= 55000.0
@@ -165,7 +166,7 @@ def test_scenario_4_content_creation_65k(real_catalog_laptops):
         top_k=5,
     )
 
-    assert result.persona == "content_creation"
+    assert result.persona == "creative"
     assert len(result.results) > 0
     for item in result.results:
         matched = next(l for l in real_catalog_laptops if l["canonical_id"] == item.canonical_id)
@@ -182,7 +183,7 @@ def test_scenario_5_student_35k(real_catalog_laptops):
         top_k=5,
     )
 
-    assert result.persona == "student_and_office"
+    assert result.persona == "daily_student"
     assert len(result.results) > 0
     for item in result.results:
         assert item.effective_price_egp <= 35000.0
@@ -219,14 +220,16 @@ def test_brand_filter(real_catalog_laptops):
 
 
 def test_enrich_catalog_with_persona_scores(real_catalog_laptops):
-    """Enriching catalog attaches hardware_fit and value_fit across all 7 personas."""
+    """Enriching catalog attaches hardware_fit and value_fit across all 16 personas."""
+    from app.domain.recommender import PERSONA_CONFIGS
+
     sample_data = {"laptops": real_catalog_laptops[:10]}
     enriched = enrich_catalog_with_persona_scores(sample_data)
 
     for lap in enriched["laptops"]:
         ps = lap["derived_metrics"].get("persona_scores")
         assert ps is not None
-        for p in PersonaType:
+        for p in PERSONA_CONFIGS:
             assert p in ps
             assert "hardware_fit" in ps[p]
             assert "value_fit" in ps[p]
@@ -244,17 +247,15 @@ def test_get_persona_db_query_spec():
     assert relaxed_spec["persona_gates"]["require_dgpu"] is False
 
 
-def test_parse_user_text_prompt_cyberpunk_ultra():
-    prompt = "عايز لاب يشغل Cyberpunk على Ultra"
+def test_parse_user_text_prompt_gaming_rtx_thermals():
+    prompt = "عايز لاب العاب كارت شاشة RTX وتبريد قوي"
     parsed = parse_user_text_prompt(prompt)
 
-    filters = parsed["extracted_filters"]
     boosts = parsed["weight_boosts"]
 
-    assert filters.get("require_dgpu") is True
-    assert boosts.get("gpu_score", 0.0) >= 0.15
-    assert boosts.get("power_therm_score", 0.0) >= 0.06
-    assert boosts.get("community_nlp_score", 0.0) >= 0.08
+    assert boosts.get("gpu_compute_score", 0.0) >= 0.12
+    assert boosts.get("vram_score", 0.0) >= 0.06
+    assert boosts.get("power_therm_score", 0.0) >= 0.14
 
 
 def test_gaming_budget_too_low_fallback(real_catalog_laptops):

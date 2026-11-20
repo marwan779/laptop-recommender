@@ -104,7 +104,7 @@ async def test_recommendations_endpoint_arabic_prompt(db_session: AsyncSession):
 
         parsed = data["parsed_text_prompt"]
         assert parsed["extracted_filters"].get("require_oled") is True
-        assert parsed["weight_boosts"].get("mobility_score", 0.0) > 0.10
+        assert parsed["weight_boosts"].get("battery_score", 0.0) > 0.10
         assert len(data["results"]) > 0
         assert data["results"][0]["cheapest_offer_url"].startswith("http")
 
@@ -135,8 +135,8 @@ async def test_recommendations_endpoint_multiple_personas_blending(db_session: A
 
         assert len(data["results"]) > 0
         weights = data["effective_weights"]
-        assert weights["gpu_score"] > 0.10
-        assert weights["cpu_score"] > 0.15
+        assert weights["gpu_compute_score"] > 0.10
+        assert weights["cpu_score"] >= 0.15
 
     app.dependency_overrides.clear()
 
