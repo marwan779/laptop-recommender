@@ -18,7 +18,6 @@ import {
   Award,
   Zap,
   Feather,
-  Wrench,
   Gauge,
   SlidersHorizontal,
   ChevronDown,
@@ -35,21 +34,19 @@ import type {
   ReviewSourceDetail,
 } from '../types/api'
 import { fetchLaptopDetail } from '../services/api'
+import {
+  getDisplayTierInfo,
+  getPortabilityTierInfo,
+  getSiliconTierInfo,
+  getUpgradeabilityTierInfo,
+  type TierInfo,
+} from '../utils/hardwareTiers'
 import { PriceHistoryChart } from './PriceHistoryChart'
 
 interface LaptopDetailModalProps {
   laptop: RankedLaptop | CatalogListItem | null
   onClose: () => void
   lang: 'ar' | 'en'
-}
-
-interface TierInfo {
-  category: string
-  title: string
-  subtitle: string
-  /** Tier key colour used only for the 2px left bar and the icon. */
-  key: string
-  icon: React.ReactNode
 }
 
 function formatVerificationTime(isoStr: string | null | undefined, isAr: boolean): string {
@@ -266,101 +263,6 @@ function ReviewSourceCard({ src, href, isAr }: ReviewSourceCardProps) {
   )
 }
 
-function getSiliconTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
-  const key = (raw || '').toUpperCase().trim()
-  if (!key) return null
-  if (key.includes('EXPLICIT') || key.includes('HIGH') || key.includes('CAPPED')) {
-    return {
-      category: isAr ? 'فئة المعالجة والتبريد' : 'Thermal & Compute Tier',
-      title: isAr ? 'أداء عالٍ ومستقر (TDP كامل)' : 'High-Power Uncapped Chassis',
-      subtitle: isAr ? 'تبريد مخصص يسمح للمعالج وكارت الشاشة بالعمل بكامل طاقتهم' : 'Dedicated cooling allows max sustained power',
-      key: 'var(--tier-thermal)',
-      icon: <Zap className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  if (key.includes('INTEGRATED') || key.includes('SOC') || key.includes('ENTRY')) {
-    return {
-      category: isAr ? 'فئة المعالجة والتبريد' : 'Thermal & Compute Tier',
-      title: isAr ? 'معالجة موفرة واقتصادية (iGPU)' : 'Efficiency SoC (iGPU)',
-      subtitle: isAr ? 'استهلاك طاقة منخفض وعمر بطارية أطول للدراسة والعمل اليومي' : 'Low power draw & extended battery life for daily work',
-      key: 'var(--tier-thermal)',
-      icon: <Cpu className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  return null
-}
-
-function getDisplayTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
-  const key = (raw || '').toLowerCase()
-  if (!key) return null
-  if (key.includes('100% srgb') || key.includes('creator') || key.includes('dci-p3') || key.includes('oled')) {
-    return {
-      category: isAr ? 'فئة الشاشة والألوان' : 'Display Quality Tier',
-      title: isAr ? 'شاشة احترافية دقيقة الألوان (100% sRGB)' : 'Creator Accurate (100% sRGB)',
-      subtitle: isAr ? 'تغطية لونية متكاملة ممتازة للتصميم والمونتاج وإنتاج المحتوى' : 'Vibrant color accuracy ideal for editing & media',
-      key: 'var(--tier-display)',
-      icon: <Monitor className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  if (key.includes('45%') || key.includes('basic') || key.includes('ntsc')) {
-    return {
-      category: isAr ? 'فئة الشاشة والألوان' : 'Display Quality Tier',
-      title: isAr ? 'شاشة قياسية للأعمال والدراسة (45% NTSC)' : 'Standard Display (45% NTSC)',
-      subtitle: isAr ? 'ألوان قياسية مريحة مناسبة للبرمجة والقراءة والأوفيس' : 'Standard gamut suitable for code & office tasks',
-      key: 'var(--tier-display)',
-      icon: <Monitor className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  return null
-}
-
-function getPortabilityTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
-  const key = (raw || '').toUpperCase()
-  if (!key) return null
-  if (key.includes('ULTRA') || key.includes('LIGHT')) {
-    return {
-      category: isAr ? 'التنقل والوزن' : 'Mobility & Weight Tier',
-      title: isAr ? 'خفيف جداً ونحيف للتنقل (< 1.6 كجم)' : 'Ultra-Portable (< 1.6kg)',
-      subtitle: isAr ? 'تصميم فائق النحافة يسهل حمله في أي حقيبة طوال اليوم' : 'Ultra-slim chassis designed for effortless mobility',
-      key: 'var(--tier-mobility)',
-      icon: <Feather className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  if (key.includes('DESKTOP') || key.includes('HEAVY')) {
-    return {
-      category: isAr ? 'التنقل والوزن' : 'Mobility & Weight Tier',
-      title: isAr ? 'بديل مكتبي للأداء الثابت (> 2.4 كجم)' : 'Desktop Replacement (> 2.4kg)',
-      subtitle: isAr ? 'شاسيه أثقل مصمم للثبات والتبريد العالي على المكتب' : 'Heavier chassis built for sustained gaming power',
-      key: 'var(--tier-mobility)',
-      icon: <Feather className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  return null
-}
-
-function getUpgradeabilityTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
-  const key = (raw || '').toUpperCase()
-  if (!key) return null
-  if (key.includes('MAXIMUM') || key.includes('HIGH') || key.includes('DUAL')) {
-    return {
-      category: isAr ? 'قابلية الترقية المستقبلية' : 'Future Expansion Tier',
-      title: isAr ? 'ترقية قصوى (فتحتان RAM + منفذان SSD)' : 'Dual RAM & Dual SSD Slots',
-      subtitle: isAr ? 'سهولة تامة في مضاعفة الرامات وسعة التخزين مستقبلاً' : 'Full headroom to expand both memory & storage later',
-      key: 'var(--tier-expansion)',
-      icon: <Wrench className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  if (key.includes('LOCKED') || key.includes('SOLDERED')) {
-    return {
-      category: isAr ? 'قابلية الترقية المستقبلية' : 'Future Expansion Tier',
-      title: isAr ? 'ذاكرة مدمجة غير قابلة للزيادة' : 'Soldered / Locked RAM',
-      subtitle: isAr ? 'الرامات ملحومة باللوحة الأم، الترقية محصورة في وحدة التخزين' : 'Memory is soldered; expansion limited to SSD slot',
-      key: 'var(--tier-expansion)',
-      icon: <Wrench className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  return null
-}
 
 export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
   laptop,

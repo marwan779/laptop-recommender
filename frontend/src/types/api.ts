@@ -208,6 +208,9 @@ export interface GpuSpecDetail {
   vram_gb?: number;
   vram_type?: string;
   tdp_w?: number;
+  native_base_max_tgp_w?: number | null;
+  native_max_tgp_w?: number | null;
+  tgp_utilization_pct?: number | null;
   integrated: boolean;
   ai_tops?: number;
   igpu_model?: string;

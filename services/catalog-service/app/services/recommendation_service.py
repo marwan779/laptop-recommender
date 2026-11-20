@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.logger import get_logger
 from app.common.review_text import align_bilingual_lists
+from app.domain.gpu_power_policy import evaluate_gpu_tgp, inject_gpu_tgp_warning
 from app.domain.recommender import (
     PERSONA_CONFIGS,
     TOPSIS_CRITERIA_KEYS,
@@ -402,8 +403,24 @@ class RecommendationService:
                     why_recommended_en=list(item.get("why_recommended_en") or []),
                     pros_en=list(item.get("pros_en") or item_comm.get("pros_en") or cand_comm.get("pros_en") or []),
                     pros_ar=list(item.get("pros_ar") or item_comm.get("pros_ar") or cand_comm.get("pros_ar") or []),
-                    cons_en=list(item.get("cons_en") or item_comm.get("cons_en") or cand_comm.get("cons_en") or []),
-                    cons_ar=list(item.get("cons_ar") or item_comm.get("cons_ar") or cand_comm.get("cons_ar") or []),
+                    cons_en=inject_gpu_tgp_warning(
+                        list(item.get("cons_en") or item_comm.get("cons_en") or cand_comm.get("cons_en") or []),
+                        list(item.get("cons_ar") or item_comm.get("cons_ar") or cand_comm.get("cons_ar") or []),
+                        evaluate_gpu_tgp(
+                            ((cand.get("specs") or {}).get("gpu") or {}).get("model"),
+                            bool(((cand.get("specs") or {}).get("gpu") or {}).get("integrated", True)),
+                            ((cand.get("specs") or {}).get("gpu") or {}).get("tdp_w"),
+                        ),
+                    )[0],
+                    cons_ar=inject_gpu_tgp_warning(
+                        list(item.get("cons_en") or item_comm.get("cons_en") or cand_comm.get("cons_en") or []),
+                        list(item.get("cons_ar") or item_comm.get("cons_ar") or cand_comm.get("cons_ar") or []),
+                        evaluate_gpu_tgp(
+                            ((cand.get("specs") or {}).get("gpu") or {}).get("model"),
+                            bool(((cand.get("specs") or {}).get("gpu") or {}).get("integrated", True)),
+                            ((cand.get("specs") or {}).get("gpu") or {}).get("tdp_w"),
+                        ),
+                    )[1],
                     reviews_evidence_count=evidence_count,
                     aspect_scores=aspect_scores,
                     topsis_inputs=dict(item.get("topsis_inputs") or {}),

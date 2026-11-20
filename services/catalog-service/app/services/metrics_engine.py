@@ -10,6 +10,8 @@ import re
 import sys
 from typing import Any
 
+from app.domain.gpu_power_policy import evaluate_gpu_tgp
+
 # Reference Benchmark Scores (Normalized 0-100 scale across mobile silicon)
 CPU_BENCHMARK_MAP: dict[str, float] = {
     # Ultra-High-End 2025/2026 HX & Strix Halo
@@ -212,16 +214,18 @@ def compute_laptop_metrics(laptop: dict[str, Any]) -> dict[str, Any]:
     gpu_ref_score, gpu_ref_tgp = GPU_BENCHMARK_MAP.get(gpu_model, (18.0 if is_igpu else 45.0, 0.0 if is_igpu else 95.0))
     actual_tgp = float(gpu.get("tdp_w") or 0.0)
 
+    gpu_eval = evaluate_gpu_tgp(gpu_model, is_igpu, actual_tgp)
+
     if is_igpu or gpu_ref_tgp <= 0:
         scale_factor_gpu = round(ram_bw_mult, 3)
         effective_gpu_score = _clamp(gpu_ref_score * scale_factor_gpu, 5.0, 100.0)
-        tgp_source = "INTEGRATED_SOC"
+        tgp_source = gpu_eval.tier
     else:
         ratio = max(0.4, min(1.35, actual_tgp / gpu_ref_tgp))
         scale_factor_gpu = round(max(0.72, min(1.10, ratio**0.32)), 3)
         vram_bonus = 2.5 if str(gpu.get("vram_type") or "").upper() == "GDDR7" else 0.0
         effective_gpu_score = _clamp(gpu_ref_score * scale_factor_gpu + vram_bonus, 15.0, 100.0)
-        tgp_source = "EXPLICIT_OR_CHASSIS_CAPPED"
+        tgp_source = gpu_eval.tier
 
     npu_tops = float(cpu.get("npu_tops") or 0.0)
     gpu_ai_tops = float(gpu.get("ai_tops") or 0.0)
@@ -657,6 +661,9 @@ def compute_laptop_metrics(laptop: dict[str, Any]) -> dict[str, Any]:
             "is_dual_channel": is_dual_channel,
             "total_ai_tops": total_ai_tops,
             "is_copilot_plus_pc": is_copilot_plus_pc,
+            "native_base_max_w": gpu_eval.native_base_max_w,
+            "native_max_w": gpu_eval.native_max_w,
+            "tgp_utilization_pct": gpu_eval.tgp_utilization_pct,
         },
         "power": {
             "delta_p_watts": delta_p_watts,
