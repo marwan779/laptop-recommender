@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List
 
+from app.domain.metrics.scoring import DEFAULT_COMMUNITY_NLP_SCORE
+
 
 def extract_review_profiles_from_payload(payload: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     """Build a `{canonical_id: review_profile}` lookup from Format B1 or B2 payloads."""
@@ -30,7 +32,7 @@ def extract_review_profiles_from_payload(payload: Dict[str, Any]) -> Dict[str, D
                 if c.get("source_type") == "scraped_editorial" and c.get("polarity") == "con"
             ]
             profile = {
-                "community_nlp_score": float(entry.get("community_nlp_score", 75.0)),
+                "community_nlp_score": float(entry.get("community_nlp_score", DEFAULT_COMMUNITY_NLP_SCORE)),
                 "aspect_scores": dict(entry.get("aspect_scores", {})),
                 "pros_ar": list(clean_lists.get("pros_ar", [])),
                 "cons_ar": list(clean_lists.get("cons_ar", [])),

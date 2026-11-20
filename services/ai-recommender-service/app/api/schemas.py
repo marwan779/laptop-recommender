@@ -9,6 +9,17 @@ from pydantic import BaseModel, Field
 from app.infrastructure.chroma_repository import CHROMA_DEFAULT_DIR
 
 
+class ScorePromptRequest(BaseModel):
+    user_text_prompt: Optional[str] = Field(default="")
+
+
+class ScorePromptResponse(BaseModel):
+    adjusted_nlp_scores: Dict[str, float] = Field(default_factory=dict)
+    nlp_dynamic_weight: float = Field(default=0.10)
+    parsed_constraints: Dict[str, Any] = Field(default_factory=dict)
+    execution_time_ms: float = Field(default=0.0)
+
+
 class RecommendRequest(BaseModel):
     max_budget_egp: float = Field(default=300000.0, gt=0)
     min_budget_egp: Optional[float] = Field(default=None, ge=0)

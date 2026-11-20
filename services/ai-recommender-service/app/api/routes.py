@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 import psutil
 from fastapi import APIRouter, HTTPException
 
-from app.api.schemas import IngestReviewsRequest, RecommendRequest
+from app.api.schemas import IngestReviewsRequest, RecommendRequest, ScorePromptRequest
 from app.infrastructure.chroma_repository import COLLECTION_NAME, CHROMA_DEFAULT_DIR
 from app.infrastructure.jina_embedder import EMBED_DIM, MODEL_NAME
 from app.services.recommendation_service import (
@@ -88,10 +88,21 @@ def recommend(
     )
 
 
+def score_prompt(user_text_prompt: Optional[str] = "") -> Dict[str, Any]:
+    svc = _get_service()
+    return svc.score_prompt(user_text_prompt=user_text_prompt)
+
+
 @router.get("/health")
 async def health_check() -> Dict[str, Any]:
     _get_service()
     return await asyncio.to_thread(health)
+
+
+@router.post("/score-prompt")
+async def score_prompt_endpoint(req: ScorePromptRequest) -> Dict[str, Any]:
+    _get_service()
+    return await asyncio.to_thread(score_prompt, user_text_prompt=req.user_text_prompt)
 
 
 @router.post("/recommend")
@@ -204,6 +215,9 @@ def _run_ingest_sync(req: IngestReviewsRequest) -> Dict[str, Any]:
         name=COLLECTION_NAME,
         embedding_function=svc.query_emb_fn,
     )
+    svc._cached_collection_count = -1
+    if hasattr(svc, "_get_polarity_counts"):
+        svc._get_polarity_counts()
     svc._cached_dual_query.cache_clear()
 
     resp: Dict[str, Any] = {

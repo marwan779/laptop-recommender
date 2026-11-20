@@ -6,29 +6,49 @@ Zero external I/O, database, HTTP framework, or model loading dependencies.
 from __future__ import annotations
 
 import copy
+import math
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
-# The 10 TOPSIS columns in order:
-# [0] cpu_score           (Benefit +)
-# [1] gpu_score           (Benefit +)
-# [2] power_therm_score   (Benefit +)
-# [3] display_score       (Benefit +)
-# [4] mobility_score      (Benefit +)
-# [5] longevity_score     (Benefit +)
-# [6] ergonomics_score    (Benefit +)
-# [7] connectivity_score  (Benefit +)
-# [8] community_nlp_score (Benefit +)
-# [9] effective_price_egp (Cost    -)
+from app.domain.metrics.scoring import (
+    DEFAULT_COMMUNITY_NLP_SCORE,
+    calculate_calibrated_value_score,
+)
+
+# =============================================================================
+# 1. PERSONA WEIGHT CONFIGURATIONS (14-Column TOPSIS Matrix, 16 Personas)
+# =============================================================================
+# The 14 TOPSIS columns in order:
+# [0]  cpu_score             (Benefit +)
+# [1]  gpu_compute_score     (Benefit +)
+# [2]  vram_score            (Benefit +)
+# [3]  power_therm_score     (Benefit +)
+# [4]  display_gaming_score  (Benefit +)
+# [5]  display_creator_score (Benefit +)
+# [6]  battery_score         (Benefit +)
+# [7]  portability_score     (Benefit +)
+# [8]  upgradeability_score  (Benefit +)
+# [9]  build_quality_score   (Benefit +)
+# [10] ergonomics_score      (Benefit +)
+# [11] connectivity_score    (Benefit +)
+# [12] community_nlp_score   (Benefit +)
+# [13] effective_price_egp   (Cost    -)
+
+DEFAULT_COMMUNITY_NLP_WEIGHT = 0.08
+
 TOPSIS_CRITERIA_KEYS: List[str] = [
     "cpu_score",
-    "gpu_score",
+    "gpu_compute_score",
+    "vram_score",
     "power_therm_score",
-    "display_score",
-    "mobility_score",
-    "longevity_score",
+    "display_gaming_score",
+    "display_creator_score",
+    "battery_score",
+    "portability_score",
+    "upgradeability_score",
+    "build_quality_score",
     "ergonomics_score",
     "connectivity_score",
     "community_nlp_score",
@@ -36,18 +56,7 @@ TOPSIS_CRITERIA_KEYS: List[str] = [
 ]
 
 # True = Benefit (higher is better), False = Cost (lower is better)
-IS_BENEFIT_CRITERION: List[bool] = [
-    True,   # cpu_score
-    True,   # gpu_score
-    True,   # power_therm_score
-    True,   # display_score
-    True,   # mobility_score
-    True,   # longevity_score
-    True,   # ergonomics_score
-    True,   # connectivity_score
-    True,   # community_nlp_score
-    False,  # effective_price_egp (Cost criterion: cheaper within the budget window is better)
-]
+IS_BENEFIT_CRITERION: List[bool] = [True] * 13 + [False]
 
 # Reference bilingual anchor descriptions for Semantic Weight Boosting
 CRITERIA_SEMANTIC_ANCHORS: Dict[str, str] = {
@@ -61,19 +70,31 @@ CRITERIA_SEMANTIC_ANCHORS: Dict[str, str] = {
     "connectivity_score": "منافذ كتير تايب سي ثندربولت وكابل نت وشاشات خارجية thunderbolt USB-C PD HDMI ethernet LAN ports",
 }
 
+LEGACY_PERSONA_ALIASES: Dict[str, str] = {
+    "ai_and_game_dev": "tech_ai_ml",
+    "programming": "tech_web_mobile",
+    "content_creation": "creative",
+    "student_and_office": "daily_student",
+    "business_and_mobility": "daily_business",
+}
+
 PERSONA_CONFIGS: Dict[str, Dict[str, Any]] = {
     "gaming": {
-        "label_ar": "الألعاب الثقيلة والـ Esports",
-        "label_en": "Heavy Gaming & Esports",
+        "label_ar": "الألعاب (عام)",
+        "label_en": "Gaming (Main)",
         "weights": {
-            "cpu_score": 0.16,
-            "gpu_score": 0.32,
-            "power_therm_score": 0.14,
-            "display_score": 0.14,
-            "mobility_score": 0.03,
-            "longevity_score": 0.06,
-            "ergonomics_score": 0.02,
-            "connectivity_score": 0.03,
+            "cpu_score": 0.15,
+            "gpu_compute_score": 0.27,
+            "vram_score": 0.10,
+            "power_therm_score": 0.12,
+            "display_gaming_score": 0.12,
+            "display_creator_score": 0.03,
+            "battery_score": 0.01,
+            "portability_score": 0.01,
+            "upgradeability_score": 0.04,
+            "build_quality_score": 0.03,
+            "ergonomics_score": 0.01,
+            "connectivity_score": 0.01,
             "effective_price_egp": 0.10,
         },
         "implicit_gates": {
@@ -82,37 +103,257 @@ PERSONA_CONFIGS: Dict[str, Dict[str, Any]] = {
             "min_ram_gb": 8,
         },
     },
-    "ai_and_game_dev": {
-        "label_ar": "الذكاء الاصطناعي وتطوير الألعاب والـ 3D",
-        "label_en": "AI / ML, Game Dev & 3D Rendering",
+    "gaming_esports": {
+        "label_ar": "ألعاب الـ Esports والفريمات العالية",
+        "label_en": "Competitive Esports & High-Hz Gaming",
         "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.28,
+            "cpu_score": 0.19,
+            "gpu_compute_score": 0.24,
+            "vram_score": 0.05,
+            "power_therm_score": 0.10,
+            "display_gaming_score": 0.20,
+            "display_creator_score": 0.01,
+            "battery_score": 0.01,
+            "portability_score": 0.01,
+            "upgradeability_score": 0.03,
+            "build_quality_score": 0.02,
+            "ergonomics_score": 0.02,
+            "connectivity_score": 0.02,
+            "effective_price_egp": 0.10,
+        },
+        "implicit_gates": {
+            "require_dgpu": True,
+            "min_refresh_hz": 144,
+            "min_ram_gb": 16,
+        },
+    },
+    "gaming_aaa": {
+        "label_ar": "ألعاب الـ AAA الثقيلة والجرافيك الفائق",
+        "label_en": "Heavy AAA & Ray-Traced Gaming",
+        "weights": {
+            "cpu_score": 0.14,
+            "gpu_compute_score": 0.30,
+            "vram_score": 0.16,
+            "power_therm_score": 0.13,
+            "display_gaming_score": 0.08,
+            "display_creator_score": 0.05,
+            "battery_score": 0.00,
+            "portability_score": 0.00,
+            "upgradeability_score": 0.03,
+            "build_quality_score": 0.02,
+            "ergonomics_score": 0.01,
+            "connectivity_score": 0.00,
+            "effective_price_egp": 0.08,
+        },
+        "implicit_gates": {
+            "require_dgpu": True,
+            "min_vram_gb": 6,
+            "min_ram_gb": 16,
+        },
+    },
+    "gaming_budget": {
+        "label_ar": "الألعاب الاقتصادية (أفضل أداء مقابل سعر)",
+        "label_en": "Budget Gaming (Max Value per EGP)",
+        "weights": {
+            "cpu_score": 0.14,
+            "gpu_compute_score": 0.26,
+            "vram_score": 0.08,
+            "power_therm_score": 0.09,
+            "display_gaming_score": 0.09,
+            "display_creator_score": 0.01,
+            "battery_score": 0.01,
+            "portability_score": 0.01,
+            "upgradeability_score": 0.08,
+            "build_quality_score": 0.02,
+            "ergonomics_score": 0.01,
+            "connectivity_score": 0.00,
+            "effective_price_egp": 0.20,
+        },
+        "implicit_gates": {
+            "require_dgpu": True,
+            "min_ram_gb": 8,
+        },
+    },
+    "creative": {
+        "label_ar": "صناعة المحتوى والتصميم والمونتاج (عام)",
+        "label_en": "Content Creation & Design (Main)",
+        "weights": {
+            "cpu_score": 0.19,
+            "gpu_compute_score": 0.18,
+            "vram_score": 0.08,
+            "power_therm_score": 0.08,
+            "display_gaming_score": 0.01,
+            "display_creator_score": 0.22,
+            "battery_score": 0.02,
+            "portability_score": 0.02,
+            "upgradeability_score": 0.04,
+            "build_quality_score": 0.03,
+            "ergonomics_score": 0.01,
+            "connectivity_score": 0.02,
+            "effective_price_egp": 0.10,
+        },
+        "implicit_gates": {
+            "min_ram_gb": 16,
+            "require_creator_display": True,
+        },
+    },
+    "creative_video": {
+        "label_ar": "المونتاج وتصحيح الألوان وإنتاج الفيديو",
+        "label_en": "Video Editing & Color Grading",
+        "weights": {
+            "cpu_score": 0.22,
+            "gpu_compute_score": 0.18,
+            "vram_score": 0.08,
+            "power_therm_score": 0.09,
+            "display_gaming_score": 0.00,
+            "display_creator_score": 0.20,
+            "battery_score": 0.01,
+            "portability_score": 0.01,
+            "upgradeability_score": 0.05,
+            "build_quality_score": 0.02,
+            "ergonomics_score": 0.01,
+            "connectivity_score": 0.05,
+            "effective_price_egp": 0.08,
+        },
+        "implicit_gates": {
+            "require_dgpu": True,
+            "min_ram_gb": 16,
+            "require_creator_display": True,
+        },
+    },
+    "creative_2d_photo": {
+        "label_ar": "التصميم الجرافيكي وتعديل الصور (2D & UI/UX)",
+        "label_en": "2D Graphic Design, Photography & UI/UX",
+        "weights": {
+            "cpu_score": 0.18,
+            "gpu_compute_score": 0.08,
+            "vram_score": 0.03,
+            "power_therm_score": 0.04,
+            "display_gaming_score": 0.00,
+            "display_creator_score": 0.30,
+            "battery_score": 0.07,
+            "portability_score": 0.08,
+            "upgradeability_score": 0.03,
+            "build_quality_score": 0.04,
+            "ergonomics_score": 0.02,
+            "connectivity_score": 0.03,
+            "effective_price_egp": 0.10,
+        },
+        "implicit_gates": {
+            "min_ram_gb": 16,
+            "require_creator_display": True,
+        },
+    },
+    "creative_3d_cad_gamedev": {
+        "label_ar": "التصميم ثلاثي الأبعاد والـ CAD وتطوير الألعاب",
+        "label_en": "3D Rendering, CAD/BIM & Game Development",
+        "weights": {
+            "cpu_score": 0.19,
+            "gpu_compute_score": 0.26,
+            "vram_score": 0.15,
             "power_therm_score": 0.12,
-            "display_score": 0.10,
-            "mobility_score": 0.03,
-            "longevity_score": 0.10,
-            "ergonomics_score": 0.03,
+            "display_gaming_score": 0.03,
+            "display_creator_score": 0.08,
+            "battery_score": 0.00,
+            "portability_score": 0.00,
+            "upgradeability_score": 0.05,
+            "build_quality_score": 0.02,
+            "ergonomics_score": 0.00,
+            "connectivity_score": 0.02,
+            "effective_price_egp": 0.08,
+        },
+        "implicit_gates": {
+            "require_dgpu": True,
+            "min_vram_gb": 6,
+            "min_ram_gb": 16,
+        },
+    },
+    "tech": {
+        "label_ar": "البرمجة والتكنولوجيا وعلوم الحاسب (عام)",
+        "label_en": "Software Engineering & Tech (Main)",
+        "weights": {
+            "cpu_score": 0.24,
+            "gpu_compute_score": 0.10,
+            "vram_score": 0.05,
+            "power_therm_score": 0.07,
+            "display_gaming_score": 0.00,
+            "display_creator_score": 0.06,
+            "battery_score": 0.08,
+            "portability_score": 0.06,
+            "upgradeability_score": 0.11,
+            "build_quality_score": 0.05,
+            "ergonomics_score": 0.04,
+            "connectivity_score": 0.04,
+            "effective_price_egp": 0.10,
+        },
+        "implicit_gates": {
+            "min_ram_gb": 16,
+            "min_cpu_cores": 6,
+        },
+    },
+    "tech_ai_ml": {
+        "label_ar": "الذكاء الاصطناعي وتعلم الآلة وعلم البيانات",
+        "label_en": "AI / ML Engineering & CUDA Compute",
+        "weights": {
+            "cpu_score": 0.16,
+            "gpu_compute_score": 0.24,
+            "vram_score": 0.18,
+            "power_therm_score": 0.10,
+            "display_gaming_score": 0.00,
+            "display_creator_score": 0.01,
+            "battery_score": 0.01,
+            "portability_score": 0.01,
+            "upgradeability_score": 0.10,
+            "build_quality_score": 0.03,
+            "ergonomics_score": 0.02,
             "connectivity_score": 0.04,
             "effective_price_egp": 0.10,
         },
         "implicit_gates": {
             "require_dgpu": True,
-            "min_ram_gb": 16,
+            "require_nvidia": True,
             "min_vram_gb": 6,
+            "min_ram_gb": 16,
         },
     },
-    "programming": {
-        "label_ar": "البرمجة وهندسة البرمجيات",
-        "label_en": "Programming & Software Engineering",
+    "tech_web_mobile": {
+        "label_ar": "تطوير الويب والموبايل والباك إند",
+        "label_en": "Full-Stack Web & Mobile Development",
         "weights": {
             "cpu_score": 0.26,
-            "gpu_score": 0.04,
+            "gpu_compute_score": 0.03,
+            "vram_score": 0.00,
+            "power_therm_score": 0.06,
+            "display_gaming_score": 0.00,
+            "display_creator_score": 0.08,
+            "battery_score": 0.12,
+            "portability_score": 0.08,
+            "upgradeability_score": 0.12,
+            "build_quality_score": 0.05,
+            "ergonomics_score": 0.06,
+            "connectivity_score": 0.04,
+            "effective_price_egp": 0.10,
+        },
+        "implicit_gates": {
+            "min_ram_gb": 16,
+            "min_cpu_cores": 6,
+        },
+    },
+    "tech_cyber_vms": {
+        "label_ar": "الأمن السيبراني والشبكات والأنظمة الافتراضية",
+        "label_en": "Cybersecurity, DevOps & Heavy VMs",
+        "weights": {
+            "cpu_score": 0.25,
+            "gpu_compute_score": 0.04,
+            "vram_score": 0.02,
             "power_therm_score": 0.08,
-            "display_score": 0.10,
-            "mobility_score": 0.12,
-            "longevity_score": 0.14,
-            "ergonomics_score": 0.08,
+            "display_gaming_score": 0.00,
+            "display_creator_score": 0.04,
+            "battery_score": 0.07,
+            "portability_score": 0.05,
+            "upgradeability_score": 0.18,
+            "build_quality_score": 0.05,
+            "ergonomics_score": 0.04,
             "connectivity_score": 0.08,
             "effective_price_egp": 0.10,
         },
@@ -121,84 +362,115 @@ PERSONA_CONFIGS: Dict[str, Dict[str, Any]] = {
             "min_cpu_cores": 6,
         },
     },
-    "content_creation": {
-        "label_ar": "المونتاج والتصميم الجرافيكي وصناعة المحتوى",
-        "label_en": "Video Editing, Design & Content Creation",
+    "balanced": {
+        "label_ar": "استخدام شامل متوازن (أفضل قيمة)",
+        "label_en": "Balanced All-Rounder (Main)",
         "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.22,
-            "power_therm_score": 0.08,
-            "display_score": 0.24,
-            "mobility_score": 0.03,
-            "longevity_score": 0.05,
-            "ergonomics_score": 0.03,
-            "connectivity_score": 0.05,
+            "cpu_score": 0.18,
+            "gpu_compute_score": 0.12,
+            "vram_score": 0.03,
+            "power_therm_score": 0.06,
+            "display_gaming_score": 0.03,
+            "display_creator_score": 0.10,
+            "battery_score": 0.10,
+            "portability_score": 0.08,
+            "upgradeability_score": 0.06,
+            "build_quality_score": 0.06,
+            "ergonomics_score": 0.04,
+            "connectivity_score": 0.04,
             "effective_price_egp": 0.10,
         },
         "implicit_gates": {
-            "min_ram_gb": 16,
-            "require_creator_display": True,  # 100% sRGB, DCI-P3, or OLED
+            "min_ram_gb": 8,
         },
     },
-    "student_and_office": {
-        "label_ar": "الدراسة والجامعة والعمل المكتبي",
-        "label_en": "Student, University & Office Work",
+    "daily_student": {
+        "label_ar": "الطلاب والجامعة والمحاضرات",
+        "label_en": "University Student & Campus Mobility",
         "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.03,
-            "power_therm_score": 0.05,
-            "display_score": 0.10,
-            "mobility_score": 0.28,
-            "longevity_score": 0.08,
-            "ergonomics_score": 0.12,
+            "cpu_score": 0.15,
+            "gpu_compute_score": 0.02,
+            "vram_score": 0.00,
+            "power_therm_score": 0.04,
+            "display_gaming_score": 0.00,
+            "display_creator_score": 0.07,
+            "battery_score": 0.22,
+            "portability_score": 0.16,
+            "upgradeability_score": 0.05,
+            "build_quality_score": 0.08,
+            "ergonomics_score": 0.03,
+            "connectivity_score": 0.02,
+            "effective_price_egp": 0.16,
+        },
+        "implicit_gates": {
+            "min_ram_gb": 8,
+            "max_weight_kg": 2.20,
+        },
+    },
+    "daily_business": {
+        "label_ar": "البيزنس والتنقل المستمر والاجتماعات",
+        "label_en": "Executive Business & Ultraportable Travel",
+        "weights": {
+            "cpu_score": 0.14,
+            "gpu_compute_score": 0.01,
+            "vram_score": 0.00,
+            "power_therm_score": 0.04,
+            "display_gaming_score": 0.00,
+            "display_creator_score": 0.09,
+            "battery_score": 0.20,
+            "portability_score": 0.22,
+            "upgradeability_score": 0.02,
+            "build_quality_score": 0.10,
+            "ergonomics_score": 0.06,
             "connectivity_score": 0.04,
-            "effective_price_egp": 0.10,
+            "effective_price_egp": 0.08,
+        },
+        "implicit_gates": {
+            "min_ram_gb": 8,
+            "max_weight_kg": 1.75,
+        },
+    },
+    "daily_office": {
+        "label_ar": "العمل المكتبي والمحاسبة والأعمال اليومية",
+        "label_en": "Office Productivity & Daily Work",
+        "weights": {
+            "cpu_score": 0.18,
+            "gpu_compute_score": 0.01,
+            "vram_score": 0.00,
+            "power_therm_score": 0.04,
+            "display_gaming_score": 0.00,
+            "display_creator_score": 0.09,
+            "battery_score": 0.15,
+            "portability_score": 0.10,
+            "upgradeability_score": 0.05,
+            "build_quality_score": 0.07,
+            "ergonomics_score": 0.09,
+            "connectivity_score": 0.04,
+            "effective_price_egp": 0.18,
         },
         "implicit_gates": {
             "min_ram_gb": 8,
             "max_weight_kg": 2.35,
         },
     },
-    "business_and_mobility": {
-        "label_ar": "البيزنس والتنقل المستمر والاجتماعات",
-        "label_en": "Executive Business & Ultraportable Mobility",
-        "weights": {
-            "cpu_score": 0.16,
-            "gpu_score": 0.03,
-            "power_therm_score": 0.05,
-            "display_score": 0.12,
-            "mobility_score": 0.28,
-            "longevity_score": 0.05,
-            "ergonomics_score": 0.14,
-            "connectivity_score": 0.07,
-            "effective_price_egp": 0.10,
-        },
-        "implicit_gates": {
-            "min_ram_gb": 8,
-            "max_weight_kg": 1.90,
-        },
-    },
-    "balanced": {
-        "label_ar": "استخدام شامل متوازن (أفضل قيمة)",
-        "label_en": "Balanced All-Rounder",
-        "weights": {
-            "cpu_score": 0.20,
-            "gpu_score": 0.18,
-            "power_therm_score": 0.08,
-            "display_score": 0.15,
-            "mobility_score": 0.10,
-            "longevity_score": 0.09,
-            "ergonomics_score": 0.06,
-            "connectivity_score": 0.04,
-            "effective_price_egp": 0.10,
-        },
-        "implicit_gates": {
-            "min_ram_gb": 8,
-        },
-    },
 }
 
 
+def _resolve_persona_key(persona: Optional[str]) -> str:
+    """Resolve persona name or legacy alias to a valid 16-persona key."""
+    if not persona:
+        return "balanced"
+    if persona in PERSONA_CONFIGS:
+        return persona
+    mapped = LEGACY_PERSONA_ALIASES.get(persona)
+    if mapped and mapped in PERSONA_CONFIGS:
+        return mapped
+    return "balanced"
+
+
+# =============================================================================
+# 2. BILINGUAL (AR/EN) TEXT PROMPT PARSER (Extracts Filters + Weight Boosts)
+# =============================================================================
 def parse_user_text_prompt(prompt: Optional[str]) -> Dict[str, Any]:
     """Turn optional Arabic/English user text into hard constraints and criteria weight boosts."""
     if not prompt or not str(prompt).strip():
@@ -208,196 +480,73 @@ def parse_user_text_prompt(prompt: Optional[str]) -> Dict[str, Any]:
     extracted_filters: Dict[str, Any] = {}
     weight_boosts: Dict[str, float] = {}
 
-    if re.search(r" (64\s*gb|64\s*جيجا) ", txt):
-        extracted_filters["min_ram_gb"] = 64
-    elif re.search(r" (32\s*gb|32\s*جيجا) ", txt):
-        extracted_filters["min_ram_gb"] = 32
-    elif re.search(r" (24\s*gb|24\s*جيجا) ", txt):
-        extracted_filters["min_ram_gb"] = 24
-    elif re.search(r" (16\s*gb|16\s*جيجا) ", txt):
-        extracted_filters["min_ram_gb"] = 16
+    # --- A. Extract Explicit Hardware Constraints from Text ---
+    for ram_val in (64, 32, 24, 16):
+        if re.search(
+            rf"(?<!\d){ram_val}\s*(?:gb|جيجا)(?![a-z\d])"
+            rf"|(?:رامات|راماته|رام|ram)\s*[:=]?\s*{ram_val}(?!\d)"
+            rf"|(?<!\d){ram_val}\s*(?:رامات|رام|ram)(?![a-z\d])",
+            txt,
+        ):
+            extracted_filters["min_ram_gb"] = ram_val
+            break
 
-    if re.search(r" (2\s*tb|2000\s*gb|2\s*تيرا) ", txt):
+    if re.search(
+        r"(?<!\d)(?:2\s*tb|2000\s*gb|2\s*تيرا)(?![a-z\d])"
+        r"|(?:هارد|تخزين|مساحة|ssd)\s*[:=]?\s*2\s*(?:tb|تيرا)(?![a-z\d])",
+        txt,
+    ):
         extracted_filters["min_storage_gb"] = 2048
-    elif re.search(r" (1\s*tb|1000\s*gb|1024\s*gb|تيرا|1\s*تيرا) ", txt):
+    elif re.search(
+        r"(?<!\d)(?:1\s*tb|1000\s*gb|1024\s*gb|1\s*تيرا)(?![a-z\d])"
+        r"|(?:^|[\s,،.\-+/()])(?:تيرا|هارد\s*تيرا)(?=$|[\s,،.\-+/()])",
+        txt,
+    ):
         extracted_filters["min_storage_gb"] = 1024
+    elif re.search(
+        r"(?<!\d)(?:512\s*gb|512\s*جيجا)(?![a-z\d])"
+        r"|(?:هارد|تخزين|مساحة|ssd)\s*[:=]?\s*512(?!\d)",
+        txt,
+    ):
+        extracted_filters["min_storage_gb"] = 512
 
     if any(k in txt for k in ["oled", "اوليد", "أوليد"]):
         extracted_filters["require_oled"] = True
     if any(k in txt for k in ["touch", "تاتش", "لمس", "x360", "flip", "2-in-1"]):
         extracted_filters["require_touchscreen"] = True
 
-    if any(
-        k in txt
-        for k in [
-            "بطاريه",
-            "بطارية",
-            "خفيف",
-            "تنقل",
-            "سفر",
-            "مواصلات",
-            "محاضرات",
-            "battery",
-            "lightweight",
-            "portable",
-            "travel",
-            "thin",
-        ]
-    ):
-        weight_boosts["mobility_score"] = weight_boosts.get("mobility_score", 0.0) + 0.15
+    # --- B. Extract Dynamic Weight Boosts from Intent Keywords ---
+    if any(k in txt for k in ["بطاريه", "بطارية", "شحن", "battery"]):
+        weight_boosts["battery_score"] = weight_boosts.get("battery_score", 0.0) + 0.14
+    if any(k in txt for k in ["خفيف", "تنقل", "سفر", "مواصلات", "محاضرات", "lightweight", "portable", "travel", "thin"]):
+        weight_boosts["portability_score"] = weight_boosts.get("portability_score", 0.0) + 0.12
+        weight_boosts["battery_score"] = weight_boosts.get("battery_score", 0.0) + 0.06
 
-    if any(
-        k in txt
-        for k in [
-            "شاشه",
-            "شاشة",
-            "الوان",
-            "ألوان",
-            "دقة",
-            "سطوع",
-            "مونتاج",
-            "جرافيك",
-            "display",
-            "screen",
-            "color",
-            "srgb",
-            "oled",
-            "hdr",
-        ]
-    ):
-        weight_boosts["display_score"] = weight_boosts.get("display_score", 0.0) + 0.14
+    if any(k in txt for k in ["شاشه", "شاشة", "الوان", "ألوان", "دقة", "سطوع", "مونتاج", "جرافيك", "display", "screen", "color", "srgb", "oled", "hdr"]):
+        weight_boosts["display_creator_score"] = weight_boosts.get("display_creator_score", 0.0) + 0.14
 
-    if any(
-        k in txt
-        for k in [
-            "كارت شاشه",
-            "كارت شاشة",
-            "العاب",
-            "ألعاب",
-            "فريمات",
-            "رندر",
-            "جيمز",
-            "gaming",
-            "fps",
-            "rtx",
-            "gpu",
-            "render",
-            "3d",
-        ]
-    ):
-        weight_boosts["gpu_score"] = weight_boosts.get("gpu_score", 0.0) + 0.15
-        weight_boosts["power_therm_score"] = weight_boosts.get("power_therm_score", 0.0) + 0.06
+    if any(k in txt for k in ["كارت شاشه", "كارت شاشة", "العاب", "ألعاب", "فريمات", "رندر", "جيمز", "gaming", "fps", "rtx", "gpu", "render", "3d"]):
+        weight_boosts["gpu_compute_score"] = weight_boosts.get("gpu_compute_score", 0.0) + 0.12
+        weight_boosts["vram_score"] = weight_boosts.get("vram_score", 0.0) + 0.06
+        weight_boosts["power_therm_score"] = weight_boosts.get("power_therm_score", 0.0) + 0.05
 
-    if any(
-        k in txt
-        for k in [
-            "معالج",
-            "بروسيسور",
-            "برمجه",
-            "برمجة",
-            "محاكاة",
-            "داتا",
-            "كود",
-            "cpu",
-            "processor",
-            "coding",
-            "docker",
-            "vm",
-            "multitask",
-        ]
-    ):
+    if any(k in txt for k in ["معالج", "بروسيسور", "برمجه", "برمجة", "محاكاة", "داتا", "كود", "cpu", "processor", "coding", "docker", "vm", "multitask"]):
         weight_boosts["cpu_score"] = weight_boosts.get("cpu_score", 0.0) + 0.14
 
-    if any(
-        k in txt
-        for k in [
-            "تبريد",
-            "حراره",
-            "حرارة",
-            "مراوح",
-            "سخونة",
-            "باور",
-            "cooling",
-            "thermal",
-            "heat",
-            "tgp",
-            "watt",
-        ]
-    ):
+    if any(k in txt for k in ["تبريد", "حراره", "حرارة", "مراوح", "سخونة", "باور", "cooling", "thermal", "heat", "tgp", "watt"]):
         weight_boosts["power_therm_score"] = weight_boosts.get("power_therm_score", 0.0) + 0.14
 
-    if any(
-        k in txt
-        for k in [
-            "تطوير",
-            "ترقيه",
-            "ترقية",
-            "يعيش",
-            "مستقبل",
-            "رامات بتزيد",
-            "upgrade",
-            "future",
-            "slots",
-            "longevity",
-            "expand",
-        ]
-    ):
-        weight_boosts["longevity_score"] = weight_boosts.get("longevity_score", 0.0) + 0.14
+    if any(k in txt for k in ["تطوير", "ترقيه", "ترقية", "يعيش", "مستقبل", "رامات بتزيد", "upgrade", "future", "slots", "longevity", "expand"]):
+        weight_boosts["upgradeability_score"] = weight_boosts.get("upgradeability_score", 0.0) + 0.12
+        weight_boosts["build_quality_score"] = weight_boosts.get("build_quality_score", 0.0) + 0.05
 
-    if any(
-        k in txt
-        for k in [
-            "كيبورد",
-            "كاميرا",
-            "صوت",
-            "اجتماعات",
-            "زووم",
-            "بصمه",
-            "بصمة",
-            "keyboard",
-            "webcam",
-            "camera",
-            "mic",
-            "audio",
-            "zoom",
-        ]
-    ):
+    if any(k in txt for k in ["كيبورد", "كاميرا", "صوت", "اجتماعات", "زووم", "بصمه", "بصمة", "keyboard", "webcam", "camera", "mic", "audio", "zoom"]):
         weight_boosts["ergonomics_score"] = weight_boosts.get("ergonomics_score", 0.0) + 0.12
 
-    if any(
-        k in txt
-        for k in [
-            "منافذ",
-            "تايب سي",
-            "ثندربولت",
-            "لان",
-            "شاشات خارجية",
-            "ports",
-            "thunderbolt",
-            "usb-c",
-            "hdmi",
-            "ethernet",
-            "lan",
-        ]
-    ):
+    if any(k in txt for k in ["منافذ", "تايب سي", "ثندربولت", "لان", "شاشات خارجية", "ports", "thunderbolt", "usb-c", "hdmi", "ethernet", "lan"]):
         weight_boosts["connectivity_score"] = weight_boosts.get("connectivity_score", 0.0) + 0.12
 
-    if any(
-        k in txt
-        for k in [
-            "ارخص",
-            "أرخص",
-            "توفير",
-            "سعر",
-            "اقتصادي",
-            "على قد الايد",
-            "cheap",
-            "budget",
-            "value",
-            "save",
-            "affordable",
-        ]
-    ):
+    if any(k in txt for k in ["ارخص", "أرخص", "توفير", "سعر", "اقتصادي", "على قد الايد", "cheap", "budget", "value", "save", "affordable"]):
         weight_boosts["effective_price_egp"] = weight_boosts.get("effective_price_egp", 0.0) + 0.14
 
     return {
@@ -408,13 +557,14 @@ def parse_user_text_prompt(prompt: Optional[str]) -> Dict[str, Any]:
 
 def get_persona_db_query_spec(persona: str, max_budget_egp: float) -> Dict[str, Any]:
     """Return baseline filter spec with low-budget relaxation for backend queries."""
-    p_key = persona if persona in PERSONA_CONFIGS else "balanced"
+    p_key = _resolve_persona_key(persona)
     gates = copy.deepcopy(PERSONA_CONFIGS[p_key]["implicit_gates"])
     if max_budget_egp < 35000:
         if gates.get("min_ram_gb", 8) > 8:
             gates["min_ram_gb"] = 8
         if max_budget_egp < 30000 and gates.get("require_dgpu"):
             gates["require_dgpu"] = False
+            gates.pop("require_nvidia", None)
             gates.pop("min_refresh_hz", None)
             gates.pop("min_vram_gb", None)
 
@@ -494,7 +644,13 @@ def _build_why_recommended(laptop: Dict[str, Any], persona: str) -> Dict[str, Li
     reasons_ar.append(f"شاشة {disp_size} بوصة {panel} بتردد {hz}Hz وتغطية ألوان {gamut}")
     reasons_en.append(f"{disp_size}-inch {panel} {hz}Hz display ({gamut})")
 
-    if persona in ["student_and_office", "business_and_mobility"]:
+    if persona in [
+        "daily_student",
+        "daily_business",
+        "daily_office",
+        "student_and_office",
+        "business_and_mobility",
+    ]:
         w_kg = dm["mobility"].get("weight_kg")
         b_hrs = dm["mobility"].get("battery_hours_estimate")
         reasons_ar.append(f"وزن خفيف {w_kg} كجم وبطارية تدوم حوالي {b_hrs} ساعات مع تخزين {ssd_str} SSD")
@@ -518,34 +674,171 @@ def _build_why_recommended(laptop: Dict[str, Any], persona: str) -> Dict[str, Li
     return {"ar": reasons_ar, "en": reasons_en}
 
 
+def _is_nvidia_gpu(laptop: Dict[str, Any]) -> bool:
+    """Detect whether a laptop contains an NVIDIA discrete GPU (CUDA-capable)."""
+    gpu = laptop.get("specs", {}).get("gpu", {})
+    if gpu.get("integrated", True):
+        return False
+    mfr = str(gpu.get("manufacturer") or gpu.get("brand") or "").lower()
+    model = str(gpu.get("model") or "").lower()
+    raw = str(gpu.get("raw_spec") or "").lower()
+    title = str(laptop.get("title") or "").lower()
+    if "nvidia" in mfr or "nvidia" in model:
+        return True
+    if any(tok in model for tok in ("geforce", "rtx", "gtx", "quadro")):
+        return True
+    if "nvidia" in raw and ("rtx" in raw or "geforce" in raw):
+        return True
+    if any(tok in title for tok in ("rtx ", "rtx4", "rtx5", "rtx3", "rtx2", "gtx ", "geforce")):
+        return True
+    return False
+
+
+_LEGACY_WEIGHT_EXPANSION: Dict[str, Tuple[Tuple[str, float], ...]] = {
+    "gpu_score": (("gpu_compute_score", 0.72), ("vram_score", 0.28)),
+    "display_score": (("display_gaming_score", 0.45), ("display_creator_score", 0.55)),
+    "mobility_score": (("battery_score", 0.50), ("portability_score", 0.50)),
+    "longevity_score": (("upgradeability_score", 0.65), ("build_quality_score", 0.35)),
+}
+
+
+def _apply_weight_overrides(
+    weights_dict: Dict[str, float],
+    overrides: Dict[str, float],
+    additive: bool,
+) -> None:
+    """Apply overrides onto 14-column weights, expanding any legacy 10-column keys safely."""
+    for k, v in overrides.items():
+        if v is None:
+            continue
+        fval = float(v)
+        if k in weights_dict:
+            weights_dict[k] = (weights_dict[k] + fval) if additive else fval
+        elif k in _LEGACY_WEIGHT_EXPANSION:
+            for sub_k, share in _LEGACY_WEIGHT_EXPANSION[k]:
+                if sub_k in weights_dict:
+                    delta = fval * share
+                    weights_dict[sub_k] = (weights_dict[sub_k] + delta) if additive else delta
+
+
+def _extract_matrix_cell(
+    ti: Dict[str, Any],
+    col_key: str,
+    cid: str,
+    adjusted_nlp_scores: Optional[Dict[str, float]],
+) -> float:
+    """Safely extract a 14-column numeric criterion with backward-compatible fallbacks."""
+    if col_key == "community_nlp_score":
+        if adjusted_nlp_scores and cid in adjusted_nlp_scores and adjusted_nlp_scores[cid] is not None:
+            val = float(adjusted_nlp_scores[cid])
+        elif ti.get("community_nlp_score") is not None:
+            val = float(ti["community_nlp_score"])
+        else:
+            val = DEFAULT_COMMUNITY_NLP_SCORE
+        return val if math.isfinite(val) else DEFAULT_COMMUNITY_NLP_SCORE
+
+    raw_val = ti.get(col_key)
+    if raw_val is None:
+        fallback_map = {
+            "gpu_compute_score": ti.get("gpu_score", 18.0),
+            "vram_score": 15.0,
+            "display_gaming_score": ti.get("display_score", 50.0),
+            "display_creator_score": ti.get("display_score", 50.0),
+            "battery_score": ti.get("mobility_score", 50.0),
+            "portability_score": ti.get("mobility_score", 50.0),
+            "upgradeability_score": ti.get("longevity_score", 50.0),
+            "build_quality_score": ti.get("longevity_score", 60.0),
+        }
+        raw_val = fallback_map.get(col_key, 50.0)
+    val = float(raw_val)
+    return val if math.isfinite(val) else (DEFAULT_COMMUNITY_NLP_SCORE if col_key == "community_nlp_score" else 50.0)
+
+
+def _compute_persona_value_score(
+    laptop: Dict[str, Any],
+    hw_row_13: np.ndarray,
+    hw_weights_13: np.ndarray,
+    p_key: str,
+    eff_price: Optional[float],
+) -> float:
+    """Compute smoothly calibrated persona value score from persona hardware_fit and price."""
+    if not eff_price or eff_price < 10000:
+        return 50.0
+    ps_entry = laptop.get("derived_metrics", {}).get("persona_scores", {}).get(p_key, {})
+    persona_hw_fit = ps_entry.get("hardware_fit")
+    if persona_hw_fit is None:
+        w_sum = float(np.sum(hw_weights_13))
+        if w_sum > 1e-12:
+            persona_hw_fit = float(np.dot(hw_row_13, hw_weights_13) / w_sum)
+        else:
+            persona_hw_fit = float(np.mean(hw_row_13))
+    return calculate_calibrated_value_score(max(1.0, float(persona_hw_fit)), eff_price)
+
+
+def compute_nlp_dynamic_weight(net_sims: List[float]) -> Tuple[float, float]:
+    """Map net_sim spread (mean top-5 minus median rest) smoothly to [0.10, 0.25]."""
+    if not net_sims:
+        return 0.10, 0.0
+    sorted_sims = sorted(net_sims, reverse=True)
+    if len(sorted_sims) > 5:
+        spread = max(0.0, float(np.mean(sorted_sims[:5]) - np.median(sorted_sims[5:])))
+    else:
+        spread = max(0.0, float(sorted_sims[0] - np.median(sorted_sims)))
+    ratio = max(0.0, min(1.0, (spread - 0.08) / (0.26 - 0.08)))
+    dyn_weight = round(0.10 + ratio * (0.25 - 0.10), 4)
+    return dyn_weight, round(spread, 4)
+
+
+def score_dual_review_vectors_detailed(
+    pro_res: Optional[Dict[str, Any]],
+    con_res: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Compute net Dual-Vector review adjustments plus dynamic signal-spread weighting."""
+    pro_sim: Dict[str, float] = {}
+    con_sim: Dict[str, float] = {}
+    base_scores: Dict[str, float] = {}
+    cids_map: Dict[str, List[str]] = {}
+
+    if pro_res and pro_res.get("metadatas") and pro_res.get("distances"):
+        for meta, dist in zip(pro_res["metadatas"][0], pro_res["distances"][0]):
+            ckey = meta["chassis_key"]
+            pro_sim[ckey] = max(0.0, 1.0 - float(dist))
+            base_scores[ckey] = float(meta.get("community_nlp_score", DEFAULT_COMMUNITY_NLP_SCORE))
+            cids_map[ckey] = [c for c in meta.get("matched_canonical_ids", "").split(",") if c]
+
+    if con_res and con_res.get("metadatas") and con_res.get("distances"):
+        for meta, dist in zip(con_res["metadatas"][0], con_res["distances"][0]):
+            ckey = meta["chassis_key"]
+            con_sim[ckey] = max(0.0, 1.0 - float(dist))
+            base_scores.setdefault(
+                ckey, float(meta.get("community_nlp_score", DEFAULT_COMMUNITY_NLP_SCORE))
+            )
+            if ckey not in cids_map:
+                cids_map[ckey] = [c for c in meta.get("matched_canonical_ids", "").split(",") if c]
+
+    adjusted_nlp_scores: Dict[str, float] = {}
+    net_sims: List[float] = []
+    for ckey, base_s in base_scores.items():
+        net_sim = pro_sim.get(ckey, 0.0) - 0.75 * con_sim.get(ckey, 0.0)
+        net_sims.append(net_sim)
+        adj = max(35.0, min(98.0, round(base_s + net_sim * 32.0, 2)))
+        for cid in cids_map.get(ckey, []):
+            adjusted_nlp_scores[cid] = adj
+
+    dyn_weight, signal_spread = compute_nlp_dynamic_weight(net_sims)
+    return {
+        "adjusted_nlp_scores": adjusted_nlp_scores,
+        "nlp_dynamic_weight": dyn_weight,
+        "signal_spread": signal_spread,
+    }
+
+
 def score_dual_review_vectors(
     pro_res: Optional[Dict[str, Any]],
     con_res: Optional[Dict[str, Any]],
 ) -> Dict[str, float]:
     """Compute net Dual-Vector review similarity adjustment per canonical ID."""
-    pro_sim: Dict[str, float] = {}
-    base_scores: Dict[str, float] = {}
-    cids_map: Dict[str, List[str]] = {}
-    if pro_res and pro_res.get("metadatas") and pro_res.get("distances"):
-        for meta, dist in zip(pro_res["metadatas"][0], pro_res["distances"][0]):
-            ckey = meta["chassis_key"]
-            pro_sim[ckey] = max(0.0, 1.0 - float(dist))
-            base_scores[ckey] = float(meta.get("community_nlp_score", 75.0))
-            cids_map[ckey] = [c for c in meta.get("matched_canonical_ids", "").split(",") if c]
-
-    con_sim: Dict[str, float] = {}
-    if con_res and con_res.get("metadatas") and con_res.get("distances"):
-        for meta, dist in zip(con_res["metadatas"][0], con_res["distances"][0]):
-            ckey = meta["chassis_key"]
-            con_sim[ckey] = max(0.0, 1.0 - float(dist))
-
-    adjusted_nlp_scores: Dict[str, float] = {}
-    for ckey, base_s in base_scores.items():
-        net_sim = pro_sim.get(ckey, 0.0) - 0.75 * con_sim.get(ckey, 0.0)
-        adj = max(35.0, min(98.0, round(base_s + net_sim * 32.0, 2)))
-        for cid in cids_map.get(ckey, []):
-            adjusted_nlp_scores[cid] = adj
-    return adjusted_nlp_scores
+    return score_dual_review_vectors_detailed(pro_res, con_res)["adjusted_nlp_scores"]
 
 
 def compute_semantic_weight_boosts(
@@ -597,12 +890,14 @@ def rank_laptops_topsis(
     require_dgpu: Optional[bool] = None,
     brand_filter: Optional[List[str]] = None,
     custom_weights: Optional[Dict[str, float]] = None,
+    nlp_dynamic_weight: Optional[float] = None,
+    adjusted_nlp_scores: Optional[Dict[str, float]] = None,
     apply_smart_60pct_floor: bool = True,
     min_floor_candidates: int = 5,
     top_k: int = 10,
 ) -> Dict[str, Any]:
-    """Run budget-scoped 10-column TOPSIS ranking with implicit persona gates and smart fallback."""
-    p_key = persona if persona in PERSONA_CONFIGS else "balanced"
+    """Run budget-scoped 14-column TOPSIS ranking with implicit persona gates and smart fallback."""
+    p_key = _resolve_persona_key(persona)
     p_cfg = PERSONA_CONFIGS[p_key]
 
     parsed_prompt = parse_user_text_prompt(user_text_prompt)
@@ -610,18 +905,18 @@ def rank_laptops_topsis(
     w_boosts = parsed_prompt["weight_boosts"]
 
     final_weights_dict = copy.deepcopy(p_cfg["weights"])
-    final_weights_dict.setdefault("community_nlp_score", 0.08)
+    final_weights_dict.setdefault("community_nlp_score", DEFAULT_COMMUNITY_NLP_WEIGHT)
+    if nlp_dynamic_weight is not None:
+        final_weights_dict["community_nlp_score"] = float(nlp_dynamic_weight)
     if custom_weights:
-        for k, v in custom_weights.items():
-            if k in final_weights_dict and v is not None:
-                final_weights_dict[k] = float(v)
-    for k, boost in w_boosts.items():
-        if k in final_weights_dict:
-            final_weights_dict[k] += boost
+        _apply_weight_overrides(final_weights_dict, custom_weights, additive=False)
+    if w_boosts:
+        _apply_weight_overrides(final_weights_dict, w_boosts, additive=True)
 
     w_sum = sum(final_weights_dict.values()) or 1.0
     final_weights_dict = {k: round(v / w_sum, 4) for k, v in final_weights_dict.items()}
     weights_vec = np.array([final_weights_dict[k] for k in TOPSIS_CRITERIA_KEYS], dtype=float)
+    hw_weights_13 = weights_vec[:13]
 
     eff_min_ram = min_ram_gb or ext_filters.get("min_ram_gb")
     eff_min_sto = min_storage_gb or ext_filters.get("min_storage_gb")
@@ -657,6 +952,8 @@ def rank_laptops_topsis(
         s = lap["specs"]
         dm = lap["derived_metrics"]
         if gates.get("require_dgpu") and s["gpu"].get("integrated", True):
+            continue
+        if gates.get("require_nvidia") and not _is_nvidia_gpu(lap):
             continue
         if gates.get("min_vram_gb") and (s["gpu"].get("vram_gb") or 0) < gates["min_vram_gb"]:
             continue
@@ -715,7 +1012,18 @@ def rank_laptops_topsis(
         }
 
     mat = np.array(
-        [[l["derived_metrics"]["topsis_inputs"][k] for k in TOPSIS_CRITERIA_KEYS] for l in scoped_pool],
+        [
+            [
+                _extract_matrix_cell(
+                    l["derived_metrics"]["topsis_inputs"],
+                    k,
+                    l.get("canonical_id", ""),
+                    adjusted_nlp_scores,
+                )
+                for k in TOPSIS_CRITERIA_KEYS
+            ]
+            for l in scoped_pool
+        ],
         dtype=float,
     )
     scores = _run_topsis_vector(mat, weights_vec, IS_BENEFIT_CRITERION)
@@ -723,9 +1031,12 @@ def rank_laptops_topsis(
     ranked_indices = np.argsort(-scores)[:top_k]
     results = []
     for rank_idx, idx in enumerate(ranked_indices, start=1):
-        lap = scoped_pool[int(idx)]
-        score_val = float(scores[int(idx)])
+        row_i = int(idx)
+        lap = scoped_pool[row_i]
+        score_val = float(scores[row_i])
         ti = lap["derived_metrics"]["topsis_inputs"]
+        eff_price = ti.get("effective_price_egp")
+        p_val_score = _compute_persona_value_score(lap, mat[row_i, :13], hw_weights_13, p_key, eff_price)
         why = _build_why_recommended(lap, p_key)
         results.append({
             "rank": rank_idx,
@@ -736,7 +1047,9 @@ def rank_laptops_topsis(
             "title": lap.get("title"),
             "thumbnail_url": lap.get("thumbnail_url"),
             "topsis_match_score": score_val,
-            "effective_price_egp": ti["effective_price_egp"],
+            "persona_value_score": p_val_score,
+            "value_score": ti.get("value_score"),
+            "effective_price_egp": eff_price,
             "cheapest_store": lap.get("cheapest_store"),
             "available_stores": lap.get("available_stores"),
             "prices_by_store": lap.get("prices_by_store"),
@@ -760,36 +1073,46 @@ def rank_laptops_topsis(
 
 
 def apply_persona_scores_to_catalog(catalog: Dict[str, Any]) -> Dict[str, Any]:
-    """Compute and attach static `persona_scores` (`hardware_fit`, `value_fit`) in-place."""
+    """Compute and attach static `persona_scores` (`hardware_fit`, `value_fit`) across all 16 personas."""
     laptops = catalog.get("laptops", [])
     if not laptops:
         return catalog
 
-    hw_keys = TOPSIS_CRITERIA_KEYS[:9]
+    hw_keys = TOPSIS_CRITERIA_KEYS[:13]
     hw_mat = np.array(
-        [[l["derived_metrics"]["topsis_inputs"][k] for k in hw_keys] for l in laptops],
+        [
+            [
+                _extract_matrix_cell(
+                    l["derived_metrics"]["topsis_inputs"],
+                    k,
+                    l.get("canonical_id", ""),
+                    None,
+                )
+                for k in hw_keys
+            ]
+            for l in laptops
+        ],
         dtype=float,
     )
     val_col = np.array(
-        [[l["derived_metrics"]["topsis_inputs"]["value_score"]] for l in laptops],
+        [[float(l["derived_metrics"]["topsis_inputs"].get("value_score") or 50.0)] for l in laptops],
         dtype=float,
     )
     hw_plus_val_mat = np.hstack([hw_mat, val_col])
 
-    for p_key, p_cfg in PERSONA_CONFIGS.items():
-        w_hw = np.array([p_cfg["weights"].get(k, 0.08) for k in hw_keys], dtype=float)
-        w_val = np.array(
-            [p_cfg["weights"].get(k, 0.08) for k in hw_keys]
-            + [p_cfg["weights"]["effective_price_egp"] * 1.5],
-            dtype=float,
-        )
+    for lap in laptops:
+        lap["derived_metrics"]["persona_scores"] = {}
 
-        hw_scores = _run_topsis_vector(hw_mat, w_hw, [True] * 9)
-        val_scores = _run_topsis_vector(hw_plus_val_mat, w_val, [True] * 10)
+    for p_key, p_cfg in PERSONA_CONFIGS.items():
+        w_hw_list = [p_cfg["weights"].get(k, DEFAULT_COMMUNITY_NLP_WEIGHT) for k in hw_keys]
+        w_hw = np.array(w_hw_list, dtype=float)
+        w_val = np.array(w_hw_list + [p_cfg["weights"]["effective_price_egp"] * 1.5], dtype=float)
+
+        hw_scores = _run_topsis_vector(hw_mat, w_hw, [True] * 13)
+        val_scores = _run_topsis_vector(hw_plus_val_mat, w_val, [True] * 14)
 
         for i, lap in enumerate(laptops):
-            ps = lap["derived_metrics"].setdefault("persona_scores", {})
-            ps[p_key] = {
+            lap["derived_metrics"]["persona_scores"][p_key] = {
                 "hardware_fit": float(hw_scores[i]),
                 "value_fit": float(val_scores[i]),
             }
