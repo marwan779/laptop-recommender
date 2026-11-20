@@ -3,13 +3,10 @@ import {
   Gamepad2,
   Code2,
   Palette,
-  BarChart3,
-  Briefcase,
   GraduationCap,
   Scale,
   Filter,
   Check,
-  Layers,
   SlidersHorizontal,
   ChevronDown,
   ChevronUp,
@@ -26,13 +23,18 @@ import {
 } from 'lucide-react'
 import type { MetricFilterKey, PersonaType } from '../types/api'
 import { METRIC_FILTER_DEFS } from '../config/metricFilters'
+import {
+  PERSONA_CATEGORIES,
+  findCategoryForPersona,
+  type PersonaCategoryId,
+} from '../config/personas'
 import { MetricSlider } from './MetricSlider'
 
 interface BudgetPersonaBarProps {
   budget: number
   onBudgetChange: (val: number) => void
-  selectedPersonas: PersonaType[]
-  onTogglePersona: (p: PersonaType) => void
+  selectedPersona: PersonaType
+  onSelectPersona: (p: PersonaType) => void
   promptText: string
   onPromptChange: (text: string) => void
   minRam: number | null
@@ -55,73 +57,13 @@ interface BudgetPersonaBarProps {
   onCancel?: () => void
 }
 
-interface PersonaOption {
-  id: PersonaType
-  icon: React.ReactNode
-  labelAr: string
-  labelEn: string
-  descAr: string
-  descEn: string
+const CATEGORY_ICONS: Record<PersonaCategoryId, React.ReactNode> = {
+  balanced: <Scale className="w-5 h-5" strokeWidth={1.8} />,
+  daily: <GraduationCap className="w-5 h-5" strokeWidth={1.8} />,
+  tech: <Code2 className="w-5 h-5" strokeWidth={1.8} />,
+  gaming: <Gamepad2 className="w-5 h-5" strokeWidth={1.8} />,
+  creative: <Palette className="w-5 h-5" strokeWidth={1.8} />,
 }
-
-const PERSONAS: PersonaOption[] = [
-  {
-    id: 'student_and_office',
-    icon: <GraduationCap className="w-5 h-5" strokeWidth={1.8} />,
-    labelAr: 'دراسة وأوفيس',
-    labelEn: 'Study & Office',
-    descAr: 'مذاكرة، وورد وإكسل، ومحاضرات أونلاين',
-    descEn: 'Lectures, Word, Excel and everyday homework',
-  },
-  {
-    id: 'business_and_mobility',
-    icon: <Briefcase className="w-5 h-5" strokeWidth={1.8} />,
-    labelAr: 'شغل وتنقل',
-    labelEn: 'Work & Travel',
-    descAr: 'خفيف للشنطة وبطارية تكفي يومك',
-    descEn: 'Light to carry with all-day battery',
-  },
-  {
-    id: 'programming',
-    icon: <Code2 className="w-5 h-5" strokeWidth={1.8} />,
-    labelAr: 'برمجة وتطوير',
-    labelEn: 'Programming',
-    descAr: 'كود ومحررات وبرامج تشتغل ساعات طويلة',
-    descEn: 'Code editors and long compile sessions',
-  },
-  {
-    id: 'gaming',
-    icon: <Gamepad2 className="w-5 h-5" strokeWidth={1.8} />,
-    labelAr: 'ألعاب',
-    labelEn: 'Gaming',
-    descAr: 'ألعاب حديثة بجرافيكس قوي وشاشة سريعة',
-    descEn: 'Modern games with strong graphics',
-  },
-  {
-    id: 'content_creation',
-    icon: <Palette className="w-5 h-5" strokeWidth={1.8} />,
-    labelAr: 'تصميم ومونتاج',
-    labelEn: 'Design & Editing',
-    descAr: 'فوتوشوب، مونتاج، وألوان شاشة دقيقة',
-    descEn: 'Photo, video and colour-accurate work',
-  },
-  {
-    id: 'ai_and_game_dev',
-    icon: <BarChart3 className="w-5 h-5" strokeWidth={1.8} />,
-    labelAr: 'ذكاء اصطناعي وتطوير ألعاب',
-    labelEn: 'AI & Game Dev',
-    descAr: 'تدريب موديلات وتطوير ألعاب و3D',
-    descEn: 'Model training, 3D and game development',
-  },
-  {
-    id: 'balanced',
-    icon: <Scale className="w-5 h-5" strokeWidth={1.8} />,
-    labelAr: 'كل حاجة شوية',
-    labelEn: 'A Bit of Everything',
-    descAr: 'توازن بين السعر والأداء والاعتمادية',
-    descEn: 'A balanced mix of price and performance',
-  },
-]
 
 const BUDGET_PRESETS = [25000, 35000, 50000, 70000, 100000]
 const AVAILABLE_BRANDS = ['ASUS', 'Lenovo', 'HP', 'Dell', 'Apple', 'Acer', 'MSI', 'Gigabyte']
@@ -147,8 +89,8 @@ const GPU_OPTIONS = [
 export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
   budget,
   onBudgetChange,
-  selectedPersonas,
-  onTogglePersona,
+  selectedPersona,
+  onSelectPersona,
   promptText,
   onPromptChange,
   minRam,
@@ -295,67 +237,97 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
         </div>
       </section>
 
-      {/* Step 2 — Usage */}
-      <section className="space-y-2.5 pt-5 border-t border-[var(--border-subtle)]">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <span className="micro block">{isAr ? 'الخطوة 2' : 'STEP 2'}</span>
-            <h2 className="font-display text-[18px] font-semibold text-[var(--text-primary)]">
-              {isAr ? 'هتستخدمه في إيه؟' : 'What will you use it for?'}
-            </h2>
-          </div>
-
-          {selectedPersonas.length > 1 && (
-            <span className="ai-chip">
-              <Layers className="w-3 h-3" strokeWidth={1.8} />
-              <span>
-                {isAr
-                  ? `تم دمج ${selectedPersonas.length} استخدامات`
-                  : `${selectedPersonas.length} uses blended`}
-              </span>
-            </span>
-          )}
+      {/* Step 2 — Usage (2-Level Category + Sub-Persona Picker) */}
+      <section className="space-y-3 pt-5 border-t border-[var(--border-subtle)]">
+        <div>
+          <span className="micro block">{isAr ? 'الخطوة 2' : 'STEP 2'}</span>
+          <h2 className="font-display text-[18px] font-semibold text-[var(--text-primary)]">
+            {isAr ? 'هتستخدمه في إيه؟' : 'What will you use it for?'}
+          </h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5">
-          {PERSONAS.map((p) => {
-            const isSelected = selectedPersonas.includes(p.id)
-            return (
-              <button
-                key={p.id}
-                type="button"
-                aria-pressed={isSelected}
-                onClick={() => onTogglePersona(p.id)}
-                className={`relative text-start rounded-[10px] border p-3 min-h-[104px] transition-colors ${
-                  isSelected
-                    ? 'border-[var(--gold)] bg-[var(--gold-dim)]'
-                    : 'border-[var(--border-subtle)] bg-[var(--bg-raised)] hover:border-[var(--border-strong)]'
-                }`}
-              >
-                <span
-                  className={`inline-flex items-center justify-center w-8 h-8 rounded-[8px] mb-2 ${
-                    isSelected
-                      ? 'bg-[var(--gold-dim)] text-[var(--gold-bright)]'
-                      : 'bg-[var(--bg-input)] text-[var(--text-secondary)]'
-                  }`}
-                >
-                  {p.icon}
-                </span>
-                <span className="block text-[13px] font-semibold text-[var(--text-primary)]">
-                  {isAr ? p.labelAr : p.labelEn}
-                </span>
-                <span className="block mt-0.5 text-[11.5px] leading-[1.5] text-[var(--text-muted)] line-clamp-2">
-                  {isAr ? p.descAr : p.descEn}
-                </span>
-                {isSelected && (
-                  <span className="absolute top-2 end-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--gold-cta)] text-[var(--text-inverse)]">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
+        {(() => {
+          const activeCategory = findCategoryForPersona(selectedPersona)
+          const activeSub = activeCategory.subOptions.find((s) => s.id === selectedPersona)
+          return (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                {PERSONA_CATEGORIES.map((cat) => {
+                  const isSelected = activeCategory.id === cat.id
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => onSelectPersona(cat.defaultPersona)}
+                      className={`relative text-start rounded-[10px] border p-3 min-h-[100px] transition-colors ${
+                        isSelected
+                          ? 'border-[var(--gold)] bg-[var(--gold-dim)]'
+                          : 'border-[var(--border-subtle)] bg-[var(--bg-raised)] hover:border-[var(--border-strong)]'
+                      }`}
+                    >
+                      <span
+                        className={`inline-flex items-center justify-center w-8 h-8 rounded-[8px] mb-2 ${
+                          isSelected
+                            ? 'bg-[var(--gold-dim)] text-[var(--gold-bright)]'
+                            : 'bg-[var(--bg-input)] text-[var(--cyan)]'
+                        }`}
+                      >
+                        {CATEGORY_ICONS[cat.id]}
+                      </span>
+                      <span className="block text-[13px] font-semibold text-[var(--text-primary)]">
+                        {isAr ? cat.labelAr : cat.labelEn}
+                      </span>
+                      <span className="block mt-0.5 text-[11.5px] leading-[1.45] text-[var(--text-muted)] line-clamp-2">
+                        {isAr ? cat.descAr : cat.descEn}
+                      </span>
+                      {isSelected && (
+                        <span className="absolute top-2 end-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--gold-cta)] text-[var(--text-inverse)]">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {activeCategory.subOptions.length > 0 && (
+                <div className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-input)] p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-[11.5px] font-semibold text-[var(--text-secondary)]">
+                      {isAr ? 'تخصص الاستخدام:' : 'Specialize your focus:'}
+                    </span>
+                    {activeSub && (
+                      <span dir="auto" className="text-[11.5px] text-[var(--text-muted)]">
+                        {isAr ? activeSub.hintAr : activeSub.hintEn}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {activeCategory.subOptions.map((sub) => {
+                      const isSubSelected = selectedPersona === sub.id
+                      return (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          aria-pressed={isSubSelected}
+                          onClick={() => onSelectPersona(sub.id)}
+                          className={`min-h-[40px] rounded-full border px-3.5 py-2 text-[12px] font-medium transition-colors ${
+                            isSubSelected
+                              ? 'border-[var(--gold)] bg-[var(--gold-dim)] text-[var(--gold-bright)] font-semibold'
+                              : 'border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]'
+                          }`}
+                        >
+                          {isAr ? sub.labelAr : sub.labelEn}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )
+        })()}
       </section>
 
       {/* Step 3 — Dealbreakers & note */}

@@ -3,13 +3,22 @@
  */
 
 export type PersonaType =
+  | 'balanced'
   | 'gaming'
-  | 'ai_and_game_dev'
-  | 'programming'
-  | 'content_creation'
-  | 'student_and_office'
-  | 'business_and_mobility'
-  | 'balanced';
+  | 'gaming_esports'
+  | 'gaming_aaa'
+  | 'gaming_budget'
+  | 'creative'
+  | 'creative_video'
+  | 'creative_2d_photo'
+  | 'creative_3d_cad_gamedev'
+  | 'tech'
+  | 'tech_ai_ml'
+  | 'tech_web_mobile'
+  | 'tech_cyber_vms'
+  | 'daily_student'
+  | 'daily_business'
+  | 'daily_office';
 
 export type RecommendationStatus =
   | 'OK'                              // Ideal candidates found within budget
@@ -27,10 +36,18 @@ export interface ReviewAspectScores {
 export interface TopsisInputs {
   cpu_score: number | null;
   gpu_score: number | null;
+  gpu_compute_score?: number | null;
+  vram_score?: number | null;
   power_therm_score: number | null;
   display_score: number | null;
+  display_gaming_score?: number | null;
+  display_creator_score?: number | null;
   mobility_score: number | null;
+  battery_score?: number | null;
+  portability_score?: number | null;
   longevity_score: number | null;
+  upgradeability_score?: number | null;
+  build_quality_score?: number | null;
   ergonomics_score: number | null;
   connectivity_score: number | null;
   community_nlp_score: number | null;
@@ -90,6 +107,7 @@ export interface RankedLaptop {
   title: string;
   thumbnail_url: string;
   topsis_match_score: number;                 // 0.0 - 100.0 Relative Closeness
+  persona_value_score?: number | null;        // Calibrated persona value [15.0, 97.5]
   effective_price_egp: number;
   cheapest_store: string;
   cheapest_offer_url: string;
