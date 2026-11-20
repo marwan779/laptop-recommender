@@ -150,6 +150,9 @@ class GpuSpecDetail(BaseModel):
     integrated: bool = False
     ai_tops: int | None = None
     igpu_model: str | None = None
+    native_base_max_tgp_w: int | None = None
+    native_max_tgp_w: int | None = None
+    tgp_utilization_pct: int | None = None
 
 
 class MemorySpecDetail(BaseModel):

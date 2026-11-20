@@ -13,12 +13,11 @@ import {
   Maximize2,
   CheckCircle,
   XCircle,
-  Sparkles,
+  Tag,
   Layers,
   Award,
   Zap,
   Feather,
-  Wrench,
   Gauge,
   SlidersHorizontal,
   ChevronDown,
@@ -35,21 +34,19 @@ import type {
   ReviewSourceDetail,
 } from '../types/api'
 import { fetchLaptopDetail } from '../services/api'
+import {
+  getDisplayTierInfo,
+  getPortabilityTierInfo,
+  getSiliconTierInfo,
+  getUpgradeabilityTierInfo,
+  type TierInfo,
+} from '../utils/hardwareTiers'
 import { PriceHistoryChart } from './PriceHistoryChart'
 
 interface LaptopDetailModalProps {
   laptop: RankedLaptop | CatalogListItem | null
   onClose: () => void
   lang: 'ar' | 'en'
-}
-
-interface TierInfo {
-  category: string
-  title: string
-  subtitle: string
-  /** Tier key colour used only for the 2px left bar and the icon. */
-  key: string
-  icon: React.ReactNode
 }
 
 function formatVerificationTime(isoStr: string | null | undefined, isAr: boolean): string {
@@ -200,7 +197,7 @@ function ReviewSourceCard({ src, href, isAr }: ReviewSourceCardProps) {
               className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
             />
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#0A0E13]/25">
-              <span className="w-7 h-7 rounded-full bg-[#0A0E13]/80 border border-white/15 flex items-center justify-center text-[var(--text-primary)] group-hover:border-[var(--gold)] group-hover:text-[var(--gold-bright)]">
+              <span className="w-7 h-7 rounded-full bg-[#0A0E13]/80 border border-white/15 flex items-center justify-center text-white group-hover:border-[var(--gold)] group-hover:text-[var(--gold-bright)]">
                 <Play className="w-3.5 h-3.5 fill-current ms-0.5" />
               </span>
             </div>
@@ -266,101 +263,6 @@ function ReviewSourceCard({ src, href, isAr }: ReviewSourceCardProps) {
   )
 }
 
-function getSiliconTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
-  const key = (raw || '').toUpperCase().trim()
-  if (!key) return null
-  if (key.includes('EXPLICIT') || key.includes('HIGH') || key.includes('CAPPED')) {
-    return {
-      category: isAr ? 'فئة المعالجة والتبريد' : 'Thermal & Compute Tier',
-      title: isAr ? 'أداء عالٍ ومستقر (TDP كامل)' : 'High-Power Uncapped Chassis',
-      subtitle: isAr ? 'تبريد مخصص يسمح للمعالج وكارت الشاشة بالعمل بكامل طاقتهم' : 'Dedicated cooling allows max sustained power',
-      key: 'var(--tier-thermal)',
-      icon: <Zap className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  if (key.includes('INTEGRATED') || key.includes('SOC') || key.includes('ENTRY')) {
-    return {
-      category: isAr ? 'فئة المعالجة والتبريد' : 'Thermal & Compute Tier',
-      title: isAr ? 'معالجة موفرة واقتصادية (iGPU)' : 'Efficiency SoC (iGPU)',
-      subtitle: isAr ? 'استهلاك طاقة منخفض وعمر بطارية أطول للدراسة والعمل اليومي' : 'Low power draw & extended battery life for daily work',
-      key: 'var(--tier-thermal)',
-      icon: <Cpu className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  return null
-}
-
-function getDisplayTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
-  const key = (raw || '').toLowerCase()
-  if (!key) return null
-  if (key.includes('100% srgb') || key.includes('creator') || key.includes('dci-p3') || key.includes('oled')) {
-    return {
-      category: isAr ? 'فئة الشاشة والألوان' : 'Display Quality Tier',
-      title: isAr ? 'شاشة احترافية دقيقة الألوان (100% sRGB)' : 'Creator Accurate (100% sRGB)',
-      subtitle: isAr ? 'تغطية لونية متكاملة ممتازة للتصميم والمونتاج وإنتاج المحتوى' : 'Vibrant color accuracy ideal for editing & media',
-      key: 'var(--tier-display)',
-      icon: <Monitor className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  if (key.includes('45%') || key.includes('basic') || key.includes('ntsc')) {
-    return {
-      category: isAr ? 'فئة الشاشة والألوان' : 'Display Quality Tier',
-      title: isAr ? 'شاشة قياسية للأعمال والدراسة (45% NTSC)' : 'Standard Display (45% NTSC)',
-      subtitle: isAr ? 'ألوان قياسية مريحة مناسبة للبرمجة والقراءة والأوفيس' : 'Standard gamut suitable for code & office tasks',
-      key: 'var(--tier-display)',
-      icon: <Monitor className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  return null
-}
-
-function getPortabilityTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
-  const key = (raw || '').toUpperCase()
-  if (!key) return null
-  if (key.includes('ULTRA') || key.includes('LIGHT')) {
-    return {
-      category: isAr ? 'التنقل والوزن' : 'Mobility & Weight Tier',
-      title: isAr ? 'خفيف جداً ونحيف للتنقل (< 1.6 كجم)' : 'Ultra-Portable (< 1.6kg)',
-      subtitle: isAr ? 'تصميم فائق النحافة يسهل حمله في أي حقيبة طوال اليوم' : 'Ultra-slim chassis designed for effortless mobility',
-      key: 'var(--tier-mobility)',
-      icon: <Feather className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  if (key.includes('DESKTOP') || key.includes('HEAVY')) {
-    return {
-      category: isAr ? 'التنقل والوزن' : 'Mobility & Weight Tier',
-      title: isAr ? 'بديل مكتبي للأداء الثابت (> 2.4 كجم)' : 'Desktop Replacement (> 2.4kg)',
-      subtitle: isAr ? 'شاسيه أثقل مصمم للثبات والتبريد العالي على المكتب' : 'Heavier chassis built for sustained gaming power',
-      key: 'var(--tier-mobility)',
-      icon: <Feather className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  return null
-}
-
-function getUpgradeabilityTierInfo(raw: string | undefined | null, isAr: boolean): TierInfo | null {
-  const key = (raw || '').toUpperCase()
-  if (!key) return null
-  if (key.includes('MAXIMUM') || key.includes('HIGH') || key.includes('DUAL')) {
-    return {
-      category: isAr ? 'قابلية الترقية المستقبلية' : 'Future Expansion Tier',
-      title: isAr ? 'ترقية قصوى (فتحتان RAM + منفذان SSD)' : 'Dual RAM & Dual SSD Slots',
-      subtitle: isAr ? 'سهولة تامة في مضاعفة الرامات وسعة التخزين مستقبلاً' : 'Full headroom to expand both memory & storage later',
-      key: 'var(--tier-expansion)',
-      icon: <Wrench className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  if (key.includes('LOCKED') || key.includes('SOLDERED')) {
-    return {
-      category: isAr ? 'قابلية الترقية المستقبلية' : 'Future Expansion Tier',
-      title: isAr ? 'ذاكرة مدمجة غير قابلة للزيادة' : 'Soldered / Locked RAM',
-      subtitle: isAr ? 'الرامات ملحومة باللوحة الأم، الترقية محصورة في وحدة التخزين' : 'Memory is soldered; expansion limited to SSD slot',
-      key: 'var(--tier-expansion)',
-      icon: <Wrench className="w-4 h-4" strokeWidth={1.8} />,
-    }
-  }
-  return null
-}
 
 export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
   laptop,
@@ -372,15 +274,33 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
   const [loading, setLoading] = useState(false)
   const [showAllScores, setShowAllScores] = useState(false)
   const [expandedSourcesForId, setExpandedSourcesForId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'prices' | 'reviews' | 'specs' | 'score'>('prices')
+  const laptopId = laptop?.canonical_id
 
   useEffect(() => {
-    if (!laptop) return
+    if (!laptopId) return
     setLoading(true)
-    fetchLaptopDetail(laptop.canonical_id)
+    setDetail(null)
+    fetchLaptopDetail(laptopId)
       .then((data) => setDetail(data))
       .catch((err) => console.error('Error fetching detail:', err))
       .finally(() => setLoading(false))
-  }, [laptop])
+  }, [laptopId])
+
+  useEffect(() => {
+    if (!laptopId) return
+    setActiveTab('prices')
+    setExpandedSourcesForId(null)
+  }, [laptopId])
+
+  useEffect(() => {
+    if (!laptop) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [laptop, onClose])
 
   if (!laptop) return null
 
@@ -435,13 +355,13 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
     { labelAr: 'قوة المعالج (CPU)', labelEn: 'CPU Benchmark', score: m?.cpu_score != null ? Number(m.cpu_score) : null, icon: <Cpu className="w-3.5 h-3.5" strokeWidth={1.8} /> },
     { labelAr: 'أداء الجرافيكس (GPU)', labelEn: 'GPU 3D Gaming', score: m?.gpu_score != null ? Number(m.gpu_score) : null, icon: <Monitor className="w-3.5 h-3.5" strokeWidth={1.8} /> },
     { labelAr: 'جودة وسرعة الشاشة', labelEn: 'Display Quality', score: m?.display_score != null ? Number(m.display_score) : null, icon: <Maximize2 className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'القيمة مقابل السعر', labelEn: 'Value for Money', score: m?.value_score != null ? Number(m.value_score) : null, icon: <Sparkles className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'القيمة مقابل السعر', labelEn: 'Value for Money', score: m?.value_score != null ? Number(m.value_score) : null, icon: <Tag className="w-3.5 h-3.5" strokeWidth={1.8} /> },
     { labelAr: 'استقرار الطاقة والتبريد', labelEn: 'Sustained Power & Thermals', score: m?.power_therm_score != null ? Number(m.power_therm_score) : null, icon: <Zap className="w-3.5 h-3.5" strokeWidth={1.8} /> },
     { labelAr: 'سهولة التنقل والوزن', labelEn: 'Mobility & Battery Wh', score: m?.mobility_score != null ? Number(m.mobility_score) : null, icon: <Feather className="w-3.5 h-3.5" strokeWidth={1.8} /> },
     { labelAr: 'المنافذ والاتصال', labelEn: 'I/O & Connectivity', score: m?.connectivity_score != null ? Number(m.connectivity_score) : null, icon: <Layers className="w-3.5 h-3.5" strokeWidth={1.8} /> },
     { labelAr: 'عمر الشاسيه وقابلية الترقية', labelEn: 'Chassis Longevity', score: m?.longevity_score != null ? Number(m.longevity_score) : null, icon: <ShieldCheck className="w-3.5 h-3.5" strokeWidth={1.8} /> },
     { labelAr: 'الراحة والكيبورد (Ergonomics)', labelEn: 'Ergonomics & Typing', score: m?.ergonomics_score != null ? Number(m.ergonomics_score) : null, icon: <Gauge className="w-3.5 h-3.5" strokeWidth={1.8} /> },
-    { labelAr: 'تجارب المستخدمين الفعلية', labelEn: 'Community NLP Sentiment', score: m?.community_nlp_score != null ? Number(m.community_nlp_score) : null, icon: <Award className="w-3.5 h-3.5" strokeWidth={1.8} /> },
+    { labelAr: 'تجارب المستخدمين الفعلية', labelEn: 'Real Owner Sentiment', score: m?.community_nlp_score != null ? Number(m.community_nlp_score) : null, icon: <Award className="w-3.5 h-3.5" strokeWidth={1.8} /> },
   ]
 
   const review5Aspects = [
@@ -456,8 +376,14 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
     score >= 85 ? 't-gold' : score < 50 ? 't-danger' : 't-primary'
 
   return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="modal-frame">
+    <div
+      className="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onClick={onClose}
+    >
+      <div className="modal-frame max-h-[92vh] sm:max-h-[88vh]" onClick={(event) => event.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
           <div className="min-w-0">
@@ -469,7 +395,7 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               {detail?.color && <span className="mpn-chip">{detail.color}</span>}
               {detail?.form_factor && <span className="mpn-chip">{detail.form_factor}</span>}
             </div>
-            <h2 className="font-display text-[17px] sm:text-[19px] font-semibold text-[var(--text-primary)] leading-snug line-clamp-2">
+            <h2 dir="auto" className="font-display text-[17px] sm:text-[19px] font-semibold text-[var(--text-primary)] leading-snug line-clamp-2">
               {title}
             </h2>
           </div>
@@ -483,18 +409,47 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
           </button>
         </div>
 
+        {/* Workbench tabs */}
+        <div className="modal-tabs" role="tablist" aria-label={isAr ? 'أقسام التفاصيل' : 'Detail sections'}>
+          {(
+            [
+              { key: 'prices', ar: 'الأسعار والمتاجر', en: 'Prices & stores', shortAr: 'الأسعار', shortEn: 'Prices' },
+              { key: 'reviews', ar: 'المراجعات والتنازلات', en: 'Reviews & tradeoffs', shortAr: 'المراجعات', shortEn: 'Reviews' },
+              { key: 'specs', ar: 'المواصفات الكاملة', en: 'Full specs', shortAr: 'المواصفات', shortEn: 'Specs' },
+              { key: 'score', ar: 'تحليل التقييم', en: 'Score breakdown', shortAr: 'التقييم', shortEn: 'Score' },
+            ] as const
+          ).map((tabDef) => (
+            <button
+              key={tabDef.key}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tabDef.key}
+              aria-label={isAr ? tabDef.ar : tabDef.en}
+              title={isAr ? tabDef.ar : tabDef.en}
+              onClick={() => setActiveTab(tabDef.key)}
+              className="modal-tab"
+            >
+              {isAr ? tabDef.shortAr : tabDef.shortEn}
+            </button>
+          ))}
+        </div>
+
         {/* Scrollable content */}
         <div className="modal-body">
+          {activeTab === 'prices' && (
+            <>
           {/* Top grid: studio well & pricing comparison */}
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-5">
             <div className="sm:col-span-5 studio-well w-full">
-              <img
-                src={laptop.thumbnail_url}
-                alt={title}
-                onError={(e) => {
-                  ;(e.target as HTMLElement).style.display = 'none'
-                }}
-              />
+              {(detail?.thumbnail_url || laptop.thumbnail_url) && (
+                <img
+                  src={detail?.thumbnail_url || laptop.thumbnail_url}
+                  alt={title}
+                  onError={(e) => {
+                    ;(e.target as HTMLElement).style.display = 'none'
+                  }}
+                />
+              )}
             </div>
 
             <div className="sm:col-span-7 flex flex-col justify-between gap-4 min-w-0">
@@ -505,7 +460,7 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                 <div className="flex items-baseline gap-2 flex-wrap mt-1">
                   <span className="font-display font-bold text-[28px] leading-tight text-[var(--gold-bright)] num">
                     {effectivePrice > 0
-                      ? effectivePrice.toLocaleString()
+                      ? effectivePrice.toLocaleString('en-US')
                       : isAr
                       ? 'السعر عند الطلب'
                       : 'Price on request'}
@@ -515,10 +470,13 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                       {isAr ? 'ج.م' : 'EGP'}
                     </span>
                   )}
-                  <span className="text-[12px] font-medium text-[var(--text-secondary)]">
-                    (@ {cheapestStore})
-                  </span>
                 </div>
+                {cheapestStore && (
+                  <p className="text-[12px] font-medium text-[var(--text-secondary)] mt-0.5">
+                    {isAr ? 'أقل سعر في:' : 'Lowest at:'}{' '}
+                    <strong className="text-[var(--text-primary)]">{cheapestStore}</strong>
+                  </p>
+                )}
 
                 {/* Live verification */}
                 <div className="flex items-center flex-wrap gap-2">
@@ -533,8 +491,8 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                   {priceSpread > 0 && (
                     <span className="ai-chip !mt-2.5">
                       {isAr
-                        ? `وفر ${priceSpread.toLocaleString()} ج.م مقارنة بأعلى متجر`
-                        : `Save ${priceSpread.toLocaleString()} EGP vs highest store`}
+                        ? `وفر ${priceSpread.toLocaleString('en-US')} ج.م مقارنة بأعلى متجر`
+                        : `Save ${priceSpread.toLocaleString('en-US')} EGP vs highest store`}
                     </span>
                   )}
                 </div>
@@ -568,7 +526,7 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                         )}
                         <span className="rprice num">
                           {off.price_egp > 0
-                            ? `${off.price_egp.toLocaleString()} `
+                            ? `${off.price_egp.toLocaleString('en-US')} `
                             : isAr
                             ? 'عند الطلب'
                             : 'Request'}
@@ -601,7 +559,11 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
           <div className="tile-block">
             <PriceHistoryChart laptopId={laptop.canonical_id} lang={lang} />
           </div>
+            </>
+          )}
 
+          {activeTab === 'specs' && (
+            <>
           {/* Operational tiers — omitted entirely when no tier is classified */}
           {activeTiers.length > 0 && (
             <div className="tile-block space-y-3">
@@ -1052,20 +1014,35 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
             )}
           </div>
 
-          {/* Full 15 performance scores (progressive toggle) */}
+            </>
+          )}
+
+          {activeTab === 'score' && (
+            <>
+          {/* Score breakdown explanation */}
+          <div className="tile-block space-y-1.5">
+            <h4 className="label">{isAr ? 'إزاي بنحسب نسبة التطابق؟' : 'How is the match score calculated?'}</h4>
+            <p dir="auto" className="text-[12.5px] leading-[1.7] text-[var(--text-secondary)]">
+              {isAr
+                ? 'كل جهاز بياخد درجة من 100 في 10 معايير: المعالج، كارت الشاشة، التبريد والطاقة، الشاشة، سهولة التنقل، عمر الشاسيه والترقية، الراحة والكيبورد، المنافذ، تجارب المستخدمين، والقيمة مقابل السعر. بعدين بنوزن المعايير حسب الاستخدام اللي اخترته — مثلاً الألعاب بتدي وزن أكبر لكارت الشاشة والتبريد، والدراسة بتدي وزن أكبر للبطارية والسعر. النسبة النهائية هي مدى قرب الجهاز من أفضل خيار ممكن داخل ميزانيتك.'
+                : 'Every laptop receives 0–100 scores across 10 inputs: CPU, GPU, sustained power & thermals, display, mobility, chassis longevity & upgradability, ergonomics, connectivity, real owner sentiment, and value for money. Those inputs are weighted by the use cases you picked — gaming leans on GPU and thermals, study leans on battery and price. The final percentage reflects how close the laptop sits to the best possible package inside your budget.'}
+            </p>
+          </div>
+
+          {/* Full 15 performance scores (benchmarks + reviews) */}
           <div className="tile-block space-y-3">
             <button
               type="button"
               onClick={() => setShowAllScores(!showAllScores)}
               className="collapse-toggle"
-              aria-expanded={showAllScores}
+              aria-expanded={showAllScores || activeTab === 'score'}
             >
               <span className="ct-left">
                 <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={1.8} />
                 <span>
                   {isAr
-                    ? 'لوحة مؤشرات الأداء والتقييم الـ 15 الكاملة (TOPSIS & Reviews)'
-                    : 'Full 15-Dimension Scorecard (TOPSIS & Reviews)'}
+                    ? 'كل معايير التقييم الـ 15 (أداء + مراجعات)'
+                    : 'All 15 scoring dimensions (benchmarks + reviews)'}
                 </span>
               </span>
               <span className="ct-state">
@@ -1080,14 +1057,14 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               </span>
             </button>
 
-            {showAllScores && (
+            {(showAllScores || activeTab === 'score') && (
               <div className="space-y-5">
                 {/* 10 TOPSIS decision criteria */}
                 <div>
                   <span className="micro block mb-2.5">
                     {isAr
-                      ? 'المعايير الهندسية والعتاد الـ 10 (TOPSIS)'
-                      : '10 Hardware Decision Criteria (TOPSIS)'}
+                      ? 'المعايير الـ 10 اللي بتحدد نسبة التطابق'
+                      : 'The 10 inputs behind your match score'}
                   </span>
                   <div className="criteria-grid">
                     {topsis10Scores.map((sc, i) => (
@@ -1172,11 +1149,51 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
             )}
           </div>
 
+            </>
+          )}
+
+          {activeTab === 'reviews' && (
+            <>
+          {/* 5 real-world review aspects */}
+          <div className="tile-block space-y-3">
+            <h4 className="label flex items-center gap-1.5">
+              <Video className="w-3.5 h-3.5 text-[var(--text-secondary)]" strokeWidth={1.8} />
+              <span>{isAr ? 'تجارب المستخدمين الحقيقية (من 100)' : 'Real-world owner experience (out of 100)'}</span>
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+              {review5Aspects.map((asp, i) => (
+                <div key={i} className="bar-row">
+                  <div className="bar-head">
+                    <span className="blabel truncate">
+                      <span className="truncate">{isAr ? asp.labelAr : asp.labelEn}</span>
+                    </span>
+                    {asp.score != null ? (
+                      <span className={`bval num ${scoreTone(asp.score)}`}>
+                        {asp.score.toFixed(0)}
+                        <small>/100</small>
+                      </span>
+                    ) : (
+                      <span className="bval num text-[var(--text-muted)]">-</span>
+                    )}
+                  </div>
+                  <div className="bar-track">
+                    <span className="tick" style={{ left: '50%' }} />
+                    <span className="tick" style={{ left: '80%' }} />
+                    <div
+                      className="bar-fill"
+                      style={{ width: asp.score != null ? `${Math.min(100, Math.max(0, asp.score))}%` : '0%' }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Pro & cons */}
           {(pros.length > 0 || cons.length > 0) && (
             <div className="tile-block space-y-3">
               <h4 className="label flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
+                <MessageSquare className="w-3.5 h-3.5 text-[var(--cyan)]" strokeWidth={1.8} />
                 <span>
                   {isAr ? 'خلاصة تقييمات وتجارب المستخدمين' : 'Real User & Review Insights'}
                 </span>
@@ -1251,8 +1268,8 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                 </h4>
                 <span className="ai-chip tabular-nums">
                   {isAr
-                    ? `NLP • ${reviewSources.length} مصادر`
-                    : `NLP • ${reviewSources.length} sources`}
+                    ? `${reviewSources.length} مصادر موثقة`
+                    : `${reviewSources.length} verified sources`}
                 </span>
               </div>
 
@@ -1298,6 +1315,8 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               )}
             </div>
           )}
+            </>
+          )}
         </div>
 
         {/* Modal sticky footer CTA */}
@@ -1315,7 +1334,7 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               className="btn btn-primary btn-sm"
             >
               <span>
-                {isAr ? `شراء من ${cheapestStore}` : `Buy from ${cheapestStore}`}
+                {isAr ? `شوف العرض في ${cheapestStore}` : `View offer at ${cheapestStore}`}
               </span>
               <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
             </a>

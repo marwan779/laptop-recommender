@@ -19,6 +19,7 @@ from app.common.cache.provider import ICacheProvider
 from app.common.cursor import InvalidCursorError, decode_cursor, encode_cursor
 from app.common.logger import get_logger
 from app.common.review_text import align_bilingual_lists
+from app.domain.gpu_power_policy import evaluate_gpu_tgp, inject_gpu_tgp_warning
 from app.domain.pricing import (
     OfferCurrentState,
     PriceHistoryDomainService,
@@ -807,6 +808,11 @@ class CatalogQueryService:
         lap_dict = to_recommender_dict(laptop)
         reasons = build_why_recommended(lap_dict, "balanced")
 
+        gpu_eval = evaluate_gpu_tgp(laptop.gpu_model, bool(laptop.gpu_integrated), laptop.gpu_tdp_w)
+        orm_pros_en, orm_pros_ar = align_bilingual_lists(laptop.pros_en, laptop.pros_ar)
+        orm_cons_en, orm_cons_ar = align_bilingual_lists(laptop.cons_en, laptop.cons_ar)
+        orm_cons_en, orm_cons_ar = inject_gpu_tgp_warning(orm_cons_en, orm_cons_ar, gpu_eval)
+
         return FullLaptopDetailResponse(
             id=str(laptop.id),
             canonical_id=laptop.canonical_id,
@@ -862,6 +868,9 @@ class CatalogQueryService:
                 integrated=bool(laptop.gpu_integrated),
                 ai_tops=laptop.gpu_ai_tops,
                 igpu_model=laptop.gpu_igpu_model,
+                native_base_max_tgp_w=gpu_eval.native_base_max_w,
+                native_max_tgp_w=gpu_eval.native_max_w,
+                tgp_utilization_pct=gpu_eval.tgp_utilization_pct,
             ),
             memory=MemorySpecDetail(
                 capacity_gb=laptop.ram_capacity_gb or 0,
@@ -930,10 +939,10 @@ class CatalogQueryService:
             metrics=metrics_detail,
             has_reviews=bool(laptop.has_reviews),
             reviews_evidence_count=laptop.reviews_evidence_count or 0,
-            pros_en=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[0],
-            pros_ar=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[1],
-            cons_en=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[0],
-            cons_ar=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[1],
+            pros_en=orm_pros_en,
+            pros_ar=orm_pros_ar,
+            cons_en=orm_cons_en,
+            cons_ar=orm_cons_ar,
             review_sources=self._serialize_orm_review_sources(laptop),
             why_recommended_ar=reasons.get("ar", []),
             why_recommended_en=reasons.get("en", []),
@@ -1063,6 +1072,15 @@ class CatalogQueryService:
 
         reasons = build_why_recommended(lap, "balanced")
 
+        dict_gpu_eval = evaluate_gpu_tgp(
+            gpu.get("model"),
+            bool(gpu.get("integrated", True)),
+            _safe_int(gpu.get("tdp_w")),
+        )
+        dict_pros_en, dict_pros_ar = align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))
+        dict_cons_en, dict_cons_ar = align_bilingual_lists(community_reviews.get("cons_en"), community_reviews.get("cons_ar"))
+        dict_cons_en, dict_cons_ar = inject_gpu_tgp_warning(dict_cons_en, dict_cons_ar, dict_gpu_eval)
+
         return FullLaptopDetailResponse(
             id=str(lap.get("canonical_id") or "unknown"),
             canonical_id=str(lap.get("canonical_id") or "unknown"),
@@ -1120,6 +1138,9 @@ class CatalogQueryService:
                 integrated=bool(gpu.get("integrated", True)),
                 ai_tops=_safe_int(gpu.get("ai_tops")),
                 igpu_model=gpu.get("igpu_model"),
+                native_base_max_tgp_w=dict_gpu_eval.native_base_max_w,
+                native_max_tgp_w=dict_gpu_eval.native_max_w,
+                tgp_utilization_pct=dict_gpu_eval.tgp_utilization_pct,
             ),
             memory=MemorySpecDetail(
                 capacity_gb=_safe_int(mem.get("capacity_gb"), 0) or 0,
@@ -1197,10 +1218,10 @@ class CatalogQueryService:
                 )
             ),
             reviews_evidence_count=_safe_int(community_reviews.get("evidence_count"), 0) or 0,
-            pros_en=align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))[0],
-            pros_ar=align_bilingual_lists(community_reviews.get("pros_en"), community_reviews.get("pros_ar"))[1],
-            cons_en=align_bilingual_lists(community_reviews.get("cons_en"), community_reviews.get("cons_ar"))[0],
-            cons_ar=align_bilingual_lists(community_reviews.get("cons_en"), community_reviews.get("cons_ar"))[1],
+            pros_en=dict_pros_en,
+            pros_ar=dict_pros_ar,
+            cons_en=dict_cons_en,
+            cons_ar=dict_cons_ar,
             review_sources=[
                 ReviewSourceDetail(**src.to_dict()) for src in extract_review_sources({**lap, **community_reviews})
             ],

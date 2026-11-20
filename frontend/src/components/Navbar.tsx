@@ -1,11 +1,13 @@
 import React from 'react'
-import { Laptop, Languages } from 'lucide-react'
+import { Laptop, Languages, Moon, Sun } from 'lucide-react'
 
 interface NavbarProps {
   currentTab: 'recommend' | 'catalog'
   onTabChange: (tab: 'recommend' | 'catalog') => void
   lang: 'ar' | 'en'
   onToggleLang: () => void
+  theme: 'light' | 'dark'
+  onToggleTheme: () => void
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,30 +15,31 @@ export const Navbar: React.FC<NavbarProps> = ({
   onTabChange,
   lang,
   onToggleLang,
+  theme,
+  onToggleTheme,
 }) => {
   const isAr = lang === 'ar'
+  const isDark = theme === 'dark'
 
   return (
     <header className="nav">
       <div className="nav-inner">
-        {/* Brand */}
         <div className="nav-brand">
-          <div className="nav-logo">
+          <div className="nav-logo" aria-hidden="true">
             <Laptop className="w-4.5 h-4.5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0">
             <h1 className="nav-title">
-              <span>{isAr ? 'مرشح اللابتوبات الذكي' : 'Smart Laptop Recommender'}</span>
+              <span>{isAr ? 'دليل اللابتوب' : 'Laptop Guide EG'}</span>
             </h1>
             <p className="nav-sub">
               {isAr
-                ? 'أسعار حية من المتاجر المصرية + ترتيب TOPSIS'
-                : 'Live Egyptian retailer prices · Vector TOPSIS ranking'}
+                ? 'مقارنة أسعار مصر + مراجعات حقيقية'
+                : 'Egypt live prices · Verified real reviews'}
             </p>
           </div>
         </div>
 
-        {/* Navigation Tabs & Actions */}
         <div className="nav-actions">
           <nav className="nav-tabs" aria-label={isAr ? 'التنقل الرئيسي' : 'Primary navigation'}>
             <button
@@ -45,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onTabChange('recommend')}
               className="nav-tab"
             >
-              <span>{isAr ? 'ترشيح ذكي' : 'AI Recommender'}</span>
+              <span>{isAr ? 'ترشيح ذكي' : 'Find My Laptop'}</span>
             </button>
             <button
               type="button"
@@ -57,16 +60,33 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          {/* Language Toggle */}
-          <button
-            type="button"
-            onClick={onToggleLang}
-            className="lang-btn"
-            title={isAr ? 'Switch to English' : 'التحويل إلى العربية'}
-          >
-            <Languages className="w-3.5 h-3.5" strokeWidth={1.8} />
-            <span>{isAr ? 'English' : 'عربي'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="lang-btn"
+              aria-label={isDark ? (isAr ? 'التبديل للوضع النهاري' : 'Switch to light mode') : isAr ? 'التبديل للوضع الليلي' : 'Switch to dark mode'}
+              title={isDark ? (isAr ? 'وضع نهاري' : 'Light mode') : isAr ? 'وضع ليلي' : 'Dark mode'}
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4" strokeWidth={1.8} />
+              ) : (
+                <Moon className="w-4 h-4" strokeWidth={1.8} />
+              )}
+              <span>{isDark ? (isAr ? 'نهاري' : 'Light') : isAr ? 'ليلي' : 'Dark'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onToggleLang}
+              className="lang-btn"
+              aria-label={isAr ? 'Switch to English' : 'التحويل إلى العربية'}
+              title={isAr ? 'Switch to English' : 'التحويل إلى العربية'}
+            >
+              <Languages className="w-4 h-4" strokeWidth={1.8} />
+              <span>{isAr ? 'English' : 'عربي'}</span>
+            </button>
+          </div>
         </div>
       </div>
     </header>

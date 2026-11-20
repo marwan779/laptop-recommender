@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 
 from app.common.cursor import InvalidCursorError, decode_cursor, encode_cursor
 from app.common.review_text import align_bilingual_lists
+from app.domain.gpu_power_policy import evaluate_gpu_tgp, inject_gpu_tgp_warning
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
@@ -152,6 +153,9 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
     pros_en, pros_ar = align_bilingual_lists(laptop.pros_en, laptop.pros_ar)
     cons_en, cons_ar = align_bilingual_lists(laptop.cons_en, laptop.cons_ar)
 
+    gpu_eval = evaluate_gpu_tgp(laptop.gpu_model, bool(laptop.gpu_integrated), laptop.gpu_tdp_w)
+    cons_en, cons_ar = inject_gpu_tgp_warning(cons_en, cons_ar, gpu_eval)
+
     return {
         "id": str(laptop.id),
         "canonical_id": laptop.canonical_id,
@@ -191,6 +195,9 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
                 "integrated": bool(laptop.gpu_integrated),
                 "vram_gb": laptop.gpu_vram_gb,
                 "tdp_w": laptop.gpu_tdp_w,
+                "native_base_max_tgp_w": gpu_eval.native_base_max_w,
+                "native_max_tgp_w": gpu_eval.native_max_w,
+                "tgp_utilization_pct": gpu_eval.tgp_utilization_pct,
             },
             "memory": {
                 "capacity_gb": laptop.ram_capacity_gb,
