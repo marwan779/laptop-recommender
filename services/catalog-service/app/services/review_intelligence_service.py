@@ -303,7 +303,7 @@ class ReviewIntelligenceService:
             "cons_en": [],
             "cons_ar": [],
             "aspect_scores": {},
-            "community_nlp_score": 75.0,
+            "community_nlp_score": 56.0,
             "evidence_count": 0,
             "review_sources": [],
             "has_real_evidence": False,

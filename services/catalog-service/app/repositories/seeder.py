@@ -665,12 +665,19 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         if not isinstance(aspect_scores, dict):
             aspect_scores = {}
 
-        # 11 Flat TOPSIS Float Scores (0.00 to 100.00)
+        # 11 Flat TOPSIS Float Scores + 8 Decoupled Criteria (0.00 to 100.00)
         metrics.cpu_score = (
             _safe_float(topsis.get("cpu_score") or silicon.get("effective_cpu_score"), default=0.0) or 0.0
         )
         metrics.gpu_score = (
             _safe_float(topsis.get("gpu_score") or silicon.get("effective_gpu_score"), default=0.0) or 0.0
+        )
+        metrics.gpu_compute_score = (
+            _safe_float(topsis.get("gpu_compute_score") or silicon.get("gpu_compute_score"), default=metrics.gpu_score)
+            or metrics.gpu_score
+        )
+        metrics.vram_score = (
+            _safe_float(topsis.get("vram_score") or silicon.get("vram_score"), default=15.0) or 15.0
         )
         metrics.silicon_index = (
             _safe_float(topsis.get("silicon_index") or silicon.get("silicon_index"), default=0.0) or 0.0
@@ -681,20 +688,59 @@ class CatalogSeederRepository(BaseRepository[LaptopConfiguration]):
         metrics.display_score = (
             _safe_float(topsis.get("display_score") or disp.get("display_score"), default=0.0) or 0.0
         )
+        metrics.display_gaming_score = (
+            _safe_float(
+                topsis.get("display_gaming_score") or disp.get("display_gaming_score"),
+                default=metrics.display_score,
+            )
+            or metrics.display_score
+        )
+        metrics.display_creator_score = (
+            _safe_float(
+                topsis.get("display_creator_score") or disp.get("display_creator_score"),
+                default=metrics.display_score,
+            )
+            or metrics.display_score
+        )
         metrics.mobility_score = (
-            _safe_float(topsis.get("mobility_score") or mob.get("portability_score"), default=0.0) or 0.0
+            _safe_float(topsis.get("mobility_score") or mob.get("mobility_score"), default=0.0) or 0.0
+        )
+        metrics.battery_score = (
+            _safe_float(topsis.get("battery_score") or mob.get("battery_score"), default=metrics.mobility_score)
+            or metrics.mobility_score
+        )
+        metrics.portability_score = (
+            _safe_float(
+                topsis.get("portability_score") or mob.get("portability_score"),
+                default=metrics.mobility_score,
+            )
+            or metrics.mobility_score
         )
         metrics.longevity_score = (
-            _safe_float(topsis.get("longevity_score") or longv.get("upgradeability_score"), default=0.0) or 0.0
+            _safe_float(topsis.get("longevity_score") or longv.get("longevity_score"), default=0.0) or 0.0
+        )
+        metrics.upgradeability_score = (
+            _safe_float(
+                topsis.get("upgradeability_score") or longv.get("upgradeability_score"),
+                default=metrics.longevity_score,
+            )
+            or metrics.longevity_score
+        )
+        metrics.build_quality_score = (
+            _safe_float(
+                topsis.get("build_quality_score") or longv.get("build_quality_score"),
+                default=metrics.longevity_score,
+            )
+            or metrics.longevity_score
         )
         metrics.ergonomics_score = _safe_float(topsis.get("ergonomics_score"), default=0.0) or 0.0
         metrics.connectivity_score = _safe_float(topsis.get("connectivity_score"), default=0.0) or 0.0
         nlp_score = topsis.get("community_nlp_score")
         if nlp_score is None:
             nlp_score = community_reviews.get("community_nlp_score")
-        metrics.community_nlp_score = _safe_float(nlp_score, default=75.0)
+        metrics.community_nlp_score = _safe_float(nlp_score, default=56.0)
         if metrics.community_nlp_score is None:
-            metrics.community_nlp_score = 75.0
+            metrics.community_nlp_score = 56.0
         metrics.value_score = _safe_float(topsis.get("value_score") or econ.get("value_score"), default=0.0) or 0.0
 
         # Community Review Sub-Aspect Scores (default neutral 75.00)
