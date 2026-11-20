@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import math
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 # Reference Benchmark Scores (Normalized 0-100 scale across mobile silicon)
 CPU_BENCHMARK_MAP: Dict[str, float] = {
@@ -101,7 +101,7 @@ GPU_BENCHMARK_MAP: Dict[str, tuple] = {
     "GeForce RTX 5070": (71.0, 115.0),
     "GeForce RTX 4070": (66.0, 115.0),
     "GeForce RTX 5060": (63.0, 115.0),
-    "AMD Radeon 8060S": (61.0, 0.0),
+    "AMD Radeon 8060S": (61.0, 0.0),  # Strix Halo 40-CU integrated beast
     "GeForce RTX 4060": (57.0, 115.0),
     "GeForce RTX 5050": (54.0, 100.0),
     "GeForce RTX 4050": (48.0, 105.0),
@@ -144,13 +144,71 @@ LEGACY_ARCHIVED_IDS = {
     "laptop_gigabyte_gaming_a16_a16ga6h",
 }
 
+DEFAULT_COMMUNITY_NLP_SCORE = 56.0
+
+_DGPU_TITLE_RE = re.compile(
+    r"\b(RTX\s*\d{4}(?:\s*Ti)?|GTX\s*\d{4}(?:\s*Ti)?|RX\s*[67]\d{3}\w*|ARC\s*A\d{3}\w*)\b",
+    re.I,
+)
+
 
 def _clamp(val: float, lo: float = 0.0, hi: float = 100.0) -> float:
     return round(max(lo, min(hi, float(val))), 2)
 
 
-def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
-    """Compute all 8 hardware/ergonomics indices and flat TOPSIS input vector for a laptop."""
+def calculate_calibrated_value_score(
+    composite_hw: float,
+    price_egp: Optional[float],
+    floor: float = 15.0,
+    ceiling: float = 97.5,
+    midpoint: float = 0.92,
+    steepness: float = 2.5,
+) -> float:
+    """Smooth logistic-sigmoid value-per-EGP calibration (soft-cap, no 100.0 saturation).
+
+    raw_ratio = composite_hw / (price_egp / 1000.0)
+    score = floor + (ceiling - floor) / (1 + exp(-steepness * (raw_ratio - midpoint)))
+    """
+    if not price_egp or float(price_egp) < 10000.0:
+        return 50.0
+    raw_ratio = max(0.0, float(composite_hw)) / (float(price_egp) / 1000.0)
+    z = max(-60.0, min(60.0, -steepness * (raw_ratio - midpoint)))
+    score = floor + (ceiling - floor) / (1.0 + math.exp(z))
+    return round(max(floor, min(ceiling, score)), 2)
+
+
+def _normalize_extracted_dgpu(token: str) -> str:
+    """Normalize a discrete GPU pattern extracted from a laptop title."""
+    cleaned = " ".join(str(token).split()).upper()
+    cleaned = re.sub(r"\b(RTX|GTX|RX|ARC)\s*(\d)", r"\1 \2", cleaned)
+    if cleaned.startswith(("RTX", "GTX")):
+        cleaned = cleaned.replace(" TI", " Ti")
+        return f"GeForce {cleaned}"
+    if cleaned.startswith("RX"):
+        return f"AMD Radeon {cleaned}"
+    if cleaned.startswith("ARC"):
+        return f"Intel Arc {cleaned[3:].strip()}"
+    return cleaned
+
+
+def _lookup_gpu_benchmark(gpu_model: str, is_igpu: bool) -> tuple:
+    """Exact then case-insensitive longest-key lookup in GPU_BENCHMARK_MAP."""
+    if gpu_model in GPU_BENCHMARK_MAP:
+        return GPU_BENCHMARK_MAP[gpu_model]
+    model_low = str(gpu_model or "").lower()
+    for k in sorted(GPU_BENCHMARK_MAP.keys(), key=len, reverse=True):
+        if k.lower() in model_low:
+            return GPU_BENCHMARK_MAP[k]
+    return (18.0 if is_igpu else 45.0, 0.0 if is_igpu else 95.0)
+
+
+def compute_laptop_metrics(
+    laptop: Dict[str, Any],
+    community_reviews: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Compute all 8 hardware/ergonomics indices (including split criteria) and TOPSIS inputs."""
+    if community_reviews is None:
+        community_reviews = laptop.get("derived_metrics", {}).get("community_reviews")
     specs = laptop["specs"]
     cpu = specs.get("cpu", {})
     gpu = specs.get("gpu", {})
@@ -174,7 +232,9 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
         + json.dumps(source_table, ensure_ascii=False)
     ).lower()
 
-    # Metric 1: Silicon Performance
+    # =========================================================================
+    # METRIC 1: SILICON PERFORMANCE (CPU & GPU + RAM Bandwidth + AI Readiness)
+    # =========================================================================
     cpu_model = cpu.get("model") or ""
     base_cpu_score = CPU_BENCHMARK_MAP.get(cpu_model)
     if base_cpu_score is None:
@@ -212,23 +272,46 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
     )
     effective_cpu_score = _clamp(base_cpu_score * ram_bw_mult, 10.0, 100.0)
 
+    # GPU Scoring (with defensive iGPU vs dGPU guard + fallback extraction from title)
     gpu_model = gpu.get("model") or "Intel UHD Graphics"
     is_igpu = bool(gpu.get("integrated", True))
-    gpu_ref_score, gpu_ref_tgp = GPU_BENCHMARK_MAP.get(
-        gpu_model, (18.0 if is_igpu else 45.0, 0.0 if is_igpu else 95.0)
-    )
+    vram_gb = float(gpu.get("vram_gb") or 0.0)
     actual_tgp = float(gpu.get("tdp_w") or 0.0)
+
+    if is_igpu:
+        m_title = _DGPU_TITLE_RE.search(str(laptop.get("title") or ""))
+        if vram_gb >= 4.0 or actual_tgp >= 35.0 or m_title is not None:
+            is_igpu = False
+            if m_title is not None:
+                gpu_model = _normalize_extracted_dgpu(m_title.group(1))
+
+    gpu_ref_score, gpu_ref_tgp = _lookup_gpu_benchmark(gpu_model, is_igpu)
 
     if is_igpu or gpu_ref_tgp <= 0:
         scale_factor_gpu = round(ram_bw_mult, 3)
         effective_gpu_score = _clamp(gpu_ref_score * scale_factor_gpu, 5.0, 100.0)
         tgp_source = "INTEGRATED_SOC"
     else:
-        ratio = max(0.4, min(1.35, actual_tgp / gpu_ref_tgp))
+        actual_tgp_eff = actual_tgp if actual_tgp > 0 else gpu_ref_tgp * 0.85
+        ratio = max(0.4, min(1.35, actual_tgp_eff / gpu_ref_tgp))
         scale_factor_gpu = round(max(0.72, min(1.10, ratio**0.32)), 3)
         vram_bonus = 2.5 if str(gpu.get("vram_type") or "").upper() == "GDDR7" else 0.0
         effective_gpu_score = _clamp(gpu_ref_score * scale_factor_gpu + vram_bonus, 15.0, 100.0)
         tgp_source = "EXPLICIT_OR_CHASSIS_CAPPED"
+
+    gpu_compute_score = effective_gpu_score
+    if is_igpu or vram_gb < 4.0:
+        vram_score = 15.0
+    elif vram_gb >= 16.0:
+        vram_score = 100.0
+    elif vram_gb >= 12.0:
+        vram_score = 88.0
+    elif vram_gb >= 8.0:
+        vram_score = 74.0
+    elif vram_gb >= 6.0:
+        vram_score = 58.0
+    else:
+        vram_score = 40.0
 
     npu_tops = float(cpu.get("npu_tops") or 0.0)
     gpu_ai_tops = float(gpu.get("ai_tops") or 0.0)
@@ -236,7 +319,9 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
     is_copilot_plus_pc = bool(npu_tops >= 40.0)
     silicon_index = _clamp(0.45 * effective_cpu_score + 0.55 * effective_gpu_score)
 
-    # Metric 2: Electrical Power Sufficiency Margin
+    # =========================================================================
+    # METRIC 2: ELECTRICAL POWER SUFFICIENCY MARGIN (Dynamic-Boost Aware)
+    # =========================================================================
     adapter_w = float(pwr.get("power_adapter_w") or (65.0 if is_igpu else 170.0))
     cpu_base_w = float(cpu.get("base_power_w") or 28.0)
 
@@ -265,7 +350,9 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
         electrical_status = "DEFICIT_THROTTLED"
         power_score = _clamp(65.0 + delta_p_watts * 1.2, 30.0, 75.0)
 
-    # Metric 3: Display Optics & Quality Index
+    # =========================================================================
+    # METRIC 3: DISPLAY OPTICS & QUALITY INDEX
+    # =========================================================================
     size_in = float(disp.get("size_inches") or 15.6)
     res_w = int(disp.get("resolution_width") or 1920)
     res_h = int(disp.get("resolution_height") or 1080)
@@ -351,7 +438,52 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
         100.0,
     )
 
-    # Metric 4: Endurance & Portability Index
+    # Granular Display Split: Gaming (Hz + Response + Sync + Panel) vs Creator (Gamut + Panel + Nits + PPI + Aspect)
+    if refresh_hz >= 240:
+        g_hz_pts = 55.0
+    elif refresh_hz >= 165:
+        g_hz_pts = 48.0
+    elif refresh_hz >= 144:
+        g_hz_pts = 42.0
+    elif refresh_hz >= 120:
+        g_hz_pts = 34.0
+    elif refresh_hz >= 90:
+        g_hz_pts = 22.0
+    else:
+        g_hz_pts = 10.0
+    g_resp_pts = 15.0 if (resp_ms is not None and float(resp_ms) <= 3.0) else 5.0
+    g_sync_pts = 15.0 if has_adaptive_sync else 0.0
+    g_panel_pts = 15.0 if "OLED" in panel_type else (10.0 if "IPS" in panel_type else 5.0)
+    display_gaming_score = _clamp(g_hz_pts + g_resp_pts + g_sync_pts + g_panel_pts, 10.0, 100.0)
+
+    if "dci-p3" in gamut_str or "oled" in panel_type.lower() or "mini-led" in panel_type.lower():
+        c_gamut_pts = 40.0
+    elif "100% srgb" in gamut_str or "72% ntsc" in gamut_str or res_w >= 2560:
+        c_gamut_pts = 30.0
+    elif "62.5%" in gamut_str:
+        c_gamut_pts = 16.0
+    else:
+        c_gamut_pts = 10.0
+    if "OLED" in panel_type or "MINI-LED" in panel_type:
+        c_panel_pts = 20.0
+    elif "IPS" in panel_type:
+        c_panel_pts = 14.0
+    elif "VA" in panel_type:
+        c_panel_pts = 9.0
+    else:
+        c_panel_pts = 4.0
+    c_nits_pts = _clamp(5.0 + (nits_eff - 200.0) / (600.0 - 200.0) * 15.0, 5.0, 20.0)
+    c_ppi_pts = _clamp(5.0 + (ppi - 110.0) / (280.0 - 110.0) * 10.0, 5.0, 15.0)
+    c_aspect_pts = 5.0 if aspect in ["16:10", "3:2"] else 0.0
+    display_creator_score = _clamp(
+        c_gamut_pts + c_panel_pts + c_nits_pts + c_ppi_pts + c_aspect_pts,
+        15.0,
+        100.0,
+    )
+
+    # =========================================================================
+    # METRIC 4: ENDURANCE & PORTABILITY INDEX
+    # =========================================================================
     batt_wh = float(pwr.get("battery_capacity_wh") or (70.0 if not is_igpu else 50.0))
     weight_kg = float(phys.get("weight_kg") or (2.3 if not is_igpu else 1.65))
     h_front = phys.get("height_front_mm")
@@ -384,7 +516,17 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
     pd_pts = 10.0 if has_usb_c_pd else 0.0
     fc_pts = 5.0 if has_fast_charge else 0.0
 
-    portability_score = _clamp(batt_pts + weight_pts + thick_pts + pd_pts + fc_pts, 15.0, 100.0)
+    legacy_mobility_score = _clamp(batt_pts + weight_pts + thick_pts + pd_pts + fc_pts, 15.0, 100.0)
+    batt_hrs_pts = _clamp(15.0 + (battery_hours_est - 2.5) / (10.5 - 2.5) * 60.0, 15.0, 75.0)
+    battery_score = _clamp(
+        batt_hrs_pts + (15.0 if has_usb_c_pd else 0.0) + (10.0 if has_fast_charge else 0.0),
+        15.0,
+        100.0,
+    )
+    p_weight_pts = _clamp(10.0 + (3.2 - weight_kg) / (3.2 - 1.1) * 60.0, 10.0, 70.0)
+    p_thick_pts = _clamp(5.0 + (30.0 - eff_thickness_mm) / (30.0 - 13.5) * 25.0, 5.0, 30.0)
+    pure_portability_score = _clamp(p_weight_pts + p_thick_pts, 15.0, 100.0)
+
     if weight_kg <= 1.65 and battery_hours_est >= 6.5:
         portability_tier = "ULTRAPORTABLE"
     elif weight_kg <= 2.45:
@@ -392,7 +534,9 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
     else:
         portability_tier = "DESK_BOUND"
 
-    # Metric 5: Upgradeability & Hardware Longevity
+    # =========================================================================
+    # METRIC 5: UPGRADEABILITY & HARDWARE LONGEVITY
+    # =========================================================================
     is_soldered = bool(mem.get("is_soldered", False))
     ram_slots = int(
         mem.get("slot_count") if mem.get("slot_count") is not None else (0 if is_soldered else 2)
@@ -449,17 +593,30 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
     ):
         chassis_pts = 14.0
         chassis_tier = "Metal / Reinforced Alloy"
+        material_score = 90.0
     elif "abs" in chassis_mat or any(
         k in fam_low
         for k in ["tuf", "loq", "victus", "nitro", "katana", "cyborg", "probook", "expertbook", "latitude"]
     ):
         chassis_pts = 10.5
         chassis_tier = "MIL-STD / High-Grade PC-ABS"
+        material_score = 70.0
     else:
         chassis_pts = 7.5
         chassis_tier = "Standard Polycarbonate"
+        material_score = 50.0
 
-    upgradeability_score = _clamp(ram_total_pts + sto_total_pts + chassis_pts, 15.0, 100.0)
+    legacy_longevity_score = _clamp(ram_total_pts + sto_total_pts + chassis_pts, 15.0, 100.0)
+    ram_upg_pts = min(50.0, ram_total_pts * (50.0 / 45.0))
+    sto_upg_pts = min(50.0, sto_total_pts * (50.0 / 40.0))
+    pure_upgradeability_score = _clamp(ram_upg_pts + sto_upg_pts, 15.0, 100.0)
+
+    rev_build = (community_reviews or {}).get("aspect_scores", {}).get("build_and_hinges_score")
+    if rev_build is not None:
+        build_quality_score = _clamp(0.5 * material_score + 0.5 * float(rev_build), 15.0, 100.0)
+    else:
+        build_quality_score = _clamp(material_score, 15.0, 100.0)
+
     if ram_upgradeable and m2_slots >= 2:
         upgradeability_tier = "MAXIMUM_UPGRADEABLE"
     elif ram_upgradeable or m2_slots >= 2:
@@ -467,7 +624,9 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
     else:
         upgradeability_tier = "LOCKED_APPLIANCE"
 
-    # Metric 7: Work / Study / Conferencing & Ergonomics Index
+    # =========================================================================
+    # METRIC 7: WORK / STUDY / CONFERENCING & ERGONOMICS INDEX
+    # =========================================================================
     webcam_res = str(
         aud.get("webcam_resolution")
         or ("1080p" if int(ident.get("release_year") or 2025) >= 2025 else "720p")
@@ -498,12 +657,12 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
     pt_dev = str(sec.get("pointing_device") or "Touchpad")
 
     if not has_bl:
-        kb_pts = 5.0
+        kb_pts = 6.0
     elif any(k in bl_type.lower() for k in ["per-key", "4-zone", "rgb"]):
-        kb_pts = 18.0
-    else:
         kb_pts = 15.0
-    numpad_pts = 7.0 if has_numpad else 3.0
+    else:
+        kb_pts = 12.0
+    numpad_pts = 2.0 if has_numpad else 0.0
     copilot_pts = 5.0 if has_copilot else 0.0
     pt_pts = 5.0 if any(k in pt_dev.lower() for k in ["numberpad", "dialpad", "ultranav"]) else 3.0
     kb_total_pts = min(35.0, kb_pts + numpad_pts + copilot_pts + pt_pts)
@@ -524,7 +683,9 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
     aud_total_pts = min(30.0, bio_pts + spk_pts + aud_brand_pts)
     ergonomics_score = _clamp(webcam_total_pts + kb_total_pts + aud_total_pts, 20.0, 100.0)
 
-    # Metric 8: Connectivity & External Workstation Index
+    # =========================================================================
+    # METRIC 8: CONNECTIVITY & EXTERNAL WORKSTATION INDEX
+    # =========================================================================
     wifi_str = str(conn.get("wifi") or "Wi-Fi 6").upper()
     antenna = str(conn.get("wifi_antenna") or "2x2")
     if "WI-FI 7" in wifi_str:
@@ -577,7 +738,9 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
         100.0,
     )
 
-    # Metric 6: Market Pricing & Retailer Economics
+    # =========================================================================
+    # METRIC 6: MARKET PRICING & RETAILER ECONOMICS
+    # =========================================================================
     cid = laptop["canonical_id"]
     offers = laptop.get("offers", [])
     valid_offers = [o for o in offers if o.get("is_valid_price") and (o.get("price_egp") or 0) >= 5000]
@@ -600,31 +763,53 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
         is_recommendable_price = False
         eff_price = None
 
-    composite_hw = (
-        0.28 * effective_cpu_score
-        + 0.32 * effective_gpu_score
-        + 0.15 * display_score
-        + 0.10 * (ram_cap / 32.0 * 100.0 if ram_cap <= 32 else 100.0)
-        + 0.15 * upgradeability_score
-    )
+    ram_norm = (ram_cap / 32.0 * 100.0) if ram_cap <= 32 else 100.0
+    if not is_igpu:
+        composite_hw = (
+            0.28 * effective_cpu_score
+            + 0.32 * effective_gpu_score
+            + 0.15 * display_score
+            + 0.10 * ram_norm
+            + 0.15 * legacy_longevity_score
+        )
+    else:
+        composite_hw = (
+            0.28 * effective_cpu_score
+            + 0.30 * legacy_mobility_score
+            + 0.22 * display_score
+            + 0.10 * ram_norm
+            + 0.10 * build_quality_score
+        )
     if eff_price and eff_price >= 10000:
-        value_ratio = round((composite_hw**1.35) / (eff_price / 10000.0), 2)
-        value_score = _clamp((value_ratio - 18.0) / (58.0 - 18.0) * 100.0, 15.0, 100.0)
+        value_ratio = round(max(0.0, float(composite_hw)) / (float(eff_price) / 1000.0), 3)
+        value_score = calculate_calibrated_value_score(composite_hw, eff_price)
     else:
         value_ratio = None
         value_score = 50.0
 
-    community_nlp_score = 75.0
+    # Q1 baseline default (56.0) when community_reviews are not attached yet
+    if community_reviews and community_reviews.get("community_nlp_score") is not None:
+        community_nlp_score = float(community_reviews["community_nlp_score"])
+    else:
+        community_nlp_score = DEFAULT_COMMUNITY_NLP_SCORE
 
     return {
         "topsis_inputs": {
             "cpu_score": effective_cpu_score,
             "gpu_score": effective_gpu_score,
+            "gpu_compute_score": gpu_compute_score,
+            "vram_score": vram_score,
             "silicon_index": silicon_index,
             "power_therm_score": power_score,
             "display_score": display_score,
-            "mobility_score": portability_score,
-            "longevity_score": upgradeability_score,
+            "display_gaming_score": display_gaming_score,
+            "display_creator_score": display_creator_score,
+            "mobility_score": legacy_mobility_score,
+            "battery_score": battery_score,
+            "portability_score": pure_portability_score,
+            "longevity_score": legacy_longevity_score,
+            "upgradeability_score": pure_upgradeability_score,
+            "build_quality_score": build_quality_score,
             "ergonomics_score": ergonomics_score,
             "connectivity_score": connectivity_score,
             "community_nlp_score": community_nlp_score,
@@ -636,6 +821,8 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
         "silicon": {
             "effective_cpu_score": effective_cpu_score,
             "effective_gpu_score": effective_gpu_score,
+            "gpu_compute_score": gpu_compute_score,
+            "vram_score": vram_score,
             "silicon_index": silicon_index,
             "inferred_tgp_w": actual_tgp,
             "tgp_source": tgp_source,
@@ -654,6 +841,8 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
         },
         "display": {
             "display_score": display_score,
+            "display_gaming_score": display_gaming_score,
+            "display_creator_score": display_creator_score,
             "ppi": ppi,
             "refresh_rate_hz": refresh_hz,
             "panel_technology": panel_type,
@@ -664,7 +853,9 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
             "has_hdr": has_hdr,
         },
         "mobility": {
-            "portability_score": portability_score,
+            "portability_score": pure_portability_score,
+            "battery_score": battery_score,
+            "mobility_score": legacy_mobility_score,
             "portability_tier": portability_tier,
             "battery_hours_estimate": battery_hours_est,
             "battery_capacity_wh": batt_wh,
@@ -674,7 +865,9 @@ def compute_laptop_metrics(laptop: Dict[str, Any]) -> Dict[str, Any]:
             "fast_charging": has_fast_charge,
         },
         "longevity": {
-            "upgradeability_score": upgradeability_score,
+            "upgradeability_score": pure_upgradeability_score,
+            "build_quality_score": build_quality_score,
+            "longevity_score": legacy_longevity_score,
             "upgradeability_tier": upgradeability_tier,
             "ram_upgradeable": ram_upgradeable,
             "ram_slots": ram_slots,

@@ -17,16 +17,33 @@ class ChromaDualVectorQuery:
     def __init__(self, collection: Any) -> None:
         self.collection = collection
 
-    def query(self, query_embeddings: List[List[float]], n_results: int = 189) -> Dict[str, Any]:
-        pro_res = self.collection.query(
-            query_embeddings=query_embeddings,
-            n_results=n_results,
-            where={"polarity": "pro"},
+    def query(
+        self,
+        query_embeddings: List[List[float]],
+        n_results: int = 189,
+        *,
+        pro_n_results: Optional[int] = None,
+        con_n_results: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        eff_pro = n_results if pro_n_results is None else pro_n_results
+        eff_con = n_results if con_n_results is None else con_n_results
+        pro_res = (
+            self.collection.query(
+                query_embeddings=query_embeddings,
+                n_results=eff_pro,
+                where={"polarity": "pro"},
+            )
+            if eff_pro > 0
+            else {}
         )
-        con_res = self.collection.query(
-            query_embeddings=query_embeddings,
-            n_results=n_results,
-            where={"polarity": "con"},
+        con_res = (
+            self.collection.query(
+                query_embeddings=query_embeddings,
+                n_results=eff_con,
+                where={"polarity": "con"},
+            )
+            if eff_con > 0
+            else {}
         )
         return {"pro": pro_res, "con": con_res}
 
