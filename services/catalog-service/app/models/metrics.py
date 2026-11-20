@@ -39,6 +39,33 @@ class LaptopMetrics(Base):
     community_nlp_score: Mapped[float] = mapped_column(Numeric(5, 2))
     value_score: Mapped[float] = mapped_column(Numeric(5, 2))
 
+    # 8 Decoupled Metrics (0.00 to 100.00)
+    # Computed alongside the legacy aggregated columns for the 14-column TOPSIS vector.
+    gpu_compute_score: Mapped[float] = mapped_column(
+        Numeric(5, 2), default=50.0, server_default="50.00"
+    )
+    vram_score: Mapped[float] = mapped_column(
+        Numeric(5, 2), default=50.0, server_default="50.00"
+    )
+    display_gaming_score: Mapped[float] = mapped_column(
+        Numeric(5, 2), default=50.0, server_default="50.00"
+    )
+    display_creator_score: Mapped[float] = mapped_column(
+        Numeric(5, 2), default=50.0, server_default="50.00"
+    )
+    battery_score: Mapped[float] = mapped_column(
+        Numeric(5, 2), default=50.0, server_default="50.00"
+    )
+    portability_score: Mapped[float] = mapped_column(
+        Numeric(5, 2), default=50.0, server_default="50.00"
+    )
+    upgradeability_score: Mapped[float] = mapped_column(
+        Numeric(5, 2), default=50.0, server_default="50.00"
+    )
+    build_quality_score: Mapped[float] = mapped_column(
+        Numeric(5, 2), default=50.0, server_default="50.00"
+    )
+
     # Community Review Sub-Aspect Scores (0.00 to 100.00)
     thermals_score: Mapped[float] = mapped_column(Numeric(5, 2), default=75.0, server_default="75.00")
     acoustics_score: Mapped[float] = mapped_column(Numeric(5, 2), default=75.0, server_default="75.00")
