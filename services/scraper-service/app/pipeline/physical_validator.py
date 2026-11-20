@@ -589,3 +589,40 @@ class PhysicalValidator:
 
         # Default pass-through for other fields
         return True, value, None
+
+    _DGPU_TITLE_RE = re.compile(
+        r"\b(RTX\s*\d{4}(?:\s*Ti)?|GTX\s*\d{4}(?:\s*Ti)?|RX\s*[67]\d{3}\w*|ARC\s*A\d{3}\w*)\b",
+        re.I,
+    )
+
+    @classmethod
+    def enforce_title_dgpu_guard(cls, specs: dict[str, Any], title: str | None) -> bool:
+        """Prevent saving an iGPU as the primary GPU when the product title explicitly names a dGPU."""
+        if not title or not isinstance(specs, dict):
+            return False
+        gpu = specs.get("gpu")
+        if not isinstance(gpu, dict) or not gpu.get("integrated", True):
+            return False
+
+        match = cls._DGPU_TITLE_RE.search(str(title))
+        if not match:
+            return False
+
+        token = " ".join(match.group(1).split()).upper()
+        token = re.sub(r"\b(RTX|GTX|RX|ARC)\s*(\d)", r"\1 \2", token)
+        if token.startswith(("RTX", "GTX")):
+            token = token.replace(" TI", " Ti")
+            dgpu_model = f"GeForce {token}"
+        elif token.startswith("RX"):
+            dgpu_model = f"AMD Radeon {token}"
+        elif token.startswith("ARC"):
+            dgpu_model = f"Intel Arc {token[3:].strip()}"
+        else:
+            dgpu_model = token
+
+        prev_model = gpu.get("model")
+        if prev_model and not gpu.get("igpu_model"):
+            gpu["igpu_model"] = prev_model
+        gpu["model"] = dgpu_model
+        gpu["integrated"] = False
+        return True
