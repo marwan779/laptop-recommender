@@ -1940,6 +1940,51 @@
     ],
     "source_url": "https://www.intel.com/content/www/us/en/products/sku/236796/intel-core-5-processor-120u-12m-cache-up-to-5-00-ghz/specifications.html"
   },
+  "intel_core_i5_1335u": {
+    "brand": "Intel",
+    "model": "Core i5-1335U",
+    "family": "Core i5",
+    "generation": "13th Gen",
+    "microarchitecture": "Raptor Cove / Gracemont",
+    "microarchitecture_code": "Raptor Lake-U",
+    "total_cores": 10,
+    "performance_cores": {
+      "count": 2,
+      "base_clock_ghz": 1.3,
+      "boost_clock_ghz": 4.6
+    },
+    "efficient_cores": {
+      "count": 8,
+      "base_clock_ghz": 0.9,
+      "boost_clock_ghz": 3.4
+    },
+    "low_power_cores": null,
+    "total_threads": 12,
+    "base_clock_ghz": 1.3,
+    "boost_clock_ghz": 4.6,
+    "cache_mb": 12,
+    "integrated_gpu": "Intel Iris Xe Graphics eligible (80 execution units; 1.25 GHz max dynamic frequency)",
+    "npu_tops": null,
+    "base_power_w": 15,
+    "supported_memory": [
+      "DDR5",
+      "DDR4",
+      "LPDDR5",
+      "LPDDR5X",
+      "LPDDR4X"
+    ],
+    "max_memory_gb": 96,
+    "aliases": [
+      "1335u",
+      "i5-1335u",
+      "i5 1335u",
+      "intel core i5-1335u",
+      "intel core i5 1335u",
+      "core i5-1335u",
+      "core i5 1335u"
+    ],
+    "source_url": "https://www.intel.com/content/www/us/en/products/sku/232153/intel-core-i51335u-processor-12m-cache-up-to-4-60-ghz/specifications.html"
+  },
   "intel_core_i5_1334u": {
     "brand": "Intel",
     "model": "Core i5-1334U",
