@@ -1,6 +1,30 @@
+import math
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 from enum import StrEnum
+
+DEFAULT_COMMUNITY_NLP_SCORE = 56.0
+
+
+def calculate_calibrated_value_score(
+    composite_hw: float,
+    price_egp: float | None,
+    floor: float = 15.0,
+    ceiling: float = 97.5,
+    midpoint: float = 0.92,
+    steepness: float = 2.5,
+) -> float:
+    """Smooth logistic-sigmoid value-per-EGP calibration (soft-cap, no 100.0 saturation).
+
+    raw_ratio = composite_hw / (price_egp / 1000.0)
+    score = floor + (ceiling - floor) / (1 + exp(-steepness * (raw_ratio - midpoint)))
+    """
+    if not price_egp or float(price_egp) < 10000.0:
+        return 50.0
+    raw_ratio = max(0.0, float(composite_hw)) / (float(price_egp) / 1000.0)
+    z = max(-60.0, min(60.0, -steepness * (raw_ratio - midpoint)))
+    score = floor + (ceiling - floor) / (1.0 + math.exp(z))
+    return round(max(floor, min(ceiling, score)), 2)
 
 
 class PriceChangeType(StrEnum):
@@ -220,13 +244,7 @@ class PricingDomainService:
         longevity_score: float,
         ram_capacity_gb: float = 16.0,
     ) -> ValueScoreCalculation:
-        """Mathematically recalibrate the hardware capability value ratio and value score.
-
-        Formula:
-            composite_hw = 0.28*cpu + 0.32*gpu + 0.15*display + 0.10*ram_pts + 0.15*longevity
-            val_ratio = (composite_hw ^ 1.35) / (min_price_egp / 10000)
-            value_score = clamp(((val_ratio - 18.0) / (58.0 - 18.0)) * 100.0, 15.0, 100.0)
-        """
+        """Mathematically recalibrate the hardware capability value ratio and sigmoid value score."""
         ram_pts = min(100.0, (float(ram_capacity_gb) / 32.0) * 100.0)
         composite_hw = (
             0.28 * float(cpu_score)
@@ -237,9 +255,8 @@ class PricingDomainService:
         )
 
         effective_price = max(1.0, float(min_price_egp))
-        val_ratio = round((composite_hw**1.35) / (effective_price / 10000.0), 2)
-        raw_val_score = (val_ratio - 18.0) / (58.0 - 18.0) * 100.0
-        clamped_score = round(max(15.0, min(100.0, raw_val_score)), 2)
+        val_ratio = round(max(0.0, composite_hw) / (effective_price / 1000.0), 3)
+        clamped_score = calculate_calibrated_value_score(composite_hw, effective_price)
 
         if clamped_score >= 75.0:
             pricing_status = "GREAT_DEAL"

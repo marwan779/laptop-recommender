@@ -21,7 +21,12 @@ class RecommendationRequest(BaseModel):
     )
     persona: PersonaType = Field(
         ...,
-        description="Target user persona (gaming, programming, ai_and_game_dev, content_creation, student_and_office, business_and_mobility, balanced). Required.",
+        description=(
+            "Target user persona (16 personas: gaming, gaming_esports, gaming_aaa, gaming_budget, "
+            "creative, creative_video, creative_2d_photo, creative_3d_cad_gamedev, tech, tech_ai_ml, "
+            "tech_web_mobile, tech_cyber_vms, balanced, daily_student, daily_business, daily_office; "
+            "plus 5 legacy aliases). Required."
+        ),
         examples=[PersonaType.GAMING],
     )
     personas: list[PersonaType] | None = Field(
@@ -163,6 +168,10 @@ class RankedLaptopResponse(BaseModel):
     title: str
     thumbnail_url: str | None = None
     topsis_match_score: float = Field(..., description="Relative closeness match percentage (0.0 - 100.0).")
+    persona_value_score: float | None = Field(
+        default=None,
+        description="Calibrated persona-specific value score [15.0, 97.5].",
+    )
     effective_price_egp: float = Field(..., description="Best current market price in EGP.")
     cheapest_store: str = Field(..., description="Store offering the lowest price.")
     cheapest_offer_url: str | None = Field(

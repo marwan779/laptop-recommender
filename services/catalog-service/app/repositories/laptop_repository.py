@@ -86,15 +86,42 @@ def _normalize_review_payload(payload: Any) -> dict[str, Any]:
 def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
     """Convert a LaptopConfiguration ORM instance into a domain recommender dictionary."""
     metrics = laptop.metrics
+    gpu_legacy = float(metrics.gpu_score) if metrics and metrics.gpu_score is not None else 50.0
+    display_legacy = float(metrics.display_score) if metrics and metrics.display_score is not None else 50.0
+    mobility_legacy = float(metrics.mobility_score) if metrics and metrics.mobility_score is not None else 50.0
+    longevity_legacy = float(metrics.longevity_score) if metrics and metrics.longevity_score is not None else 50.0
+
     topsis_inputs = {
         "cpu_score": float(metrics.cpu_score) if metrics and metrics.cpu_score is not None else 50.0,
-        "gpu_score": float(metrics.gpu_score) if metrics and metrics.gpu_score is not None else 50.0,
+        "gpu_score": gpu_legacy,
+        "gpu_compute_score": float(metrics.gpu_compute_score)
+        if metrics and metrics.gpu_compute_score is not None
+        else gpu_legacy,
+        "vram_score": float(metrics.vram_score) if metrics and metrics.vram_score is not None else 15.0,
         "power_therm_score": float(metrics.power_therm_score)
         if metrics and metrics.power_therm_score is not None
         else 50.0,
-        "display_score": float(metrics.display_score) if metrics and metrics.display_score is not None else 50.0,
-        "mobility_score": float(metrics.mobility_score) if metrics and metrics.mobility_score is not None else 50.0,
-        "longevity_score": float(metrics.longevity_score) if metrics and metrics.longevity_score is not None else 50.0,
+        "display_score": display_legacy,
+        "display_gaming_score": float(metrics.display_gaming_score)
+        if metrics and metrics.display_gaming_score is not None
+        else display_legacy,
+        "display_creator_score": float(metrics.display_creator_score)
+        if metrics and metrics.display_creator_score is not None
+        else display_legacy,
+        "mobility_score": mobility_legacy,
+        "battery_score": float(metrics.battery_score)
+        if metrics and metrics.battery_score is not None
+        else mobility_legacy,
+        "portability_score": float(metrics.portability_score)
+        if metrics and metrics.portability_score is not None
+        else mobility_legacy,
+        "longevity_score": longevity_legacy,
+        "upgradeability_score": float(metrics.upgradeability_score)
+        if metrics and metrics.upgradeability_score is not None
+        else longevity_legacy,
+        "build_quality_score": float(metrics.build_quality_score)
+        if metrics and metrics.build_quality_score is not None
+        else longevity_legacy,
         "ergonomics_score": float(metrics.ergonomics_score)
         if metrics and metrics.ergonomics_score is not None
         else 50.0,
@@ -102,7 +129,7 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
         if metrics and metrics.connectivity_score is not None
         else 50.0,
         "community_nlp_score": (
-            float(metrics.community_nlp_score) if metrics and metrics.community_nlp_score is not None else 75.0
+            float(metrics.community_nlp_score) if metrics and metrics.community_nlp_score is not None else 56.0
         ),
         "effective_price_egp": (
             float(metrics.effective_price_egp)

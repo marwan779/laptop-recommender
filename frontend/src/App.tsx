@@ -17,19 +17,10 @@ import type {
 } from './types/api'
 import type { CompareEntry } from './types/compare'
 import { EMPTY_METRIC_FILTERS, toMetricQuery } from './config/metricFilters'
+import { PERSONA_LABELS, resolvePersonaKey } from './config/personas'
 import { fetchRecommendations } from './services/api'
 import { getSortComparator, formatCardTitle, type SortOption } from './utils/laptopSummary'
 import { AlertCircle, ChevronDown, Pencil, ShieldCheck } from 'lucide-react'
-
-const PERSONA_LABELS: Record<PersonaType, { ar: string; en: string }> = {
-  gaming: { ar: 'ألعاب', en: 'Gaming' },
-  programming: { ar: 'برمجة', en: 'Programming' },
-  content_creation: { ar: 'تصميم ومونتاج', en: 'Design & editing' },
-  ai_and_game_dev: { ar: 'ذكاء اصطناعي', en: 'AI & game dev' },
-  business_and_mobility: { ar: 'شغل وتنقل', en: 'Work & travel' },
-  student_and_office: { ar: 'دراسة وأوفيس', en: 'Study & office' },
-  balanced: { ar: 'متوازن', en: 'Balanced' },
-}
 
 const SORT_OPTIONS: Array<{ key: SortOption; ar: string; en: string }> = [
   { key: 'best', ar: 'الأنسب لك', en: 'Best for you' },
@@ -57,7 +48,7 @@ export function App() {
   )
   const [tab, setTab] = useState<'recommend' | 'catalog'>('recommend')
   const [budget, setBudget] = useState<number>(45000)
-  const [selectedPersonas, setSelectedPersonas] = useState<PersonaType[]>(['balanced'])
+  const [selectedPersona, setSelectedPersona] = useState<PersonaType>('balanced')
   const [promptText, setPromptText] = useState<string>('')
   const [minRam, setMinRam] = useState<number | null>(null)
   const [minStorage, setMinStorage] = useState<number | null>(null)
@@ -98,13 +89,8 @@ export function App() {
     localStorage.setItem('theme', theme)
   }, [theme])
 
-  const handleTogglePersona = (persona: PersonaType) => {
-    setSelectedPersonas((prev) => {
-      if (prev.includes(persona)) {
-        return prev.length > 1 ? prev.filter((item) => item !== persona) : prev
-      }
-      return [...prev, persona]
-    })
+  const handleSelectPersona = (persona: PersonaType) => {
+    setSelectedPersona(persona)
   }
 
   const handleToggleBrand = (brand: string) => {
@@ -140,8 +126,7 @@ export function App() {
   const buildRequest = useCallback(
     (overrides: Partial<RecommendationRequest> = {}): RecommendationRequest => ({
       budget_egp: budget,
-      persona: selectedPersonas[0],
-      personas: selectedPersonas,
+      persona: selectedPersona,
       user_text_prompt: promptText.trim() ? promptText.trim() : undefined,
       min_ram_gb: minRam ?? undefined,
       min_storage_gb: minStorage ?? undefined,
@@ -153,7 +138,7 @@ export function App() {
     }),
     [
       budget,
-      selectedPersonas,
+      selectedPersona,
       promptText,
       minRam,
       minStorage,
@@ -193,7 +178,8 @@ export function App() {
       setOrDelete('tab', tab === 'recommend' ? null : tab)
       setOrDelete('lang', lang === 'ar' ? null : lang)
       setOrDelete('budget', String(budget))
-      setOrDelete('personas', selectedPersonas.join(','))
+      setOrDelete('persona', selectedPersona)
+      setOrDelete('personas', null)
       setOrDelete('q', promptText.trim() || null)
       setOrDelete('ram', minRam != null ? String(minRam) : null)
       setOrDelete('ssd', minStorage != null ? String(minStorage) : null)
@@ -212,7 +198,7 @@ export function App() {
       tab,
       lang,
       budget,
-      selectedPersonas,
+      selectedPersona,
       promptText,
       minRam,
       minStorage,
@@ -238,9 +224,8 @@ export function App() {
     if (urlTab === 'catalog') setTab('catalog')
 
     const urlBudget = numberOrNull(params.get('budget'))
-    const urlPersonas = list(params.get('personas')).filter(
-      (persona): persona is PersonaType => persona in PERSONA_LABELS,
-    )
+    const rawPersona = params.get('persona') || list(params.get('personas'))[0] || null
+    const urlPersona = rawPersona ? resolvePersonaKey(rawPersona) : null
     const urlPrompt = params.get('q') || ''
     const urlRam = numberOrNull(params.get('ram'))
     const urlSsd = numberOrNull(params.get('ssd'))
@@ -251,7 +236,7 @@ export function App() {
     const urlLaptop = params.get('laptop')
 
     if (urlBudget != null) setBudget(urlBudget)
-    if (urlPersonas.length > 0) setSelectedPersonas(urlPersonas)
+    if (urlPersona != null) setSelectedPersona(urlPersona)
     if (urlPrompt) setPromptText(urlPrompt)
     if (urlRam != null) setMinRam(urlRam)
     if (urlSsd != null) setMinStorage(urlSsd)
@@ -287,11 +272,11 @@ export function App() {
       })
     }
 
-    const shouldAutoRun = params.has('budget') || params.has('personas')
+    const shouldAutoRun = params.has('budget') || params.has('persona') || params.has('personas')
     if (shouldAutoRun) {
       const overrides: Partial<RecommendationRequest> = {
         ...(urlBudget != null ? { budget_egp: urlBudget } : {}),
-        ...(urlPersonas.length ? { persona: urlPersonas[0], personas: urlPersonas } : {}),
+        ...(urlPersona != null ? { persona: urlPersona } : {}),
         ...(urlPrompt ? { user_text_prompt: urlPrompt } : {}),
         ...(urlRam != null ? { min_ram_gb: urlRam } : {}),
         ...(urlSsd != null ? { min_storage_gb: urlSsd } : {}),
@@ -373,9 +358,7 @@ export function App() {
     return [...recommendations.results].sort(getSortComparator(sortKey))
   }, [recommendations, sortKey])
 
-  const personaSummary = selectedPersonas
-    .map((persona) => (isAr ? PERSONA_LABELS[persona].ar : PERSONA_LABELS[persona].en))
-    .join(' + ')
+  const personaSummary = isAr ? PERSONA_LABELS[selectedPersona].ar : PERSONA_LABELS[selectedPersona].en
 
   const stageOne = recommendations === null
 
@@ -420,8 +403,8 @@ export function App() {
                 <BudgetPersonaBar
                   budget={budget}
                   onBudgetChange={setBudget}
-                  selectedPersonas={selectedPersonas}
-                  onTogglePersona={handleTogglePersona}
+                  selectedPersona={selectedPersona}
+                  onSelectPersona={handleSelectPersona}
                   promptText={promptText}
                   onPromptChange={setPromptText}
                   minRam={minRam}
@@ -508,8 +491,8 @@ export function App() {
                     <BudgetPersonaBar
                       budget={budget}
                       onBudgetChange={setBudget}
-                      selectedPersonas={selectedPersonas}
-                      onTogglePersona={handleTogglePersona}
+                      selectedPersona={selectedPersona}
+                      onSelectPersona={handleSelectPersona}
                       promptText={promptText}
                       onPromptChange={setPromptText}
                       minRam={minRam}

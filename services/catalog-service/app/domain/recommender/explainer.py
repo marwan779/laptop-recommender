@@ -57,7 +57,13 @@ def build_why_recommended(laptop: dict[str, Any], persona: str) -> dict[str, lis
     reasons_en.append(f"{disp_size}-inch {panel} {hz}Hz display ({gamut})")
 
     # Persona-specific 3rd highlight
-    if persona in ["student_and_office", "business_and_mobility"]:
+    if persona in {
+        "student_and_office",
+        "business_and_mobility",
+        "daily_student",
+        "daily_business",
+        "daily_office",
+    }:
         w_kg = mobility_dm.get("weight_kg")
         b_hrs = mobility_dm.get("battery_hours_estimate")
         reasons_ar.append(f"وزن خفيف {w_kg} كجم وبطارية تدوم حوالي {b_hrs} ساعات مع تخزين {ssd_str} SSD")

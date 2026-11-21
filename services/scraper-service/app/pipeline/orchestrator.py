@@ -198,6 +198,8 @@ class LaptopExtractionPipeline:
                 else:
                     specs[cat][f_name] = cleaned_val
 
+        self.validator.enforce_title_dgpu_guard(specs, sanitized_title)
+
         # --- Component Envelope Packaging ---
         if self.core_only_ai:
             COMPONENT_DEFINITIONS = {

@@ -303,7 +303,7 @@ class ReviewIntelligenceService:
             "cons_en": [],
             "cons_ar": [],
             "aspect_scores": {},
-            "community_nlp_score": 75.0,
+            "community_nlp_score": 56.0,
             "evidence_count": 0,
             "review_sources": [],
             "has_real_evidence": False,
@@ -317,10 +317,11 @@ class ReviewIntelligenceService:
 
         profile = item.get("nlp_review_profile")
         if isinstance(profile, dict) and profile:
+            has_explicit_sources_key = "review_sources" in item or "review_sources" in profile
             if (
                 profile.get("has_real_evidence") is False
                 or (profile.get("evidence_count") == 0 and not review_sources)
-                or (has_raw_buckets and not review_sources)
+                or ((has_raw_buckets or has_explicit_sources_key) and not review_sources)
             ):
                 return cls._unreviewed_ingest_profile()
             normalized = dict(profile)
@@ -331,10 +332,12 @@ class ReviewIntelligenceService:
         audit_metrics = item.get("audit_metrics") if isinstance(item.get("audit_metrics"), dict) else {}
         scraped_docs = audit_metrics.get("scraped_doc_count")
 
+        has_explicit_sources_key = "review_sources" in item
         if (
             item.get("has_real_evidence") is False
             or (scraped_docs == 0 and not review_sources and item.get("evidence_count") in (None, 0))
             or (item.get("evidence_count") == 0 and not review_sources)
+            or ((has_raw_buckets or has_explicit_sources_key) and not review_sources)
         ):
             return cls._unreviewed_ingest_profile()
 
