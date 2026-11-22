@@ -22,8 +22,12 @@ export async function fetchRecommendations(
   })
 
   if (!response.ok) {
-    const errorBody = await response.text()
-    throw new Error(`Recommendation failed (${response.status}): ${errorBody}`)
+    const errorBody = (await response.text()).trim()
+    throw new Error(
+      errorBody
+        ? `Recommendation failed (${response.status}): ${errorBody}`
+        : `Recommendation failed (${response.status})`
+    )
   }
 
   return response.json()

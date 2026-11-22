@@ -96,7 +96,7 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
                 <span
                   key={chip}
                   dir="ltr"
-                  className="inline-flex items-center rounded-md border border-[var(--border-subtle)] bg-[var(--bg-input)] px-2 py-1 text-[11px] font-mono tabular-nums text-[var(--text-secondary)]"
+                  className="inline-flex items-center rounded-md border border-[var(--border-subtle)] bg-[var(--bg-input)] px-2 py-1 text-[12px] font-mono tabular-nums text-[var(--text-secondary)]"
                 >
                   {chip}
                 </span>
@@ -141,10 +141,10 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
 
           {showSavings && (
             <div className="space-y-1">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--success)] bg-[var(--success-dim)] px-2.5 py-1 text-[11.5px] font-semibold text-[var(--success)]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--success)] bg-[var(--success-dim)] px-2.5 py-1 text-[12px] font-semibold text-[var(--success)]">
                 {isAr ? `وفّر ${egp(savings.savingsEgp)} ج.م` : `Save ${egp(savings.savingsEgp)} EGP`}
               </span>
-              <p className="text-[11px] text-[var(--text-muted)] tabular-nums">
+              <p className="text-[12px] text-[var(--text-muted)] tabular-nums">
                 {isAr
                   ? `متوفر في ${savings.storeCount} متاجر (حتى ${egp(savings.maxPrice)} ج.م)`
                   : `Available at ${savings.storeCount} stores (up to ${egp(savings.maxPrice)} EGP)`}
@@ -261,7 +261,7 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
         </div>
       </div>
 
-      <p className="text-[11px] text-[var(--text-muted)]">
+      <p className="text-[12px] text-[var(--text-muted)]">
         {laptop.reviews_evidence_count > 0
           ? isAr
             ? `مبني على ${laptop.reviews_evidence_count.toLocaleString('en-US')} مراجعة حقيقية`
@@ -285,7 +285,7 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
           <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
         </a>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="foot-btns flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => onSelect(laptop)}

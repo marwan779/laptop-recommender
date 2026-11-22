@@ -71,7 +71,7 @@ const specCell = (primary: React.ReactNode, secondary?: string) => (
   <div dir="ltr" className="space-y-0.5 text-start tabular-nums">
     <div className="font-medium">{primary}</div>
     {secondary ? (
-      <div className="text-[11px] text-[var(--text-secondary)]">{secondary}</div>
+      <div className="text-[12px] text-[var(--text-secondary)]">{secondary}</div>
     ) : null}
   </div>
 )
@@ -633,7 +633,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
               build?.security_features?.length ? build.security_features.slice(0, 3).join(', ') : null,
             ])
             return (
-              <span dir="auto" className="text-[11px]">
+              <span dir="auto" className="text-[12px]">
                 {parts || '—'}
               </span>
             )
@@ -657,7 +657,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
                 : null,
             ])
             return (
-              <span dir="auto" className="text-[11px]">
+              <span dir="auto" className="text-[12px]">
                 {parts || '—'}
               </span>
             )
@@ -681,7 +681,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
               conn?.has_card_reader ? (isAr ? 'قارئ كروت SD' : 'Card Reader') : null,
             ])
             return (
-              <span dir="auto" className="text-[11px]">
+              <span dir="auto" className="text-[12px]">
                 {parts || '—'}
               </span>
             )
@@ -695,7 +695,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
             const ports = detail.connectivity_os?.ports || []
             if (!ports.length) return '—'
             return (
-              <ul dir="ltr" className="space-y-0.5 text-[11px]">
+              <ul dir="ltr" className="space-y-0.5 text-[12px]">
                 {ports.map((port) => (
                   <li key={port}>{port}</li>
                 ))}
@@ -819,7 +819,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
     const best = row.numeric ? winner(nums, row.winnerMax ?? true) : null
     return (
       <React.Fragment key={row.key}>
-        <div className="cmp-sticky-cell bg-[var(--bg-raised)] px-2.5 py-2 text-[11.5px] font-semibold text-[var(--text-secondary)] flex items-center">
+        <div className="cmp-sticky-cell bg-[var(--bg-raised)] px-2.5 py-2 text-[12px] font-semibold text-[var(--text-secondary)] flex items-center">
           {row.label}
         </div>
         {entries.map((entry, index) => {
@@ -829,7 +829,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
           return (
             <div
               key={`${row.key}-${entry.id}`}
-              className={`px-2.5 py-2 text-[11.5px] leading-[1.5] ${
+              className={`px-2.5 py-2 text-[12px] leading-[1.5] ${
                 isBest
                   ? 'bg-[var(--success-dim)] text-[var(--success)] font-semibold shadow-[inset_0_0_0_1px_var(--success)]'
                   : 'bg-[var(--bg-surface)] text-[var(--text-primary)]'
@@ -899,7 +899,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
                       ? 'فتح الكل'
                       : 'Expand all'}
                 </button>
-                <span className="md:hidden text-[11px] text-[var(--text-muted)]">
+                <span className="md:hidden text-[12px] text-[var(--text-muted)]">
                   {isAr ? 'اسحب الجدول جانباً لمشاهدة بقية الأجهزة ←' : 'Swipe the table sideways to see the other laptops →'}
                 </span>
               </div>
@@ -925,14 +925,14 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
                           {state?.detail?.mpn && (
                             <div
                               dir="ltr"
-                              className="font-mono text-[10.5px] text-[var(--text-muted)] truncate"
+                              className="font-mono text-[12px] text-[var(--text-muted)] truncate"
                             >
                               {state.detail.brand ? `${state.detail.brand} · ` : ''}
                               {state.detail.mpn}
                             </div>
                           )}
                           {state?.error && (
-                            <p className="text-[10px] text-[var(--danger)] line-clamp-2">{state.error}</p>
+                            <p className="text-[12px] text-[var(--danger)] line-clamp-2">{state.error}</p>
                           )}
                         </div>
                       )
@@ -953,7 +953,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
                             <span className="flex items-center gap-2 min-w-0">
                               <span className="flex-none text-[var(--cyan)]">{section.icon}</span>
                               <span className="truncate">{section.title}</span>
-                              <span className="flex-none rounded-md border border-[var(--border-subtle)] bg-[var(--bg-raised)] px-1.5 py-0.5 text-[10px] tabular-nums text-[var(--text-muted)]">
+                              <span className="flex-none rounded-md border border-[var(--border-subtle)] bg-[var(--bg-raised)] px-1.5 py-0.5 text-[12px] tabular-nums text-[var(--text-muted)]">
                                 {visibleRows.length}
                               </span>
                             </span>
@@ -998,7 +998,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
                               <ExternalLink className="w-3 h-3" strokeWidth={2} />
                             </a>
                           ) : (
-                            <span className="text-[11px] text-[var(--text-muted)]">—</span>
+                            <span className="text-[12px] text-[var(--text-muted)]">—</span>
                           )}
                         </div>
                       )

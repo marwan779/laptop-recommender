@@ -210,7 +210,7 @@ function ReviewSourceCard({ src, href, isAr }: ReviewSourceCardProps) {
             {hostLabel && (
               <span
                 dir="ltr"
-                className="text-[10px] text-[var(--text-muted)] truncate max-w-full px-1.5"
+                className="text-[12px] text-[var(--text-muted)] truncate max-w-full px-1.5"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 {hostLabel}
@@ -223,14 +223,14 @@ function ReviewSourceCard({ src, href, isAr }: ReviewSourceCardProps) {
       {/* Text column */}
       <div className="flex-1 min-w-0 flex flex-col justify-between gap-1">
         <div className="flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1.5 min-w-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">
+          <span className="inline-flex items-center gap-1.5 min-w-0 text-[12px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">
             {getSourceIcon(src.source_type)}
             <span className="truncate">{formatPlatformLabel(src.platform, src.source_type)}</span>
           </span>
           <div className="flex items-center gap-2 shrink-0">
             {metricLabel && (
               <span
-                className="text-[11px] font-medium text-[var(--text-muted)] tabular-nums"
+                className="text-[12px] font-medium text-[var(--text-muted)] tabular-nums"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 {metricLabel}
@@ -253,7 +253,7 @@ function ReviewSourceCard({ src, href, isAr }: ReviewSourceCardProps) {
         {src.author_or_channel && (
           <div
             dir="auto"
-            className="text-[11px] text-[var(--text-muted)] truncate"
+            className="text-[12px] text-[var(--text-muted)] truncate"
           >
             {src.author_or_channel}
           </div>
@@ -1331,7 +1331,7 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               href={cheapestOfferUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-sm w-full sm:w-auto"
             >
               <span>
                 {isAr ? `شوف العرض في ${cheapestStore}` : `View offer at ${cheapestStore}`}
@@ -1339,7 +1339,7 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
             </a>
           ) : (
-            <button type="button" disabled className="btn btn-primary btn-sm">
+            <button type="button" disabled className="btn btn-primary btn-sm w-full sm:w-auto">
               <span>{isAr ? 'رابط المتجر غير متاح' : 'Store link unavailable'}</span>
             </button>
           )}

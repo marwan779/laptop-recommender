@@ -222,7 +222,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({
                   : 'hover:!border-[var(--border-strong)] hover:!text-[var(--text-primary)]'
               }`}
             >
-              {b}
+              {b === 'All' && isAr ? 'الكل' : b}
             </button>
           ))}
         </div>
@@ -410,7 +410,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({
                     {hasValidPrice ? (
                       <span className="cc-price num">
                         {item.min_price_egp.toLocaleString('en-US')}{' '}
-                        <span className="text-[11px] font-semibold text-[var(--text-muted)]">
+                        <span className="text-[12px] font-semibold text-[var(--text-muted)]">
                           {isAr ? 'ج.م' : 'EGP'}
                         </span>
                       </span>
