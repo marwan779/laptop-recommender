@@ -41,7 +41,6 @@ services:
     environment:
       - SERVICE_NAME=catalog-service
       - ENVIRONMENT=development
-      - DATABASE_URL=${CATALOG_DATABASE_URL:-postgresql+asyncpg://postgres:123321123%40Pp@host.docker.internal:5432/laptop_recommender_catalog}
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - REDIS_URL=redis://redis:6379/0
       - SCRAPER_SERVICE_URL=http://scraper-service:8000
@@ -108,6 +107,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - laptop-network
+
+  users-service:
+    build:
+      context: ./services/users-service
+      dockerfile: Dockerfile
+    container_name: laptop-recommender-users
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${USERS_DATABASE_URL:?USERS_DATABASE_URL must be set in .env (see .env.example)}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - laptop-network
 
