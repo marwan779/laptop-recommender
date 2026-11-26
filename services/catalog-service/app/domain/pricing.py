@@ -203,10 +203,17 @@ class PricingDomainService:
         if not offers:
             return None
 
-        # Filter valid offers meeting realistic minimum threshold
+        # Filter valid offers meeting realistic minimum threshold (excludes 1 EGP / placeholder prices)
         valid_offers = [o for o in offers if o.is_valid_price and o.price_egp >= cls.MIN_REALISTIC_LAPTOP_PRICE]
         if not valid_offers:
-            valid_offers = offers  # Fallback to all offers if none pass threshold
+            return LaptopRollupCalculation(
+                min_price_egp=0.0,
+                max_price_egp=0.0,
+                price_spread_egp=0.0,
+                cheapest_store=offers[0].store_key,
+                in_stock=False,
+                available_stores=[],
+            )
 
         active_in_stock = [o for o in valid_offers if o.in_stock]
 

@@ -42,6 +42,7 @@ import {
   type TierInfo,
 } from '../utils/hardwareTiers'
 import { PriceHistoryChart } from './PriceHistoryChart'
+import { ShareButton } from './ShareButton'
 
 interface LaptopDetailModalProps {
   laptop: RankedLaptop | CatalogListItem | null
@@ -1326,23 +1327,33 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               ? 'الأسعار والمواصفات محدثة وموثقة مباشرة من المتاجر'
               : 'Real-time verified pricing and specs'}
           </div>
-          {cheapestOfferUrl ? (
-            <a
-              href={cheapestOfferUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary btn-sm w-full sm:w-auto"
-            >
-              <span>
-                {isAr ? `شوف العرض في ${cheapestStore}` : `View offer at ${cheapestStore}`}
-              </span>
-              <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
-            </a>
-          ) : (
-            <button type="button" disabled className="btn btn-primary btn-sm w-full sm:w-auto">
-              <span>{isAr ? 'رابط المتجر غير متاح' : 'Store link unavailable'}</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <ShareButton
+              canonicalId={laptop.canonical_id}
+              title={title}
+              priceEgp={effectivePrice}
+              cheapestStore={cheapestStore}
+              lang={lang}
+              compact={false}
+            />
+            {cheapestOfferUrl ? (
+              <a
+                href={cheapestOfferUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary btn-sm flex-1 sm:flex-none"
+              >
+                <span>
+                  {isAr ? `شوف العرض في ${cheapestStore}` : `View offer at ${cheapestStore}`}
+                </span>
+                <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
+              </a>
+            ) : (
+              <button type="button" disabled className="btn btn-primary btn-sm flex-1 sm:flex-none">
+                <span>{isAr ? 'رابط المتجر غير متاح' : 'Store link unavailable'}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

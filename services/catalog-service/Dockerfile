@@ -18,7 +18,10 @@ FROM python:3.12-slim AS runner
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-RUN addgroup --gid 10001 app \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/* \
+    && addgroup --gid 10001 app \
     && adduser --uid 10001 --gid 10001 --disabled-password --gecos "" app
 
 WORKDIR /app

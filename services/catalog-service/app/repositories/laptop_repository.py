@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 from app.common.cursor import InvalidCursorError, decode_cursor, encode_cursor
 from app.common.review_text import align_bilingual_lists
 from app.domain.gpu_power_policy import evaluate_gpu_tgp, inject_gpu_tgp_warning
+from app.domain.pricing import PricingCalculator
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
 from app.models.metrics import LaptopMetrics
@@ -434,7 +435,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
             filters.append(func.lower(LaptopConfiguration.brand) == brand.lower().strip())
         if in_stock_only:
             filters.append(LaptopConfiguration.in_stock.is_(True))
-            filters.append(LaptopConfiguration.min_price_egp > 0)
+            filters.append(LaptopConfiguration.min_price_egp >= PricingCalculator.MIN_REALISTIC_LAPTOP_PRICE)
 
         metric_gates: tuple[tuple[Any, float | None], ...] = (
             (LaptopMetrics.acoustics_score, min_acoustics_score),
@@ -566,7 +567,7 @@ class LaptopRepository(BaseRepository[LaptopConfiguration]):
                 selectinload(LaptopConfiguration.metrics),
             )
             .where(LaptopConfiguration.in_stock.is_(True))
-            .where(LaptopConfiguration.min_price_egp > 0)
+            .where(LaptopConfiguration.min_price_egp >= PricingCalculator.MIN_REALISTIC_LAPTOP_PRICE)
         )
         if max_budget_egp is not None:
             stmt = stmt.where(LaptopConfiguration.min_price_egp <= max_budget_egp)

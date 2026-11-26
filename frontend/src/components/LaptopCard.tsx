@@ -16,6 +16,7 @@ import {
   extractQuickSpecs,
   formatCardTitle,
 } from '../utils/laptopSummary'
+import { ShareButton } from './ShareButton'
 
 interface LaptopCardProps {
   laptop: RankedLaptop
@@ -318,6 +319,14 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
               <span>{isAr ? 'قارن' : 'Compare'}</span>
             </button>
           )}
+
+          <ShareButton
+            canonicalId={laptop.canonical_id}
+            title={formatCardTitle(laptop.brand, laptop.laptop_family, laptop.laptop_model)}
+            priceEgp={laptop.effective_price_egp}
+            cheapestStore={laptop.cheapest_store}
+            lang={lang}
+          />
         </div>
       </div>
     </article>
