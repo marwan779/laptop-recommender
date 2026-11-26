@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Repositories;
 using Users.Infrastructure.Persistence;
+using Users.Infrastructure.Persistence.Repositories;
 
 namespace Users.Infrastructure;
 
@@ -27,6 +29,9 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UsersDbContext>());
         services.AddScoped<IHealthCheckService, DatabaseHealthCheckService>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         return services;
     }
