@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Logging;
 using Users.Application.Common.Interfaces.Repositories;
+using Users.Infrastructure.Logging;
 using Users.Infrastructure.Persistence;
 using Users.Infrastructure.Persistence.Repositories;
 
@@ -32,6 +35,9 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        services.TryAddSingleton(LoggerConfig.FromEnvironment(configuration));
+        services.TryAddSingleton<ILogContextAccessor, AsyncLocalLogContextAccessor>();
 
         return services;
     }
