@@ -4,9 +4,9 @@ public sealed class JwtSettings
 {
     public const string SectionName = "Jwt";
 
-    public string Issuer { get; init; } = "laptop-recommender-users";
-    public string Audience { get; init; } = "laptop-recommender-clients";
-    public string SecretKey { get; init; } = string.Empty;
-    public int AccessTokenExpiryMinutes { get; init; } = 30;
-    public int RefreshTokenExpiryDays { get; init; } = 7;
+    public string Issuer { get; set; } = "laptop-recommender-users";
+    public string Audience { get; set; } = "laptop-recommender-clients";
+    public string SecretKey { get; set; } = string.Empty;
+    public int AccessTokenExpiryMinutes { get; set; } = 30;
+    public int RefreshTokenExpiryDays { get; set; } = 7;
 }

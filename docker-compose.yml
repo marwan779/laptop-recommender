@@ -121,6 +121,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=${USERS_DATABASE_URL:?USERS_DATABASE_URL must be set in .env (see .env.example)}
+      - Jwt__SecretKey=${USERS_JWT_SECRET:?USERS_JWT_SECRET must be set in .env (see .env.example)}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
