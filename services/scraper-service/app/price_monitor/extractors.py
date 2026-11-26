@@ -72,7 +72,10 @@ def _extract_offer_price_and_stock(offers_obj: Any) -> tuple[float | None, bool 
         avail = str(offer.get("availability", ""))
         if "InStock" in avail:
             in_stock = True
-        elif any(tok in avail for tok in ("OutOfStock", "PreOrder", "SoldOut", "Discontinued", "BackOrder")) and in_stock is None:
+        elif (
+            any(tok in avail for tok in ("OutOfStock", "PreOrder", "SoldOut", "Discontinued", "BackOrder"))
+            and in_stock is None
+        ):
             in_stock = False
 
     return price, in_stock
@@ -390,7 +393,9 @@ class ElBadrPriceExtractor(BasePriceExtractor):
                         if raw_p:
                             price = parse_egp_number(str(raw_p))
                         avail = str(offers.get("availability", ""))
-                        if any(tok in avail for tok in ("OutOfStock", "PreOrder", "SoldOut", "Discontinued", "BackOrder")):
+                        if any(
+                            tok in avail for tok in ("OutOfStock", "PreOrder", "SoldOut", "Discontinued", "BackOrder")
+                        ):
                             in_stock = False
                         elif "InStock" in avail:
                             in_stock = True

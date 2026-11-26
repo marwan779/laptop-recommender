@@ -37,8 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     if settings.scraper_service_url and not settings.scraper_api_key.strip():
         logger.warning(
-            "SCRAPER_API_KEY is empty; HTTP triggers to scraper-service may "
-            "fail authentication until it is populated."
+            "SCRAPER_API_KEY is empty; HTTP triggers to scraper-service may fail authentication until it is populated."
         )
 
     # 1. Initialize Cache Provider (Redis with graceful fallback to In-Memory)

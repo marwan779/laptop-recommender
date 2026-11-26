@@ -13,11 +13,7 @@ router = APIRouter(tags=["Social Share"])
 
 
 def _resolve_base_url(request: Request) -> str:
-    host = (
-        request.headers.get("x-forwarded-host")
-        or request.headers.get("host")
-        or request.url.netloc
-    )
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.netloc
     proto = request.headers.get("x-forwarded-proto") or request.url.scheme
     if host.endswith((".ngrok-free.app", ".ngrok.app", ".trycloudflare.com")):
         proto = "https"

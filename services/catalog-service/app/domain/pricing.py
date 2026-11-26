@@ -624,10 +624,7 @@ class PriceHistoryDomainService:
             key=lambda s: (s.current_price_egp, s.store_key),
             default=min(series, key=lambda s: (s.current_price_egp, s.store_key)),
         )
-        series = [
-            replace(s, is_cheapest=(s.store_key == cheapest_series.store_key))
-            for s in series
-        ]
+        series = [replace(s, is_cheapest=(s.store_key == cheapest_series.store_key)) for s in series]
 
         ordered = sorted(
             series,
@@ -643,4 +640,3 @@ class PriceHistoryDomainService:
             current_best_price_egp=round(current_best, 2),
             series=ordered,
         )
-

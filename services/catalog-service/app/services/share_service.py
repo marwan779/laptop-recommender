@@ -34,10 +34,19 @@ def _to_share_card_data(detail: FullLaptopDetailResponse) -> ShareCardData:
     else:
         cpu_label = f"{cpu_line} {cpu_model}".strip()
     gpu_label = detail.gpu.model if detail.gpu and detail.gpu.model else ""
-    if detail.gpu and detail.gpu.vram_gb and detail.gpu.vram_gb > 0 and f"{detail.gpu.vram_gb}gb" not in gpu_label.lower():
+    if (
+        detail.gpu
+        and detail.gpu.vram_gb
+        and detail.gpu.vram_gb > 0
+        and f"{detail.gpu.vram_gb}gb" not in gpu_label.lower()
+    ):
         gpu_label = f"{gpu_label} {detail.gpu.vram_gb}GB".strip()
 
-    ram_label = f"{detail.memory.capacity_gb}GB {detail.memory.memory_type}".strip() if detail.memory and detail.memory.capacity_gb else ""
+    ram_label = (
+        f"{detail.memory.capacity_gb}GB {detail.memory.memory_type}".strip()
+        if detail.memory and detail.memory.capacity_gb
+        else ""
+    )
     storage_gb = detail.storage.capacity_gb if detail.storage else 0
     storage_label = (
         f"{storage_gb // 1024}TB SSD"

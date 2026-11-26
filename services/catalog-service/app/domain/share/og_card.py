@@ -130,7 +130,9 @@ def build_share_metadata(data: ShareCardData, lang: str, base_url: str) -> dict[
         else 0
     )
 
-    specs_parts = [p for p in [data.cpu_label, data.gpu_label, data.ram_label, data.storage_label, data.display_label] if p]
+    specs_parts = [
+        p for p in [data.cpu_label, data.gpu_label, data.ram_label, data.storage_label, data.display_label] if p
+    ]
     specs_line = " · ".join(specs_parts[:4])
 
     if is_ar:
@@ -219,19 +221,22 @@ def render_og_card_png(data: ShareCardData, thumbnail_bytes: bytes | None = None
     draw = ImageDraw.Draw(img)
 
     # Outer card container
-    draw.rounded_rectangle((28, 28, width - 28, height - 28), radius=24, fill=BG_SURFACE, outline=BORDER_STRONG, width=2)
+    draw.rounded_rectangle(
+        (28, 28, width - 28, height - 28), radius=24, fill=BG_SURFACE, outline=BORDER_STRONG, width=2
+    )
 
     font_tag = _load_font(16, bold=True)
     font_title = _load_font(34, bold=True)
     font_price = _load_font(50, bold=True)
-    font_sub = _load_font(20, bold=False)
     font_sub_bold = _load_font(20, bold=True)
     font_pill = _load_font(18, bold=True)
     font_foot = _load_font(17, bold=False)
 
     # Top header strip
     brand_text = data.brand.upper()
-    draw.rounded_rectangle((60, 56, 60 + max(110, len(brand_text) * 14 + 32), 92), radius=8, fill=BG_RAISED, outline=BORDER_SUBTLE, width=1)
+    draw.rounded_rectangle(
+        (60, 56, 60 + max(110, len(brand_text) * 14 + 32), 92), radius=8, fill=BG_RAISED, outline=BORDER_SUBTLE, width=1
+    )
     draw.text((76, 65), brand_text, font=font_tag, fill=TEXT_PRIMARY)
 
     # Live verified badge on top-right
@@ -279,7 +284,9 @@ def render_og_card_png(data: ShareCardData, thumbnail_bytes: bytes | None = None
 
     # Price box
     price_top = ty + 14
-    draw.rounded_rectangle((rx, price_top, width - 60, price_top + 130), radius=14, fill=BG_INPUT, outline=BORDER_SUBTLE, width=1)
+    draw.rounded_rectangle(
+        (rx, price_top, width - 60, price_top + 130), radius=14, fill=BG_INPUT, outline=BORDER_SUBTLE, width=1
+    )
     price_str = f"{round(data.min_price_egp):,} EGP"
     draw.text((rx + 22, price_top + 16), price_str, font=font_price, fill=GOLD_BRIGHT)
     store_line = _truncate_text(draw, f"Lowest at {data.cheapest_store}", font_sub_bold, max_rw - 44)
@@ -296,7 +303,9 @@ def render_og_card_png(data: ShareCardData, thumbnail_bytes: bytes | None = None
         sbbox = draw.textbbox((0, 0), sav_text, font=font_pill)
         sw = (sbbox[2] - sbbox[0]) + 28
         sx0 = width - 82 - sw
-        draw.rounded_rectangle((sx0, price_top + 24, width - 82, price_top + 60), radius=18, fill=EMERALD_DIM, outline=EMERALD, width=1)
+        draw.rounded_rectangle(
+            (sx0, price_top + 24, width - 82, price_top + 60), radius=18, fill=EMERALD_DIM, outline=EMERALD, width=1
+        )
         draw.text((sx0 + 14, price_top + 31), sav_text, font=font_pill, fill=EMERALD)
 
     # Spec pills (2x2 grid)
@@ -309,12 +318,14 @@ def render_og_card_png(data: ShareCardData, thumbnail_bytes: bytes | None = None
     pill_top = price_top + 148
     pill_w = (max_rw - 14) // 2
     pill_h = 54
-    for idx, (tag, val) in enumerate(spec_items):
+    for idx, (_tag, val) in enumerate(spec_items):
         col = idx % 2
         row = idx // 2
         px0 = rx + col * (pill_w + 14)
         py0 = pill_top + row * (pill_h + 12)
-        draw.rounded_rectangle((px0, py0, px0 + pill_w, py0 + pill_h), radius=10, fill=BG_RAISED, outline=BORDER_SUBTLE, width=1)
+        draw.rounded_rectangle(
+            (px0, py0, px0 + pill_w, py0 + pill_h), radius=10, fill=BG_RAISED, outline=BORDER_SUBTLE, width=1
+        )
         draw.ellipse((px0 + 14, py0 + 23, px0 + 22, py0 + 31), fill=CYAN)
         clean_val = _truncate_text(draw, val or "N/A", font_pill, pill_w - 42)
         draw.text((px0 + 32, py0 + 17), clean_val, font=font_pill, fill=TEXT_PRIMARY)
