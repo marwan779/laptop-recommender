@@ -22,6 +22,7 @@ import {
 } from '../config/metricFilters'
 import { MetricSlider } from './MetricSlider'
 import { formatCardTitle } from '../utils/laptopSummary'
+import { getAvailabilityState, isValidDisplayPrice } from '../utils/availability'
 
 interface CatalogBrowserProps {
   lang: 'ar' | 'en'
@@ -222,7 +223,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({
                   : 'hover:!border-[var(--border-strong)] hover:!text-[var(--text-primary)]'
               }`}
             >
-              {b}
+              {b === 'All' && isAr ? 'الكل' : b}
             </button>
           ))}
         </div>
@@ -335,16 +336,18 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({
       ) : data?.items && data.items.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {data.items.map((item) => {
-            const hasValidPrice = item.min_price_egp && item.min_price_egp > 0
+            const availability = getAvailabilityState(item.in_stock, item.min_price_egp)
+            const isAvailable = availability === 'in_stock'
+            const hasValidPrice = isValidDisplayPrice(item.min_price_egp)
 
             return (
               <div
                 key={item.id}
                 onClick={() => onSelectLaptop && onSelectLaptop(item)}
-                className="catalog-card"
+                className={`catalog-card ${!isAvailable ? 'opacity-85' : ''}`}
               >
                 <div className="space-y-3">
-                  <div className="studio-well">
+                  <div className={`studio-well ${!isAvailable ? 'opacity-75' : ''}`}>
                     <img
                       src={item.thumbnail_url}
                       alt={item.title}
@@ -356,7 +359,19 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <span className="brand-chip !text-[10px] !py-0.5">{item.brand}</span>
+                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                      <span className="brand-chip !text-[12px] !py-0.5">{item.brand}</span>
+                      {availability === 'out_of_stock' && (
+                        <span className="inline-flex items-center rounded-md border border-[var(--danger)] bg-[var(--danger-dim)] px-2 py-0.5 text-[12px] font-semibold text-[var(--danger)]">
+                          {isAr ? 'غير متوفر' : 'Out of stock'}
+                        </span>
+                      )}
+                      {availability === 'coming_soon' && (
+                        <span className="inline-flex items-center rounded-md border border-[var(--warning)] bg-[var(--warning-dim)] px-2 py-0.5 text-[12px] font-semibold text-[var(--warning)]">
+                          {isAr ? 'قريباً' : 'Coming soon'}
+                        </span>
+                      )}
+                    </div>
                     <h4 dir="auto" className="cc-title">
                       {formatCardTitle(item.brand, item.laptop_family, item.laptop_model) || item.title}
                     </h4>
@@ -405,18 +420,22 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({
                 <div className="cc-foot">
                   <div>
                     <span className="micro block">
-                      {isAr ? 'يبدأ من' : 'From'}
+                      {isAvailable ? (isAr ? 'يبدأ من' : 'From') : isAr ? 'الحالة' : 'Status'}
                     </span>
-                    {hasValidPrice ? (
+                    {isAvailable && hasValidPrice ? (
                       <span className="cc-price num">
                         {item.min_price_egp.toLocaleString('en-US')}{' '}
-                        <span className="text-[11px] font-semibold text-[var(--text-muted)]">
+                        <span className="text-[12px] font-semibold text-[var(--text-muted)]">
                           {isAr ? 'ج.م' : 'EGP'}
                         </span>
                       </span>
-                    ) : (
+                    ) : availability === 'coming_soon' ? (
                       <span className="text-[12.5px] font-semibold text-[var(--warning)]">
-                        {isAr ? 'السعر عند الطلب' : 'Price on request'}
+                        {isAr ? 'قريباً / السعر غير محدد' : 'Coming soon'}
+                      </span>
+                    ) : (
+                      <span className="text-[12.5px] font-semibold text-[var(--danger)]">
+                        {isAr ? 'غير متوفر حالياً' : 'Out of stock'}
                       </span>
                     )}
                   </div>

@@ -33,7 +33,7 @@ export const CompareBar: React.FC<CompareBarProps> = ({
                 <div className="w-7 h-7 rounded-[5px] overflow-hidden bg-[var(--studio-well)] shrink-0">
                   <img src={entry.thumbnail_url} alt="" className="w-full h-full object-contain" />
                 </div>
-                <span dir="auto" className="text-[11px] font-medium text-[var(--text-primary)] truncate">
+                <span dir="auto" className="text-[12px] font-medium text-[var(--text-primary)] truncate">
                   {entry.title}
                 </span>
                 <button

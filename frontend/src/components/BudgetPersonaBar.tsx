@@ -188,7 +188,7 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
           </div>
 
           <div className="budget-input">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)] whitespace-nowrap">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)] whitespace-nowrap">
               {isAr ? 'الميزانية' : 'Budget'}
             </span>
             <input
@@ -278,7 +278,7 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
                       <span className="block text-[13px] font-semibold text-[var(--text-primary)]">
                         {isAr ? cat.labelAr : cat.labelEn}
                       </span>
-                      <span className="block mt-0.5 text-[11.5px] leading-[1.45] text-[var(--text-muted)] line-clamp-2">
+                      <span className="block mt-0.5 text-[12px] leading-[1.45] text-[var(--text-muted)] line-clamp-2">
                         {isAr ? cat.descAr : cat.descEn}
                       </span>
                       {isSelected && (
@@ -294,11 +294,11 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
               {activeCategory.subOptions.length > 0 && (
                 <div className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-input)] p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="text-[11.5px] font-semibold text-[var(--text-secondary)]">
+                    <span className="text-[12px] font-semibold text-[var(--text-secondary)]">
                       {isAr ? 'تخصص الاستخدام:' : 'Specialize your focus:'}
                     </span>
                     {activeSub && (
-                      <span dir="auto" className="text-[11.5px] text-[var(--text-muted)]">
+                      <span dir="auto" className="text-[12px] text-[var(--text-muted)]">
                         {isAr ? activeSub.hintAr : activeSub.hintEn}
                       </span>
                     )}
@@ -378,7 +378,7 @@ export const BudgetPersonaBar: React.FC<BudgetPersonaBarProps> = ({
             placeholder={
               isAr
                 ? 'مثال: هندسة وأوتوكاد، أو لعبة، أو وزن خفيف'
-                : 'e.g. AutoCAD, a specific game, or light weight'
+                : 'e.g. AutoCAD, gaming, or light weight'
             }
             className="field"
           />

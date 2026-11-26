@@ -10,6 +10,7 @@ from app.api.routes.catalog import router as catalog_router
 from app.api.routes.health import router as health_router
 from app.api.routes.recommendations import router as recommendations_router
 from app.api.routes.scraping import router as scraping_router
+from app.api.routes.share import router as share_router
 from app.common.cache import InMemoryCacheProvider, RedisCacheProvider
 from app.common.logger import configure_logging, get_logger
 from app.common.messaging.rabbitmq import RabbitMQBroker
@@ -36,8 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     if settings.scraper_service_url and not settings.scraper_api_key.strip():
         logger.warning(
-            "SCRAPER_API_KEY is empty; HTTP triggers to scraper-service may "
-            "fail authentication until it is populated."
+            "SCRAPER_API_KEY is empty; HTTP triggers to scraper-service may fail authentication until it is populated."
         )
 
     # 1. Initialize Cache Provider (Redis with graceful fallback to In-Memory)
@@ -126,6 +126,8 @@ app.include_router(health_router)
 app.include_router(scraping_router, prefix=settings.api_prefix)
 app.include_router(recommendations_router, prefix=settings.api_prefix)
 app.include_router(catalog_router, prefix=settings.api_prefix)
+app.include_router(share_router)
+app.include_router(share_router, prefix=settings.api_prefix, include_in_schema=False)
 
 
 @app.get("/", tags=["Root"])

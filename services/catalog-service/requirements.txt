@@ -25,6 +25,7 @@ python-dotenv>=1.0.0
 
 # HTTP Client & Utilities
 httpx>=0.28.0
+pillow>=11.0.0
 
 # Math & Recommender Engine
 numpy>=1.26.0

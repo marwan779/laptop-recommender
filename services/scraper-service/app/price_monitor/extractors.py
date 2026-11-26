@@ -72,7 +72,10 @@ def _extract_offer_price_and_stock(offers_obj: Any) -> tuple[float | None, bool 
         avail = str(offer.get("availability", ""))
         if "InStock" in avail:
             in_stock = True
-        elif "OutOfStock" in avail and in_stock is None:
+        elif (
+            any(tok in avail for tok in ("OutOfStock", "PreOrder", "SoldOut", "Discontinued", "BackOrder"))
+            and in_stock is None
+        ):
             in_stock = False
 
     return price, in_stock
@@ -342,12 +345,29 @@ class CompumartsPriceExtractor(BasePriceExtractor):
                     is_disabled = (
                         add_btn.has_attr("disabled") or str(add_btn.get("aria-disabled", "")).lower() == "true"
                     )
-                    if is_disabled or "sold out" in btn_text or "out of stock" in btn_text:
+                    if is_disabled or any(
+                        kw in btn_text
+                        for kw in (
+                            "sold out",
+                            "out of stock",
+                            "coming soon",
+                            "pre-order",
+                            "preorder",
+                            "notify me",
+                            "قريبا",
+                            "قريباً",
+                            "غير متوفر",
+                            "نفذت الكمية",
+                        )
+                    ):
                         in_stock = False
                     else:
                         in_stock = True
 
-        return price, in_stock if in_stock is not None else True
+        resolved_stock = in_stock if in_stock is not None else True
+        if price is not None and price < 5000.0:
+            resolved_stock = False
+        return price, resolved_stock
 
 
 class ElBadrPriceExtractor(BasePriceExtractor):
@@ -373,9 +393,11 @@ class ElBadrPriceExtractor(BasePriceExtractor):
                         if raw_p:
                             price = parse_egp_number(str(raw_p))
                         avail = str(offers.get("availability", ""))
-                        if "OutOfStock" in avail:
+                        if any(
+                            tok in avail for tok in ("OutOfStock", "PreOrder", "SoldOut", "Discontinued", "BackOrder")
+                        ):
                             in_stock = False
-                        elif "InStock" in avail or "PreOrder" in avail:
+                        elif "InStock" in avail:
                             in_stock = True
                     break
             except Exception:
@@ -387,9 +409,11 @@ class ElBadrPriceExtractor(BasePriceExtractor):
             if elem:
                 price = parse_egp_number(elem.get_text(strip=True))
 
-        # Check stock element markers
-        oos_elem = soup.select_one(".product-out-of-stock, .out-of-stock, .stock-out")
+        # Check stock element markers & placeholder prices (e.g., 1 EGP coming soon)
+        oos_elem = soup.select_one(".product-out-of-stock, .out-of-stock, .stock-out, .coming-soon")
         if oos_elem:
+            in_stock = False
+        if price is not None and price < 5000.0:
             in_stock = False
 
         return price, in_stock
@@ -451,7 +475,10 @@ class SigmaPriceExtractor(BasePriceExtractor):
                 if oos_badge is not None:
                     in_stock = False
 
-        return price, in_stock if in_stock is not None else True
+        resolved_stock = in_stock if in_stock is not None else True
+        if price is not None and price < 5000.0:
+            resolved_stock = False
+        return price, resolved_stock
 
 
 class GenericPriceExtractor(BasePriceExtractor):

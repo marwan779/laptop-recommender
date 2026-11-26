@@ -16,6 +16,8 @@ import {
   extractQuickSpecs,
   formatCardTitle,
 } from '../utils/laptopSummary'
+import { isPlaceholderPrice, isValidDisplayPrice } from '../utils/availability'
+import { ShareButton } from './ShareButton'
 
 interface LaptopCardProps {
   laptop: RankedLaptop
@@ -43,8 +45,10 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
   const cons = isAr ? laptop.cons_ar : laptop.cons_en
   const whyList = isAr ? laptop.why_recommended_ar : laptop.why_recommended_en
   const quickSpecs = extractQuickSpecs(laptop.title)
+  const hasValidPrice = isValidDisplayPrice(laptop.effective_price_egp)
+  const isComingSoon = isPlaceholderPrice(laptop.effective_price_egp)
   const savings = computeStoreSavings(laptop)
-  const showSavings = savings.storeCount >= 2 && savings.savingsEgp >= 200
+  const showSavings = hasValidPrice && savings.storeCount >= 2 && savings.savingsEgp >= 200
 
   const storeEntries = Object.entries(laptop.prices_by_store || {})
     .filter(([, price]) => typeof price === 'number' && price > 0)
@@ -64,6 +68,17 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
                 : `#${laptop.rank}`}
             </span>
             <span className="brand-chip">{laptop.brand}</span>
+            {!hasValidPrice && (
+              <span
+                className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[12px] font-semibold ${
+                  isComingSoon
+                    ? 'border-[var(--warning)] bg-[var(--warning-dim)] text-[var(--warning)]'
+                    : 'border-[var(--danger)] bg-[var(--danger-dim)] text-[var(--danger)]'
+                }`}
+              >
+                {isComingSoon ? (isAr ? 'قريباً' : 'Coming soon') : isAr ? 'غير متوفر' : 'Out of stock'}
+              </span>
+            )}
           </div>
           <h3 dir="auto" className="model">
             {formatCardTitle(laptop.brand, laptop.laptop_family, laptop.laptop_model)}
@@ -96,7 +111,7 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
                 <span
                   key={chip}
                   dir="ltr"
-                  className="inline-flex items-center rounded-md border border-[var(--border-subtle)] bg-[var(--bg-input)] px-2 py-1 text-[11px] font-mono tabular-nums text-[var(--text-secondary)]"
+                  className="inline-flex items-center rounded-md border border-[var(--border-subtle)] bg-[var(--bg-input)] px-2 py-1 text-[12px] font-mono tabular-nums text-[var(--text-secondary)]"
                 >
                   {chip}
                 </span>
@@ -126,25 +141,39 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
       <div className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-input)] px-3.5 py-3 space-y-2">
         <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
           <div>
-            <div className="micro">{isAr ? 'أقل سعر حالي' : 'Current lowest price'}</div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-display text-[24px] font-bold tabular-nums text-[var(--text-primary)]">
-                {egp(laptop.effective_price_egp)}
-              </span>
-              <span className="text-[12px] text-[var(--text-muted)]">{isAr ? 'ج.م' : 'EGP'}</span>
+            <div className="micro">
+              {hasValidPrice ? (isAr ? 'أقل سعر حالي' : 'Current lowest price') : isAr ? 'حالة التوفر' : 'Availability'}
             </div>
+            {hasValidPrice ? (
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-display text-[24px] font-bold tabular-nums text-[var(--text-primary)]">
+                  {egp(laptop.effective_price_egp)}
+                </span>
+                <span className="text-[12px] text-[var(--text-muted)]">{isAr ? 'ج.م' : 'EGP'}</span>
+              </div>
+            ) : (
+              <div className={`font-display text-[18px] font-bold ${isComingSoon ? 'text-[var(--warning)]' : 'text-[var(--danger)]'}`}>
+                {isComingSoon
+                  ? isAr
+                    ? 'قريباً / السعر غير محدد'
+                    : 'Coming soon'
+                  : isAr
+                  ? 'غير متوفر حالياً'
+                  : 'Out of stock'}
+              </div>
+            )}
             <div className="text-[12px] text-[var(--text-secondary)]">
-              {isAr ? 'أقل سعر في:' : 'Lowest at:'}{' '}
+              {hasValidPrice ? (isAr ? 'أقل سعر في:' : 'Lowest at:') : isAr ? 'المتجر:' : 'Store:'}{' '}
               <strong className="text-[var(--text-primary)]">{laptop.cheapest_store}</strong>
             </div>
           </div>
 
           {showSavings && (
             <div className="space-y-1">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--success)] bg-[var(--success-dim)] px-2.5 py-1 text-[11.5px] font-semibold text-[var(--success)]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--success)] bg-[var(--success-dim)] px-2.5 py-1 text-[12px] font-semibold text-[var(--success)]">
                 {isAr ? `وفّر ${egp(savings.savingsEgp)} ج.م` : `Save ${egp(savings.savingsEgp)} EGP`}
               </span>
-              <p className="text-[11px] text-[var(--text-muted)] tabular-nums">
+              <p className="text-[12px] text-[var(--text-muted)] tabular-nums">
                 {isAr
                   ? `متوفر في ${savings.storeCount} متاجر (حتى ${egp(savings.maxPrice)} ج.م)`
                   : `Available at ${savings.storeCount} stores (up to ${egp(savings.maxPrice)} EGP)`}
@@ -261,7 +290,7 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
         </div>
       </div>
 
-      <p className="text-[11px] text-[var(--text-muted)]">
+      <p className="text-[12px] text-[var(--text-muted)]">
         {laptop.reviews_evidence_count > 0
           ? isAr
             ? `مبني على ${laptop.reviews_evidence_count.toLocaleString('en-US')} مراجعة حقيقية`
@@ -277,15 +306,21 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
           href={laptop.cheapest_offer_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn btn-primary btn-sm flex-1 min-h-[42px]"
+          className={`btn btn-sm flex-1 min-h-[42px] ${hasValidPrice ? 'btn-primary' : 'btn-secondary'}`}
         >
           <span>
-            {isAr ? `اعرض السعر في ${laptop.cheapest_store}` : `View price at ${laptop.cheapest_store}`}
+            {hasValidPrice
+              ? isAr
+                ? `اعرض السعر في ${laptop.cheapest_store}`
+                : `View price at ${laptop.cheapest_store}`
+              : isAr
+              ? `تحقق في ${laptop.cheapest_store}`
+              : `Check at ${laptop.cheapest_store}`}
           </span>
           <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
         </a>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="foot-btns flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => onSelect(laptop)}
@@ -318,6 +353,14 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
               <span>{isAr ? 'قارن' : 'Compare'}</span>
             </button>
           )}
+
+          <ShareButton
+            canonicalId={laptop.canonical_id}
+            title={formatCardTitle(laptop.brand, laptop.laptop_family, laptop.laptop_model)}
+            priceEgp={laptop.effective_price_egp}
+            cheapestStore={laptop.cheapest_store}
+            lang={lang}
+          />
         </div>
       </div>
     </article>

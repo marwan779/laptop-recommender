@@ -203,10 +203,17 @@ class PricingDomainService:
         if not offers:
             return None
 
-        # Filter valid offers meeting realistic minimum threshold
+        # Filter valid offers meeting realistic minimum threshold (excludes 1 EGP / placeholder prices)
         valid_offers = [o for o in offers if o.is_valid_price and o.price_egp >= cls.MIN_REALISTIC_LAPTOP_PRICE]
         if not valid_offers:
-            valid_offers = offers  # Fallback to all offers if none pass threshold
+            return LaptopRollupCalculation(
+                min_price_egp=0.0,
+                max_price_egp=0.0,
+                price_spread_egp=0.0,
+                cheapest_store=offers[0].store_key,
+                in_stock=False,
+                available_stores=[],
+            )
 
         active_in_stock = [o for o in valid_offers if o.in_stock]
 
@@ -617,10 +624,7 @@ class PriceHistoryDomainService:
             key=lambda s: (s.current_price_egp, s.store_key),
             default=min(series, key=lambda s: (s.current_price_egp, s.store_key)),
         )
-        series = [
-            replace(s, is_cheapest=(s.store_key == cheapest_series.store_key))
-            for s in series
-        ]
+        series = [replace(s, is_cheapest=(s.store_key == cheapest_series.store_key)) for s in series]
 
         ordered = sorted(
             series,
@@ -636,4 +640,3 @@ class PriceHistoryDomainService:
             current_best_price_egp=round(current_best, 2),
             series=ordered,
         )
-

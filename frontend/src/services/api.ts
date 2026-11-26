@@ -22,8 +22,14 @@ export async function fetchRecommendations(
   })
 
   if (!response.ok) {
-    const errorBody = await response.text()
-    throw new Error(`Recommendation failed (${response.status}): ${errorBody}`)
+    const rawBody = (await response.text()).trim()
+    const isHtml = rawBody.startsWith('<') || rawBody.toLowerCase().includes('<html')
+    const cleanBody = isHtml ? 'Service temporarily unavailable' : rawBody
+    throw new Error(
+      cleanBody
+        ? `Recommendation failed (${response.status}): ${cleanBody}`
+        : `Recommendation failed (${response.status})`
+    )
   }
 
   return response.json()
