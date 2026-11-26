@@ -20,6 +20,7 @@ import {
   getSiliconTierInfo,
   getUpgradeabilityTierInfo,
 } from '../utils/hardwareTiers'
+import { isOfferAvailable, isPlaceholderPrice, isValidDisplayPrice } from '../utils/availability'
 
 interface CompareModalProps {
   entries: CompareEntry[]
@@ -187,26 +188,35 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
         {
           key: 'price',
           label: isAr ? 'أقل سعر' : 'Lowest price',
-          numeric: (detail) => detail.min_price_egp ?? null,
+          numeric: (detail) => (isValidDisplayPrice(detail.min_price_egp) ? detail.min_price_egp : null),
           winnerMax: false,
-          compareKey: (detail) => detail.min_price_egp ?? null,
-          value: (detail) => (
-            <span className="font-display font-semibold tabular-nums text-[var(--gold)]">
-              {egp(detail.min_price_egp)} {isAr ? 'ج.م' : 'EGP'}
-            </span>
-          ),
+          compareKey: (detail) => (isValidDisplayPrice(detail.min_price_egp) ? detail.min_price_egp : null),
+          value: (detail) =>
+            isValidDisplayPrice(detail.min_price_egp) ? (
+              <span className="font-display font-semibold tabular-nums text-[var(--gold)]">
+                {egp(detail.min_price_egp)} {isAr ? 'ج.م' : 'EGP'}
+              </span>
+            ) : (
+              <span className="text-[12px] text-[var(--text-muted)]">
+                {isPlaceholderPrice(detail.min_price_egp) ? (isAr ? 'قريباً' : 'Coming soon') : '—'}
+              </span>
+            ),
         },
         {
           key: 'stock',
           label: isAr ? 'حالة التوفر' : 'Stock status',
-          compareKey: (detail) => Boolean(detail.in_stock),
+          compareKey: (detail) => Boolean(detail.in_stock && isValidDisplayPrice(detail.min_price_egp)),
           value: (detail) =>
-            detail.in_stock ? (
-              <span className="inline-flex items-center rounded-md border border-[var(--success)] bg-[var(--success-dim)] px-2 py-0.5 text-[10.5px] font-semibold text-[var(--success)]">
+            detail.in_stock && isValidDisplayPrice(detail.min_price_egp) ? (
+              <span className="inline-flex items-center rounded-md border border-[var(--success)] bg-[var(--success-dim)] px-2 py-0.5 text-[12px] font-semibold text-[var(--success)]">
                 {isAr ? 'متوفر' : 'In stock'}
               </span>
+            ) : isPlaceholderPrice(detail.min_price_egp) ? (
+              <span className="inline-flex items-center rounded-md border border-[var(--warning)] bg-[var(--warning-dim)] px-2 py-0.5 text-[12px] font-semibold text-[var(--warning)]">
+                {isAr ? 'قريباً' : 'Coming soon'}
+              </span>
             ) : (
-              <span className="inline-flex items-center rounded-md border border-[var(--danger)] bg-[var(--danger-dim)] px-2 py-0.5 text-[10.5px] font-semibold text-[var(--danger)]">
+              <span className="inline-flex items-center rounded-md border border-[var(--danger)] bg-[var(--danger-dim)] px-2 py-0.5 text-[12px] font-semibold text-[var(--danger)]">
                 {isAr ? 'غير متوفر' : 'Out of stock'}
               </span>
             ),
@@ -246,23 +256,32 @@ export const CompareModal: React.FC<CompareModalProps> = ({ entries, lang, onClo
               .slice(0, 4)
             if (!offers.length) return '—'
             return (
-              <ul className="space-y-1 text-[10.5px]">
-                {offers.map((offer) => (
-                  <li key={offer.store_key} className="flex items-center justify-between gap-2">
-                    <span dir="auto" className="truncate text-[var(--text-secondary)]">
-                      {offer.store_name}
-                    </span>
-                    <span className="whitespace-nowrap tabular-nums text-[var(--gold)]">
-                      {egp(offer.price_egp)} {isAr ? 'ج.م' : 'EGP'}
-                      {!offer.in_stock && (
-                        <span className="text-[var(--text-muted)]">
-                          {' '}
-                          {isAr ? '(غير متوفر)' : '(OOS)'}
-                        </span>
-                      )}
-                    </span>
-                  </li>
-                ))}
+              <ul className="space-y-1 text-[12px]">
+                {offers.map((offer) => {
+                  const avail = isOfferAvailable(offer)
+                  return (
+                    <li key={offer.store_key} className="flex items-center justify-between gap-2">
+                      <span dir="auto" className="truncate text-[var(--text-secondary)]">
+                        {offer.store_name}
+                      </span>
+                      <span className={`whitespace-nowrap tabular-nums ${avail ? 'text-[var(--gold)]' : 'text-[var(--text-muted)]'}`}>
+                        {isValidDisplayPrice(offer.price_egp) ? `${egp(offer.price_egp)} ${isAr ? 'ج.م' : 'EGP'}` : '—'}
+                        {!avail && (
+                          <span className="text-[var(--danger)]">
+                            {' '}
+                            {isPlaceholderPrice(offer.price_egp)
+                              ? isAr
+                                ? '(قريباً)'
+                                : '(Soon)'
+                              : isAr
+                              ? '(غير متوفر)'
+                              : '(OOS)'}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  )
+                })}
               </ul>
             )
           },

@@ -176,3 +176,16 @@ def test_has_significant_price_change_handles_none_and_hikes():
     assert PricingDomainService.has_significant_price_change(50000.0, 55000.0) is True
     assert PricingDomainService.has_significant_price_change(55000.0, 50000.0) is True
     assert PricingDomainService.has_significant_price_change(50000.0, 50000.4) is False
+
+
+def test_calculate_laptop_rollup_rejects_placeholder_1_egp_offers():
+    rollup = PricingDomainService.calculate_laptop_rollup(
+        [
+            OfferSnapshot(store_key="sigma", price_egp=1.0, in_stock=True, is_valid_price=True),
+        ]
+    )
+    assert rollup is not None
+    assert rollup.in_stock is False
+    assert rollup.min_price_egp == 0.0
+    assert rollup.max_price_egp == 0.0
+    assert rollup.available_stores == []

@@ -43,6 +43,7 @@ import {
 } from '../utils/hardwareTiers'
 import { PriceHistoryChart } from './PriceHistoryChart'
 import { ShareButton } from './ShareButton'
+import { getAvailabilityState, isOfferAvailable, isPlaceholderPrice, isValidDisplayPrice } from '../utils/availability'
 
 interface LaptopDetailModalProps {
   laptop: RankedLaptop | CatalogListItem | null
@@ -376,6 +377,9 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
   const scoreTone = (score: number) =>
     score >= 85 ? 't-gold' : score < 50 ? 't-danger' : 't-primary'
 
+  const availability = getAvailabilityState(detail ? detail.in_stock : true, effectivePrice)
+  const isAvailable = availability === 'in_stock'
+
   return (
     <div
       className="modal-backdrop"
@@ -456,40 +460,73 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
             <div className="sm:col-span-7 flex flex-col justify-between gap-4 min-w-0">
               <div>
                 <span className="micro block">
-                  {isAr ? 'أقل سعر متاح في السوق المصري' : 'Lowest Available Market Price'}
+                  {isAvailable
+                    ? isAr
+                      ? 'أقل سعر متاح في السوق المصري'
+                      : 'Lowest Available Market Price'
+                    : isAr
+                    ? 'حالة التوفر في السوق المصري'
+                    : 'Egypt Market Availability'}
                 </span>
                 <div className="flex items-baseline gap-2 flex-wrap mt-1">
-                  <span className="font-display font-bold text-[28px] leading-tight text-[var(--gold-bright)] num">
-                    {effectivePrice > 0
-                      ? effectivePrice.toLocaleString('en-US')
-                      : isAr
-                      ? 'السعر عند الطلب'
-                      : 'Price on request'}
-                  </span>
-                  {effectivePrice > 0 && (
-                    <span className="text-[13px] font-semibold text-[var(--text-muted)]">
-                      {isAr ? 'ج.م' : 'EGP'}
+                  {isAvailable && isValidDisplayPrice(effectivePrice) ? (
+                    <>
+                      <span className="font-display font-bold text-[28px] leading-tight text-[var(--gold-bright)] num">
+                        {effectivePrice.toLocaleString('en-US')}
+                      </span>
+                      <span className="text-[13px] font-semibold text-[var(--text-muted)]">
+                        {isAr ? 'ج.م' : 'EGP'}
+                      </span>
+                    </>
+                  ) : availability === 'coming_soon' ? (
+                    <span className="font-display font-bold text-[22px] leading-tight text-[var(--warning)]">
+                      {isAr ? 'قريباً — السعر غير محدد' : 'Coming soon — Price pending'}
+                    </span>
+                  ) : (
+                    <span className="font-display font-bold text-[22px] leading-tight text-[var(--danger)]">
+                      {isAr ? 'غير متوفر حالياً' : 'Out of stock'}
                     </span>
                   )}
                 </div>
                 {cheapestStore && (
                   <p className="text-[12px] font-medium text-[var(--text-secondary)] mt-0.5">
-                    {isAr ? 'أقل سعر في:' : 'Lowest at:'}{' '}
+                    {isAvailable ? (isAr ? 'أقل سعر في:' : 'Lowest at:') : isAr ? 'آخر متجر مسجل:' : 'Last listed at:'}{' '}
                     <strong className="text-[var(--text-primary)]">{cheapestStore}</strong>
                   </p>
                 )}
 
                 {/* Live verification */}
                 <div className="flex items-center flex-wrap gap-2">
-                  <span className="verified">
-                    <span className="vdot" />
-                    <span>
-                      {isAr ? 'تم التحقق مباشرة من المتجر:' : 'Verified live from retailer:'}
+                  {isAvailable ? (
+                    <span className="verified">
+                      <span className="vdot" />
+                      <span>
+                        {isAr ? 'تم التحقق مباشرة من المتجر:' : 'Verified live from retailer:'}
+                      </span>
+                      <span className="ts">{formatVerificationTime(lastCheckedAt, isAr)}</span>
                     </span>
-                    <span className="ts">{formatVerificationTime(lastCheckedAt, isAr)}</span>
-                  </span>
+                  ) : (
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold mt-2.5 ${
+                        availability === 'coming_soon'
+                          ? 'border-[var(--warning)] bg-[var(--warning-dim)] text-[var(--warning)]'
+                          : 'border-[var(--danger)] bg-[var(--danger-dim)] text-[var(--danger)]'
+                      }`}
+                    >
+                      <span>
+                        {availability === 'coming_soon'
+                          ? isAr
+                            ? 'قريباً في المتاجر'
+                            : 'Coming soon'
+                          : isAr
+                          ? 'غير متاح للشراء حالياً'
+                          : 'Currently unavailable'}
+                      </span>
+                      <span className="opacity-80">· {formatVerificationTime(lastCheckedAt, isAr)}</span>
+                    </span>
+                  )}
 
-                  {priceSpread > 0 && (
+                  {isAvailable && priceSpread > 0 && (
                     <span className="ai-chip !mt-2.5">
                       {isAr
                         ? `وفر ${priceSpread.toLocaleString('en-US')} ج.م مقارنة بأعلى متجر`
@@ -509,43 +546,53 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                 </span>
                 <div className="space-y-2 max-h-40 overflow-y-auto pe-1">
                   {detail?.offers && detail.offers.length > 0 ? (
-                    detail.offers.map((off, idx) => (
-                      <div
-                        key={idx}
-                        className={`retail-row !mt-0 ${
-                          !off.in_stock ? 'opacity-70' : ''
-                        }`}
-                      >
-                        <span className="rname">{off.store_name}</span>
-                        {off.is_cheapest && (
-                          <span className="best-chip">{isAr ? 'الأرخص' : 'Best Price'}</span>
-                        )}
-                        {!off.in_stock && (
-                          <span className="brand-chip !text-[var(--danger)] !border-[rgba(248,113,113,0.4)]">
-                            {isAr ? 'غير متاح' : 'Out of stock'}
+                    detail.offers.map((off, idx) => {
+                      const offerAvail = isOfferAvailable(off)
+                      const offerComingSoon = isPlaceholderPrice(off.price_egp)
+                      return (
+                        <div
+                          key={idx}
+                          className={`retail-row !mt-0 ${
+                            !offerAvail ? 'opacity-70' : ''
+                          }`}
+                        >
+                          <span className="rname">{off.store_name}</span>
+                          {offerAvail && off.is_cheapest && (
+                            <span className="best-chip">{isAr ? 'الأرخص' : 'Best Price'}</span>
+                          )}
+                          {!offerAvail && (
+                            <span
+                              className={`brand-chip ${
+                                offerComingSoon
+                                  ? '!text-[var(--warning)] !border-[rgba(245,158,11,0.4)]'
+                                  : '!text-[var(--danger)] !border-[rgba(248,113,113,0.4)]'
+                              }`}
+                            >
+                              {offerComingSoon ? (isAr ? 'قريباً' : 'Coming soon') : isAr ? 'غير متاح' : 'Out of stock'}
+                            </span>
+                          )}
+                          <span className="rprice num">
+                            {isValidDisplayPrice(off.price_egp)
+                              ? `${off.price_egp.toLocaleString('en-US')} `
+                              : isAr
+                              ? 'غير محدد'
+                              : 'N/A'}
+                            {isValidDisplayPrice(off.price_egp) && <small>EGP</small>}
                           </span>
-                        )}
-                        <span className="rprice num">
-                          {off.price_egp > 0
-                            ? `${off.price_egp.toLocaleString('en-US')} `
-                            : isAr
-                            ? 'عند الطلب'
-                            : 'Request'}
-                          {off.price_egp > 0 && <small>EGP</small>}
-                        </span>
-                        {off.product_url && (
-                          <a
-                            href={off.product_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={off.store_name}
-                            className="text-[var(--text-muted)] hover:text-[var(--gold-bright)] transition-colors p-1"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.8} />
-                          </a>
-                        )}
-                      </div>
-                    ))
+                          {off.product_url && (
+                            <a
+                              href={off.product_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={off.store_name}
+                              className="text-[var(--text-muted)] hover:text-[var(--gold-bright)] transition-colors p-1"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.8} />
+                            </a>
+                          )}
+                        </div>
+                      )
+                    })
                   ) : (
                     <div className="text-[12.5px] text-[var(--text-muted)] py-2">
                       {isAr ? 'جاري تحديث عروض المتاجر...' : 'Fetching live store listings...'}
@@ -1341,10 +1388,16 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
                 href={cheapestOfferUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-primary btn-sm flex-1 sm:flex-none"
+                className={`btn btn-sm flex-1 sm:flex-none ${isAvailable ? 'btn-primary' : 'btn-secondary'}`}
               >
                 <span>
-                  {isAr ? `شوف العرض في ${cheapestStore}` : `View offer at ${cheapestStore}`}
+                  {isAvailable
+                    ? isAr
+                      ? `شوف العرض في ${cheapestStore}`
+                      : `View offer at ${cheapestStore}`
+                    : isAr
+                    ? `تحقق في ${cheapestStore}`
+                    : `Check at ${cheapestStore}`}
                 </span>
                 <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
               </a>
