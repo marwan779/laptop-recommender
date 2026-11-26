@@ -183,6 +183,80 @@ namespace Users.Infrastructure.Persistence.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("Users.Domain.Entities.WishlistItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("AddedPriceEgp")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("added_price_egp");
+
+                    b.Property<string>("CanonicalId")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("canonical_id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<decimal?>("LastNotifiedPriceEgp")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("last_notified_price_egp");
+
+                    b.Property<bool>("NotifyOnAnyChange")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("notify_on_any_change");
+
+                    b.Property<bool>("NotifyOnPriceDrop")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("notify_on_price_drop");
+
+                    b.Property<bool>("NotifyOnRestock")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("notify_on_restock");
+
+                    b.Property<decimal?>("TargetPriceEgp")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("target_price_egp");
+
+                    b.Property<string>("ThumbnailUrlSnapshot")
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_url_snapshot");
+
+                    b.Property<string>("TitleSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("title_snapshot");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CanonicalId");
+
+                    b.HasIndex("UserId", "CanonicalId")
+                        .IsUnique();
+
+                    b.ToTable("wishlist_items", (string)null);
+                });
+
             modelBuilder.Entity("Users.Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Users.Domain.Entities.User", "User")
@@ -203,6 +277,17 @@ namespace Users.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Users.Domain.Entities.WishlistItem", b =>
+                {
+                    b.HasOne("Users.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Users.Domain.Entities.Role", b =>

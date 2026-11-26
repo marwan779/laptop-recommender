@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Users.Application.Common.Models;
 
@@ -8,6 +9,11 @@ namespace Users.Api.Areas.Users.Controllers;
 [Route("api/v1/users/[controller]")]
 public abstract class UsersBaseController : ControllerBase
 {
+    protected Guid? GetCurrentUserId()
+    {
+        var subject = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        return Guid.TryParse(subject, out var userId) ? userId : null;
+    }
     protected IActionResult ToActionResult(Result result)
     {
         if (result.IsSuccess)
