@@ -46,6 +46,80 @@ namespace Users.Infrastructure.Persistence.Migrations
                     b.ToTable("inbox_messages", (string)null);
                 });
 
+            modelBuilder.Entity("Users.Domain.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CanonicalId")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("canonical_id");
+
+                    b.Property<string>("ChangeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("change_type");
+
+                    b.Property<string>("CheapestStore")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("cheapest_store");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_read");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("message");
+
+                    b.Property<decimal?>("NewPriceEgp")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("new_price_egp");
+
+                    b.Property<decimal?>("OldPriceEgp")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("old_price_egp");
+
+                    b.Property<DateTime?>("ReadAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("read_at_utc");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CanonicalId");
+
+                    b.HasIndex("UserId", "IsRead", "CreatedAtUtc");
+
+                    b.ToTable("notifications", (string)null);
+                });
+
             modelBuilder.Entity("Users.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -279,6 +353,17 @@ namespace Users.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("wishlist_items", (string)null);
+                });
+
+            modelBuilder.Entity("Users.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("Users.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Users.Domain.Entities.RefreshToken", b =>

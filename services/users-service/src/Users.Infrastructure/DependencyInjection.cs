@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IWishlistRepository, WishlistRepository>();
         services.AddScoped<IInboxRepository, InboxRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         var jwtSection = configuration.GetSection(JwtSettings.SectionName);
         services.Configure<JwtSettings>(options =>

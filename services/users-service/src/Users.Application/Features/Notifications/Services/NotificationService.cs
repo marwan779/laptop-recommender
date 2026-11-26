@@ -1,0 +1,85 @@
+using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Repositories;
+using Users.Application.Common.Models;
+using Users.Application.Features.Notifications.DTOs;
+using Users.Domain.Entities;
+
+namespace Users.Application.Features.Notifications.Services;
+
+public sealed class NotificationService(
+    INotificationRepository notificationRepository,
+    IUnitOfWork unitOfWork,
+    IDateTimeProvider dateTimeProvider) : INotificationService
+{
+    public async Task<Result<NotificationListResponse>> GetMyNotificationsAsync(
+        Guid userId,
+        bool unreadOnly = false,
+        int limit = 50,
+        CancellationToken cancellationToken = default)
+    {
+        var items = await notificationRepository.GetByUserIdAsync(userId, unreadOnly, limit, cancellationToken);
+        var unreadCount = await notificationRepository.GetUnreadCountAsync(userId, cancellationToken);
+
+        return Result<NotificationListResponse>.Success(new NotificationListResponse(
+            items.Select(MapToResponse).ToList(),
+            unreadCount));
+    }
+
+    public async Task<Result<UnreadCountResponse>> GetUnreadCountAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var unreadCount = await notificationRepository.GetUnreadCountAsync(userId, cancellationToken);
+        return Result<UnreadCountResponse>.Success(new UnreadCountResponse(unreadCount));
+    }
+
+    public async Task<Result<NotificationResponse>> MarkAsReadAsync(
+        Guid userId,
+        Guid notificationId,
+        CancellationToken cancellationToken = default)
+    {
+        var notification = await notificationRepository.GetByIdAndUserIdAsync(
+            notificationId,
+            userId,
+            cancellationToken);
+
+        if (notification is null)
+        {
+            return Result<NotificationResponse>.NotFound("Notification was not found.");
+        }
+
+        if (!notification.IsRead)
+        {
+            notification.MarkAsRead(dateTimeProvider.UtcNow);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        return Result<NotificationResponse>.Success(MapToResponse(notification));
+    }
+
+    public async Task<Result<MarkAllReadResponse>> MarkAllAsReadAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var markedCount = await notificationRepository.MarkAllAsReadAsync(
+            userId,
+            dateTimeProvider.UtcNow,
+            cancellationToken);
+
+        return Result<MarkAllReadResponse>.Success(new MarkAllReadResponse(markedCount));
+    }
+
+    private static NotificationResponse MapToResponse(Notification n)
+        => new(
+            n.Id,
+            n.CanonicalId,
+            n.Title,
+            n.Message,
+            n.ChangeType,
+            n.OldPriceEgp,
+            n.NewPriceEgp,
+            n.CheapestStore,
+            n.IsRead,
+            n.ReadAtUtc,
+            n.CreatedAtUtc);
+}
