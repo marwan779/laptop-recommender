@@ -7,6 +7,7 @@ using Users.Application.Common.Interfaces.Logging;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Common.Interfaces.Security;
 using Users.Infrastructure.Logging;
+using Users.Infrastructure.Messaging;
 using Users.Infrastructure.Persistence;
 using Users.Infrastructure.Persistence.Repositories;
 using Users.Infrastructure.Security;
@@ -61,6 +62,38 @@ public static class DependencyInjection
 
         services.TryAddSingleton(LoggerConfig.FromEnvironment(configuration));
         services.TryAddSingleton<ILogContextAccessor, AsyncLocalLogContextAccessor>();
+
+        var rabbitSection = configuration.GetSection(RabbitMqOptions.SectionName);
+        services.Configure<RabbitMqOptions>(options =>
+        {
+            if (bool.TryParse(rabbitSection["Enabled"], out var enabled))
+                options.Enabled = enabled;
+            if (!string.IsNullOrWhiteSpace(rabbitSection["HostName"]))
+                options.HostName = rabbitSection["HostName"]!;
+            if (int.TryParse(rabbitSection["Port"], out var port))
+                options.Port = port;
+            if (!string.IsNullOrWhiteSpace(rabbitSection["UserName"]))
+                options.UserName = rabbitSection["UserName"]!;
+            if (!string.IsNullOrWhiteSpace(rabbitSection["Password"]))
+                options.Password = rabbitSection["Password"]!;
+            if (!string.IsNullOrWhiteSpace(rabbitSection["VirtualHost"]))
+                options.VirtualHost = rabbitSection["VirtualHost"]!;
+            if (!string.IsNullOrWhiteSpace(rabbitSection["ExchangeName"]))
+                options.ExchangeName = rabbitSection["ExchangeName"]!;
+            if (!string.IsNullOrWhiteSpace(rabbitSection["DlxExchangeName"]))
+                options.DlxExchangeName = rabbitSection["DlxExchangeName"]!;
+            if (!string.IsNullOrWhiteSpace(rabbitSection["QueueName"]))
+                options.QueueName = rabbitSection["QueueName"]!;
+            if (!string.IsNullOrWhiteSpace(rabbitSection["DlqName"]))
+                options.DlqName = rabbitSection["DlqName"]!;
+            if (!string.IsNullOrWhiteSpace(rabbitSection["RoutingKey"]))
+                options.RoutingKey = rabbitSection["RoutingKey"]!;
+            if (ushort.TryParse(rabbitSection["PrefetchCount"], out var prefetch))
+                options.PrefetchCount = prefetch;
+        });
+
+        services.AddSingleton<LaptopPriceChangedConsumerProcessor>();
+        services.AddHostedService<RabbitMqConsumerBackgroundService>();
 
         return services;
     }
