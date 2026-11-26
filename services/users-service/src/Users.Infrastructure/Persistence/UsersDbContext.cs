@@ -11,6 +11,7 @@ public sealed class UsersDbContext(DbContextOptions<UsersDbContext> options)
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+    public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
