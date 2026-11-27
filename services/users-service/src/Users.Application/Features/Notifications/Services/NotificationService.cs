@@ -73,6 +73,15 @@ public sealed class NotificationService(
         return Result<MarkAllReadResponse>.Success(new MarkAllReadResponse(markedCount));
     }
 
+    public async Task<Result<ClearAllNotificationsResponse>> ClearAllAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var deletedCount = await notificationRepository.DeleteAllByUserIdAsync(userId, cancellationToken);
+        await InvalidateUserNotificationsAsync(userId, cancellationToken);
+        return Result<ClearAllNotificationsResponse>.Success(new ClearAllNotificationsResponse(deletedCount));
+    }
+
     private Task<int> InvalidateUserNotificationsAsync(Guid userId, CancellationToken cancellationToken)
         => cacheProvider.ClearPrefixAsync($"users:{userId}:notifications:", cancellationToken);
 

@@ -1,12 +1,17 @@
-import React, { useEffect } from 'react'
-import { Bell, CheckCheck, X } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Bell, CheckCheck, ExternalLink, Trash2, X } from 'lucide-react'
 import { useUserSession } from '../context/UserSessionContext'
+import type { NotificationItem } from '../types/users'
 
 interface NotificationsDrawerProps {
   lang: 'ar' | 'en'
+  onSelectNotification?: (notification: NotificationItem) => void
 }
 
-export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({ lang }) => {
+export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
+  lang,
+  onSelectNotification,
+}) => {
   const {
     notificationsOpen,
     setNotificationsOpen,
@@ -16,7 +21,9 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({ lang }
     refreshNotifications,
     markAsRead,
     markAllAsRead,
+    clearAllNotifications,
   } = useUserSession()
+  const [clearing, setClearing] = useState(false)
   const isAr = lang === 'ar'
 
   useEffect(() => {
@@ -26,6 +33,24 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({ lang }
   }, [notificationsOpen, refreshNotifications])
 
   if (!notificationsOpen) return null
+
+  const handleNotificationClick = (n: NotificationItem) => {
+    if (!n.isRead) {
+      void markAsRead(n.id)
+    }
+    setNotificationsOpen(false)
+    onSelectNotification?.(n)
+  }
+
+  const handleClearAll = async () => {
+    if (clearing) return
+    setClearing(true)
+    try {
+      await clearAllNotifications()
+    } finally {
+      setClearing(false)
+    }
+  }
 
   return (
     <div
@@ -39,10 +64,10 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({ lang }
         className="flex h-full w-full max-w-md flex-col border-s border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-raised)] px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-[var(--gold)]" />
-            <h2 className="font-display text-[16px] font-bold text-[var(--text-primary)]">
+        <div className="flex items-center justify-between gap-2 border-b border-[var(--border-subtle)] bg-[var(--bg-raised)] px-5 py-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <Bell className="w-4 h-4 text-[var(--gold)] shrink-0" />
+            <h2 className="font-display text-[16px] font-bold text-[var(--text-primary)] truncate">
               {isAr ? 'التنبيهات' : 'Price Alerts'}
             </h2>
             {unreadCount > 0 && (
@@ -52,15 +77,28 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({ lang }
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={() => void markAllAsRead()}
-                className="inline-flex items-center gap-1 rounded-[7px] border border-[var(--border-subtle)] px-2.5 py-1 text-[11.5px] font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                className="inline-flex items-center gap-1 rounded-[7px] border border-[var(--border-subtle)] px-2 py-1 text-[11.5px] font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                title={isAr ? 'تحديد الكل كمقروء' : 'Mark all read'}
               >
                 <CheckCheck className="w-3.5 h-3.5 text-[var(--emerald)]" />
-                <span>{isAr ? 'قراءة الكل' : 'Mark all read'}</span>
+                <span>{isAr ? 'قراءة الكل' : 'Mark read'}</span>
+              </button>
+            )}
+            {notifications.length > 0 && (
+              <button
+                type="button"
+                disabled={clearing}
+                onClick={() => void handleClearAll()}
+                className="inline-flex items-center gap-1 rounded-[7px] border border-[var(--border-subtle)] px-2 py-1 text-[11.5px] font-medium text-[var(--text-secondary)] hover:border-[var(--danger)] hover:text-[var(--danger)]"
+                title={isAr ? 'حذف جميع التنبيهات' : 'Clear all notifications'}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isAr ? 'حذف الكل' : 'Clear all'}</span>
               </button>
             )}
             <button
@@ -104,12 +142,10 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({ lang }
                 <button
                   key={n.id}
                   type="button"
-                  onClick={() => {
-                    if (!n.isRead) void markAsRead(n.id)
-                  }}
-                  className={`w-full text-start rounded-[10px] border p-3.5 transition-colors ${
+                  onClick={() => handleNotificationClick(n)}
+                  className={`group w-full text-start rounded-[10px] border p-3.5 transition-colors hover:border-[var(--cyan)] ${
                     n.isRead
-                      ? 'border-[var(--border-subtle)] bg-[var(--bg-raised)] opacity-75'
+                      ? 'border-[var(--border-subtle)] bg-[var(--bg-raised)] opacity-85 hover:opacity-100'
                       : 'border-[var(--gold)] bg-[var(--bg-raised)]'
                   }`}
                 >
@@ -117,16 +153,17 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({ lang }
                     <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-mono font-semibold ${badgeColor}`}>
                       {n.changeType}
                     </span>
-                    <span className="text-[11px] font-mono text-[var(--text-muted)] num">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)] num">
                       {new Date(n.createdAtUtc).toLocaleDateString(isAr ? 'ar-EG' : 'en-US', {
                         month: 'short',
                         day: 'numeric',
                       })}
+                      <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 text-[var(--cyan)] transition-opacity" />
                     </span>
                   </div>
 
                   <div className="mt-2 flex items-start justify-between gap-2">
-                    <h4 dir="auto" className="text-[13.5px] font-semibold text-[var(--text-primary)]">
+                    <h4 dir="auto" className="text-[13.5px] font-semibold text-[var(--text-primary)] group-hover:text-[var(--gold-bright)] transition-colors">
                       {n.title}
                     </h4>
                     {!n.isRead && (

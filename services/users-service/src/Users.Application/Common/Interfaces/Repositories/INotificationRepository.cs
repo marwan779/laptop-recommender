@@ -22,6 +22,10 @@ public interface INotificationRepository
         DateTime readAtUtc,
         CancellationToken cancellationToken = default);
 
+    Task<int> DeleteAllByUserIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
     Task AddRangeAsync(
         IEnumerable<Notification> notifications,
         CancellationToken cancellationToken = default);

@@ -20,3 +20,5 @@ public sealed record NotificationListResponse(
 public sealed record UnreadCountResponse(int UnreadCount);
 
 public sealed record MarkAllReadResponse(int MarkedCount);
+
+public sealed record ClearAllNotificationsResponse(int DeletedCount);

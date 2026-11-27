@@ -30,7 +30,7 @@ public sealed class SendPriceAlertEmailJobTests
         var sent = Assert.Single(spySender.SentMessages);
         Assert.Equal("buyer@example.com", sent.ToEmail);
         Assert.Equal("Sara", sent.ToName);
-        Assert.Equal("Price Drop Alert: ASUS TUF Gaming F16", sent.Subject);
+        Assert.Equal("Price Drop: ASUS TUF Gaming F16", sent.Subject);
         Assert.Contains("69,999 EGP", sent.HtmlBody);
         Assert.False(string.IsNullOrWhiteSpace(sent.PlainTextBody));
     }

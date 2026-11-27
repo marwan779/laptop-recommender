@@ -22,6 +22,7 @@ import {
   removeFromWishlist,
   setOnAuthExpired,
   updateWishlistPreferences,
+  clearAllNotifications as clearAllNotificationsApi,
 } from '../services/usersApi'
 
 const DEFAULT_POLL_MS = import.meta.env.DEV ? 30_000 : 3_600_000
@@ -42,9 +43,11 @@ interface UserSessionContextValue {
   authModalOpen: boolean
   wishlistDrawerOpen: boolean
   notificationsOpen: boolean
+  wishlistToastTitle: string | null
   setAuthModalOpen: (open: boolean) => void
   setWishlistDrawerOpen: (open: boolean) => void
   setNotificationsOpen: (open: boolean) => void
+  dismissWishlistToast: () => void
   handleAuthSuccess: (auth: AuthResponse) => Promise<void>
   logout: () => Promise<void>
   toggleWishlist: (item: AddWishlistItemRequest) => Promise<void>
@@ -56,6 +59,7 @@ interface UserSessionContextValue {
   refreshNotifications: () => Promise<void>
   markAsRead: (notificationId: string) => Promise<void>
   markAllAsRead: () => Promise<void>
+  clearAllNotifications: () => Promise<void>
 }
 
 const UserSessionContext = createContext<UserSessionContextValue | null>(null)
@@ -71,9 +75,30 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false)
   const [wishlistDrawerOpen, setWishlistDrawerOpen] = useState<boolean>(false)
   const [notificationsOpen, setNotificationsOpen] = useState<boolean>(false)
+  const [wishlistToastTitle, setWishlistToastTitle] = useState<string | null>(null)
 
   const lastPollAtRef = useRef<number>(0)
   const pendingWishlistRef = useRef<AddWishlistItemRequest | null>(null)
+  const toastTimerRef = useRef<number | null>(null)
+
+  const showWishlistToast = useCallback((title: string) => {
+    setWishlistToastTitle(title)
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current)
+    }
+    toastTimerRef.current = window.setTimeout(() => {
+      setWishlistToastTitle(null)
+      toastTimerRef.current = null
+    }, 3600)
+  }, [])
+
+  const dismissWishlistToast = useCallback(() => {
+    setWishlistToastTitle(null)
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current)
+      toastTimerRef.current = null
+    }
+  }, [])
 
   const resetSession = useCallback(() => {
     setUser(null)
@@ -183,6 +208,7 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
           setWishlistItems((prev) =>
             prev.some((w) => w.canonicalId === created.canonicalId) ? prev : [created, ...prev],
           )
+          showWishlistToast(created.titleSnapshot)
         } catch {
           // Ignore if already in wishlist
         }
@@ -215,9 +241,10 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       } else {
         const created = await addToWishlist(item)
         setWishlistItems((prev) => [created, ...prev.filter((w) => w.canonicalId !== created.canonicalId)])
+        showWishlistToast(created.titleSnapshot)
       }
     },
-    [user, wishlistIds],
+    [user, wishlistIds, showWishlistToast],
   )
 
   const saveWishlistPreferences = useCallback(
@@ -264,6 +291,12 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setUnreadCount(0)
   }, [])
 
+  const clearAllNotifications = useCallback(async () => {
+    await clearAllNotificationsApi()
+    setNotifications([])
+    setUnreadCount(0)
+  }, [])
+
   return (
     <UserSessionContext.Provider
       value={{
@@ -277,9 +310,11 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         authModalOpen,
         wishlistDrawerOpen,
         notificationsOpen,
+        wishlistToastTitle,
         setAuthModalOpen,
         setWishlistDrawerOpen,
         setNotificationsOpen,
+        dismissWishlistToast,
         handleAuthSuccess,
         logout,
         toggleWishlist,
@@ -288,6 +323,7 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         refreshNotifications,
         markAsRead,
         markAllAsRead,
+        clearAllNotifications,
       }}
     >
       {children}

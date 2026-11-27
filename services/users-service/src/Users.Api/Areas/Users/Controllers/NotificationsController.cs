@@ -73,4 +73,19 @@ public sealed class NotificationsController(INotificationService notificationSer
         var result = await notificationService.MarkAllAsReadAsync(userId.Value, cancellationToken);
         return ToActionResult(result);
     }
+
+    [HttpDelete]
+    [ProducesResponseType(typeof(ClearAllNotificationsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ClearAll(CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await notificationService.ClearAllAsync(userId.Value, cancellationToken);
+        return ToActionResult(result);
+    }
 }

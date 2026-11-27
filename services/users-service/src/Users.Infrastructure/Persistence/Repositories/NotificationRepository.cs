@@ -58,6 +58,15 @@ public sealed class NotificationRepository(UsersDbContext dbContext) : INotifica
                 cancellationToken);
     }
 
+    public async Task<int> DeleteAllByUserIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Notifications
+            .Where(n => n.UserId == userId)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
     public async Task AddRangeAsync(
         IEnumerable<Notification> notifications,
         CancellationToken cancellationToken = default)

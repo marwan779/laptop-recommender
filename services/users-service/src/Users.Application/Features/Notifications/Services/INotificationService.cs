@@ -23,4 +23,8 @@ public interface INotificationService
     Task<Result<MarkAllReadResponse>> MarkAllAsReadAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
+
+    Task<Result<ClearAllNotificationsResponse>> ClearAllAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

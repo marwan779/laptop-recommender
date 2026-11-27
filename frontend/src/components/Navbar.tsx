@@ -92,13 +92,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   type="button"
                   onClick={() => setNotificationsOpen(true)}
-                  className="lang-btn relative"
+                  className={`lang-btn relative ${unreadCount > 0 ? 'border-[var(--gold)] text-[var(--gold-bright)]' : ''}`}
                   aria-label={isAr ? 'التنبيهات' : 'Notifications'}
                   title={isAr ? 'التنبيهات' : 'Notifications'}
                 >
                   <Bell className="w-4 h-4" strokeWidth={1.8} />
                   {unreadCount > 0 && (
-                    <span className="rounded-full bg-[var(--gold)] px-1.5 py-0.2 text-[10px] font-mono font-bold text-[#0A0E13] num">
+                    <span className="rounded-full bg-[var(--gold)] px-1.5 py-0.5 text-[10px] leading-none font-mono font-bold text-[#0A0E13] num">
                       {unreadCount}
                     </span>
                   )}

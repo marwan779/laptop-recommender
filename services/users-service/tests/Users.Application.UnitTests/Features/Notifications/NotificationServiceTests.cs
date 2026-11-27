@@ -116,6 +116,12 @@ public sealed class NotificationServiceTests
             return Task.FromResult(unread.Count);
         }
 
+        public Task<int> DeleteAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            var removed = Items.RemoveAll(n => n.UserId == userId);
+            return Task.FromResult(removed);
+        }
+
         public Task AddRangeAsync(IEnumerable<Notification> notifications, CancellationToken cancellationToken = default)
         {
             Items.AddRange(notifications);

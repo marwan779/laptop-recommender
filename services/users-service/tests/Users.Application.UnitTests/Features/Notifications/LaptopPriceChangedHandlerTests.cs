@@ -147,6 +147,7 @@ public sealed class LaptopPriceChangedHandlerTests
         public Task<int> GetUnreadCountAsync(Guid userId, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<Notification?> GetByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default) => Task.FromResult<Notification?>(null);
         public Task<int> MarkAllAsReadAsync(Guid userId, DateTime readAtUtc, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<int> DeleteAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task AddRangeAsync(IEnumerable<Notification> notifications, CancellationToken cancellationToken = default)
         {
             Added.AddRange(notifications);

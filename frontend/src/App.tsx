@@ -10,6 +10,8 @@ import { CompareModal } from './components/CompareModal'
 import { AuthModal } from './components/AuthModal'
 import { WishlistDrawer } from './components/WishlistDrawer'
 import { NotificationsDrawer } from './components/NotificationsDrawer'
+import { WishlistToast } from './components/WishlistToast'
+import type { NotificationItem } from './types/users'
 import type {
   PersonaType,
   RankedLaptop,
@@ -77,6 +79,50 @@ export function App() {
   const isAr = lang === 'ar'
 
   // ── Theme / language document sync ─────────────────────────────────
+  const openLaptopByCanonicalId = useCallback(
+    (
+      canonicalId: string,
+      titleHint?: string,
+      priceHint?: number | null,
+      storeHint?: string | null,
+    ) => {
+      const stub: CatalogListItem = {
+        id: canonicalId,
+        canonical_id: canonicalId,
+        brand: '',
+        laptop_model: titleHint || canonicalId,
+        title: titleHint || canonicalId,
+        thumbnail_url: '',
+        min_price_egp: priceHint ?? 0,
+        cheapest_store: storeHint || '',
+        in_stock: true,
+        stores_count: 1,
+        ram_capacity_gb: 0,
+        storage_capacity_gb: 0,
+        gpu_model: '',
+        cpu_model: '',
+        display_size_inches: 0,
+        community_nlp_score: 0,
+        value_score: 0,
+        has_reviews: false,
+        reviews_evidence_count: 0,
+        pros_ar: [],
+        pros_en: [],
+        cons_ar: [],
+        cons_en: [],
+      }
+      setSelectedLaptop(stub)
+    },
+    [],
+  )
+
+  useEffect(() => {
+    const laptopParam = new URLSearchParams(window.location.search).get('laptop')
+    if (laptopParam) {
+      openLaptopByCanonicalId(laptopParam)
+    }
+  }, [openLaptopByCanonicalId])
+
   useEffect(() => {
     document.documentElement.setAttribute('lang', lang)
     document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr')
@@ -632,7 +678,13 @@ export function App() {
 
       <AuthModal lang={lang} />
       <WishlistDrawer lang={lang} />
-      <NotificationsDrawer lang={lang} />
+      <NotificationsDrawer
+        lang={lang}
+        onSelectNotification={(n: NotificationItem) =>
+          openLaptopByCanonicalId(n.canonicalId, n.title, n.newPriceEgp, n.cheapestStore)
+        }
+      />
+      <WishlistToast lang={lang} />
 
       <footer className="site-footer">
         <div className="inner">

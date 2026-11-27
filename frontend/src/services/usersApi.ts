@@ -223,3 +223,9 @@ export async function markAllNotificationsRead(): Promise<MarkAllReadResponse> {
     method: 'PATCH',
   })
 }
+
+export async function clearAllNotifications(): Promise<{ deletedCount: number }> {
+  return usersFetch<{ deletedCount: number }>('/notifications', {
+    method: 'DELETE',
+  })
+}

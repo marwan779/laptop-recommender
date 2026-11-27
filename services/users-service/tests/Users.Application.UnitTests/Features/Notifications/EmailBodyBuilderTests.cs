@@ -24,7 +24,7 @@ public sealed class EmailBodyBuilderTests
         var html = EmailBodyBuilder.BuildPriceAlertHtml(payload);
         var plain = EmailBodyBuilder.BuildPriceAlertPlainText(payload);
 
-        Assert.Equal("Price Drop Alert: ASUS TUF Gaming F16", subject);
+        Assert.Equal("Price Drop: ASUS TUF Gaming F16", subject);
         Assert.Contains("dir=\"ltr\"", html);
         Assert.Contains("PRICE DROP", html);
         Assert.Contains("69,999 EGP", html);
@@ -32,7 +32,7 @@ public sealed class EmailBodyBuilderTests
         Assert.Contains("2B Egypt", html);
         Assert.Contains("Omar &lt;Admin&gt;", html);
         Assert.DoesNotContain("Omar <Admin>", html);
-        Assert.Contains("Save 3,501 EGP", html);
+        Assert.Contains("SAVE 3,501 EGP", html);
         Assert.Contains("69,999 EGP", plain);
     }
 
