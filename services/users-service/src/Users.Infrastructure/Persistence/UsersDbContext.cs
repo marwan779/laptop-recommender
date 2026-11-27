@@ -13,6 +13,7 @@ public sealed class UsersDbContext(DbContextOptions<UsersDbContext> options)
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
     public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<FeedbackReport> FeedbackReports => Set<FeedbackReport>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

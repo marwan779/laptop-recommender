@@ -11,6 +11,9 @@ import { AuthModal } from './components/AuthModal'
 import { WishlistDrawer } from './components/WishlistDrawer'
 import { NotificationsDrawer } from './components/NotificationsDrawer'
 import { WishlistToast } from './components/WishlistToast'
+import { FeedbackModal } from './components/FeedbackModal'
+import { AdminConsoleDrawer } from './components/AdminConsoleDrawer'
+import { useUserSession } from './context/UserSessionContext'
 import type { NotificationItem } from './types/users'
 import type {
   PersonaType,
@@ -77,6 +80,7 @@ export function App() {
   const hydratedRef = useRef(false)
   const didInitRef = useRef(false)
   const isAr = lang === 'ar'
+  const { openFeedbackModal } = useUserSession()
 
   // ── Theme / language document sync ─────────────────────────────────
   const openLaptopByCanonicalId = useCallback(
@@ -685,6 +689,8 @@ export function App() {
         }
       />
       <WishlistToast lang={lang} />
+      <FeedbackModal lang={lang} />
+      <AdminConsoleDrawer lang={lang} />
 
       <footer className="site-footer">
         <div className="inner">
@@ -693,9 +699,18 @@ export function App() {
               ? 'مستقل 100% بدون عمولات متاجر · الأسعار محدثة من متاجر مصر الموثوقة'
               : '100% independent, no store commissions · Prices refreshed from trusted Egyptian stores'}
           </span>
-          <span className="text-[11px] text-[var(--text-muted)]">
-            {isAr ? 'مراجعات حقيقية من يوتيوب والمنتديات' : 'Real reviews from YouTube & forums'}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => openFeedbackModal(null)}
+              className="text-[11.5px] font-medium text-[var(--cyan)] hover:underline"
+            >
+              {isAr ? 'إرسال ملاحظة / إبلاغ عن خطأ' : 'Report issue / Feedback'}
+            </button>
+            <span className="text-[11px] text-[var(--text-muted)]">
+              {isAr ? 'مراجعات حقيقية من يوتيوب والمنتديات' : 'Real reviews from YouTube & forums'}
+            </span>
+          </div>
         </div>
       </footer>
     </div>

@@ -43,10 +43,16 @@ interface UserSessionContextValue {
   authModalOpen: boolean
   wishlistDrawerOpen: boolean
   notificationsOpen: boolean
+  feedbackModalOpen: boolean
+  feedbackContext: { canonicalId?: string; laptopTitle?: string } | null
+  adminConsoleOpen: boolean
   wishlistToastTitle: string | null
   setAuthModalOpen: (open: boolean) => void
   setWishlistDrawerOpen: (open: boolean) => void
   setNotificationsOpen: (open: boolean) => void
+  openFeedbackModal: (ctx?: { canonicalId?: string; laptopTitle?: string } | null) => void
+  closeFeedbackModal: () => void
+  setAdminConsoleOpen: (open: boolean) => void
   dismissWishlistToast: () => void
   handleAuthSuccess: (auth: AuthResponse) => Promise<void>
   logout: () => Promise<void>
@@ -75,7 +81,20 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false)
   const [wishlistDrawerOpen, setWishlistDrawerOpen] = useState<boolean>(false)
   const [notificationsOpen, setNotificationsOpen] = useState<boolean>(false)
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState<boolean>(false)
+  const [feedbackContext, setFeedbackContext] = useState<{ canonicalId?: string; laptopTitle?: string } | null>(null)
+  const [adminConsoleOpen, setAdminConsoleOpen] = useState<boolean>(false)
   const [wishlistToastTitle, setWishlistToastTitle] = useState<string | null>(null)
+
+  const openFeedbackModal = useCallback((ctx?: { canonicalId?: string; laptopTitle?: string } | null) => {
+    setFeedbackContext(ctx ?? null)
+    setFeedbackModalOpen(true)
+  }, [])
+
+  const closeFeedbackModal = useCallback(() => {
+    setFeedbackModalOpen(false)
+    setFeedbackContext(null)
+  }, [])
 
   const lastPollAtRef = useRef<number>(0)
   const pendingWishlistRef = useRef<AddWishlistItemRequest | null>(null)
@@ -107,6 +126,7 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setUnreadCount(0)
     setWishlistDrawerOpen(false)
     setNotificationsOpen(false)
+    setAdminConsoleOpen(false)
     dismissWishlistToast()
   }, [dismissWishlistToast])
 
@@ -311,10 +331,16 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         authModalOpen,
         wishlistDrawerOpen,
         notificationsOpen,
+        feedbackModalOpen,
+        feedbackContext,
+        adminConsoleOpen,
         wishlistToastTitle,
         setAuthModalOpen,
         setWishlistDrawerOpen,
         setNotificationsOpen,
+        openFeedbackModal,
+        closeFeedbackModal,
+        setAdminConsoleOpen,
         dismissWishlistToast,
         handleAuthSuccess,
         logout,

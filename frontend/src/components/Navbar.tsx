@@ -1,5 +1,5 @@
 import React from 'react'
-import { Laptop, Languages, Moon, Sun, Heart, Bell, LogIn, LogOut } from 'lucide-react'
+import { Laptop, Languages, Moon, Sun, Heart, Bell, LogIn, LogOut, ShieldCheck } from 'lucide-react'
 import { useUserSession } from '../context/UserSessionContext'
 
 interface NavbarProps {
@@ -28,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     setAuthModalOpen,
     setWishlistDrawerOpen,
     setNotificationsOpen,
+    setAdminConsoleOpen,
     logout,
   } = useUserSession()
 
@@ -103,6 +104,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </span>
                   )}
                 </button>
+
+                {user.role === 'Admin' && (
+                  <button
+                    type="button"
+                    onClick={() => setAdminConsoleOpen(true)}
+                    className="lang-btn !w-9 !px-0 justify-center border-[var(--cyan)] text-[var(--cyan)]"
+                    aria-label={isAr ? 'لوحة الإدارة' : 'Admin Console'}
+                    title={isAr ? 'لوحة الإدارة' : 'Admin Console'}
+                  >
+                    <ShieldCheck className="w-4 h-4" strokeWidth={1.8} />
+                  </button>
+                )}
               </>
             ) : (
               <button

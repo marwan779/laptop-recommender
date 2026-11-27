@@ -88,3 +88,63 @@ export interface UnreadCountResponse {
 export interface MarkAllReadResponse {
   markedCount: number
 }
+
+export type FeedbackCategory =
+  | 'WRONG_PRICE'
+  | 'WRONG_SPEC'
+  | 'BROKEN_LINK'
+  | 'MISSING_LAPTOP'
+  | 'UI_BUG'
+  | 'OTHER'
+
+export type FeedbackStatus = 'OPEN' | 'IN_REVIEW' | 'RESOLVED' | 'DISMISSED'
+
+export interface FeedbackReport {
+  id: string
+  userId: string | null
+  reporterEmail: string | null
+  category: FeedbackCategory | string
+  canonicalId: string | null
+  laptopTitleSnapshot: string | null
+  title: string
+  description: string
+  pageUrl: string | null
+  status: FeedbackStatus | string
+  adminNotes: string | null
+  resolvedByUserId: string | null
+  resolvedAtUtc: string | null
+  createdAtUtc: string
+  updatedAtUtc: string | null
+}
+
+export interface CreateFeedbackRequest {
+  category: FeedbackCategory
+  title: string
+  description: string
+  reporterEmail?: string | null
+  canonicalId?: string | null
+  laptopTitleSnapshot?: string | null
+  pageUrl?: string | null
+}
+
+export interface UpdateFeedbackStatusRequest {
+  status: FeedbackStatus
+  adminNotes?: string | null
+}
+
+export interface RoleInfo {
+  id: string
+  name: string
+  description: string | null
+}
+
+export interface AdminUser {
+  id: string
+  email: string
+  fullName: string
+  role: string
+  roleId: string
+  isActive: boolean
+  emailVerified: boolean
+  createdAtUtc: string
+}

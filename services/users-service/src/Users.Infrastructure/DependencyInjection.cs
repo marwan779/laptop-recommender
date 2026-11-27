@@ -54,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<IWishlistRepository, WishlistRepository>();
         services.AddScoped<IInboxRepository, InboxRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
         var adminSeedSection = configuration.GetSection(AdminSeedOptions.SectionName);
         services.Configure<AdminSeedOptions>(options =>

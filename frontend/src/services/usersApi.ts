@@ -1,12 +1,17 @@
 import type {
   AddWishlistItemRequest,
+  AdminUser,
   AuthResponse,
+  CreateFeedbackRequest,
+  FeedbackReport,
   LoginRequest,
   MarkAllReadResponse,
   NotificationItem,
   NotificationListResponse,
   RegisterRequest,
+  RoleInfo,
   UnreadCountResponse,
+  UpdateFeedbackStatusRequest,
   UpdateWishlistPreferencesRequest,
   UserProfile,
   WishlistItem,
@@ -227,5 +232,56 @@ export async function markAllNotificationsRead(): Promise<MarkAllReadResponse> {
 export async function clearAllNotifications(): Promise<{ deletedCount: number }> {
   return usersFetch<{ deletedCount: number }>('/notifications', {
     method: 'DELETE',
+  })
+}
+
+export async function submitFeedback(request: CreateFeedbackRequest): Promise<FeedbackReport> {
+  return usersFetch<FeedbackReport>('/feedback', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}
+
+export async function fetchMyFeedback(): Promise<FeedbackReport[]> {
+  return usersFetch<FeedbackReport[]>('/feedback/mine')
+}
+
+export async function fetchAdminRoles(): Promise<RoleInfo[]> {
+  return usersFetch<RoleInfo[]>('/admin/roles')
+}
+
+export async function fetchAdminUsers(search?: string): Promise<AdminUser[]> {
+  const query = new URLSearchParams({ limit: '50', offset: '0' })
+  if (search && search.trim()) query.set('search', search.trim())
+  return usersFetch<AdminUser[]>(`/admin/users?${query.toString()}`)
+}
+
+export async function changeAdminUserRole(userId: string, role: string): Promise<AdminUser> {
+  return usersFetch<AdminUser>(`/admin/users/${encodeURIComponent(userId)}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role }),
+  })
+}
+
+export async function changeAdminUserStatus(userId: string, isActive: boolean): Promise<AdminUser> {
+  return usersFetch<AdminUser>(`/admin/users/${encodeURIComponent(userId)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isActive }),
+  })
+}
+
+export async function fetchAdminFeedback(status?: string): Promise<FeedbackReport[]> {
+  const query = new URLSearchParams({ limit: '50', offset: '0' })
+  if (status && status !== 'ALL') query.set('status', status)
+  return usersFetch<FeedbackReport[]>(`/admin/feedback?${query.toString()}`)
+}
+
+export async function reviewAdminFeedback(
+  feedbackId: string,
+  request: UpdateFeedbackStatusRequest,
+): Promise<FeedbackReport> {
+  return usersFetch<FeedbackReport>(`/admin/feedback/${encodeURIComponent(feedbackId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(request),
   })
 }
