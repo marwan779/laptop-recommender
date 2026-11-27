@@ -126,6 +126,14 @@ services:
       - Cache__Enabled=true
       - Cache__RedisConnectionString=redis://redis:6379/0
       - Cache__DefaultTtlSeconds=300
+      - Email__Enabled=${USERS_EMAIL_ENABLED:-false}
+      - Email__SmtpHost=${USERS_SMTP_HOST:-}
+      - Email__SmtpPort=${USERS_SMTP_PORT:-587}
+      - Email__UseStartTls=${USERS_SMTP_USE_STARTTLS:-true}
+      - Email__UserName=${USERS_SMTP_USERNAME:-}
+      - Email__Password=${USERS_SMTP_PASSWORD:-}
+      - Email__FromEmail=${USERS_EMAIL_FROM:-alerts@laptop-recommender.local}
+      - Email__FromName=${USERS_EMAIL_FROM_NAME:-Egypt Laptop Recommender}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

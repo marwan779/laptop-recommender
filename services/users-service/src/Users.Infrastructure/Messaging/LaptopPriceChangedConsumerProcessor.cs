@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Users.Application.Common.Interfaces;
 using Users.Application.Common.Interfaces.Caching;
+using Users.Application.Common.Interfaces.Jobs;
 using Users.Application.Common.Interfaces.Logging;
 using Users.Application.Common.Interfaces.Messaging;
 using Users.Application.Common.Interfaces.Repositories;
@@ -71,6 +72,7 @@ public sealed class LaptopPriceChangedConsumerProcessor(
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var affectedUserTracker = scope.ServiceProvider.GetRequiredService<AffectedUserTracker>();
         var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
+        var jobScheduler = scope.ServiceProvider.GetService<IBackgroundJobScheduler>();
 
         if (await inboxRepo.ExistsAsync(messageId, cancellationToken))
         {
@@ -88,8 +90,35 @@ public sealed class LaptopPriceChangedConsumerProcessor(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await InvalidateAffectedUserCachesAsync(affectedUserTracker, cacheProvider, cancellationToken);
+        EnqueuePriceAlertEmails(affectedUserTracker, jobScheduler);
 
         return MessageProcessOutcome.Ack;
+    }
+
+    private void EnqueuePriceAlertEmails(
+        AffectedUserTracker affectedUserTracker,
+        IBackgroundJobScheduler? jobScheduler)
+    {
+        if (jobScheduler is null)
+        {
+            return;
+        }
+
+        foreach (var emailPayload in affectedUserTracker.SnapshotEmailAlerts())
+        {
+            try
+            {
+                jobScheduler.EnqueuePriceAlertEmail(emailPayload);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(
+                    ex,
+                    "Failed to enqueue price alert email job after commit [to={ToEmail}, canonicalId={CanonicalId}]",
+                    emailPayload.ToEmail,
+                    emailPayload.CanonicalId);
+            }
+        }
     }
 
     private async Task InvalidateAffectedUserCachesAsync(

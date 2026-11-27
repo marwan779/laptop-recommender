@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Jobs;
 using Users.Application.Common.Interfaces.Messaging;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Features.Notifications.Events;
@@ -70,6 +71,21 @@ public sealed class LaptopPriceChangedHandler(
                     itemEvent.CheapestStore));
 
                 affectedUserTracker.Track(subscription.UserId);
+                if (subscription.User is { IsActive: true } subscriber && !string.IsNullOrWhiteSpace(subscriber.Email))
+                {
+                    affectedUserTracker.TrackEmailAlert(new PriceAlertEmailJobPayload(
+                        subscriber.Email,
+                        subscriber.FullName,
+                        subscriber.PreferredLanguage,
+                        itemEvent.CanonicalId,
+                        string.IsNullOrWhiteSpace(itemEvent.Title) ? subscription.TitleSnapshot : itemEvent.Title,
+                        normalizedChangeType,
+                        itemEvent.OldPriceEgp,
+                        itemEvent.NewPriceEgp,
+                        itemEvent.CheapestStore,
+                        itemEvent.InStock));
+                }
+
                 subscription.RecordNotificationSent(itemEvent.NewPriceEgp, utcNow);
             }
         }
