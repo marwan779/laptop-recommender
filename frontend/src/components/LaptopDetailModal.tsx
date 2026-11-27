@@ -43,6 +43,7 @@ import {
 } from '../utils/hardwareTiers'
 import { PriceHistoryChart } from './PriceHistoryChart'
 import { ShareButton } from './ShareButton'
+import { WishlistButton } from './WishlistButton'
 import { getAvailabilityState, isOfferAvailable, isPlaceholderPrice, isValidDisplayPrice } from '../utils/availability'
 
 interface LaptopDetailModalProps {
@@ -404,14 +405,23 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               {title}
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={isAr ? 'إغلاق' : 'Close'}
-            className="modal-close"
-          >
-            <X className="w-4.5 h-4.5" strokeWidth={1.8} />
-          </button>
+          <div className="flex items-center gap-2">
+            <WishlistButton
+              canonicalId={laptop.canonical_id}
+              titleSnapshot={title}
+              addedPriceEgp={effectivePrice}
+              thumbnailUrlSnapshot={detail?.thumbnail_url ?? laptop.thumbnail_url}
+              lang={lang}
+            />
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={isAr ? 'إغلاق' : 'Close'}
+              className="modal-close"
+            >
+              <X className="w-4.5 h-4.5" strokeWidth={1.8} />
+            </button>
+          </div>
         </div>
 
         {/* Workbench tabs */}

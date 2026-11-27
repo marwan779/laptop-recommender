@@ -7,6 +7,9 @@ import { LaptopDetailModal } from './components/LaptopDetailModal'
 import { CatalogBrowser } from './components/CatalogBrowser'
 import { CompareBar } from './components/CompareBar'
 import { CompareModal } from './components/CompareModal'
+import { AuthModal } from './components/AuthModal'
+import { WishlistDrawer } from './components/WishlistDrawer'
+import { NotificationsDrawer } from './components/NotificationsDrawer'
 import type {
   PersonaType,
   RankedLaptop,
@@ -626,6 +629,10 @@ export function App() {
       {compareOpen && compareEntries.length >= 2 && (
         <CompareModal entries={compareEntries} lang={lang} onClose={closeCompare} />
       )}
+
+      <AuthModal lang={lang} />
+      <WishlistDrawer lang={lang} />
+      <NotificationsDrawer lang={lang} />
 
       <footer className="site-footer">
         <div className="inner">

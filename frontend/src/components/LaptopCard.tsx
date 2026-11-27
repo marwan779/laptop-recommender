@@ -18,6 +18,7 @@ import {
 } from '../utils/laptopSummary'
 import { isPlaceholderPrice, isValidDisplayPrice } from '../utils/availability'
 import { ShareButton } from './ShareButton'
+import { WishlistButton } from './WishlistButton'
 
 interface LaptopCardProps {
   laptop: RankedLaptop
@@ -360,6 +361,15 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
             priceEgp={laptop.effective_price_egp}
             cheapestStore={laptop.cheapest_store}
             lang={lang}
+          />
+
+          <WishlistButton
+            canonicalId={laptop.canonical_id}
+            titleSnapshot={formatCardTitle(laptop.brand, laptop.laptop_family, laptop.laptop_model)}
+            addedPriceEgp={laptop.effective_price_egp}
+            thumbnailUrlSnapshot={laptop.thumbnail_url}
+            lang={lang}
+            className="min-h-[42px]"
           />
         </div>
       </div>

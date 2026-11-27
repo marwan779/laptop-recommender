@@ -21,6 +21,7 @@ import {
   toMetricQuery,
 } from '../config/metricFilters'
 import { MetricSlider } from './MetricSlider'
+import { WishlistButton } from './WishlistButton'
 import { formatCardTitle } from '../utils/laptopSummary'
 import { getAvailabilityState, isValidDisplayPrice } from '../utils/availability'
 
@@ -447,35 +448,46 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({
                   </div>
                 </div>
 
-                {onToggleCompare && (
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      onToggleCompare({
-                        id: item.canonical_id,
-                        title: `${item.brand} ${formatCardTitle(item.brand, item.laptop_family, item.laptop_model)}`,
-                        brand: item.brand,
-                        thumbnail_url: item.thumbnail_url,
-                        price: item.min_price_egp,
-                      })
-                    }}
-                    disabled={!compareIds.includes(item.canonical_id) && compareDisabled}
-                    aria-pressed={compareIds.includes(item.canonical_id)}
-                    className={`mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-[8px] border px-3 py-2 text-[12px] font-medium transition-colors min-h-[38px] ${
-                      compareIds.includes(item.canonical_id)
-                        ? 'border-[var(--gold)] bg-[var(--gold-dim)] text-[var(--gold-bright)]'
-                        : 'border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]'
-                    }`}
-                  >
-                    {compareIds.includes(item.canonical_id) ? (
-                      <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
-                    ) : (
-                      <Scale className="w-3.5 h-3.5" strokeWidth={2} />
-                    )}
-                    <span>{isAr ? 'قارن' : 'Compare'}</span>
-                  </button>
-                )}
+                <div className="mt-2 flex items-center gap-2">
+                  {onToggleCompare && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onToggleCompare({
+                          id: item.canonical_id,
+                          title: `${item.brand} ${formatCardTitle(item.brand, item.laptop_family, item.laptop_model)}`,
+                          brand: item.brand,
+                          thumbnail_url: item.thumbnail_url,
+                          price: item.min_price_egp,
+                        })
+                      }}
+                      disabled={!compareIds.includes(item.canonical_id) && compareDisabled}
+                      aria-pressed={compareIds.includes(item.canonical_id)}
+                      className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-[8px] border px-3 py-2 text-[12px] font-medium transition-colors min-h-[38px] ${
+                        compareIds.includes(item.canonical_id)
+                          ? 'border-[var(--gold)] bg-[var(--gold-dim)] text-[var(--gold-bright)]'
+                          : 'border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]'
+                      }`}
+                    >
+                      {compareIds.includes(item.canonical_id) ? (
+                        <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                      ) : (
+                        <Scale className="w-3.5 h-3.5" strokeWidth={2} />
+                      )}
+                      <span>{isAr ? 'قارن' : 'Compare'}</span>
+                    </button>
+                  )}
+
+                  <WishlistButton
+                    canonicalId={item.canonical_id}
+                    titleSnapshot={formatCardTitle(item.brand, item.laptop_family, item.laptop_model)}
+                    addedPriceEgp={item.min_price_egp}
+                    thumbnailUrlSnapshot={item.thumbnail_url}
+                    lang={lang}
+                    compact
+                  />
+                </div>
               </div>
             )
           })}

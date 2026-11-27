@@ -1,5 +1,6 @@
 import React from 'react'
-import { Laptop, Languages, Moon, Sun } from 'lucide-react'
+import { Laptop, Languages, Moon, Sun, Heart, Bell, LogIn, LogOut } from 'lucide-react'
+import { useUserSession } from '../context/UserSessionContext'
 
 interface NavbarProps {
   currentTab: 'recommend' | 'catalog'
@@ -20,6 +21,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const isAr = lang === 'ar'
   const isDark = theme === 'dark'
+  const {
+    user,
+    wishlistItems,
+    unreadCount,
+    setAuthModalOpen,
+    setWishlistDrawerOpen,
+    setNotificationsOpen,
+    logout,
+  } = useUserSession()
 
   return (
     <header className="nav">
@@ -61,6 +71,62 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           <div className="flex items-center gap-2">
+            {user ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setWishlistDrawerOpen(true)}
+                  className="lang-btn relative"
+                  aria-label={isAr ? 'قائمة المفضلة' : 'Watchlist'}
+                  title={isAr ? 'قائمة المفضلة' : 'Watchlist'}
+                >
+                  <Heart className="w-4 h-4 text-[var(--gold)]" strokeWidth={1.8} />
+                  <span>{isAr ? 'المفضلة' : 'Watchlist'}</span>
+                  {wishlistItems.length > 0 && (
+                    <span className="rounded-full bg-[var(--gold-dim)] border border-[var(--gold)] px-1.5 py-0.2 text-[10px] font-mono font-bold text-[var(--gold-bright)] num">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setNotificationsOpen(true)}
+                  className="lang-btn relative"
+                  aria-label={isAr ? 'التنبيهات' : 'Notifications'}
+                  title={isAr ? 'التنبيهات' : 'Notifications'}
+                >
+                  <Bell className="w-4 h-4" strokeWidth={1.8} />
+                  {unreadCount > 0 && (
+                    <span className="rounded-full bg-[var(--gold)] px-1.5 py-0.2 text-[10px] font-mono font-bold text-[#0A0E13] num">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  className="lang-btn"
+                  aria-label={isAr ? 'تسجيل الخروج' : 'Sign out'}
+                  title={`${user.fullName} (${user.email})`}
+                >
+                  <LogOut className="w-4 h-4" strokeWidth={1.8} />
+                  <span className="hidden sm:inline">{isAr ? 'خروج' : 'Sign out'}</span>
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAuthModalOpen(true)}
+                className="lang-btn border-[var(--gold)] text-[var(--gold-bright)]"
+                aria-label={isAr ? 'تسجيل الدخول' : 'Sign in'}
+              >
+                <LogIn className="w-4 h-4" strokeWidth={1.8} />
+                <span>{isAr ? 'دخول' : 'Sign in'}</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={onToggleTheme}
