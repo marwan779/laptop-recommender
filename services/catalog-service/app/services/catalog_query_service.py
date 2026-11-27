@@ -20,6 +20,7 @@ from app.common.cursor import InvalidCursorError, decode_cursor, encode_cursor
 from app.common.logger import get_logger
 from app.common.review_text import align_bilingual_lists
 from app.domain.gpu_power_policy import evaluate_gpu_tgp, inject_gpu_tgp_warning
+from app.domain.hardware_warnings import inject_legacy_hardware_cons
 from app.domain.pricing import (
     OfferCurrentState,
     PriceHistoryDomainService,
@@ -358,6 +359,13 @@ class CatalogQueryService:
     @staticmethod
     def _orm_to_list_item(laptop: LaptopConfiguration) -> CatalogListItemResponse:
         metrics = laptop.metrics
+        orm_list_cons_en, orm_list_cons_ar = align_bilingual_lists(laptop.cons_en, laptop.cons_ar)
+        orm_list_cons_en, orm_list_cons_ar = inject_legacy_hardware_cons(
+            orm_list_cons_en,
+            orm_list_cons_ar,
+            ram_type=laptop.ram_type,
+            storage_type=laptop.storage_type,
+        )
         return CatalogListItemResponse(
             id=str(laptop.id),
             canonical_id=laptop.canonical_id,
@@ -388,8 +396,8 @@ class CatalogQueryService:
             reviews_evidence_count=laptop.reviews_evidence_count or 0,
             pros_ar=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[1],
             pros_en=align_bilingual_lists(laptop.pros_en, laptop.pros_ar)[0],
-            cons_ar=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[1],
-            cons_en=align_bilingual_lists(laptop.cons_en, laptop.cons_ar)[0],
+            cons_ar=orm_list_cons_ar,
+            cons_en=orm_list_cons_en,
             metric_scores=CatalogQueryService._orm_metric_scores(laptop),
         )
 
@@ -812,6 +820,12 @@ class CatalogQueryService:
         orm_pros_en, orm_pros_ar = align_bilingual_lists(laptop.pros_en, laptop.pros_ar)
         orm_cons_en, orm_cons_ar = align_bilingual_lists(laptop.cons_en, laptop.cons_ar)
         orm_cons_en, orm_cons_ar = inject_gpu_tgp_warning(orm_cons_en, orm_cons_ar, gpu_eval)
+        orm_cons_en, orm_cons_ar = inject_legacy_hardware_cons(
+            orm_cons_en,
+            orm_cons_ar,
+            ram_type=laptop.ram_type,
+            storage_type=laptop.storage_type,
+        )
 
         return FullLaptopDetailResponse(
             id=str(laptop.id),

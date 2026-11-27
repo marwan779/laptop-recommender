@@ -244,10 +244,10 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
             <span>{isAr ? 'نقاط القوة' : 'Strengths'}</span>
           </h4>
           <ul>
-            {(pros || []).slice(0, 2).map((pro, i) => (
+            {(pros || []).map((pro, i) => (
               <li key={i}>
                 <span className="mk">✓</span>
-                <span dir="auto" className="line-clamp-2">
+                <span dir="auto">
                   {pro}
                 </span>
               </li>
@@ -269,10 +269,10 @@ export const LaptopCard: React.FC<LaptopCardProps> = ({
             <span>{isAr ? 'خد بالك — التنازلات' : 'Watch out — tradeoffs'}</span>
           </h4>
           <ul>
-            {(cons || []).slice(0, 2).map((con, i) => (
+            {(cons || []).map((con, i) => (
               <li key={i}>
                 <span className="mk">!</span>
-                <span dir="auto" className="line-clamp-2">
+                <span dir="auto">
                   {con}
                 </span>
               </li>
