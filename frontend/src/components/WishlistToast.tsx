@@ -14,7 +14,7 @@ export const WishlistToast: React.FC<WishlistToastProps> = ({ lang }) => {
 
   return (
     <div
-      className="fixed bottom-5 end-5 z-50 max-w-sm wl-toast-enter"
+      className="fixed bottom-5 end-5 z-40 max-w-sm wl-toast-enter"
       role="status"
       aria-live="polite"
     >

@@ -83,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Heart className="w-4 h-4 text-[var(--gold)]" strokeWidth={1.8} />
                   <span>{isAr ? 'المفضلة' : 'Watchlist'}</span>
                   {wishlistItems.length > 0 && (
-                    <span className="rounded-full bg-[var(--gold-dim)] border border-[var(--gold)] px-1.5 py-0.2 text-[10px] font-mono font-bold text-[var(--gold-bright)] num">
+                    <span className="nav-count-badge rounded-full bg-[var(--gold-dim)] border border-[var(--gold)] px-1.5 py-0.5 text-[10px] leading-none font-mono font-bold text-[var(--gold-bright)] num">
                       {wishlistItems.length}
                     </span>
                   )}
@@ -98,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <Bell className="w-4 h-4" strokeWidth={1.8} />
                   {unreadCount > 0 && (
-                    <span className="rounded-full bg-[var(--gold)] px-1.5 py-0.5 text-[10px] leading-none font-mono font-bold text-[#0A0E13] num">
+                    <span className="nav-count-badge rounded-full bg-[var(--gold)] px-1.5 py-0.5 text-[10px] leading-none font-mono font-bold text-[#0A0E13] num">
                       {unreadCount}
                     </span>
                   )}
@@ -111,7 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   aria-label={isAr ? 'تسجيل الخروج' : 'Sign out'}
                   title={`${user.fullName} (${user.email})`}
                 >
-                  <LogOut className="w-4 h-4" strokeWidth={1.8} />
+                  <LogOut className="w-4 h-4 rtl:rotate-180" strokeWidth={1.8} />
                   <span className="hidden sm:inline">{isAr ? 'خروج' : 'Sign out'}</span>
                 </button>
               </>

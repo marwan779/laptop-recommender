@@ -347,7 +347,7 @@ export const CatalogBrowser: React.FC<CatalogBrowserProps> = ({
                 onClick={() => onSelectLaptop && onSelectLaptop(item)}
                 className={`catalog-card ${!isAvailable ? 'opacity-85' : ''}`}
               >
-                <div className="space-y-3">
+                <div className="space-y-3 min-w-0">
                   <div className={`studio-well ${!isAvailable ? 'opacity-75' : ''}`}>
                     <img
                       src={item.thumbnail_url}

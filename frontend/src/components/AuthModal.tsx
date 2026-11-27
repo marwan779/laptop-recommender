@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { X, Lock, Mail, User as UserIcon } from 'lucide-react'
 import { loginUser, registerUser } from '../services/usersApi'
 import { useUserSession } from '../context/UserSessionContext'
@@ -17,6 +17,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ lang }) => {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!authModalOpen) {
+      setMode('login')
+      setEmail('')
+      setFullName('')
+      setPassword('')
+      setError(null)
+    }
+  }, [authModalOpen])
 
   if (!authModalOpen) return null
 
@@ -145,16 +155,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ lang }) => {
               <label className="block text-[12px] font-medium text-[var(--text-secondary)]">
                 {isAr ? 'البريد الإلكتروني' : 'Email'}
               </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-[var(--text-muted)] absolute top-1/2 -translate-y-1/2 start-3" />
+              <div className="relative" dir="ltr">
+                <Mail className="w-4 h-4 text-[var(--text-muted)] absolute top-1/2 -translate-y-1/2 left-3" />
                 <input
                   type="email"
                   required
-                  dir="ltr"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-input)] ps-9 pe-3 py-2.5 text-[13.5px] text-[var(--text-primary)] focus:border-[var(--gold)] focus:outline-none"
+                  className="w-full rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-input)] pl-9 pr-3 py-2.5 text-[13.5px] text-[var(--text-primary)] text-left focus:border-[var(--gold)] focus:outline-none"
                 />
               </div>
             </div>
@@ -163,17 +172,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ lang }) => {
               <label className="block text-[12px] font-medium text-[var(--text-secondary)]">
                 {isAr ? 'كلمة المرور' : 'Password'}
               </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-[var(--text-muted)] absolute top-1/2 -translate-y-1/2 start-3" />
+              <div className="relative" dir="ltr">
+                <Lock className="w-4 h-4 text-[var(--text-muted)] absolute top-1/2 -translate-y-1/2 left-3" />
                 <input
                   type="password"
                   required
                   minLength={8}
-                  dir="ltr"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-input)] ps-9 pe-3 py-2.5 text-[13.5px] text-[var(--text-primary)] focus:border-[var(--gold)] focus:outline-none"
+                  className="w-full rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-input)] pl-9 pr-3 py-2.5 text-[13.5px] text-[var(--text-primary)] text-left focus:border-[var(--gold)] focus:outline-none"
                 />
               </div>
             </div>

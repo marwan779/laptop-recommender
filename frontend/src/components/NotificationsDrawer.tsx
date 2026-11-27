@@ -32,6 +32,15 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
     }
   }, [notificationsOpen, refreshNotifications])
 
+  useEffect(() => {
+    if (!notificationsOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setNotificationsOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [notificationsOpen, setNotificationsOpen])
+
   if (!notificationsOpen) return null
 
   const handleNotificationClick = (n: NotificationItem) => {
@@ -133,7 +142,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
             notifications.map((n) => {
               const badgeColor =
                 n.changeType === 'PRICE_DROP'
-                  ? 'border-[var(--emerald)] text-[var(--emerald)] bg-[var(--emerald-dim)]'
+                  ? 'border-[var(--success)] text-[var(--success)] bg-[var(--success-dim)]'
                   : n.changeType === 'RESTOCK'
                   ? 'border-[var(--cyan)] text-[var(--cyan)] bg-[var(--cyan-dim)]'
                   : 'border-[var(--border-strong)] text-[var(--text-secondary)] bg-[var(--bg-input)]'

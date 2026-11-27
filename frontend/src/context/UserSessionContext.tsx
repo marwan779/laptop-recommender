@@ -107,7 +107,8 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setUnreadCount(0)
     setWishlistDrawerOpen(false)
     setNotificationsOpen(false)
-  }, [])
+    dismissWishlistToast()
+  }, [dismissWishlistToast])
 
   const loadUserData = useCallback(async () => {
     const [wl, unread] = await Promise.all([

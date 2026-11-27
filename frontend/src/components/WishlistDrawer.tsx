@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Heart, Trash2, X, Check } from 'lucide-react'
 import { useUserSession } from '../context/UserSessionContext'
 import type { WishlistItem } from '../types/users'
@@ -67,9 +67,6 @@ const WishlistItemRow: React.FC<{
             <span className="font-mono text-[13px] font-bold text-[var(--gold)] num">
               {item.addedPriceEgp.toLocaleString('en-US')} {isAr ? 'ج.م' : 'EGP'}
             </span>
-            <span className="text-[11px] font-mono text-[var(--text-muted)]">
-              {item.canonicalId}
-            </span>
           </div>
         </div>
         <button
@@ -91,11 +88,11 @@ const WishlistItemRow: React.FC<{
           <input
             type="number"
             min={1}
-            dir="ltr"
+            dir="auto"
             value={targetInput}
             onChange={(e) => setTargetInput(e.target.value)}
             placeholder={isAr ? 'أي انخفاض' : 'Any drop'}
-            className="w-full rounded-[6px] border border-[var(--border-subtle)] bg-[var(--bg-input)] px-2.5 py-1 text-[12.5px] text-[var(--text-primary)] font-mono num focus:border-[var(--gold)] focus:outline-none"
+            className={`w-full rounded-[6px] border border-[var(--border-subtle)] bg-[var(--bg-input)] px-2.5 py-1 text-[12.5px] text-[var(--text-primary)] num focus:border-[var(--gold)] focus:outline-none ${targetInput ? 'font-mono' : ''}`}
           />
         </div>
 
@@ -162,6 +159,15 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ lang }) => {
     removeWishlistItem,
   } = useUserSession()
   const isAr = lang === 'ar'
+
+  useEffect(() => {
+    if (!wishlistDrawerOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setWishlistDrawerOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [wishlistDrawerOpen, setWishlistDrawerOpen])
 
   if (!wishlistDrawerOpen) return null
 
