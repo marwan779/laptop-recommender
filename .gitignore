@@ -10,6 +10,8 @@ venv/
 
 # Environment files
 .env
+.env.*
+!.env.example
 
 # Testing & Coverage
 .pytest_cache/
@@ -47,3 +49,11 @@ unified_catalog_latest.json
 
 # Local Database Export Dumps
 *.sql
+
+# .NET Build Outputs
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+*.userprefs

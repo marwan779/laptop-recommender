@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 from app.common.cursor import InvalidCursorError, decode_cursor, encode_cursor
 from app.common.review_text import align_bilingual_lists
 from app.domain.gpu_power_policy import evaluate_gpu_tgp, inject_gpu_tgp_warning
+from app.domain.hardware_warnings import inject_legacy_hardware_cons
 from app.domain.pricing import PricingDomainService
 from app.models.base import utcnow
 from app.models.laptop import LaptopConfiguration
@@ -183,6 +184,12 @@ def to_recommender_dict(laptop: LaptopConfiguration) -> dict[str, Any]:
 
     gpu_eval = evaluate_gpu_tgp(laptop.gpu_model, bool(laptop.gpu_integrated), laptop.gpu_tdp_w)
     cons_en, cons_ar = inject_gpu_tgp_warning(cons_en, cons_ar, gpu_eval)
+    cons_en, cons_ar = inject_legacy_hardware_cons(
+        cons_en,
+        cons_ar,
+        ram_type=laptop.ram_type,
+        storage_type=laptop.storage_type,
+    )
 
     return {
         "id": str(laptop.id),

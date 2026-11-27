@@ -15,7 +15,14 @@ from app.models.offer import LaptopOffer
 from app.repositories.batch_log_repository import BatchLogRepository
 from app.repositories.laptop_repository import LaptopRepository
 from app.repositories.offer_repository import OfferRepository
+from app.repositories.outbox_repository import OutboxRepository
 from app.repositories.price_history_repository import PriceHistoryRepository
+from app.schemas.events import (
+    EventType,
+    LaptopPriceChangedBatchEvent,
+    LaptopPriceChangedBatchPayload,
+    LaptopPriceChangedItem,
+)
 from app.schemas.price_sync import (
     PriceCheckBatchRequest,
     PriceCheckBatchResponse,
@@ -105,6 +112,7 @@ class PriceSyncService:
 
         affected_laptop_ids: set[uuid.UUID] = set()
         unchanged_offer_ids: list[uuid.UUID] = []
+        changed_laptop_events: list[LaptopPriceChangedItem] = []
 
         summary = PriceSyncSummary(
             batch_id=resp.batch_id,
@@ -207,13 +215,43 @@ class PriceSyncService:
             if not rollup:
                 continue
 
-            # Price change detection on canonical model level (both drops and hikes)
+            # Price & stock change detection on canonical model level
             current_min_price = float(laptop.min_price_egp) if laptop.min_price_egp is not None else None
+            previous_in_stock = bool(laptop.in_stock)
+            price_changed = (
+                current_min_price is not None
+                and self.domain.has_significant_price_change(current_min_price, rollup.min_price_egp)
+            )
+            stock_changed = previous_in_stock != rollup.in_stock
+
             if current_min_price is None:
                 laptop.price_updated_at = utcnow()
-            elif self.domain.has_significant_price_change(current_min_price, rollup.min_price_egp):
+            elif price_changed:
                 laptop.previous_min_price_egp = laptop.min_price_egp
                 laptop.price_updated_at = utcnow()
+
+            canonical_id = getattr(laptop, "canonical_id", None)
+            if canonical_id and (price_changed or stock_changed):
+                if not previous_in_stock and rollup.in_stock:
+                    change_type = "RESTOCK"
+                elif previous_in_stock and not rollup.in_stock:
+                    change_type = "OUT_OF_STOCK"
+                elif current_min_price is not None and rollup.min_price_egp < current_min_price:
+                    change_type = "PRICE_DROP"
+                else:
+                    change_type = "PRICE_INCREASE"
+
+                changed_laptop_events.append(
+                    LaptopPriceChangedItem(
+                        canonical_id=canonical_id,
+                        title=getattr(laptop, "title", None) or getattr(laptop, "laptop_model", None) or canonical_id,
+                        old_price_egp=current_min_price,
+                        new_price_egp=rollup.min_price_egp,
+                        cheapest_store=rollup.cheapest_store or "",
+                        in_stock=rollup.in_stock,
+                        change_type=change_type,
+                    )
+                )
 
             laptop.min_price_egp = rollup.min_price_egp
             laptop.max_price_egp = rollup.max_price_egp
@@ -263,6 +301,20 @@ class PriceSyncService:
         )
 
         summary.affected_laptop_ids = sorted(affected_laptop_ids, key=str)
+
+        if changed_laptop_events:
+            batch_event = LaptopPriceChangedBatchEvent(
+                payload=LaptopPriceChangedBatchPayload(
+                    batch_id=resp.batch_id,
+                    store_key=resp.store_key,
+                    changes=changed_laptop_events,
+                )
+            )
+            await OutboxRepository(session).insert_outbox_event(
+                event_type=EventType.LAPTOP_PRICE_CHANGED_EVENT,
+                routing_key=EventType.LAPTOP_PRICE_CHANGED_EVENT,
+                payload=batch_event,
+            )
 
         if commit:
             await session.commit()

@@ -26,6 +26,7 @@ import {
   MessageSquare,
   FileText,
   Play,
+  Flag,
 } from 'lucide-react'
 import type {
   FullLaptopDetailResponse,
@@ -43,6 +44,8 @@ import {
 } from '../utils/hardwareTiers'
 import { PriceHistoryChart } from './PriceHistoryChart'
 import { ShareButton } from './ShareButton'
+import { WishlistButton } from './WishlistButton'
+import { useUserSession } from '../context/UserSessionContext'
 import { getAvailabilityState, isOfferAvailable, isPlaceholderPrice, isValidDisplayPrice } from '../utils/availability'
 
 interface LaptopDetailModalProps {
@@ -272,6 +275,7 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
   lang,
 }) => {
   const isAr = lang === 'ar'
+  const { openFeedbackModal } = useUserSession()
   const [detail, setDetail] = useState<FullLaptopDetailResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [showAllScores, setShowAllScores] = useState(false)
@@ -404,14 +408,33 @@ export const LaptopDetailModal: React.FC<LaptopDetailModalProps> = ({
               {title}
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={isAr ? 'إغلاق' : 'Close'}
-            className="modal-close"
-          >
-            <X className="w-4.5 h-4.5" strokeWidth={1.8} />
-          </button>
+          <div className="flex items-center gap-2">
+            <WishlistButton
+              canonicalId={laptop.canonical_id}
+              titleSnapshot={title}
+              addedPriceEgp={effectivePrice}
+              thumbnailUrlSnapshot={detail?.thumbnail_url ?? laptop.thumbnail_url}
+              lang={lang}
+            />
+            <button
+              type="button"
+              onClick={() => openFeedbackModal({ canonicalId: laptop.canonical_id, laptopTitle: title })}
+              aria-label={isAr ? 'الإبلاغ عن خطأ' : 'Report issue'}
+              title={isAr ? 'الإبلاغ عن خطأ في السعر أو المواصفات' : 'Report wrong price or spec'}
+              className="btn btn-secondary btn-sm min-h-[38px]"
+            >
+              <Flag className="w-3.5 h-3.5" strokeWidth={1.8} />
+              <span className="hidden sm:inline">{isAr ? 'إبلاغ' : 'Report'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={isAr ? 'إغلاق' : 'Close'}
+              className="modal-close"
+            >
+              <X className="w-4.5 h-4.5" strokeWidth={1.8} />
+            </button>
+          </div>
         </div>
 
         {/* Workbench tabs */}

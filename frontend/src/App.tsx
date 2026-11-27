@@ -7,6 +7,14 @@ import { LaptopDetailModal } from './components/LaptopDetailModal'
 import { CatalogBrowser } from './components/CatalogBrowser'
 import { CompareBar } from './components/CompareBar'
 import { CompareModal } from './components/CompareModal'
+import { AuthModal } from './components/AuthModal'
+import { WishlistDrawer } from './components/WishlistDrawer'
+import { NotificationsDrawer } from './components/NotificationsDrawer'
+import { WishlistToast } from './components/WishlistToast'
+import { FeedbackModal } from './components/FeedbackModal'
+import { AdminConsoleDrawer } from './components/AdminConsoleDrawer'
+import { useUserSession } from './context/UserSessionContext'
+import type { NotificationItem } from './types/users'
 import type {
   PersonaType,
   RankedLaptop,
@@ -72,8 +80,53 @@ export function App() {
   const hydratedRef = useRef(false)
   const didInitRef = useRef(false)
   const isAr = lang === 'ar'
+  const { openFeedbackModal } = useUserSession()
 
   // ── Theme / language document sync ─────────────────────────────────
+  const openLaptopByCanonicalId = useCallback(
+    (
+      canonicalId: string,
+      titleHint?: string,
+      priceHint?: number | null,
+      storeHint?: string | null,
+    ) => {
+      const stub: CatalogListItem = {
+        id: canonicalId,
+        canonical_id: canonicalId,
+        brand: '',
+        laptop_model: titleHint || canonicalId,
+        title: titleHint || canonicalId,
+        thumbnail_url: '',
+        min_price_egp: priceHint ?? 0,
+        cheapest_store: storeHint || '',
+        in_stock: true,
+        stores_count: 1,
+        ram_capacity_gb: 0,
+        storage_capacity_gb: 0,
+        gpu_model: '',
+        cpu_model: '',
+        display_size_inches: 0,
+        community_nlp_score: 0,
+        value_score: 0,
+        has_reviews: false,
+        reviews_evidence_count: 0,
+        pros_ar: [],
+        pros_en: [],
+        cons_ar: [],
+        cons_en: [],
+      }
+      setSelectedLaptop(stub)
+    },
+    [],
+  )
+
+  useEffect(() => {
+    const laptopParam = new URLSearchParams(window.location.search).get('laptop')
+    if (laptopParam) {
+      openLaptopByCanonicalId(laptopParam)
+    }
+  }, [openLaptopByCanonicalId])
+
   useEffect(() => {
     document.documentElement.setAttribute('lang', lang)
     document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr')
@@ -384,7 +437,7 @@ export function App() {
             )}
 
             {stageOne && !loading && (
-              <div className="max-w-3xl mx-auto w-full space-y-5">
+              <div className="w-full space-y-5">
                 <div className="text-center space-y-2 pt-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-raised)] px-3 py-1 text-[11px] font-semibold text-[var(--text-secondary)]">
                     <ShieldCheck className="w-3.5 h-3.5 text-[var(--success)]" strokeWidth={1.8} />
@@ -627,6 +680,18 @@ export function App() {
         <CompareModal entries={compareEntries} lang={lang} onClose={closeCompare} />
       )}
 
+      <AuthModal lang={lang} />
+      <WishlistDrawer lang={lang} />
+      <NotificationsDrawer
+        lang={lang}
+        onSelectNotification={(n: NotificationItem) =>
+          openLaptopByCanonicalId(n.canonicalId, n.title, n.newPriceEgp, n.cheapestStore)
+        }
+      />
+      <WishlistToast lang={lang} />
+      <FeedbackModal lang={lang} />
+      <AdminConsoleDrawer lang={lang} />
+
       <footer className="site-footer">
         <div className="inner">
           <span dir="auto" className="text-[12px] text-[var(--text-secondary)]">
@@ -634,9 +699,18 @@ export function App() {
               ? 'مستقل 100% بدون عمولات متاجر · الأسعار محدثة من متاجر مصر الموثوقة'
               : '100% independent, no store commissions · Prices refreshed from trusted Egyptian stores'}
           </span>
-          <span className="text-[11px] text-[var(--text-muted)]">
-            {isAr ? 'مراجعات حقيقية من يوتيوب والمنتديات' : 'Real reviews from YouTube & forums'}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => openFeedbackModal(null)}
+              className="text-[11.5px] font-medium text-[var(--cyan)] hover:underline"
+            >
+              {isAr ? 'إرسال ملاحظة / إبلاغ عن خطأ' : 'Report issue / Feedback'}
+            </button>
+            <span className="text-[11px] text-[var(--text-muted)]">
+              {isAr ? 'مراجعات حقيقية من يوتيوب والمنتديات' : 'Real reviews from YouTube & forums'}
+            </span>
+          </div>
         </div>
       </footer>
     </div>

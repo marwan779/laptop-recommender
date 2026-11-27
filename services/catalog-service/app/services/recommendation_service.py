@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.logger import get_logger
 from app.common.review_text import align_bilingual_lists
+from app.domain.hardware_warnings import inject_legacy_hardware_cons
 from app.domain.recommender import (
     PersonaType,
     TopsisExecutionResult,
@@ -86,6 +87,13 @@ def _normalize_catalog_dict(lap: dict[str, Any]) -> dict[str, Any]:
     if isinstance(comm, dict):
         p_en, p_ar = align_bilingual_lists(comm.get("pros_en"), comm.get("pros_ar"))
         c_en, c_ar = align_bilingual_lists(comm.get("cons_en"), comm.get("cons_ar"))
+        specs = lap.get("specs") or {}
+        c_en, c_ar = inject_legacy_hardware_cons(
+            c_en,
+            c_ar,
+            ram_type=(specs.get("memory") or {}).get("memory_type"),
+            storage_type=(specs.get("storage") or {}).get("storage_type"),
+        )
         comm["pros_en"] = p_en
         comm["pros_ar"] = p_ar
         comm["cons_en"] = c_en
