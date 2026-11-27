@@ -1,4 +1,5 @@
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Caching;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Common.Models;
 using Users.Application.Features.Notifications.DTOs;
@@ -9,7 +10,8 @@ namespace Users.Application.Features.Notifications.Services;
 public sealed class NotificationService(
     INotificationRepository notificationRepository,
     IUnitOfWork unitOfWork,
-    IDateTimeProvider dateTimeProvider) : INotificationService
+    IDateTimeProvider dateTimeProvider,
+    ICacheProvider cacheProvider) : INotificationService
 {
     public async Task<Result<NotificationListResponse>> GetMyNotificationsAsync(
         Guid userId,
@@ -52,6 +54,7 @@ public sealed class NotificationService(
         {
             notification.MarkAsRead(dateTimeProvider.UtcNow);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await InvalidateUserNotificationsAsync(userId, cancellationToken);
         }
 
         return Result<NotificationResponse>.Success(MapToResponse(notification));
@@ -66,8 +69,12 @@ public sealed class NotificationService(
             dateTimeProvider.UtcNow,
             cancellationToken);
 
+        await InvalidateUserNotificationsAsync(userId, cancellationToken);
         return Result<MarkAllReadResponse>.Success(new MarkAllReadResponse(markedCount));
     }
+
+    private Task<int> InvalidateUserNotificationsAsync(Guid userId, CancellationToken cancellationToken)
+        => cacheProvider.ClearPrefixAsync($"users:{userId}:notifications:", cancellationToken);
 
     private static NotificationResponse MapToResponse(Notification n)
         => new(

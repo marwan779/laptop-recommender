@@ -1,4 +1,5 @@
 using System.Text;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Users.Api.Middleware;
@@ -51,10 +52,12 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseHangfireDashboard("/hangfire");
 }
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<ResponseCacheMiddleware>();
 
 app.MapControllers();
 

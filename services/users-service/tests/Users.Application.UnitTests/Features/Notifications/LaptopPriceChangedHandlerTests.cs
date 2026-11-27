@@ -3,6 +3,7 @@ using Users.Application.Common.Interfaces;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Features.Notifications.Events;
 using Users.Application.Features.Notifications.Handlers;
+using Users.Application.Features.Notifications.Services;
 using Users.Domain.Entities;
 
 namespace Users.Application.UnitTests.Features.Notifications;
@@ -12,6 +13,7 @@ public sealed class LaptopPriceChangedHandlerTests
     private readonly FakeWishlistRepo _wishlistRepo = new();
     private readonly FakeNotificationRepo _notificationRepo = new();
     private readonly FakeClock _clock = new(new DateTime(2026, 11, 26, 21, 0, 0, DateTimeKind.Utc));
+    private readonly AffectedUserTracker _tracker = new();
     private readonly LaptopPriceChangedHandler _sut;
 
     public LaptopPriceChangedHandlerTests()
@@ -20,6 +22,7 @@ public sealed class LaptopPriceChangedHandlerTests
             _wishlistRepo,
             _notificationRepo,
             _clock,
+            _tracker,
             NullLogger<LaptopPriceChangedHandler>.Instance);
     }
 
@@ -55,6 +58,9 @@ public sealed class LaptopPriceChangedHandlerTests
         Assert.Contains(_notificationRepo.Added, n => n.UserId == userTargetMet && n.NewPriceEgp == 69999m);
         Assert.Equal(69999m, _wishlistRepo.Subscribers[0].LastNotifiedPriceEgp);
         Assert.Null(_wishlistRepo.Subscribers[2].LastNotifiedPriceEgp);
+        Assert.Equal(
+            new[] { userNoTarget, userTargetMet }.OrderBy(id => id),
+            _tracker.Snapshot().OrderBy(id => id));
     }
 
     [Fact]
@@ -84,6 +90,7 @@ public sealed class LaptopPriceChangedHandlerTests
         Assert.Equal(userRestock, created.UserId);
         Assert.Equal("RESTOCK", created.ChangeType);
         Assert.Contains("back in stock", created.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal([userRestock], _tracker.Snapshot());
     }
 
     [Fact]

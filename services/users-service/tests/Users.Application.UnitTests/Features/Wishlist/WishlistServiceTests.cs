@@ -1,4 +1,5 @@
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Caching;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Common.Models;
 using Users.Application.Features.Wishlist.DTOs;
@@ -12,11 +13,12 @@ public sealed class WishlistServiceTests
     private readonly FakeWishlistRepository _repo = new();
     private readonly FakeClock _clock = new(new DateTime(2026, 11, 26, 20, 0, 0, DateTimeKind.Utc));
     private readonly FakeUnitOfWork _uow = new();
+    private readonly FakeCacheProvider _cache = new();
     private readonly WishlistService _sut;
 
     public WishlistServiceTests()
     {
-        _sut = new WishlistService(_repo, _clock, _uow);
+        _sut = new WishlistService(_repo, _clock, _uow, _cache);
     }
 
     [Fact]
@@ -31,6 +33,7 @@ public sealed class WishlistServiceTests
         Assert.Equal("laptop_asus_tuf", result.Value!.CanonicalId);
         Assert.Equal(1, _uow.SaveCount);
         Assert.Single(_repo.Items);
+        Assert.Contains($"users:{userId}:wishlist:", _cache.ClearedPrefixes);
     }
 
     [Fact]
@@ -83,6 +86,7 @@ public sealed class WishlistServiceTests
         Assert.True(updated.Value.NotifyOnAnyChange);
         Assert.True(missing.IsFailure);
         Assert.Equal(ErrorType.NotFound, missing.ErrorType);
+        Assert.Contains($"users:{userId}:wishlist:", _cache.ClearedPrefixes);
     }
 
     [Fact]
@@ -98,6 +102,7 @@ public sealed class WishlistServiceTests
         Assert.Empty(_repo.Items);
         Assert.True(removedAgain.IsFailure);
         Assert.Equal(ErrorType.NotFound, removedAgain.ErrorType);
+        Assert.Contains($"users:{userId}:wishlist:", _cache.ClearedPrefixes);
     }
 
     private sealed class FakeWishlistRepository : IWishlistRepository
@@ -133,6 +138,29 @@ public sealed class WishlistServiceTests
     private sealed class FakeClock(DateTime utcNow) : IDateTimeProvider
     {
         public DateTime UtcNow { get; } = utcNow;
+    }
+
+    private sealed class FakeCacheProvider : ICacheProvider
+    {
+        public List<string> ClearedPrefixes { get; } = [];
+
+        public Task<byte[]?> GetAsync(string key, CancellationToken cancellationToken = default)
+            => Task.FromResult<byte[]?>(null);
+
+        public Task SetAsync(string key, byte[] value, int? ttlSeconds = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<int> ClearPrefixAsync(string prefix, CancellationToken cancellationToken = default)
+        {
+            ClearedPrefixes.Add(prefix);
+            return Task.FromResult(1);
+        }
+
+        public Task<bool> HealthCheckAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork

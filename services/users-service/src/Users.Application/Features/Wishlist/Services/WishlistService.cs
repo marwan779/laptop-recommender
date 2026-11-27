@@ -1,4 +1,5 @@
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Caching;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Common.Models;
 using Users.Application.Features.Wishlist.DTOs;
@@ -10,7 +11,8 @@ namespace Users.Application.Features.Wishlist.Services;
 public sealed class WishlistService(
     IWishlistRepository wishlistRepository,
     IDateTimeProvider dateTimeProvider,
-    IUnitOfWork unitOfWork) : IWishlistService
+    IUnitOfWork unitOfWork,
+    ICacheProvider cacheProvider) : IWishlistService
 {
     public async Task<Result<IReadOnlyList<WishlistItemResponse>>> GetMyWishlistAsync(
         Guid userId,
@@ -58,6 +60,7 @@ public sealed class WishlistService(
 
         await wishlistRepository.AddAsync(item, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await InvalidateUserWishlistAsync(userId, cancellationToken);
 
         return Result<WishlistItemResponse>.Success(ToResponse(item));
     }
@@ -90,6 +93,7 @@ public sealed class WishlistService(
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await InvalidateUserWishlistAsync(userId, cancellationToken);
         return Result<WishlistItemResponse>.Success(ToResponse(item));
     }
 
@@ -107,8 +111,12 @@ public sealed class WishlistService(
 
         wishlistRepository.Remove(item);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await InvalidateUserWishlistAsync(userId, cancellationToken);
         return Result.Success();
     }
+
+    private Task<int> InvalidateUserWishlistAsync(Guid userId, CancellationToken cancellationToken)
+        => cacheProvider.ClearPrefixAsync($"users:{userId}:wishlist:", cancellationToken);
 
     private static WishlistItemResponse ToResponse(WishlistItem item) =>
         new(

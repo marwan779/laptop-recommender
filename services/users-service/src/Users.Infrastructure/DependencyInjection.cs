@@ -1,11 +1,22 @@
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Caching;
+using Users.Application.Common.Interfaces.Email;
+using Users.Application.Common.Interfaces.Jobs;
 using Users.Application.Common.Interfaces.Logging;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Common.Interfaces.Security;
+using Users.Infrastructure.Caching;
+using Users.Infrastructure.Email;
+using Users.Infrastructure.Jobs;
 using Users.Infrastructure.Logging;
 using Users.Infrastructure.Messaging;
 using Users.Infrastructure.Persistence;
@@ -61,6 +72,48 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
+        var cacheSection = configuration.GetSection(CacheOptions.SectionName);
+        var cacheOptions = new CacheOptions();
+        if (bool.TryParse(cacheSection["Enabled"], out var cacheEnabled))
+            cacheOptions.Enabled = cacheEnabled;
+        if (!string.IsNullOrWhiteSpace(cacheSection["RedisConnectionString"]))
+            cacheOptions.RedisConnectionString = cacheSection["RedisConnectionString"]!;
+        if (int.TryParse(cacheSection["DefaultTtlSeconds"], out var cacheTtl))
+            cacheOptions.DefaultTtlSeconds = cacheTtl;
+        if (int.TryParse(cacheSection["ConnectTimeoutMs"], out var connectTimeout))
+            cacheOptions.ConnectTimeoutMs = connectTimeout;
+        if (int.TryParse(cacheSection["SyncTimeoutMs"], out var syncTimeout))
+            cacheOptions.SyncTimeoutMs = syncTimeout;
+        if (int.TryParse(cacheSection["ScanPageSize"], out var scanPageSize))
+            cacheOptions.ScanPageSize = scanPageSize;
+
+        services.AddSingleton(Options.Create(cacheOptions));
+
+        if (cacheOptions.Enabled && !string.IsNullOrWhiteSpace(cacheOptions.RedisConnectionString))
+        {
+            services.AddSingleton<IConnectionMultiplexer>(serviceProvider =>
+            {
+                try
+                {
+                    return ConnectionMultiplexer.Connect(BuildRedisConfiguration(cacheOptions));
+                }
+                catch (Exception ex)
+                {
+                    serviceProvider
+                        .GetRequiredService<ILogger<RedisCacheProvider>>()
+                        .LogWarning(
+                            ex,
+                            "Unable to connect to Redis at startup; cache operations will be bypassed until it recovers.");
+                    return null!;
+                }
+            });
+            services.AddSingleton<ICacheProvider, RedisCacheProvider>();
+        }
+        else
+        {
+            services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
+        }
+
         services.TryAddSingleton(LoggerConfig.FromEnvironment(configuration));
         services.TryAddSingleton<ILogContextAccessor, AsyncLocalLogContextAccessor>();
 
@@ -96,6 +149,108 @@ public static class DependencyInjection
         services.AddSingleton<LaptopPriceChangedConsumerProcessor>();
         services.AddHostedService<RabbitMqConsumerBackgroundService>();
 
+        var emailSection = configuration.GetSection(EmailOptions.SectionName);
+        services.Configure<EmailOptions>(options =>
+        {
+            if (bool.TryParse(emailSection["Enabled"], out var emailEnabled))
+                options.Enabled = emailEnabled;
+            if (!string.IsNullOrWhiteSpace(emailSection["SmtpHost"]))
+                options.SmtpHost = emailSection["SmtpHost"]!;
+            if (int.TryParse(emailSection["SmtpPort"], out var smtpPort))
+                options.SmtpPort = smtpPort;
+            if (bool.TryParse(emailSection["UseStartTls"], out var useStartTls))
+                options.UseStartTls = useStartTls;
+            if (!string.IsNullOrWhiteSpace(emailSection["UserName"]))
+                options.UserName = emailSection["UserName"]!;
+            if (!string.IsNullOrWhiteSpace(emailSection["Password"]))
+                options.Password = emailSection["Password"]!;
+            if (!string.IsNullOrWhiteSpace(emailSection["FromEmail"]))
+                options.FromEmail = emailSection["FromEmail"]!;
+            if (!string.IsNullOrWhiteSpace(emailSection["FromName"]))
+                options.FromName = emailSection["FromName"]!;
+        });
+
+        services.AddTransient<IEmailSender, SmtpEmailSender>();
+        services.AddTransient<SendPriceAlertEmailJob>();
+        services.AddScoped<IBackgroundJobScheduler, HangfireJobScheduler>();
+
+        var hangfireEnabled = !bool.TryParse(configuration["Hangfire:Enabled"], out var hfEnabled) || hfEnabled;
+        if (hangfireEnabled)
+        {
+            services.AddHangfire(config => config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(
+                    options => options.UseNpgsqlConnection(connectionString),
+                    new PostgreSqlStorageOptions
+                    {
+                        SchemaName = "hangfire",
+                        PrepareSchemaIfNecessary = true,
+                    }));
+
+            services.AddHangfireServer(options =>
+            {
+                options.ServerName = "users-service-worker";
+                options.WorkerCount = 2;
+            });
+        }
+
         return services;
+    }
+
+    private static ConfigurationOptions BuildRedisConfiguration(CacheOptions options)
+    {
+        var connectionString = options.RedisConnectionString.Trim();
+
+        ConfigurationOptions configuration;
+        if (Uri.TryCreate(connectionString, UriKind.Absolute, out var uri)
+            && (uri.Scheme == "redis" || uri.Scheme == "rediss"))
+        {
+            var port = uri.Port > 0 ? uri.Port : 6379;
+            configuration = new ConfigurationOptions
+            {
+                AbortOnConnectFail = false,
+                Ssl = uri.Scheme == "rediss",
+                ConnectTimeout = options.ConnectTimeoutMs,
+                SyncTimeout = options.SyncTimeoutMs,
+                ClientName = "users-service",
+            };
+
+            configuration.EndPoints.Add(uri.Host, port);
+
+            var databasePath = uri.AbsolutePath.Trim('/');
+            if (int.TryParse(databasePath, out var database))
+            {
+                configuration.DefaultDatabase = database;
+            }
+
+            if (!string.IsNullOrEmpty(uri.UserInfo))
+            {
+                var separator = uri.UserInfo.IndexOf(':');
+                var username = separator >= 0 ? uri.UserInfo[..separator] : uri.UserInfo;
+                var password = separator >= 0 ? uri.UserInfo[(separator + 1)..] : null;
+
+                if (!string.IsNullOrEmpty(username))
+                {
+                    configuration.User = Uri.UnescapeDataString(username);
+                }
+
+                if (!string.IsNullOrEmpty(password))
+                {
+                    configuration.Password = Uri.UnescapeDataString(password);
+                }
+            }
+        }
+        else
+        {
+            configuration = ConfigurationOptions.Parse(connectionString);
+            configuration.AbortOnConnectFail = false;
+            configuration.ConnectTimeout = options.ConnectTimeoutMs;
+            configuration.SyncTimeout = options.SyncTimeoutMs;
+            configuration.ClientName = "users-service";
+        }
+
+        return configuration;
     }
 }

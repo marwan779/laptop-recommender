@@ -1,9 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using StackExchange.Redis;
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Caching;
 using Users.Application.Common.Interfaces.Messaging;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Features.Notifications.Events;
+using Users.Application.Features.Notifications.Services;
 using Users.Domain.Entities;
 using Users.Infrastructure.Logging;
 using Users.Infrastructure.Messaging;
@@ -16,9 +19,11 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
     public async Task ProcessAsync_ValidSnakeCaseMessage_CallsHandlerAndStoresInboxEntry()
     {
         var inbox = new FakeInboxRepository();
-        var handler = new SpyHandler();
+        var tracker = new AffectedUserTracker();
+        var cache = new FakeCacheProvider();
+        var handler = new SpyHandler(tracker);
         var uow = new FakeUnitOfWork();
-        var processor = CreateProcessor(inbox, handler, uow);
+        var processor = CreateProcessor(inbox, handler, uow, tracker, cache);
 
         const string payload = """
             {
@@ -57,6 +62,33 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
         Assert.Equal(69999.0m, change.NewPriceEgp);
         Assert.Single(inbox.Items);
         Assert.Equal(1, uow.SaveCount);
+
+        foreach (var userId in handler.AffectedUsers)
+        {
+            Assert.Contains($"users:{userId}:notifications:", cache.ClearedPrefixes);
+            Assert.Contains($"users:{userId}:wishlist:", cache.ClearedPrefixes);
+        }
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CacheInvalidationFails_StillAcks()
+    {
+        var inbox = new FakeInboxRepository();
+        var tracker = new AffectedUserTracker();
+        var cache = new FakeCacheProvider { ThrowOnClear = true };
+        var handler = new SpyHandler(tracker);
+        var uow = new FakeUnitOfWork();
+        var processor = CreateProcessor(inbox, handler, uow, tracker, cache);
+
+        const string payload = """
+            {"event_id":"msg-cache","event_type":"laptop.price.changed.event","payload":{"batch_id":"b1","changes":[{"canonical_id":"laptop_1","title":"Test","cheapest_store":"sigma","in_stock":true,"change_type":"PRICE_DROP"}]}}
+            """;
+
+        var outcome = await processor.ProcessAsync("msg-cache", "laptop.price.changed.event", payload, null);
+
+        Assert.Equal(MessageProcessOutcome.Ack, outcome);
+        Assert.Equal(1, uow.SaveCount);
+        Assert.Single(inbox.Items);
     }
 
     [Fact]
@@ -64,9 +96,11 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
     {
         var inbox = new FakeInboxRepository();
         await inbox.AddAsync(InboxMessage.Create("msg-dup", "laptop.price.changed.event", DateTime.UtcNow));
-        var handler = new SpyHandler();
+        var tracker = new AffectedUserTracker();
+        var cache = new FakeCacheProvider();
+        var handler = new SpyHandler(tracker);
         var uow = new FakeUnitOfWork();
-        var processor = CreateProcessor(inbox, handler, uow);
+        var processor = CreateProcessor(inbox, handler, uow, tracker, cache);
 
         const string payload = """
             {"event_id":"msg-dup","event_type":"laptop.price.changed.event","payload":{"batch_id":"b1","changes":[{"canonical_id":"laptop_1","title":"Test","cheapest_store":"sigma","in_stock":true,"change_type":"PRICE_DROP"}]}}
@@ -77,15 +111,18 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
         Assert.Equal(MessageProcessOutcome.Ack, outcome);
         Assert.Equal(0, handler.CallCount);
         Assert.Equal(0, uow.SaveCount);
+        Assert.Empty(cache.ClearedPrefixes);
     }
 
     [Fact]
     public async Task ProcessAsync_MalformedJson_DeadLettersWithoutCallingHandler()
     {
         var inbox = new FakeInboxRepository();
-        var handler = new SpyHandler();
+        var tracker = new AffectedUserTracker();
+        var cache = new FakeCacheProvider();
+        var handler = new SpyHandler(tracker);
         var uow = new FakeUnitOfWork();
-        var processor = CreateProcessor(inbox, handler, uow);
+        var processor = CreateProcessor(inbox, handler, uow, tracker, cache);
 
         var outcome = await processor.ProcessAsync("msg-bad", "laptop.price.changed.event", "{not-json", null);
 
@@ -97,13 +134,17 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
     private static LaptopPriceChangedConsumerProcessor CreateProcessor(
         FakeInboxRepository inbox,
         SpyHandler handler,
-        FakeUnitOfWork uow)
+        FakeUnitOfWork uow,
+        AffectedUserTracker tracker,
+        FakeCacheProvider cache)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IInboxRepository>(inbox);
         services.AddSingleton<IIntegrationEventHandler<LaptopPriceChangedBatchEvent>>(handler);
         services.AddSingleton<IDateTimeProvider>(new FakeClock(new DateTime(2026, 11, 26, 20, 30, 0, DateTimeKind.Utc)));
         services.AddSingleton<IUnitOfWork>(uow);
+        services.AddSingleton(tracker);
+        services.AddSingleton<ICacheProvider>(cache);
 
         var provider = services.BuildServiceProvider();
         return new LaptopPriceChangedConsumerProcessor(
@@ -124,16 +165,53 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
         }
     }
 
-    private sealed class SpyHandler : IIntegrationEventHandler<LaptopPriceChangedBatchEvent>
+    private sealed class SpyHandler(AffectedUserTracker tracker) : IIntegrationEventHandler<LaptopPriceChangedBatchEvent>
     {
+        public static readonly Guid FirstAffectedUser = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        public static readonly Guid SecondAffectedUser = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
         public int CallCount { get; private set; }
         public LaptopPriceChangedBatchEvent? LastEvent { get; private set; }
+        public Guid[] AffectedUsers { get; private set; } = [];
+
         public Task HandleAsync(LaptopPriceChangedBatchEvent integrationEvent, string messageId, CancellationToken cancellationToken = default)
         {
             CallCount++;
             LastEvent = integrationEvent;
+            AffectedUsers = [FirstAffectedUser, SecondAffectedUser];
+            tracker.Track(FirstAffectedUser);
+            tracker.Track(SecondAffectedUser);
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class FakeCacheProvider : ICacheProvider
+    {
+        public bool ThrowOnClear { get; init; }
+        public List<string> ClearedPrefixes { get; } = [];
+
+        public Task<byte[]?> GetAsync(string key, CancellationToken cancellationToken = default)
+            => Task.FromResult<byte[]?>(null);
+
+        public Task SetAsync(string key, byte[] value, int? ttlSeconds = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<int> ClearPrefixAsync(string prefix, CancellationToken cancellationToken = default)
+        {
+            if (ThrowOnClear)
+            {
+                throw new RedisException("cache down");
+            }
+
+            ClearedPrefixes.Add(prefix);
+            return Task.FromResult(1);
+        }
+
+        public Task<bool> HealthCheckAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
     }
 
     private sealed class FakeClock(DateTime utcNow) : IDateTimeProvider

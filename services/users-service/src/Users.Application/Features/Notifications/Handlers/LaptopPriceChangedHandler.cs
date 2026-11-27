@@ -4,6 +4,7 @@ using Users.Application.Common.Interfaces;
 using Users.Application.Common.Interfaces.Messaging;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Features.Notifications.Events;
+using Users.Application.Features.Notifications.Services;
 using Users.Domain.Entities;
 
 namespace Users.Application.Features.Notifications.Handlers;
@@ -16,6 +17,7 @@ public sealed class LaptopPriceChangedHandler(
     IWishlistRepository wishlistRepository,
     INotificationRepository notificationRepository,
     IDateTimeProvider dateTimeProvider,
+    AffectedUserTracker affectedUserTracker,
     ILogger<LaptopPriceChangedHandler> logger) : IIntegrationEventHandler<LaptopPriceChangedBatchEvent>
 {
     public async Task HandleAsync(
@@ -67,6 +69,7 @@ public sealed class LaptopPriceChangedHandler(
                     itemEvent.NewPriceEgp,
                     itemEvent.CheapestStore));
 
+                affectedUserTracker.Track(subscription.UserId);
                 subscription.RecordNotificationSent(itemEvent.NewPriceEgp, utcNow);
             }
         }

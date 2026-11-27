@@ -2,10 +2,12 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Caching;
 using Users.Application.Common.Interfaces.Logging;
 using Users.Application.Common.Interfaces.Messaging;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Features.Notifications.Events;
+using Users.Application.Features.Notifications.Services;
 using Users.Domain.Entities;
 
 namespace Users.Infrastructure.Messaging;
@@ -67,6 +69,8 @@ public sealed class LaptopPriceChangedConsumerProcessor(
         var handler = scope.ServiceProvider.GetRequiredService<IIntegrationEventHandler<LaptopPriceChangedBatchEvent>>();
         var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var affectedUserTracker = scope.ServiceProvider.GetRequiredService<AffectedUserTracker>();
+        var cacheProvider = scope.ServiceProvider.GetRequiredService<ICacheProvider>();
 
         if (await inboxRepo.ExistsAsync(messageId, cancellationToken))
         {
@@ -83,6 +87,32 @@ public sealed class LaptopPriceChangedConsumerProcessor(
         await inboxRepo.AddAsync(inboxEntry, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        await InvalidateAffectedUserCachesAsync(affectedUserTracker, cacheProvider, cancellationToken);
+
         return MessageProcessOutcome.Ack;
+    }
+
+    private async Task InvalidateAffectedUserCachesAsync(
+        AffectedUserTracker affectedUserTracker,
+        ICacheProvider cacheProvider,
+        CancellationToken cancellationToken)
+    {
+        foreach (var userId in affectedUserTracker.Snapshot())
+        {
+            try
+            {
+                await cacheProvider.ClearPrefixAsync($"users:{userId}:notifications:", cancellationToken);
+                await cacheProvider.ClearPrefixAsync($"users:{userId}:wishlist:", cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                // The message is already committed; cache invalidation must never
+                // cause a redelivery or dead-letter.
+                logger.LogWarning(
+                    ex,
+                    "Failed to invalidate cache after price-change commit [userId={UserId}]",
+                    userId);
+            }
+        }
     }
 }

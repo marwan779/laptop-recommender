@@ -1,4 +1,5 @@
 using Users.Application.Common.Interfaces;
+using Users.Application.Common.Interfaces.Caching;
 using Users.Application.Common.Interfaces.Repositories;
 using Users.Application.Common.Models;
 using Users.Application.Features.Notifications.Services;
@@ -11,11 +12,12 @@ public sealed class NotificationServiceTests
     private readonly FakeNotificationRepository _repo = new();
     private readonly FakeUnitOfWork _uow = new();
     private readonly FakeClock _clock = new(new DateTime(2026, 11, 26, 21, 5, 0, DateTimeKind.Utc));
+    private readonly FakeCacheProvider _cache = new();
     private readonly NotificationService _sut;
 
     public NotificationServiceTests()
     {
-        _sut = new NotificationService(_repo, _uow, _clock);
+        _sut = new NotificationService(_repo, _uow, _clock, _cache);
     }
 
     [Fact]
@@ -47,6 +49,7 @@ public sealed class NotificationServiceTests
         Assert.True(result.Value!.IsRead);
         Assert.Equal(_clock.UtcNow, result.Value.ReadAtUtc);
         Assert.Equal(1, _uow.SaveCount);
+        Assert.Contains($"users:{userId}:notifications:", _cache.ClearedPrefixes);
     }
 
     [Fact]
@@ -73,6 +76,7 @@ public sealed class NotificationServiceTests
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.Value!.MarkedCount);
         Assert.Equal(0, await _repo.GetUnreadCountAsync(userId));
+        Assert.Contains($"users:{userId}:notifications:", _cache.ClearedPrefixes);
     }
 
     private sealed class FakeNotificationRepository : INotificationRepository
@@ -132,5 +136,28 @@ public sealed class NotificationServiceTests
     private sealed class FakeClock(DateTime utcNow) : IDateTimeProvider
     {
         public DateTime UtcNow { get; } = utcNow;
+    }
+
+    private sealed class FakeCacheProvider : ICacheProvider
+    {
+        public List<string> ClearedPrefixes { get; } = [];
+
+        public Task<byte[]?> GetAsync(string key, CancellationToken cancellationToken = default)
+            => Task.FromResult<byte[]?>(null);
+
+        public Task SetAsync(string key, byte[] value, int? ttlSeconds = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<int> ClearPrefixAsync(string prefix, CancellationToken cancellationToken = default)
+        {
+            ClearedPrefixes.Add(prefix);
+            return Task.FromResult(1);
+        }
+
+        public Task<bool> HealthCheckAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
     }
 }

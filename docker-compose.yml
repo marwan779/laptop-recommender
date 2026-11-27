@@ -123,6 +123,9 @@ services:
       - ConnectionStrings__DefaultConnection=${USERS_DATABASE_URL:?USERS_DATABASE_URL must be set in .env (see .env.example)}
       - Jwt__SecretKey=${USERS_JWT_SECRET:?USERS_JWT_SECRET must be set in .env (see .env.example)}
       - RabbitMq__HostName=rabbitmq
+      - Cache__Enabled=true
+      - Cache__RedisConnectionString=redis://redis:6379/0
+      - Cache__DefaultTtlSeconds=300
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
