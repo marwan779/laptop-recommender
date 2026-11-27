@@ -1,5 +1,5 @@
 import React from 'react'
-import { Laptop, Languages, Moon, Sun, Heart, Bell, LogIn, LogOut, ShieldCheck } from 'lucide-react'
+import { Laptop, Languages, Moon, Sun, Heart, Bell, LogIn, LogOut, ShieldCheck, FileText } from 'lucide-react'
 import { useUserSession } from '../context/UserSessionContext'
 
 interface NavbarProps {
@@ -28,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     setAuthModalOpen,
     setWishlistDrawerOpen,
     setNotificationsOpen,
+    openFeedbackModal,
     setAdminConsoleOpen,
     logout,
   } = useUserSession()
@@ -104,6 +105,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </span>
                   )}
                 </button>
+
+                {user.role === 'User' && (
+                  <button
+                    type="button"
+                    onClick={() => openFeedbackModal(null, 'mine')}
+                    className="lang-btn"
+                    aria-label={isAr ? 'بلاغاتي' : 'My Reports'}
+                    title={isAr ? 'بلاغاتي' : 'My Reports'}
+                  >
+                    <FileText className="w-4 h-4 text-[var(--cyan)]" strokeWidth={1.8} />
+                    <span>{isAr ? 'بلاغاتي' : 'My Reports'}</span>
+                  </button>
+                )}
 
                 {user.role === 'Admin' && (
                   <button

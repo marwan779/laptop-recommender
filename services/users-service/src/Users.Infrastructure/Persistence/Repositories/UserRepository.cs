@@ -55,6 +55,14 @@ public sealed class UserRepository(UsersDbContext dbContext) : IUserRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<User>> ListActiveAdminsAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Users
+            .AsNoTracking()
+            .Where(u => u.IsActive && u.RoleId == Role.AdminRoleId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<int> CountActiveAdminsAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Users

@@ -188,6 +188,7 @@ public static class DependencyInjection
 
         services.AddTransient<IEmailSender, SmtpEmailSender>();
         services.AddTransient<SendPriceAlertEmailJob>();
+        services.AddTransient<SendFeedbackEmailJob>();
         services.AddScoped<IBackgroundJobScheduler, HangfireJobScheduler>();
 
         var hangfireEnabled = !bool.TryParse(configuration["Hangfire:Enabled"], out var hfEnabled) || hfEnabled;

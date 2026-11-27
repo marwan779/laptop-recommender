@@ -167,6 +167,9 @@ public sealed class AuthServiceTests
         public Task<IReadOnlyList<User>> ListWithRolesAsync(string? search = null, int limit = 50, int offset = 0, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<User>>(Items);
 
+        public Task<IReadOnlyList<User>> ListActiveAdminsAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<User>>(Items.Where(u => u.IsActive && u.RoleId == Role.AdminRoleId).ToList());
+
         public Task<int> CountActiveAdminsAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(Items.Count(u => u.IsActive && u.RoleId == Role.AdminRoleId));
 

@@ -18,7 +18,7 @@ const CATEGORIES: Array<{ value: FeedbackCategory; en: string; ar: string }> = [
 ]
 
 export const FeedbackModal: React.FC<FeedbackModalProps> = ({ lang }) => {
-  const { user, feedbackModalOpen, feedbackContext, closeFeedbackModal } = useUserSession()
+  const { user, feedbackModalOpen, feedbackInitialTab, feedbackContext, closeFeedbackModal } = useUserSession()
   const isAr = lang === 'ar'
 
   const [tab, setTab] = useState<'submit' | 'mine'>('submit')
@@ -44,13 +44,14 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ lang }) => {
       return
     }
 
+    setTab(feedbackInitialTab)
     setCategory(feedbackContext?.canonicalId ? 'WRONG_PRICE' : 'UI_BUG')
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeFeedbackModal()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [feedbackModalOpen, feedbackContext, closeFeedbackModal])
+  }, [feedbackModalOpen, feedbackInitialTab, feedbackContext, closeFeedbackModal])
 
   useEffect(() => {
     if (!feedbackModalOpen || tab !== 'mine' || !user) return

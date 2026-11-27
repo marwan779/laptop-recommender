@@ -75,6 +75,8 @@ public sealed class AdminUsersServiceTests
             => Task.FromResult(Users.Any(u => u.Email == normalizedEmail));
         public Task<IReadOnlyList<User>> ListWithRolesAsync(string? search = null, int limit = 50, int offset = 0, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<User>>(Users);
+        public Task<IReadOnlyList<User>> ListActiveAdminsAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<User>>(Users.Where(u => u.IsActive && u.RoleId == Role.AdminRoleId).ToList());
         public Task<int> CountActiveAdminsAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(Users.Count(u => u.IsActive && u.RoleId == Role.AdminRoleId));
         public Task AddAsync(User user, CancellationToken cancellationToken = default)

@@ -243,6 +243,123 @@ public static class EmailBodyBuilder
     private static string newPriceTextSafe(PriceAlertEmailJobPayload payload)
         => payload.NewPriceEgp.HasValue ? FormatEgp(payload.NewPriceEgp.Value) : "—";
 
+    public static string BuildFeedbackAdminAlertSubject(FeedbackAdminAlertEmailPayload payload)
+        => $"[New Report · {payload.Category}] {payload.Title}";
+
+    public static string BuildFeedbackAdminAlertHtml(FeedbackAdminAlertEmailPayload payload)
+    {
+        var safeAdmin = WebUtility.HtmlEncode(string.IsNullOrWhiteSpace(payload.AdminName) ? "Admin" : payload.AdminName.Trim());
+        var safeTitle = WebUtility.HtmlEncode(payload.Title);
+        var safeCategory = WebUtility.HtmlEncode(payload.Category);
+        var safeReporter = WebUtility.HtmlEncode(string.IsNullOrWhiteSpace(payload.ReporterEmail) ? "Anonymous guest" : payload.ReporterEmail.Trim());
+        var safeDesc = WebUtility.HtmlEncode(payload.Description);
+        var laptopLine = string.IsNullOrWhiteSpace(payload.LaptopTitleSnapshot)
+            ? string.Empty
+            : $"""<div style="margin-top:8px;font-size:12px;color:#22D3EE;font-weight:600;">Laptop: {WebUtility.HtmlEncode(payload.LaptopTitleSnapshot)}</div>""";
+
+        return $$"""
+        <!DOCTYPE html>
+        <html lang="en" dir="ltr">
+        <head><meta charset="utf-8" /><title>{{WebUtility.HtmlEncode(BuildFeedbackAdminAlertSubject(payload))}}</title></head>
+        <body style="margin:0;padding:0;background-color:#080B10;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#E6EDF3;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#080B10;padding:32px 14px;">
+            <tr><td align="center">
+              <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;background-color:#10161F;border:1px solid #222E3F;border-radius:16px;overflow:hidden;">
+                <tr><td height="4" style="background-color:#22D3EE;font-size:0;line-height:0;">&nbsp;</td></tr>
+                <tr><td style="padding:20px 26px;background-color:#141C27;border-bottom:1px solid #1E2836;">
+                  <div style="font-size:11px;font-weight:800;letter-spacing:1.3px;color:#22D3EE;text-transform:uppercase;">ADMIN ALERT · NEW FEEDBACK REPORT</div>
+                </td></tr>
+                <tr><td style="padding:24px 26px;">
+                  <div style="font-size:14px;color:#9FB0C3;margin-bottom:8px;">Hi {{safeAdmin}},</div>
+                  <h1 style="margin:0 0 16px 0;font-size:19px;color:#F8FAFC;">A new issue report was submitted</h1>
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#161F2B;border:1px solid #2A384C;border-radius:12px;">
+                    <tr><td style="padding:20px;">
+                      <span style="display:inline-block;background-color:#2A2110;border:1px solid #664E1D;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;color:#F5C95C;">{{safeCategory}}</span>
+                      <div style="margin-top:10px;font-size:17px;font-weight:700;color:#FFFFFF;">{{safeTitle}}</div>
+                      {{laptopLine}}
+                      <div style="margin-top:12px;font-size:13.5px;line-height:1.6;color:#CBD5E1;">{{safeDesc}}</div>
+                      <div style="margin-top:14px;padding-top:12px;border-top:1px solid #233042;font-size:12px;color:#7D8FA3;">
+                        Reporter: <strong style="color:#E6EDF3;">{{safeReporter}}</strong>
+                      </div>
+                    </td></tr>
+                  </table>
+                </td></tr>
+                <tr><td align="center" style="padding:0 26px 26px 26px;">
+                  <a href="http://localhost/" target="_blank" style="display:inline-block;background-color:#E9B949;color:#0A0E13;font-size:13.5px;font-weight:800;text-decoration:none;padding:12px 24px;border-radius:10px;">Open Admin Console</a>
+                </td></tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        """;
+    }
+
+    public static string BuildFeedbackReviewedSubject(FeedbackReviewedEmailPayload payload)
+    {
+        var isArabic = IsArabic(payload.PreferredLanguage);
+        return isArabic
+            ? $"تحديث بلاغك ({payload.Status}): {payload.Title}"
+            : $"Report Update ({payload.Status}): {payload.Title}";
+    }
+
+    public static string BuildFeedbackReviewedHtml(FeedbackReviewedEmailPayload payload)
+    {
+        var isArabic = IsArabic(payload.PreferredLanguage);
+        var dir = isArabic ? "rtl" : "ltr";
+        var align = isArabic ? "right" : "left";
+        var safeName = WebUtility.HtmlEncode(string.IsNullOrWhiteSpace(payload.RecipientName) ? "there" : payload.RecipientName.Trim());
+        var safeTitle = WebUtility.HtmlEncode(payload.Title);
+        var safeStatus = WebUtility.HtmlEncode(payload.Status);
+        var (badgeColor, badgeBg, badgeBorder) = payload.Status.ToUpperInvariant() switch
+        {
+            "RESOLVED" => ("#34D399", "#0D2B24", "#1F5E4B"),
+            "IN_REVIEW" => ("#22D3EE", "#0C2730", "#1C596B"),
+            "DISMISSED" => ("#9FB0C3", "#1A222D", "#334155"),
+            _ => ("#F5C95C", "#2A2110", "#664E1D"),
+        };
+
+        var greeting = isArabic ? $"مرحباً {safeName}،" : $"Hi {safeName},";
+        var headline = isArabic ? "تمت مراجعة بلاغك من قبل الإدارة" : "Your feedback report has been reviewed";
+        var notesBlock = string.IsNullOrWhiteSpace(payload.AdminNotes)
+            ? string.Empty
+            : $"""
+              <div style="margin-top:14px;padding:12px 14px;background-color:#10161F;border:1px solid #2A384C;border-radius:8px;font-size:13px;color:#E6EDF3;text-align:{align};">
+                <strong style="color:#E9B949;">{(isArabic ? "ملاحظة الإدارة: " : "Admin note: ")}</strong>{WebUtility.HtmlEncode(payload.AdminNotes)}
+              </div>
+              """;
+
+        return $$"""
+        <!DOCTYPE html>
+        <html lang="{{(isArabic ? "ar" : "en")}}" dir="{{dir}}">
+        <head><meta charset="utf-8" /><title>{{WebUtility.HtmlEncode(BuildFeedbackReviewedSubject(payload))}}</title></head>
+        <body style="margin:0;padding:0;background-color:#080B10;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#E6EDF3;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#080B10;padding:32px 14px;">
+            <tr><td align="center">
+              <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;background-color:#10161F;border:1px solid #222E3F;border-radius:16px;overflow:hidden;">
+                <tr><td height="4" style="background-color:#E9B949;font-size:0;line-height:0;">&nbsp;</td></tr>
+                <tr><td style="padding:20px 26px;background-color:#141C27;border-bottom:1px solid #1E2836;text-align:{{align}};">
+                  <span style="font-size:11px;font-weight:800;letter-spacing:1.2px;color:#22D3EE;text-transform:uppercase;">EGYPT LAPTOP RECOMMENDER</span>
+                </td></tr>
+                <tr><td style="padding:24px 26px;text-align:{{align}};">
+                  <div style="font-size:14px;color:#9FB0C3;margin-bottom:6px;">{{greeting}}</div>
+                  <h1 style="margin:0 0 16px 0;font-size:20px;color:#F8FAFC;">{{headline}}</h1>
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#161F2B;border:1px solid #2A384C;border-radius:12px;">
+                    <tr><td style="padding:20px;text-align:{{align}};">
+                      <span style="display:inline-block;background-color:{{badgeBg}};border:1px solid {{badgeBorder}};border-radius:6px;padding:4px 10px;font-size:11px;font-weight:800;color:{{badgeColor}};">{{safeStatus}}</span>
+                      <div style="margin-top:10px;font-size:17px;font-weight:700;color:#FFFFFF;">{{safeTitle}}</div>
+                      {{notesBlock}}
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        """;
+    }
+
     private static bool IsArabic(string? preferredLanguage)
         => string.Equals(preferredLanguage?.Trim(), "ar", StringComparison.OrdinalIgnoreCase);
 

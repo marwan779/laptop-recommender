@@ -8,4 +8,12 @@ public sealed class HangfireJobScheduler(IBackgroundJobClient backgroundJobClien
     public string EnqueuePriceAlertEmail(PriceAlertEmailJobPayload payload)
         => backgroundJobClient.Enqueue<SendPriceAlertEmailJob>(
             job => job.ExecuteAsync(payload, CancellationToken.None));
+
+    public string EnqueueFeedbackAdminAlertEmail(FeedbackAdminAlertEmailPayload payload)
+        => backgroundJobClient.Enqueue<SendFeedbackEmailJob>(
+            job => job.ExecuteAdminAlertAsync(payload, CancellationToken.None));
+
+    public string EnqueueFeedbackReviewedEmail(FeedbackReviewedEmailPayload payload)
+        => backgroundJobClient.Enqueue<SendFeedbackEmailJob>(
+            job => job.ExecuteReviewedAsync(payload, CancellationToken.None));
 }

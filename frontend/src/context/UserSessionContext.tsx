@@ -44,13 +44,14 @@ interface UserSessionContextValue {
   wishlistDrawerOpen: boolean
   notificationsOpen: boolean
   feedbackModalOpen: boolean
+  feedbackInitialTab: 'submit' | 'mine'
   feedbackContext: { canonicalId?: string; laptopTitle?: string } | null
   adminConsoleOpen: boolean
   wishlistToastTitle: string | null
   setAuthModalOpen: (open: boolean) => void
   setWishlistDrawerOpen: (open: boolean) => void
   setNotificationsOpen: (open: boolean) => void
-  openFeedbackModal: (ctx?: { canonicalId?: string; laptopTitle?: string } | null) => void
+  openFeedbackModal: (ctx?: { canonicalId?: string; laptopTitle?: string } | null, initialTab?: 'submit' | 'mine') => void
   closeFeedbackModal: () => void
   setAdminConsoleOpen: (open: boolean) => void
   dismissWishlistToast: () => void
@@ -82,14 +83,19 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [wishlistDrawerOpen, setWishlistDrawerOpen] = useState<boolean>(false)
   const [notificationsOpen, setNotificationsOpen] = useState<boolean>(false)
   const [feedbackModalOpen, setFeedbackModalOpen] = useState<boolean>(false)
+  const [feedbackInitialTab, setFeedbackInitialTab] = useState<'submit' | 'mine'>('submit')
   const [feedbackContext, setFeedbackContext] = useState<{ canonicalId?: string; laptopTitle?: string } | null>(null)
   const [adminConsoleOpen, setAdminConsoleOpen] = useState<boolean>(false)
   const [wishlistToastTitle, setWishlistToastTitle] = useState<string | null>(null)
 
-  const openFeedbackModal = useCallback((ctx?: { canonicalId?: string; laptopTitle?: string } | null) => {
-    setFeedbackContext(ctx ?? null)
-    setFeedbackModalOpen(true)
-  }, [])
+  const openFeedbackModal = useCallback(
+    (ctx?: { canonicalId?: string; laptopTitle?: string } | null, initialTab: 'submit' | 'mine' = 'submit') => {
+      setFeedbackContext(ctx ?? null)
+      setFeedbackInitialTab(initialTab)
+      setFeedbackModalOpen(true)
+    },
+    [],
+  )
 
   const closeFeedbackModal = useCallback(() => {
     setFeedbackModalOpen(false)
@@ -332,6 +338,7 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         wishlistDrawerOpen,
         notificationsOpen,
         feedbackModalOpen,
+        feedbackInitialTab,
         feedbackContext,
         adminConsoleOpen,
         wishlistToastTitle,
