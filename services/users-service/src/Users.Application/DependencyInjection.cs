@@ -15,7 +15,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IWishlistService, WishlistService>();
         services.AddScoped<INotificationService, NotificationService>();
-        services.AddScoped<IIntegrationEventHandler<LaptopPriceChangedEvent>, LaptopPriceChangedHandler>();
+        services.AddScoped<IIntegrationEventHandler<LaptopPriceChangedBatchEvent>, LaptopPriceChangedHandler>();
         return services;
     }
 }

@@ -8,3 +8,15 @@ public sealed record LaptopPriceChangedEvent(
     string CheapestStore,
     bool InStock,
     string ChangeType);
+
+public sealed record LaptopPriceChangedBatchPayload(
+    string BatchId,
+    string? StoreKey,
+    IReadOnlyList<LaptopPriceChangedEvent> Changes);
+
+public sealed record LaptopPriceChangedBatchEvent(
+    string EventId,
+    string EventType,
+    string? Timestamp,
+    string? CorrelationId,
+    LaptopPriceChangedBatchPayload Payload);

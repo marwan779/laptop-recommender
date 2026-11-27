@@ -39,14 +39,14 @@ public sealed class LaptopPriceChangedHandlerTests
             WishlistItem.Create(userDisabled, "laptop_tuf", "ASUS TUF", 73500m, notifyOnPriceDrop: false),
         ]);
 
-        var evt = new LaptopPriceChangedEvent(
+        var evt = WrapBatch("msg-1", new LaptopPriceChangedEvent(
             "laptop_tuf",
             "ASUS TUF Gaming F16",
             73500m,
             69999m,
             "2B Egypt",
             true,
-            "PRICE_DROP");
+            "PRICE_DROP"));
 
         await _sut.HandleAsync(evt, "msg-1");
 
@@ -69,14 +69,14 @@ public sealed class LaptopPriceChangedHandlerTests
             WishlistItem.Create(userNoRestock, "laptop_legion", "Lenovo Legion", 80000m, notifyOnPriceDrop: true, notifyOnRestock: false),
         ]);
 
-        var evt = new LaptopPriceChangedEvent(
+        var evt = WrapBatch("msg-2", new LaptopPriceChangedEvent(
             "laptop_legion",
             "Lenovo Legion 5",
             80000m,
             80000m,
             "B.TECH",
             true,
-            "RESTOCK");
+            "RESTOCK"));
 
         await _sut.HandleAsync(evt, "msg-2");
 
@@ -98,20 +98,28 @@ public sealed class LaptopPriceChangedHandlerTests
             WishlistItem.Create(userDropOnly, "laptop_hp", "HP Victus", 45000m, notifyOnPriceDrop: true, notifyOnAnyChange: false),
         ]);
 
-        var evt = new LaptopPriceChangedEvent(
+        var evt = WrapBatch("msg-3", new LaptopPriceChangedEvent(
             "laptop_hp",
             "HP Victus 16",
             45000m,
             48000m,
             "CompuMarts",
             true,
-            "PRICE_INCREASE");
+            "PRICE_INCREASE"));
 
         await _sut.HandleAsync(evt, "msg-3");
 
         var created = Assert.Single(_notificationRepo.Added);
         Assert.Equal(userAny, created.UserId);
     }
+
+    private static LaptopPriceChangedBatchEvent WrapBatch(string msgId, params LaptopPriceChangedEvent[] changes)
+        => new(
+            msgId,
+            "laptop.price.changed.event",
+            "2026-11-27T08:00:00Z",
+            "corr-test",
+            new LaptopPriceChangedBatchPayload("batch-1", "twob", changes));
 
     private sealed class FakeWishlistRepo : IWishlistRepository
     {

@@ -590,12 +590,23 @@ async def test_apply_batch_results_handles_null_min_price_without_session_get(mo
         async def record_point(self, **kwargs):
             self.points.append(kwargs)
 
+    class _FakeOutboxRepo:
+        staged = []
+
+        def __init__(self, session):
+            self.session = session
+
+        async def insert_outbox_event(self, **kwargs):
+            self.staged.append(kwargs)
+            return None
+
     import app.services.price_sync_service as pss_mod
 
     monkeypatch.setattr(pss_mod, "OfferRepository", _FakeOfferRepo)
     monkeypatch.setattr(pss_mod, "LaptopRepository", _FakeLaptopRepo)
     monkeypatch.setattr(pss_mod, "BatchLogRepository", _FakeLogRepo)
     monkeypatch.setattr(pss_mod, "PriceHistoryRepository", _FakeHistoryRepo)
+    monkeypatch.setattr(pss_mod, "OutboxRepository", _FakeOutboxRepo)
 
     service = PriceSyncService()
     batch_resp = PriceCheckBatchResponse(

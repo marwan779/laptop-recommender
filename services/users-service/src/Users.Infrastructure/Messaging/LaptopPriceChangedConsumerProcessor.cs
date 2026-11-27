@@ -43,10 +43,10 @@ public sealed class LaptopPriceChangedConsumerProcessor(
             return MessageProcessOutcome.DeadLetter;
         }
 
-        LaptopPriceChangedEvent? integrationEvent;
+        LaptopPriceChangedBatchEvent? integrationEvent;
         try
         {
-            integrationEvent = JsonSerializer.Deserialize<LaptopPriceChangedEvent>(payloadJson, SnakeCaseJsonOptions);
+            integrationEvent = JsonSerializer.Deserialize<LaptopPriceChangedBatchEvent>(payloadJson, SnakeCaseJsonOptions);
         }
         catch (JsonException ex)
         {
@@ -54,15 +54,17 @@ public sealed class LaptopPriceChangedConsumerProcessor(
             return MessageProcessOutcome.DeadLetter;
         }
 
-        if (integrationEvent is null || string.IsNullOrWhiteSpace(integrationEvent.CanonicalId))
+        if (integrationEvent?.Payload?.Changes is null
+            || integrationEvent.Payload.Changes.Count == 0
+            || integrationEvent.Payload.Changes.Any(c => string.IsNullOrWhiteSpace(c.CanonicalId)))
         {
-            logger.LogWarning("Invalid LaptopPriceChangedEvent payload [messageId={MessageId}]", messageId);
+            logger.LogWarning("Invalid LaptopPriceChangedBatchEvent payload [messageId={MessageId}]", messageId);
             return MessageProcessOutcome.DeadLetter;
         }
 
         using var scope = scopeFactory.CreateScope();
         var inboxRepo = scope.ServiceProvider.GetRequiredService<IInboxRepository>();
-        var handler = scope.ServiceProvider.GetRequiredService<IIntegrationEventHandler<LaptopPriceChangedEvent>>();
+        var handler = scope.ServiceProvider.GetRequiredService<IIntegrationEventHandler<LaptopPriceChangedBatchEvent>>();
         var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 

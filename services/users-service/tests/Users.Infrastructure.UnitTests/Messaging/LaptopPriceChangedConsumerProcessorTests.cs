@@ -22,13 +22,25 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
 
         const string payload = """
             {
-              "canonical_id": "laptop_asus_tuf_gaming_fx607vurl167w",
-              "title": "ASUS TUF Gaming F16",
-              "old_price_egp": 73500.0,
-              "new_price_egp": 69999.0,
-              "cheapest_store": "2B Egypt",
-              "in_stock": true,
-              "change_type": "PRICE_DROP"
+              "event_id": "msg-001",
+              "event_type": "laptop.price.changed.event",
+              "timestamp": "2026-11-27T08:00:00Z",
+              "correlation_id": "corr-123",
+              "payload": {
+                "batch_id": "batch-001",
+                "store_key": "twob",
+                "changes": [
+                  {
+                    "canonical_id": "laptop_asus_tuf_gaming_fx607vurl167w",
+                    "title": "ASUS TUF Gaming F16",
+                    "old_price_egp": 73500.0,
+                    "new_price_egp": 69999.0,
+                    "cheapest_store": "2B Egypt",
+                    "in_stock": true,
+                    "change_type": "PRICE_DROP"
+                  }
+                ]
+              }
             }
             """;
 
@@ -40,8 +52,9 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
 
         Assert.Equal(MessageProcessOutcome.Ack, outcome);
         Assert.Equal(1, handler.CallCount);
-        Assert.Equal("laptop_asus_tuf_gaming_fx607vurl167w", handler.LastEvent!.CanonicalId);
-        Assert.Equal(69999.0m, handler.LastEvent.NewPriceEgp);
+        var change = Assert.Single(handler.LastEvent!.Payload.Changes);
+        Assert.Equal("laptop_asus_tuf_gaming_fx607vurl167w", change.CanonicalId);
+        Assert.Equal(69999.0m, change.NewPriceEgp);
         Assert.Single(inbox.Items);
         Assert.Equal(1, uow.SaveCount);
     }
@@ -56,7 +69,7 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
         var processor = CreateProcessor(inbox, handler, uow);
 
         const string payload = """
-            {"canonical_id":"laptop_1","title":"Test","cheapest_store":"sigma","in_stock":true,"change_type":"PRICE_DROP"}
+            {"event_id":"msg-dup","event_type":"laptop.price.changed.event","payload":{"batch_id":"b1","changes":[{"canonical_id":"laptop_1","title":"Test","cheapest_store":"sigma","in_stock":true,"change_type":"PRICE_DROP"}]}}
             """;
 
         var outcome = await processor.ProcessAsync("msg-dup", "laptop.price.changed.event", payload, null);
@@ -88,7 +101,7 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
     {
         var services = new ServiceCollection();
         services.AddSingleton<IInboxRepository>(inbox);
-        services.AddSingleton<IIntegrationEventHandler<LaptopPriceChangedEvent>>(handler);
+        services.AddSingleton<IIntegrationEventHandler<LaptopPriceChangedBatchEvent>>(handler);
         services.AddSingleton<IDateTimeProvider>(new FakeClock(new DateTime(2026, 11, 26, 20, 30, 0, DateTimeKind.Utc)));
         services.AddSingleton<IUnitOfWork>(uow);
 
@@ -111,11 +124,11 @@ public sealed class LaptopPriceChangedConsumerProcessorTests
         }
     }
 
-    private sealed class SpyHandler : IIntegrationEventHandler<LaptopPriceChangedEvent>
+    private sealed class SpyHandler : IIntegrationEventHandler<LaptopPriceChangedBatchEvent>
     {
         public int CallCount { get; private set; }
-        public LaptopPriceChangedEvent? LastEvent { get; private set; }
-        public Task HandleAsync(LaptopPriceChangedEvent integrationEvent, string messageId, CancellationToken cancellationToken = default)
+        public LaptopPriceChangedBatchEvent? LastEvent { get; private set; }
+        public Task HandleAsync(LaptopPriceChangedBatchEvent integrationEvent, string messageId, CancellationToken cancellationToken = default)
         {
             CallCount++;
             LastEvent = integrationEvent;

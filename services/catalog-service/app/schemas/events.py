@@ -30,6 +30,7 @@ class EventType(StrEnum):
     # Flow 2: Price & Availability Monitoring
     PRICES_CHECK_COMMAND = "prices.check.command"
     PRICES_CHECKED_EVENT = "prices.checked.event"
+    LAPTOP_PRICE_CHANGED_EVENT = "laptop.price.changed.event"
 
     # Flow 3: Community Reviews Scraping & Enrichment (Phase 2)
     REVIEWS_SCRAPE_COMMAND = "reviews.scrape.command"
@@ -186,6 +187,36 @@ class PricesCheckedEvent(BaseEvent):
 
     event_type: str = EventType.PRICES_CHECKED_EVENT
     payload: PricesCheckedPayload
+
+
+class LaptopPriceChangedItem(BaseModel):
+    """Canonical laptop price or stock transition for downstream subscribers."""
+
+    canonical_id: str = Field(description="Canonical laptop identifier")
+    title: str = Field(description="Laptop display title")
+    old_price_egp: float | None = Field(default=None, description="Previous canonical minimum price in EGP")
+    new_price_egp: float | None = Field(default=None, description="New canonical minimum price in EGP")
+    cheapest_store: str = Field(default="", description="Store offering the new minimum price")
+    in_stock: bool = Field(description="Whether the laptop is currently in stock in at least one store")
+    change_type: str = Field(description="Transition classification: PRICE_DROP, PRICE_INCREASE, RESTOCK, OUT_OF_STOCK")
+
+
+class LaptopPriceChangedBatchPayload(BaseModel):
+    """Batch payload of canonical laptop price/stock transitions."""
+
+    batch_id: str = Field(description="Price check batch identifier")
+    store_key: str | None = Field(default=None, description="Triggering store slug")
+    changes: list[LaptopPriceChangedItem] = Field(
+        default_factory=list,
+        description="List of canonical laptops whose minimum price or stock status changed",
+    )
+
+
+class LaptopPriceChangedBatchEvent(BaseEvent):
+    """Event emitted by catalog-service after applying price/stock updates."""
+
+    event_type: str = EventType.LAPTOP_PRICE_CHANGED_EVENT
+    payload: LaptopPriceChangedBatchPayload
 
 
 # ─── Flow 3: Community Reviews Scraping (Phase 2) ───────────────────────────

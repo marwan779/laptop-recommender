@@ -9,56 +9,66 @@ using Users.Domain.Entities;
 namespace Users.Application.Features.Notifications.Handlers;
 
 /// <summary>
-/// Matches incoming laptop price/stock change events against active wishlist subscriptions
+/// Matches incoming batch laptop price/stock change events against active wishlist subscriptions
 /// and persists user notifications within the consumer's atomic unit of work.
 /// </summary>
 public sealed class LaptopPriceChangedHandler(
     IWishlistRepository wishlistRepository,
     INotificationRepository notificationRepository,
     IDateTimeProvider dateTimeProvider,
-    ILogger<LaptopPriceChangedHandler> logger) : IIntegrationEventHandler<LaptopPriceChangedEvent>
+    ILogger<LaptopPriceChangedHandler> logger) : IIntegrationEventHandler<LaptopPriceChangedBatchEvent>
 {
     public async Task HandleAsync(
-        LaptopPriceChangedEvent integrationEvent,
+        LaptopPriceChangedBatchEvent integrationEvent,
         string messageId,
         CancellationToken cancellationToken = default)
     {
-        var subscribers = await wishlistRepository.GetSubscribersByCanonicalIdAsync(
-            integrationEvent.CanonicalId,
-            cancellationToken);
-
-        if (subscribers.Count == 0)
+        var changes = integrationEvent.Payload.Changes;
+        if (changes.Count == 0)
         {
             logger.LogInformation(
-                "No active wishlist subscribers for LaptopPriceChangedEvent [messageId={MessageId}, canonicalId={CanonicalId}]",
+                "Received empty LaptopPriceChangedBatchEvent [messageId={MessageId}, batchId={BatchId}]",
                 messageId,
-                integrationEvent.CanonicalId);
+                integrationEvent.Payload.BatchId);
             return;
         }
 
-        var normalizedChangeType = NormalizeChangeType(integrationEvent);
         var utcNow = dateTimeProvider.UtcNow;
         var notifications = new List<Notification>();
 
-        foreach (var item in subscribers)
+        foreach (var itemEvent in changes)
         {
-            if (!ShouldNotify(item, integrationEvent, normalizedChangeType))
+            var subscribers = await wishlistRepository.GetSubscribersByCanonicalIdAsync(
+                itemEvent.CanonicalId,
+                cancellationToken);
+
+            if (subscribers.Count == 0)
             {
                 continue;
             }
 
-            var (title, message) = BuildNotificationCopy(integrationEvent, normalizedChangeType);
-            notifications.Add(Notification.Create(
-                item.UserId,
-                integrationEvent.CanonicalId,
-                title,
-                message,
-                normalizedChangeType,
-                integrationEvent.OldPriceEgp,
-                integrationEvent.NewPriceEgp,
-                integrationEvent.CheapestStore));
+            var normalizedChangeType = NormalizeChangeType(itemEvent);
 
-            item.RecordNotificationSent(integrationEvent.NewPriceEgp, utcNow);
+            foreach (var subscription in subscribers)
+            {
+                if (!ShouldNotify(subscription, itemEvent, normalizedChangeType))
+                {
+                    continue;
+                }
+
+                var (title, message) = BuildNotificationCopy(itemEvent, normalizedChangeType);
+                notifications.Add(Notification.Create(
+                    subscription.UserId,
+                    itemEvent.CanonicalId,
+                    title,
+                    message,
+                    normalizedChangeType,
+                    itemEvent.OldPriceEgp,
+                    itemEvent.NewPriceEgp,
+                    itemEvent.CheapestStore));
+
+                subscription.RecordNotificationSent(itemEvent.NewPriceEgp, utcNow);
+            }
         }
 
         if (notifications.Count > 0)
@@ -67,11 +77,10 @@ public sealed class LaptopPriceChangedHandler(
         }
 
         logger.LogInformation(
-            "Processed LaptopPriceChangedEvent [messageId={MessageId}, canonicalId={CanonicalId}, changeType={ChangeType}, subscribers={SubscriberCount}, notificationsCreated={NotificationCount}]",
+            "Processed LaptopPriceChangedBatchEvent [messageId={MessageId}, batchId={BatchId}, changedLaptops={ChangedCount}, notificationsCreated={NotificationCount}]",
             messageId,
-            integrationEvent.CanonicalId,
-            normalizedChangeType,
-            subscribers.Count,
+            integrationEvent.Payload.BatchId,
+            changes.Count,
             notifications.Count);
     }
 
