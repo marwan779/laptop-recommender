@@ -164,6 +164,12 @@ public sealed class AuthServiceTests
         public Task<bool> ExistsByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default) =>
             Task.FromResult(Items.Any(u => u.Email == normalizedEmail));
 
+        public Task<IReadOnlyList<User>> ListWithRolesAsync(string? search = null, int limit = 50, int offset = 0, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<User>>(Items);
+
+        public Task<int> CountActiveAdminsAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(Items.Count(u => u.IsActive && u.RoleId == Role.AdminRoleId));
+
         public Task AddAsync(User user, CancellationToken cancellationToken = default)
         {
             Items.Add(user);
@@ -184,6 +190,9 @@ public sealed class AuthServiceTests
 
         public Task<Role?> GetByNameAsync(string name, CancellationToken cancellationToken = default) =>
             Task.FromResult(_roles.FirstOrDefault(r => r.Name == name));
+
+        public Task<IReadOnlyList<Role>> ListAllAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<Role>>(_roles);
     }
 
     private sealed class FakeRefreshTokenRepository(FakeUserRepository? users = null) : IRefreshTokenRepository

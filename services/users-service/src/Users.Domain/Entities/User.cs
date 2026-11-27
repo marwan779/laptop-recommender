@@ -92,4 +92,26 @@ public sealed class User : BaseEntity
         IsActive = false;
         TouchUpdatedAt(utcNow);
     }
+
+    public void Activate(DateTime utcNow)
+    {
+        IsActive = true;
+        TouchUpdatedAt(utcNow);
+    }
+
+    public void ChangeRole(Guid roleId, DateTime utcNow)
+    {
+        if (roleId == Guid.Empty)
+        {
+            throw new DomainException("RoleId is required.");
+        }
+
+        if (RoleId != roleId)
+        {
+            RoleId = roleId;
+            Role = null;
+        }
+
+        TouchUpdatedAt(utcNow);
+    }
 }

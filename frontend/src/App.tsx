@@ -433,7 +433,7 @@ export function App() {
             )}
 
             {stageOne && !loading && (
-              <div className="max-w-3xl mx-auto w-full space-y-5">
+              <div className="w-full space-y-5">
                 <div className="text-center space-y-2 pt-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-raised)] px-3 py-1 text-[11px] font-semibold text-[var(--text-secondary)]">
                     <ShieldCheck className="w-3.5 h-3.5 text-[var(--success)]" strokeWidth={1.8} />

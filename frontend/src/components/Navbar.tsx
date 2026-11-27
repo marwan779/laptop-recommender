@@ -70,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {user ? (
               <>
                 <button
@@ -92,27 +92,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   type="button"
                   onClick={() => setNotificationsOpen(true)}
-                  className={`lang-btn relative ${unreadCount > 0 ? 'border-[var(--gold)] text-[var(--gold-bright)]' : ''}`}
+                  className={`lang-btn relative !w-9 !px-0 justify-center ${unreadCount > 0 ? 'border-[var(--gold)] text-[var(--gold-bright)]' : ''}`}
                   aria-label={isAr ? 'التنبيهات' : 'Notifications'}
                   title={isAr ? 'التنبيهات' : 'Notifications'}
                 >
                   <Bell className="w-4 h-4" strokeWidth={1.8} />
                   {unreadCount > 0 && (
-                    <span className="nav-count-badge rounded-full bg-[var(--gold)] px-1.5 py-0.5 text-[10px] leading-none font-mono font-bold text-[#0A0E13] num">
+                    <span className="nav-count-badge absolute -top-1.5 -end-1.5 rounded-full bg-[var(--gold)] min-w-[17px] h-[17px] px-1 inline-flex items-center justify-center text-[10px] leading-none font-mono font-bold text-[#0A0E13] num">
                       {unreadCount}
                     </span>
                   )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => void logout()}
-                  className="lang-btn"
-                  aria-label={isAr ? 'تسجيل الخروج' : 'Sign out'}
-                  title={`${user.fullName} (${user.email})`}
-                >
-                  <LogOut className="w-4 h-4 rtl:rotate-180" strokeWidth={1.8} />
-                  <span className="hidden sm:inline">{isAr ? 'خروج' : 'Sign out'}</span>
                 </button>
               </>
             ) : (
@@ -127,10 +116,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
+            <span className="hidden sm:block h-5 w-px bg-[var(--border-subtle)] mx-0.5" aria-hidden="true" />
+
             <button
               type="button"
               onClick={onToggleTheme}
-              className="lang-btn"
+              className="lang-btn !w-9 !px-0 justify-center"
               aria-label={isDark ? (isAr ? 'التبديل للوضع النهاري' : 'Switch to light mode') : isAr ? 'التبديل للوضع الليلي' : 'Switch to dark mode'}
               title={isDark ? (isAr ? 'وضع نهاري' : 'Light mode') : isAr ? 'وضع ليلي' : 'Dark mode'}
             >
@@ -139,7 +130,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               ) : (
                 <Moon className="w-4 h-4" strokeWidth={1.8} />
               )}
-              <span>{isDark ? (isAr ? 'نهاري' : 'Light') : isAr ? 'ليلي' : 'Dark'}</span>
             </button>
 
             <button
@@ -150,8 +140,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               title={isAr ? 'Switch to English' : 'التحويل إلى العربية'}
             >
               <Languages className="w-4 h-4" strokeWidth={1.8} />
-              <span>{isAr ? 'English' : 'عربي'}</span>
+              <span>{isAr ? 'EN' : 'عربي'}</span>
             </button>
+
+            {user && (
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="lang-btn !w-9 !px-0 justify-center hover:!border-[var(--danger)] hover:!text-[var(--danger)]"
+                aria-label={isAr ? 'تسجيل الخروج' : 'Sign out'}
+                title={isAr ? `تسجيل الخروج (${user.email})` : `Sign out (${user.email})`}
+              >
+                <LogOut className="w-4 h-4 rtl:rotate-180" strokeWidth={1.8} />
+              </button>
+            )}
           </div>
         </div>
       </div>

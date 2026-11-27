@@ -21,6 +21,7 @@ using Users.Infrastructure.Logging;
 using Users.Infrastructure.Messaging;
 using Users.Infrastructure.Persistence;
 using Users.Infrastructure.Persistence.Repositories;
+using Users.Infrastructure.Persistence.Seeding;
 using Users.Infrastructure.Security;
 using Users.Infrastructure.Time;
 
@@ -53,6 +54,20 @@ public static class DependencyInjection
         services.AddScoped<IWishlistRepository, WishlistRepository>();
         services.AddScoped<IInboxRepository, InboxRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+
+        var adminSeedSection = configuration.GetSection(AdminSeedOptions.SectionName);
+        services.Configure<AdminSeedOptions>(options =>
+        {
+            if (bool.TryParse(adminSeedSection["Enabled"], out var seedEnabled))
+                options.Enabled = seedEnabled;
+            if (!string.IsNullOrWhiteSpace(adminSeedSection["Email"]))
+                options.Email = adminSeedSection["Email"]!;
+            if (!string.IsNullOrWhiteSpace(adminSeedSection["FullName"]))
+                options.FullName = adminSeedSection["FullName"]!;
+            if (!string.IsNullOrWhiteSpace(adminSeedSection["Password"]))
+                options.Password = adminSeedSection["Password"]!;
+        });
+        services.AddHostedService<AdminSeederHostedService>();
 
         var jwtSection = configuration.GetSection(JwtSettings.SectionName);
         services.Configure<JwtSettings>(options =>

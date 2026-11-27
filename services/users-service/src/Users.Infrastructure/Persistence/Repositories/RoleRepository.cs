@@ -17,6 +17,14 @@ public sealed class RoleRepository(UsersDbContext dbContext) : IRoleRepository
     {
         return await dbContext.Roles
             .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.Name == name, cancellationToken);
+            .FirstOrDefaultAsync(r => r.Name.ToLower() == name.ToLower(), cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Role>> ListAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Roles
+            .AsNoTracking()
+            .OrderBy(r => r.Name)
+            .ToListAsync(cancellationToken);
     }
 }
